@@ -6,6 +6,7 @@ import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComp
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import { Transition } from "@headlessui/react";
 import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
@@ -17,19 +18,47 @@ import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null }) {
-   const client = useClient();
-   const { data: bannerImage } = useQuery(getUserBannerOptions(props.userId, props.banner, client));
+   const [isLoaded, setIsLoaded] = useState(false);
+   const [hasError, setHasError] = useState(false);
 
-   if (bannerImage) {
+   const client = useClient();
+   // const { data: bannerImage } = useQuery(getUserBannerOptions(props.userId, props.banner, client));
+
+   function onLoad() {
+      setIsLoaded(true);
+   }
+
+   function onError() {
+      setHasError(true);
+   }
+
+   if (props.banner) {
       return (
          <div className="relative h-32 w-full overflow-hidden">
-            <img src={bannerImage} alt="profile-banner" className="h-full w-full object-cover" />
+            <img
+               src={client?.cdn.banner(props.userId, props.banner)}
+               alt="profile-banner"
+               className="h-full w-full object-cover"
+               onLoad={onLoad}
+               onError={onError}
+            />
             <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+            <Transition show={!isLoaded || hasError}>
+               <div
+                  className={clsx(
+                     !hasError && "absolute inset-0",
+                     "bg-surface/40 flex h-full w-full items-center justify-center rounded-md duration-200 data-closed:opacity-0",
+                  )}
+               >
+                  {!isLoaded && !hasError && <LoadingIcon className="size-10" />}
+                  {hasError && <IconMingcuteWarningFill className="text-negative-100 size-10" />}
+               </div>
+            </Transition>
          </div>
       );
    }

@@ -1,6 +1,7 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import HuginnLabel from "@components/HuginnLabel";
+import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
@@ -27,7 +28,7 @@ export default function SettingsProfileTab() {
    const { openFileDialog } = useFileDialog("image/*");
 
    const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
-   const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
+   const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
    const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
    const [bio, setBio] = useState(() => user?.bio ?? "");
@@ -173,6 +174,8 @@ export default function SettingsProfileTab() {
 
    const displayAvatar = pendingAvatar !== undefined ? pendingAvatar : originalAvatar;
    const displayBanner = pendingBanner !== undefined ? pendingBanner : originalBanner;
+   const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
+   const isBannerTall = !!displayBanner || isImageBannerLoading;
    const hasChanges =
       bannerColor !== (user?.bannerColor ?? "") ||
       accentColor !== (user?.accentColor ?? "") ||
@@ -218,12 +221,16 @@ export default function SettingsProfileTab() {
             )}
 
             <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor || "transparent" }}>
-               <div className={clsx("group relative transition-all", showBanner ? (displayBanner ? "h-32" : "h-20") : "h-0")}>
+               <div className={clsx("group relative transition-all", showBanner ? (isBannerTall ? "h-32" : "h-20") : "h-0")}>
                   {displayBanner ? (
                      <>
                         <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                      </>
+                  ) : isImageBannerLoading ? (
+                     <div className="bg-surface/40 flex h-full w-full items-center justify-center">
+                        <LoadingIcon className="size-10" />
+                     </div>
                   ) : (
                      <>
                         <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
