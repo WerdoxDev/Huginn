@@ -1,11 +1,11 @@
-import type { Snowflake } from "@huginn/shared";
+import type { ImageSize, Snowflake } from "@huginn/shared";
 
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import LoadingIcon from "./LoadingIcon";
 
@@ -13,6 +13,7 @@ export default function UserAvatar(props: {
    userId: Snowflake;
    avatarHash?: string | null;
    size?: number;
+   cdnSize?: ImageSize;
    className?: string;
    hideStatus?: boolean;
    test?: boolean;
@@ -24,6 +25,11 @@ export default function UserAvatar(props: {
    const presence = usePresence(props.userId);
    const [hasError, setHasError] = useState(false);
    const [isLoaded, setIsLoaded] = useState(false);
+
+   const src = useMemo(() => {
+      if (props.avatarHash?.startsWith("a_")) return client?.cdn.avatar(props.userId, props.avatarHash);
+      else if (props.avatarHash) return client?.cdn.avatar(props.userId, props.avatarHash, { format: "webp", size: props.cdnSize ?? 64 });
+   }, [props.avatarHash, props.userId, props.cdnSize]);
 
    function onLoad() {
       setIsLoaded(true);
@@ -75,7 +81,7 @@ export default function UserAvatar(props: {
                   onLoad={onLoad}
                   onError={onError}
                   alt="user-avatar"
-                  src={client?.cdn.avatar(props.userId, props.avatarHash)}
+                  src={src}
                   loading="lazy"
                   className="h-full w-full rounded-full object-cover"
                />

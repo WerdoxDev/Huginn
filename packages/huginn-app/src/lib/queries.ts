@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginn/api";
 
-import { type APIGetUserChannelsResult, resolveImage, type Snowflake } from "@huginn/shared";
+import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
@@ -124,7 +124,12 @@ export function getRelationshipsOptions(client: HuginnClient) {
    });
 }
 
-export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: string | null | undefined, client?: HuginnClient) {
+export function getUserAvatarOptions(
+   userId: Snowflake | undefined,
+   avatarHash: string | null | undefined,
+   cdnSize?: ImageSize,
+   client?: HuginnClient,
+) {
    return queryOptions({
       queryKey: ["avatar", userId, avatarHash],
       async queryFn() {
@@ -132,7 +137,7 @@ export function getUserAvatarOptions(userId: Snowflake | undefined, avatarHash: 
             return null;
          }
 
-         const data = await resolveImage(client.cdn.avatar(userId, avatarHash));
+         const data = await resolveImage(client.cdn.avatar(userId, avatarHash, { size: cdnSize }));
          return data ? data : null;
       },
    });
@@ -152,7 +157,12 @@ export function getUserBannerOptions(userId: Snowflake | undefined, bannerHash: 
    });
 }
 
-export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash: string | null | undefined, client?: HuginnClient) {
+export function getChannelIconOptions(
+   channelId: Snowflake | undefined,
+   iconHash: string | null | undefined,
+   cdnSize?: ImageSize,
+   client?: HuginnClient,
+) {
    return queryOptions({
       queryKey: ["channel-icon", channelId, iconHash],
       async queryFn() {
@@ -160,7 +170,7 @@ export function getChannelIconOptions(channelId: Snowflake | undefined, iconHash
             return null;
          }
 
-         const data = await resolveImage(client.cdn.channelIcon(channelId, iconHash));
+         const data = await resolveImage(client.cdn.channelIcon(channelId, iconHash, { size: cdnSize }));
          return data ? data : null;
       },
    });

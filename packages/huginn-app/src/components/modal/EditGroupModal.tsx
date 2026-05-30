@@ -31,7 +31,7 @@ export default function EditGroupModal() {
    const { setValue, handleErrors, register, handleSubmit } = useHuginnForm<Input>();
 
    const { data: originalIcon } = useQuery(
-      getChannelIconOptions(modal.channel?.id, modal.channel?.type === ChannelType.GROUP_DM ? modal.channel?.icon : undefined, client),
+      getChannelIconOptions(modal.channel?.id, modal.channel?.type === ChannelType.GROUP_DM ? modal.channel?.icon : undefined, 128, client),
    );
 
    const placeholder = modal.channel && getGroupChannelName(modal.channel);
@@ -76,7 +76,6 @@ export default function EditGroupModal() {
    async function edit(data: Input) {
       if (!modal.channel) return;
 
-      console.log("Submitting edit with data:", data, modal.channel.name);
       await mutation.mutateAsync({
          channelId: modal.channel.id,
          name: data?.name === modal.channel.name ? undefined : data.name,

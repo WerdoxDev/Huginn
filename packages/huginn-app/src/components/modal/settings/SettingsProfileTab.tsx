@@ -27,7 +27,7 @@ export default function SettingsProfileTab() {
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image/*");
 
-   const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
+   const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, 128, client));
    const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
    const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");

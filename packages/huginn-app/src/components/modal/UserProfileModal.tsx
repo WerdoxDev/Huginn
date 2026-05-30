@@ -12,7 +12,7 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { RelationshipType } from "@huginn/shared";
-import { getRelationshipsOptions, getUserBannerOptions } from "@lib/queries";
+import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
@@ -147,7 +147,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} />
+                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} />
                   </div>
                </div>
                <div className="flex max-w-60 flex-col pl-1">

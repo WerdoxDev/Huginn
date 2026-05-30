@@ -1,17 +1,28 @@
-import type { Snowflake } from "@huginn/shared";
+import type { ImageSize, Snowflake } from "@huginn/shared";
 
 import { useClient } from "@stores/clientStore";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import LoadingIcon from "./LoadingIcon";
 
-export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: string | null; size?: string; className?: string }) {
+export default function ChannelIcon(props: {
+   channelId: Snowflake;
+   iconHash?: string | null;
+   size?: string;
+   className?: string;
+   cdnSize?: ImageSize;
+}) {
    const client = useClient();
    const imgRef = useRef<HTMLImageElement>(null);
 
    const [hasError, setHasError] = useState(true);
    const [isLoaded, setIsLoaded] = useState(false);
+
+   const src = useMemo(() => {
+      if (props.iconHash?.startsWith("a_")) return client?.cdn.channelIcon(props.channelId, props.iconHash);
+      else if (props.iconHash) return client?.cdn.channelIcon(props.channelId, props.iconHash, { format: "webp", size: props.cdnSize ?? 64 });
+   }, [props.iconHash, props.channelId, props.cdnSize]);
 
    function onLoad() {
       setIsLoaded(true);
@@ -43,7 +54,7 @@ export default function ChannelIcon(props: { channelId: Snowflake; iconHash?: st
          {props.iconHash ? (
             <img
                alt="channel-icon"
-               src={client?.cdn.channelIcon(props.channelId, props.iconHash)}
+               src={src}
                onError={onError}
                onLoad={onLoad}
                ref={imgRef}
