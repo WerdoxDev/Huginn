@@ -36,7 +36,7 @@ export default function NewsModal() {
    }
 
    return (
-      <HuginnDialogPanel className="w-xl">
+      <HuginnDialogPanel className="lg:w-xl">
          <ModalCloseButton onClick={close} />
          <div className="flex flex-col py-5">
             <HuginnDialogTitle title="Huginn News" className="px-5" />

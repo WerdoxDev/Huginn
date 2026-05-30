@@ -1,5 +1,5 @@
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import LoadingButton from "@components/button/LoadingButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
@@ -59,7 +59,7 @@ export default function AddRecipientModal() {
    }
 
    return (
-      <HuginnDialogPanel className="max-w-md">
+      <HuginnDialogPanel className="lg:max-w-md">
          <DialogBody>
             <HuginnDialogTitle title="Add Member" description="Add your fellow warrior(s) to also share a tale with!" />
             <div className="flex flex-col gap-y-5">

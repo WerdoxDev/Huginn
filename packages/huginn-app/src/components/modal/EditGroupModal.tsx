@@ -90,7 +90,7 @@ export default function EditGroupModal() {
    }
 
    return (
-      <HuginnDialogPanel className="max-w-lg">
+      <HuginnDialogPanel className="lg:max-w-lg">
          <form onSubmit={handleSubmit(edit)}>
             <DialogBody>
                <HuginnDialogTitle title="Edit Group" />

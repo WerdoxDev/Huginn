@@ -52,7 +52,13 @@ function Panel(props: {
 }) {
    return (
       <Popover.Portal keepMounted={false}>
-         <Popover.Positioner align={props.align ?? "end"} side={props.side ?? "bottom"} sideOffset={props.sideGap} alignOffset={props.alignGap}>
+         <Popover.Positioner
+            align={props.align ?? "end"}
+            side={props.side ?? "bottom"}
+            sideOffset={props.sideGap}
+            alignOffset={props.alignGap}
+            collisionPadding={0}
+         >
             <Popover.Popup
                className={clsx(
                   props.className,

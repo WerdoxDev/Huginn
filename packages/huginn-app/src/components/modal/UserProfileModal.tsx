@@ -108,7 +108,7 @@ function ProfileContent(props: { userId: string }) {
 
    return (
       <div
-         className="bg-surface-alt relative mb-2 flex flex-col overflow-hidden rounded-lg border-2"
+         className="bg-surface-alt relative mx-2 mb-2 flex flex-col overflow-hidden rounded-lg border-2 lg:mx-0 lg:mb-0"
          style={{ borderColor: accentColor || "transparent" }}
       >
          <ProfileBanner userId={user?.id} banner={user?.banner} bannerColor={bannerColor} />

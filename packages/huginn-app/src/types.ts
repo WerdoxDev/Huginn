@@ -20,7 +20,7 @@ import type {
    UserPresence,
 } from "@huginn/shared";
 import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
-import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, ReactNode, RefCallback, RefObject } from "react";
+import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
 export type StatusType = "none" | "default" | "error" | "success";
@@ -57,7 +57,7 @@ export type HuginnButtonProps = {
    className?: string;
    disabled?: boolean;
    color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
-   onClick?: () => void;
+   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 };
 
 export type HuginnLoadingButtonProps = HuginnButtonProps & {

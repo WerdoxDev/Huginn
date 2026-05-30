@@ -81,8 +81,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
       [fetchNextPage, hasNextPage, isFetchingNextPage],
    );
 
-   function handleDeletePin(e: React.MouseEvent, messageId: Snowflake) {
-      e.stopPropagation();
+   function handleDeletePin(messageId: Snowflake) {
       updateModals({
          info: {
             isOpen: true,
@@ -109,7 +108,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
    }
 
    return (
-      <HuginnPopover.Panel align="end" className="w-105 overflow-hidden" side="bottom" sideGap={16}>
+      <HuginnPopover.Panel align="end" className="mx-2 w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
          <div className="text-text flex items-center gap-x-2 px-4 py-4">
             <IconMingcutePinFill className="size-5" />
             <div className="text-lg font-bold">Pinned Messages</div>
@@ -129,17 +128,14 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
                <ol className="flex flex-col gap-y-2 overflow-hidden">
                   {processedMessages.map((message, index) => (
                      <div
-                        className="bg-surface-alt hover:bg-surface relative cursor-pointer rounded-lg transition-colors"
+                        className="bg-surface-alt group/background relative cursor-pointer rounded-lg transition-colors"
                         key={message.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => props.onMessageClick(message.id)}
-                        onKeyDown={(event) => {
-                           if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              props.onMessageClick(message.id);
-                           }
-                        }}
+                        // onKeyDown={(event) => {
+                        //    if (event.key === "Enter" || event.key === " ") {
+                        //       event.preventDefault();
+                        //       props.onMessageClick(message.id);
+                        //    }
+                        // }}
                      >
                         <MessageProvider
                            key={message.id}
@@ -150,14 +146,17 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
                            nextMessage={processedMessages[index + 1]}
                            options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_" }}
                         />
-                        <div className="absolute top-2 right-2 flex gap-x-1">
-                           <button className="bg-surface-deep hover:bg-surface-alt flex cursor-pointer items-center justify-center rounded-md px-2 py-1 text-sm text-white/70 transition-colors outline-none hover:text-white">
+                        <div className="absolute top-2 right-2 flex gap-x-1 select-none lg:opacity-0 lg:group-hover/background:opacity-100">
+                           <button
+                              onClick={() => props.onMessageClick(message.id)}
+                              className="bg-surface-deep hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-2 py-1 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white"
+                           >
                               Jump
                            </button>
 
                            <button
-                              onClick={(e) => handleDeletePin(e, message.id)}
-                              className="bg-surface-deep hover:bg-surface-alt flex shrink-0 cursor-pointer items-center justify-center rounded-md p-1.5 text-white/70 transition-colors outline-none hover:text-white"
+                              onClick={() => handleDeletePin(message.id)}
+                              className="bg-surface-deep hover:bg-surface active:bg-surface flex shrink-0 cursor-pointer items-center justify-center rounded-md p-1.5 text-white/70 transition-colors outline-none hover:text-white active:text-white"
                            >
                               <IconMingcuteCloseFill className="size-4" />
                            </button>
