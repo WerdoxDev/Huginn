@@ -109,6 +109,11 @@ export const app = new Elysia({
          await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
       }
    })
+   .ws("/gateway", {
+      upgrade({ request, server }) {
+         return ws.handleUpgrade(request, server!);
+      },
+   })
    // user
    .use(getUserChannels)
    .use(postUserChannel)
@@ -171,11 +176,6 @@ export const app = new Elysia({
    .use(getIndex)
    .use(getChangelog)
 
-   .ws("/gateway", {
-      upgrade({ request, server }) {
-         return ws.handleUpgrade(request, server);
-      },
-   })
    .listen(
       {
          websocket: ws.websocket,
