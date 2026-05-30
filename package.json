@@ -10,10 +10,10 @@
    },
    "devDependencies": {
       "@types/bun": "latest",
-      "oxfmt": "^0.40.0",
+      "oxfmt": "^0.52.0",
       "oxlint": "^1.55.0",
       "release-please": "^16.18.0",
-      "typescript": "^5.9.3"
+      "typescript": "^6.0.3"
    },
    "trustedDependencies": [
       "electron",
