@@ -11,7 +11,7 @@
       "bun-dev": "bun ./src/index.ts"
    },
    "dependencies": {
-      "@dotenvx/dotenvx": "^1.51.2",
+      "@dotenvx/dotenvx": "^1.69.2",
       "@huginn/backend-shared": "workspace:*",
       "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
@@ -20,7 +20,7 @@
       "mediasoup": "^3.19.14"
    },
    "devDependencies": {
-      "@types/node": "^20.19.27",
+      "@types/node": "^25.9.1",
       "tsx": "^4.21.0"
    },
    "trustedDependencies": [
