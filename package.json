@@ -20,5 +20,6 @@
       "prisma",
       "sharp",
       "wrtc"
-   ]
+   ],
+   "packageManager": "pnpm@11.4.0"
 }
