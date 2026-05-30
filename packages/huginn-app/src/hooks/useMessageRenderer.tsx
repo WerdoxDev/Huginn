@@ -60,7 +60,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <SpoilerElement key={key}>{children}</SpoilerElement>;
             case "link":
                return (
-                  <LinkElement url={node.url} key={key}>
+                  <LinkElement url={node.url} key={key} noWrapping={noWrapping}>
                      {children}
                   </LinkElement>
                );

@@ -23,7 +23,7 @@ type MessageProviderProps = {
 };
 
 type MessageContextType = Omit<MessageProviderProps, "channelId"> & {
-   onReferencedMessageClick?: (messageId: Snowflake) => void | Promise<void>;
+   onReferencedMessageClick?: (messageId: Snowflake) => void;
 };
 
 export const MessageContext = createContext<MessageContextType>(undefined!);

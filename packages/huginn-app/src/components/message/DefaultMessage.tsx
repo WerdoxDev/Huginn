@@ -132,7 +132,7 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: (messageId: Snowflake) => Promise<void> }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: (messageId: Snowflake) => void }) {
    if (props.referencedMessage === null) {
       return (
          <div className="flex w-full items-center gap-x-1 pl-2 select-none">
@@ -149,8 +149,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: 
    return <ResolvedReplyRenderer referencedMessage={props.referencedMessage} onClick={props.onClick} />;
 }
 
-function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick?: (messageId: Snowflake) => Promise<void> }) {
-   const [isLoading, setIsLoading] = useState(false);
+function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick?: (messageId: Snowflake) => void }) {
    const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
@@ -167,11 +166,7 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const user = useUser(props.referencedMessage.authorId);
 
    function handleClick() {
-      const result = props.onClick?.(props.referencedMessage.id);
-      if (result instanceof Promise) {
-         setIsLoading(true);
-         result.finally(() => setIsLoading(false));
-      }
+      props.onClick?.(props.referencedMessage.id);
    }
 
    if (!user) return;
@@ -180,13 +175,12 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
       <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 text-nowrap">
                <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
             {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text shrink-0" />}
-            {isLoading && <LoadingIcon className="shrink-0" />}
          </div>
       </div>
    );
