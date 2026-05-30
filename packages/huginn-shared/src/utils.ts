@@ -1,6 +1,6 @@
 import type { MediaKind } from "mediasoup/types";
 
-import { sha256 } from "ohash";
+import { hash } from "ohash";
 
 import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
@@ -165,8 +165,8 @@ export type Merge<A, B> = {
 };
 
 export function getFileHash(data: ArrayBuffer): string {
-   const hash = sha256(new TextDecoder().decode(data)).substring(0, 32);
-   return hash;
+   const string = hash(data);
+   return string;
 }
 
 export function compareArrayBuffers(...arrayBuffers: ReadonlyArray<ArrayBuffer>): boolean {
