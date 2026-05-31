@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.1...backend-shared@v0.26.0) (2026-05-31)
+
+
+### Features
+
+* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
+
+
+### Bug Fixes
+
+* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+
 ## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.0...backend-shared@v0.25.1) (2026-05-28)
 
 

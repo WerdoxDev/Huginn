@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.15.0...cdn@v0.16.0) (2026-05-31)
+
+
+### Features
+
+* **cdn:** use bun's image class + cache control ([30c3d48](https://github.com/WerdoxDev/Huginn/commit/30c3d4802f2d0b61be36b0c80ac58471ada07ba0))
+
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.2...cdn@v0.15.0) (2026-05-21)
 
 
