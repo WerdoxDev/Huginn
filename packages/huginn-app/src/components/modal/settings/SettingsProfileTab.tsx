@@ -184,6 +184,8 @@ export default function SettingsProfileTab() {
       pendingAvatar !== undefined ||
       pendingBanner !== undefined;
 
+   if (!user) return;
+
    return (
       <div className="flex w-full items-center justify-center gap-x-5">
          <div className="relative w-full max-w-md">
@@ -253,8 +255,8 @@ export default function SettingsProfileTab() {
                      <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
                         <div className="border-surface-alt rounded-full border-4">
                            <UserAvatar
-                              userId={user?.id}
-                              avatarHash={user?.avatar}
+                              userId={user.id}
+                              avatarHash={user.avatar}
                               imageSrc={avatarOverride}
                               size={5.5}
                               hideStatus
@@ -269,8 +271,8 @@ export default function SettingsProfileTab() {
                         )}
                      </div>
                      <div className="flex max-w-60 flex-col pl-1">
-                        <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user?.displayName}</div>
-                        <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user?.username}</div>
+                        <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user.displayName}</div>
+                        <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user.username}</div>
                         {/* {user && (
                            <Suspense>
                               <CurrentUserBadges userId={user.id} />

@@ -1,4 +1,3 @@
-import LoadingIcon from "@components/LoadingIcon";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
@@ -11,7 +10,7 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
 import type { AppMessage, ProcessedAppMessage } from "@/types";
 
@@ -28,6 +27,8 @@ export default function DefaultMessage() {
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
    });
+
+   const [isHovering, setIsHovering] = useState(false);
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -63,6 +64,8 @@ export default function DefaultMessage() {
    return (
       <div
          ref={rootRef}
+         onMouseEnter={() => setIsHovering(true)}
+         onMouseLeave={() => setIsHovering(false)}
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
          data-context={contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined}
          className={clsx(
@@ -94,7 +97,7 @@ export default function DefaultMessage() {
                   className="cursor-pointer rounded-full"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
-                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} />
+                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
                </button>
                <button
                   type="button"

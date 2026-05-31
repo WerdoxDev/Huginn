@@ -12,7 +12,7 @@ import LoadingIcon from "./LoadingIcon";
 export default function ChannelIcon(props: {
    channelId: Snowflake;
    iconHash?: string | null;
-   size?: string;
+   size?: number;
    className?: string;
    cdnSize?: ImageSize;
    animatedMode?: AnimatedMode;
