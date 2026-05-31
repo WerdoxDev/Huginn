@@ -1,5 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import DialogBody from "@components/DialogBody";
+import LoadingBackground from "@components/LoadingBackground";
 import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
@@ -47,12 +48,7 @@ function ProfileBanner(props: { userId: string; banner?: string | null; bannerCo
                onError={onError}
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-            {(!isLoaded || hasError) && (
-               <div className={clsx(!hasError && "absolute inset-0", "bg-surface/40 flex h-full w-full items-center justify-center rounded-md")}>
-                  {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
-                  {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
-               </div>
-            )}
+            <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
          </div>
       );
    }

@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
 import HuginnMediaSlider from "./HuginnMediaSlider";
+import LoadingBackground from "./LoadingBackground";
 import LoadingIcon from "./LoadingIcon";
 import VolumeSlider from "./VolumeSlider";
 
@@ -124,14 +125,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
             onLoadedData={() => setIsLoaded(true)}
             onError={() => setHasError(true)}
          />
-         <Transition show={!isLoaded || hasError}>
-            <div
-               className={clsx("absolute inset-0", "bg-surface/40 flex h-full w-full items-center justify-center duration-200 data-closed:opacity-0")}
-            >
-               {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
-               {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
-            </div>
-         </Transition>
+         <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
          {isLoaded && !hasError && (
             <div
                onClick={(e) => e.stopPropagation()}

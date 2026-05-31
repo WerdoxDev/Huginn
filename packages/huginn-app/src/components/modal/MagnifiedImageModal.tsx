@@ -1,5 +1,6 @@
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import HuginnButton from "@components/button/HuginnButton";
+import ModalCloseButton from "@components/button/ModalCloseButton";
+import LoadingBackground from "@components/LoadingBackground";
 import { Transition } from "@headlessui/react";
 import { useOpen } from "@hooks/useOpen";
 import { clamp, constrainImageSize } from "@huginn/shared";
@@ -261,11 +262,7 @@ export default function MagnifiedImageModal() {
                   className="h-full w-full object-contain"
                   alt={modal.filename}
                />
-               <Transition show={!isLoaded}>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 duration-200 data-closed:opacity-0">
-                     <LoadingIcon className="size-16" />
-                  </div>
-               </Transition>
+               <LoadingBackground isLoaded={isLoaded} hasError={false} />
             </div>
          </div>
       </HuginnDialogPanel>
