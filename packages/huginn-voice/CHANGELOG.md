@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.0...voice@v0.16.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.1...voice@v0.16.0) (2026-05-21)
 
 

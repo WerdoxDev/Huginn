@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.3.0...native-addon@v0.4.0) (2026-05-31)
+
+
+### Features
+
+* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.2.0...native-addon@v0.3.0) (2026-05-21)
 
 

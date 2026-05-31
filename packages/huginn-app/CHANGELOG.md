@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.71.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.70.0...app@v0.71.0) (2026-05-31)
+
+
+### Features
+
+* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
+
+
+### Bug Fixes
+
+* **app:** appropiate size for user avatars and channel icons ([fba9d2e](https://github.com/WerdoxDev/Huginn/commit/fba9d2ee549eca7bf1c4f41272625fc32304a2de))
+* **app:** banner loading shouldn't overflow ([e02aef2](https://github.com/WerdoxDev/Huginn/commit/e02aef216675f3078020ca4c9b6468e4e57a2521))
+* **app:** cert files are only needed when in https mode ([19ad9cc](https://github.com/WerdoxDev/Huginn/commit/19ad9ccab96fdc0c1e6f368da83864362f475641))
+* **app:** gifs shouldn't play when not focused to client ([7b5fecd](https://github.com/WerdoxDev/Huginn/commit/7b5fecdc345f17468e50711045c58f2c37e199f9))
+* **app:** incorrect size on channel icons + tooltip wrong arrow positioning ([e5c694c](https://github.com/WerdoxDev/Huginn/commit/e5c694c3d5b81c38d6fc39b59098ee677dde0b22))
+* **app:** pinned messages oveflow on mobile ([4ef8c31](https://github.com/WerdoxDev/Huginn/commit/4ef8c313d32bda9cfd15417c8a40bdd3ee723ed4))
+* **app:** profile gifs should only play when hovering over the repective context ([cbc90e1](https://github.com/WerdoxDev/Huginn/commit/cbc90e1be4c5ee00bbf43ab0c056f8887ff922f7))
+* **app:** reply renderer username wrapping ([3ea0632](https://github.com/WerdoxDev/Huginn/commit/3ea06320376356a2c8e56a564d37b5b92b041b52))
+* **app:** update progress bar fixed at 50% ([4cec510](https://github.com/WerdoxDev/Huginn/commit/4cec5103d396eeb0a270bdf6a93e89feb10e44c5))
+* **app:** wrong z-index on channe call border ([cc7e2ae](https://github.com/WerdoxDev/Huginn/commit/cc7e2aea389efa3901eb7283051a75e9a4479549))
+* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+
 ## [0.70.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.3...app@v0.70.0) (2026-05-28)
 
 

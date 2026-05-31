@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.2...server@v0.36.0) (2026-05-31)
+
+
+### Features
+
+* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
+
+
+### Bug Fixes
+
+* **server:** forgoten token lastAuthenticated ([7a68771](https://github.com/WerdoxDev/Huginn/commit/7a687714f605d7087494ae60787ccb7102e0e4ea))
+
 ## [0.35.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.1...server@v0.35.2) (2026-05-28)
 
 
