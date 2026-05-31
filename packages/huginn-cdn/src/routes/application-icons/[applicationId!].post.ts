@@ -14,14 +14,11 @@ export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
          return invalidBody(status);
       }
 
-      const fileStream = file.stream();
       const { name } = extractFileInfo(file.name);
 
-      const { readable, writable } = new TransformStream();
+      const transformedFile = await transformImage(file, { format: "webp", width: 32, height: 32 });
 
-      await transformImage(fileStream, writable, "webp", undefined, 32, 32);
-
-      await storage.writeFile("application-icons", applicationId ?? "", `${name}.webp`, readable);
+      await storage.writeFile("application-icons", applicationId ?? "", `${name}.webp`, transformedFile);
 
       return status("Created", name);
    },

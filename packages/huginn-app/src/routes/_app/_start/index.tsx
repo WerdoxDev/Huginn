@@ -321,7 +321,7 @@ function IndexComponent() {
             {state.current === "update" && progress !== 0 && (
                <div className="mt-3 flex flex-col">
                   <div className="bg-surface-deep relative h-6 w-56 rounded-md p-0.5">
-                     <div className="bg-positive-600 h-full rounded-sm" style={{ width: `50%` }} />
+                     <div className="bg-positive-600 h-full rounded-sm" style={{ width: `${progress}%` }} />
                      <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-text px-2 py-1 text-xs">{updateProgressText}</div>
                      </div>

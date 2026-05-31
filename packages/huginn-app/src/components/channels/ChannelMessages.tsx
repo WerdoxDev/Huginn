@@ -128,7 +128,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
       return result;
    }, [props.channel?.lastMessageId, props.messages]);
 
-   const handleReferencedMessageClick = useCallback(
+   const jumpToReferencedMessage = useCallback(
       async (messageId: Snowflake) => {
          if (!client) return;
 
@@ -174,9 +174,9 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
       if (!jumpToMessageRequest) return;
       if (jumpToMessageRequest.channelId !== props.channel.id) return;
 
-      void handleReferencedMessageClick(jumpToMessageRequest.messageId);
+      void jumpToReferencedMessage(jumpToMessageRequest.messageId);
       clearJumpToMessageRequest();
-   }, [clearJumpToMessageRequest, handleReferencedMessageClick, jumpToMessageRequest, props.channel.id]);
+   }, [clearJumpToMessageRequest, jumpToReferencedMessage, jumpToMessageRequest, props.channel.id]);
 
    // Scroll to referenced message when it is loaded
    useEffect(() => {

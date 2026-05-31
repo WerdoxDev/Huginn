@@ -1,15 +1,17 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import HuginnLabel from "@components/HuginnLabel";
+import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
+import UserAvatar from "@components/UserAvatar";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import { getUserAvatarOptions, getUserBannerOptions } from "@lib/queries";
+import { getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -26,8 +28,7 @@ export default function SettingsProfileTab() {
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image/*");
 
-   const { data: originalAvatar } = useQuery(getUserAvatarOptions(user?.id, user?.avatar, client));
-   const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
+   const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
    const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
    const [bio, setBio] = useState(() => user?.bio ?? "");
@@ -171,14 +172,19 @@ export default function SettingsProfileTab() {
       setIsEditing(false);
    }
 
-   const displayAvatar = pendingAvatar !== undefined ? pendingAvatar : originalAvatar;
+   const avatarOverride = pendingAvatar !== undefined ? pendingAvatar : undefined;
+   const hasAvatarPreview = pendingAvatar !== undefined ? !!pendingAvatar : !!user?.avatar;
    const displayBanner = pendingBanner !== undefined ? pendingBanner : originalBanner;
+   const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
+   const isBannerTall = !!displayBanner || isImageBannerLoading;
    const hasChanges =
       bannerColor !== (user?.bannerColor ?? "") ||
       accentColor !== (user?.accentColor ?? "") ||
       bio !== (user?.bio ?? "") ||
       pendingAvatar !== undefined ||
       pendingBanner !== undefined;
+
+   if (!user) return;
 
    return (
       <div className="flex w-full items-center justify-center gap-x-5">
@@ -218,12 +224,16 @@ export default function SettingsProfileTab() {
             )}
 
             <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor || "transparent" }}>
-               <div className={clsx("group relative transition-all", showBanner ? (displayBanner ? "h-32" : "h-20") : "h-0")}>
+               <div className={clsx("group relative transition-all", showBanner ? (isBannerTall ? "h-32" : "h-20") : "h-0")}>
                   {displayBanner ? (
                      <>
                         <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                      </>
+                  ) : isImageBannerLoading ? (
+                     <div className="bg-surface/40 flex h-full w-full items-center justify-center">
+                        <LoadingIcon className="size-16" />
+                     </div>
                   ) : (
                      <>
                         <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
@@ -244,24 +254,25 @@ export default function SettingsProfileTab() {
                   <div className="flex flex-col gap-y-2">
                      <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
                         <div className="border-surface-alt rounded-full border-4">
-                           <div className="relative h-full w-full overflow-hidden rounded-full">
-                              {displayAvatar ? (
-                                 <img alt="user-avatar" className="size-22 object-cover" src={displayAvatar} />
-                              ) : (
-                                 <div className="bg-primary-700 size-22" />
-                              )}
-                           </div>
+                           <UserAvatar
+                              userId={user.id}
+                              avatarHash={user.avatar}
+                              imageSrc={avatarOverride}
+                              size={5.5}
+                              hideStatus
+                              animatedMode="always"
+                           />
                         </div>
                         {isEditing && (
                            <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
-                              {displayAvatar && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
+                              {hasAvatarPreview && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
                               <ImagePickerEditButton onClick={handleEditAvatar} />
                            </div>
                         )}
                      </div>
                      <div className="flex max-w-60 flex-col pl-1">
-                        <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user?.displayName}</div>
-                        <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user?.username}</div>
+                        <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user.displayName}</div>
+                        <div className="text-sm wrap-break-word whitespace-break-spaces text-white">{user.username}</div>
                         {/* {user && (
                            <Suspense>
                               <CurrentUserBadges userId={user.id} />

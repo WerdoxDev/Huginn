@@ -52,7 +52,7 @@ function OAuthRedirectComponent() {
    const { register, handleErrors, handleSubmit, formState, control } = useHuginnForm<Inputs>();
 
    const [shouldRender, setShouldRender] = useState(false);
-   const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, client));
+   const { data: originalAvatar } = useQuery(getUserAvatarOptions(decodedToken?.providerUserId, decodedToken?.avatarHash, 128, client));
    const [avatarData, setAvatarData] = useState<string | null>(null);
    const { validate } = useUniqueUsernameMessage(control);
 

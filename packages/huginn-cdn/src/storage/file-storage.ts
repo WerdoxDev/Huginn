@@ -12,17 +12,17 @@ export class FileStorage extends Storage {
       this.directory = directory;
    }
 
-   public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<ReadableStream | undefined> {
+   public async getFile(category: FileCategory, subDirectory: string, name: string): Promise<Blob | undefined> {
       try {
-         const file = Bun.file(join(this.directory, category, ...subDirectory.split("/"), name));
-
-         if (!(await file.exists())) {
+         if (!(await this.exists(category, subDirectory, name))) {
             logFileNotFound(category, subDirectory, name);
             return undefined;
          }
 
+         const file = Bun.file(join(this.directory, category, ...subDirectory.split("/"), name));
+
          logGetFile(category, subDirectory, name);
-         return file.stream();
+         return file;
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
          logFileNotFound(category, subDirectory, name);
@@ -30,11 +30,10 @@ export class FileStorage extends Storage {
       }
    }
 
-   public async writeFile(category: FileCategory, subDirectory: string, name: string, data: ReadableStream): Promise<boolean> {
+   public async writeFile(category: FileCategory, subDirectory: string, name: string, data: Blob): Promise<boolean> {
       logWriteFile(category, subDirectory, name);
       try {
-         const file = Bun.file(join(this.directory, category, ...subDirectory.split("/"), name));
-         await file.write(await Bun.readableStreamToArrayBuffer(data));
+         await Bun.write(join(this.directory, category, ...subDirectory.split("/"), name), data);
          return true;
       } catch (e) {
          console.error(this.name, "writeFile", e);

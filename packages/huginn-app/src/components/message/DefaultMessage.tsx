@@ -1,4 +1,3 @@
-import LoadingIcon from "@components/LoadingIcon";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
@@ -11,7 +10,7 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
 import type { AppMessage, ProcessedAppMessage } from "@/types";
 
@@ -28,6 +27,8 @@ export default function DefaultMessage() {
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
    });
+
+   const [isHovering, setIsHovering] = useState(false);
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -63,6 +64,8 @@ export default function DefaultMessage() {
    return (
       <div
          ref={rootRef}
+         onMouseEnter={() => setIsHovering(true)}
+         onMouseLeave={() => setIsHovering(false)}
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
          data-context={contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined}
          className={clsx(
@@ -94,7 +97,7 @@ export default function DefaultMessage() {
                   className="cursor-pointer rounded-full"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
-                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} />
+                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
                </button>
                <button
                   type="button"
@@ -132,7 +135,7 @@ export default function DefaultMessage() {
    );
 }
 
-function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: (messageId: Snowflake) => Promise<void> }) {
+function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: (messageId: Snowflake) => void }) {
    if (props.referencedMessage === null) {
       return (
          <div className="flex w-full items-center gap-x-1 pl-2 select-none">
@@ -149,8 +152,7 @@ function ReplyRenderer(props: { referencedMessage: AppMessage | null; onClick?: 
    return <ResolvedReplyRenderer referencedMessage={props.referencedMessage} onClick={props.onClick} />;
 }
 
-function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick?: (messageId: Snowflake) => Promise<void> }) {
-   const [isLoading, setIsLoading] = useState(false);
+function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; onClick?: (messageId: Snowflake) => void }) {
    const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
@@ -167,26 +169,21 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const user = useUser(props.referencedMessage.authorId);
 
    function handleClick() {
-      const result = props.onClick?.(props.referencedMessage.id);
-      if (result instanceof Promise) {
-         setIsLoading(true);
-         result.finally(() => setIsLoading(false));
-      }
+      props.onClick?.(props.referencedMessage.id);
    }
 
    if (!user) return;
 
    return (
-      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pl-2 select-none" onClick={handleClick}>
+      <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pr-2 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 text-nowrap">
                <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
             {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text shrink-0" />}
-            {isLoading && <LoadingIcon className="shrink-0" />}
          </div>
       </div>
    );

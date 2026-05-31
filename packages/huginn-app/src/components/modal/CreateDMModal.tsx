@@ -68,7 +68,7 @@ export default function CreateDMModal() {
       close();
    }
    return (
-      <HuginnDialogPanel className="max-w-md">
+      <HuginnDialogPanel className="lg:max-w-md">
          <DialogBody>
             <HuginnDialogTitle title="Create Direct Message" description="Select your fellow warrior(s) to share a tale with!" />
             <HuginnInput

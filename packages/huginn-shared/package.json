@@ -7,7 +7,7 @@
       "@sapphire/snowflake": "^3.5.3",
       "@std/encoding": "npm:@jsr/std__encoding",
       "file-type": "^22.0.1",
-      "ohash": "^1.1.4"
+      "ohash": "^2.0.11"
    },
    "devDependencies": {
       "@types/bun": "latest",

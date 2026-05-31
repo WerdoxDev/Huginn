@@ -5,14 +5,12 @@ import UserAvatar from "@components/UserAvatar";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { getUserBannerOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
-import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useMemo } from "react";
 
 export default function UserProfilePreview(props: { userId: Snowflake; className?: string; maxWidth?: number }) {
    const user = useUser(props.userId);
-   const { updateModals } = useModals();
    const client = useClient();
    const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
 
@@ -44,7 +42,7 @@ export default function UserProfilePreview(props: { userId: Snowflake; className
             user.bannerColor && <div className="absolute inset-0 h-full w-full" style={{ backgroundColor: `${user.bannerColor}` }} />
          )}
          <div className="bg-surface-alt z-10 rounded-full p-0.5">
-            <UserAvatar userId={props.userId} avatarHash={user.avatar} size={2.5} />
+            <UserAvatar userId={props.userId} avatarHash={user.avatar} size={2.5} animatedMode="always" />
          </div>
          <div className="z-10 flex w-full flex-col overflow-hidden rounded-md bg-black/50 px-2 py-1 backdrop-blur-sm">
             <div

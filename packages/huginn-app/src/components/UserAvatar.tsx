@@ -1,5 +1,6 @@
-import type { Snowflake } from "@huginn/shared";
+import type { ImageSize, Snowflake } from "@huginn/shared";
 
+import { useAnimatedImage } from "@hooks/useAnimatedImage";
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
@@ -7,14 +8,20 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
+import type { AnimatedMode } from "@/types";
+
 import LoadingIcon from "./LoadingIcon";
 
 export default function UserAvatar(props: {
    userId: Snowflake;
    avatarHash?: string | null;
+   imageSrc?: string | null;
    size?: number;
+   cdnSize?: ImageSize;
    className?: string;
    hideStatus?: boolean;
+   animatedMode?: AnimatedMode;
+   hovered?: boolean;
    test?: boolean;
 }) {
    const client = useClient();
@@ -24,6 +31,47 @@ export default function UserAvatar(props: {
    const presence = usePresence(props.userId);
    const [hasError, setHasError] = useState(false);
    const [isLoaded, setIsLoaded] = useState(false);
+
+   const { src, hoverHandlers } = useAnimatedImage({
+      id: props.userId,
+      hash: props.avatarHash,
+      imageSrc: props.imageSrc,
+      cdnSize: props.cdnSize,
+      animatedMode: props.animatedMode,
+      hovered: props.hovered,
+      normalUrl: props.avatarHash ? client?.cdn.avatar(props.userId, props.avatarHash) : undefined,
+      staticUrl: props.avatarHash
+         ? client?.cdn.avatar(props.userId, props.avatarHash, { format: "webp", size: props.cdnSize ?? 64, forceStatic: true })
+         : undefined,
+   });
+
+   // const [isHovered, setIsHovered] = useState(false);
+   // const isAnimatedAvatar = props.avatarHash?.startsWith("a_");
+   // const animatedMode = props.animatedMode ?? "hover";
+   // const isHoverControlled = props.hovered !== undefined;
+   // const hoverActive = isHoverControlled ? props.hovered : isHovered;
+
+   // const src = useMemo(() => {
+   //    if (props.imageSrc !== undefined) {
+   //       return props.imageSrc || undefined;
+   //    }
+
+   //    if (!props.avatarHash || !client) return undefined;
+
+   //    const modifiedUrl = client.cdn.avatar(props.userId, props.avatarHash, { format: "webp", size: props.cdnSize ?? 64, forceStatic: true });
+   //    const baseUrl = client.cdn.avatar(props.userId, props.avatarHash);
+
+   //    if (isAnimatedAvatar) {
+   //       if (animatedMode === "always") return client.cdn.avatar(props.userId, props.avatarHash);
+   //       if (animatedMode === "hover") {
+   //          return hoverActive ? baseUrl : modifiedUrl;
+   //       }
+
+   //       return modifiedUrl;
+   //    }
+
+   //    return modifiedUrl;
+   // }, [props.imageSrc, props.avatarHash, props.userId, props.cdnSize, client, isAnimatedAvatar, animatedMode, hoverActive]);
 
    function onLoad() {
       setIsLoaded(true);
@@ -50,9 +98,10 @@ export default function UserAvatar(props: {
       if (props.avatarHash && client) {
          window.electronAPI.saveImageToCache(client.cdn.avatar(props.userId, props.avatarHash, { size: 256, format: "png" }), props.avatarHash);
       }
-   }, [props.avatarHash]);
+   }, [props.avatarHash, props.imageSrc, props.userId, client, huginnWindow.environment]);
 
    const { size = 2.25, className } = props;
+   const hasImage = !!src;
    const statusSize = size / 4;
    const statusCenter = statusSize / 2;
    const cutoutRadius = statusCenter + size / 18;
@@ -62,27 +111,27 @@ export default function UserAvatar(props: {
    const maskStyle = !props.hideStatus ? { maskImage: maskGradient, WebkitMaskImage: maskGradient } : undefined;
 
    return (
-      <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }}>
+      <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
          <div className="relative h-full w-full" style={presence && presence.status !== "offline" ? maskStyle : undefined}>
-            {!isLoaded && props.avatarHash && (
+            {!isLoaded && hasImage && (
                <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
                   <LoadingIcon className="size-5" />
                </div>
             )}
-            {props.avatarHash ? (
+            {hasImage ? (
                <img
                   ref={imgRef}
                   onLoad={onLoad}
                   onError={onError}
                   alt="user-avatar"
-                  src={client?.cdn.avatar(props.userId, props.avatarHash)}
+                  src={src}
                   loading="lazy"
                   className="h-full w-full rounded-full object-cover"
                />
-            ) : !hasError && !props.avatarHash && !isLoaded ? (
-               <div className="bg-primary-700 h-full w-full rounded-full" />
+            ) : hasError ? (
+               <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
             ) : (
-               hasError && <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+               <div className="bg-primary-700 h-full w-full rounded-full" />
             )}
          </div>
          {!props.hideStatus && (

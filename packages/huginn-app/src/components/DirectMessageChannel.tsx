@@ -5,7 +5,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
-import { useMemo, type MouseEvent, type Ref } from "react";
+import { useMemo, useState, type MouseEvent, type Ref } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
@@ -26,6 +26,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const state = useRouterState();
 
    const isLoading = state.isLoading && state.location.pathname === `/channels/@me/${props.channel.id}`;
+   const [isHovered, setIsHovered] = useState(false);
 
    function handleLeave(e: MouseEvent) {
       e.preventDefault();
@@ -36,6 +37,8 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
       <li
          ref={props.ref}
          onContextMenu={(e) => openContextMenu(props.channel, e)}
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
          className={clsx("group relative flex shrink-0 cursor-pointer overflow-hidden rounded-md")}
          data-context={context?.isOpen && data?.id === props.channel.id ? true : undefined}
       >
@@ -50,9 +53,9 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
             params={{ channelId: props.channel.id }}
          >
             {props.channel.type === ChannelType.DM ? (
-               <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" />
+               <UserAvatar userId={recipients[0].id} avatarHash={recipients[0]?.avatar} className="mr-3" animatedMode="hover" hovered={isHovered} />
             ) : (
-               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" />
+               <ChannelIcon channelId={props.channel?.id} iconHash={props.channel?.icon} className="mr-3" animatedMode="hover" hovered={isHovered} />
             )}
             <div className="flex w-full flex-col justify-center overflow-hidden">
                <div

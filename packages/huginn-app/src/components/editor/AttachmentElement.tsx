@@ -43,6 +43,7 @@ export default function AttachmentElement(props: {
                   height={dimensions.height}
                   originalWidth={props.width ?? 0}
                   originalHeight={props.height ?? 0}
+                  contentType={props.contentType}
                   url={basedUrl}
                />
             ) : isVideo ? (

@@ -17,9 +17,10 @@ export const CONSTANTS = {
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
    HEARTBEAT_INTERVAL: 40000,
    HEARTBEAT_TOLERANCE: 15000,
-   ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024, 2_048, 4_096] as const,
+   ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,
+
    CHANNEL_NAME_MAX_LENGTH: 100,
    ATTACHMENT_MEDIA_MAX_WIDTH: 550,
    ATTACHMENT_MEDIA_MAX_HEIGHT: 350,

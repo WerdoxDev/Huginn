@@ -1,5 +1,4 @@
 import type { Snowflake } from "@huginn/shared";
-import type { MouseEvent } from "react";
 
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
@@ -7,6 +6,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
+import { type MouseEvent, useState } from "react";
 
 import type { AppUser } from "@/types";
 
@@ -21,6 +21,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
    const state = useMutationLatestState("create-dm-channel_recipient");
    const isMobile = useIsMobile();
    const { updateModals } = useModals();
+   const [isHovered, setIsHovered] = useState(false);
 
    function handleClick(e: MouseEvent<HTMLDivElement>) {
       if (isMobile) {
@@ -38,6 +39,8 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
       <div
          onContextMenu={open}
          onClick={handleClick}
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
          className={clsx(
             "group/recipient hover:bg-surface active:bg-surface data-context:bg-surface relative flex cursor-pointer items-center gap-x-3 rounded-md p-1.5",
          )}
@@ -46,6 +49,8 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
          <UserAvatar
             userId={props.recipient.id}
             avatarHash={props.recipient.avatar}
+            animatedMode="hover"
+            hovered={isHovered}
             className={clsx(
                (!presence || presence?.status === "offline") && "opacity-30",
                "group-hover/recipient:opacity-100 group-active/recipient:opacity-100 group-data-context/recipient:opacity-100",

@@ -11,6 +11,7 @@ import { usePresence, usePresenceStore } from "@stores/presenceStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useMutation } from "@tanstack/react-query";
 import clsx from "clsx";
+import { useState } from "react";
 
 import type { AppUser } from "@/types";
 
@@ -27,6 +28,7 @@ export default function UserInfo(props: { user: AppUser }) {
    const presence = usePresence(props.user.id);
    const { thisPresence } = usePresenceStore();
    const editSettingsMutation = useEditSettings();
+   const [isHovered, setIsHovered] = useState(false);
 
    const logoutMutation = useMutation({
       async mutationFn() {
@@ -51,8 +53,18 @@ export default function UserInfo(props: { user: AppUser }) {
       <div className="flex h-16 w-62 shrink-0 items-center lg:w-64">
          <HuginnMenu>
             <HuginnMenu.Trigger asChild>
-               <div className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5">
-                  <UserAvatar userId={props.user.id} avatarHash={props.user.avatar} className="mr-3 shrink-0" />
+               <div
+                  className="flex w-full cursor-pointer items-center rounded-xl px-2 py-1 hover:bg-white/5 active:bg-white/5"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+               >
+                  <UserAvatar
+                     userId={props.user.id}
+                     avatarHash={props.user.avatar}
+                     className="mr-3 shrink-0"
+                     animatedMode="hover"
+                     hovered={isHovered}
+                  />
 
                   <div className="mr-1 flex w-full flex-col items-start gap-y-0.5 overflow-hidden">
                      <div className="text-text w-full truncate text-sm">{props.user.displayName}</div>

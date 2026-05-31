@@ -29,6 +29,5 @@ export const fileTypes = {
    ogg: "audio/ogg",
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type FileFormats = keyof typeof fileTypes | (string & {});
 export type FileContentTypes = (typeof fileTypes)[keyof typeof fileTypes];

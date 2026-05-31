@@ -11,25 +11,48 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { RelationshipType } from "@huginn/shared";
-import { getRelationshipsOptions, getUserBannerOptions } from "@lib/queries";
+import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null }) {
-   const client = useClient();
-   const { data: bannerImage } = useQuery(getUserBannerOptions(props.userId, props.banner, client));
+   const [isLoaded, setIsLoaded] = useState(false);
+   const [hasError, setHasError] = useState(false);
 
-   if (bannerImage) {
+   const client = useClient();
+   // const { data: bannerImage } = useQuery(getUserBannerOptions(props.userId, props.banner, client));
+
+   function onLoad() {
+      setIsLoaded(true);
+   }
+
+   function onError() {
+      setHasError(true);
+   }
+
+   if (props.banner) {
       return (
          <div className="relative h-32 w-full overflow-hidden">
-            <img src={bannerImage} alt="profile-banner" className="h-full w-full object-cover" />
+            <img
+               src={client?.cdn.banner(props.userId, props.banner)}
+               alt="profile-banner"
+               className="h-full w-full object-cover"
+               onLoad={onLoad}
+               onError={onError}
+            />
             <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+            {(!isLoaded || hasError) && (
+               <div className={clsx(!hasError && "absolute inset-0", "bg-surface/40 flex h-full w-full items-center justify-center rounded-md")}>
+                  {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
+                  {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
+               </div>
+            )}
          </div>
       );
    }
@@ -108,7 +131,7 @@ function ProfileContent(props: { userId: string }) {
 
    return (
       <div
-         className="bg-surface-alt relative mb-2 flex flex-col overflow-hidden rounded-lg border-2"
+         className="bg-surface-alt relative mx-2 mb-2 flex flex-col overflow-hidden rounded-lg border-2 lg:mx-0 lg:mb-0"
          style={{ borderColor: accentColor || "transparent" }}
       >
          <ProfileBanner userId={user?.id} banner={user?.banner} bannerColor={bannerColor} />
@@ -118,7 +141,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} />
+                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} animatedMode="always" />
                   </div>
                </div>
                <div className="flex max-w-60 flex-col pl-1">

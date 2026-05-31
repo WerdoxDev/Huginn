@@ -64,7 +64,7 @@ export default function ImageCropModal() {
    }, [modal.isOpen]);
 
    return (
-      <HuginnDialogPanel>
+      <HuginnDialogPanel className="w-max">
          <div className="text-text/50 px-5 pt-4 pb-1 text-center text-sm italic">Scroll to zoom</div>
          <div
             className={`m-5 mt-1 flex max-h-[calc(100vh-12rem)] items-center justify-center overflow-hidden rounded-lg bg-black/50 ${isBanner ? "max-w-160" : "max-w-120"}`}

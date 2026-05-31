@@ -1,21 +1,25 @@
 import { storage } from "#setup";
 import { tryResolveImage } from "#utils/route-utils";
 import { globalPlugin } from "@huginn/backend-shared";
-import Elysia, { StatusMap } from "elysia";
+import Elysia, { StatusMap, t } from "elysia";
 
-export const getChannelIcon = new Elysia()
-   .use(globalPlugin)
-   .get("/cdn/channel-icons/:channelId/:iconHash", async ({ params: { channelId, iconHash }, global }) => {
-      const { mimeType, readable, cacheReadable } = await tryResolveImage("channel-icons", channelId, iconHash);
+const querySchema = t.Object({
+   size: t.Optional(t.Number()),
+});
 
-      global.waitUntil(async () => {
-         if (cacheReadable) {
-            await storage.writeFile("channel-icons", channelId, iconHash, cacheReadable);
-         }
-      });
+export const getChannelIcon = new Elysia().use(globalPlugin).get(
+   "/cdn/channel-icons/:channelId/:iconHash",
+   async ({ params: { channelId, iconHash }, query: { size }, global }) => {
+      const { file, transformation } = await tryResolveImage("channel-icons", channelId, iconHash, { width: size, height: size });
 
-      return new Response(readable, {
-         status: StatusMap["OK"],
-         headers: { "content-type": mimeType },
-      });
-   });
+      // Cache the file if it was transformed
+      if (transformation) {
+         global.waitUntil(async () => {
+            await storage.writeFile("channel-icons", channelId, transformation.key, file);
+         });
+      }
+
+      return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": file.type } });
+   },
+   { query: querySchema },
+);

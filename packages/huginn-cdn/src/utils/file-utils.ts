@@ -1,9 +1,9 @@
 import { storage } from "#setup";
 import { CDNErrorType, CDNError } from "@huginn/backend-shared";
 import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
-import { Readable, Writable } from "node:stream";
+// import { Readable, Writable } from "node:stream";
 import PQueue from "p-queue";
-import sharp from "sharp";
+// import sharp from "sharp";
 
 import type { FileCategory, FileInfo } from "./types";
 
@@ -24,18 +24,21 @@ export function extractFileInfo(filename: string): FileInfo {
    return { name, format, extension, mimeType };
 }
 
+/**
+ * Tries to find an image with the same name but different format.
+ */
 export async function findImageByName(category: FileCategory, subDirectory: string, name: string, wantedFormat: string) {
-   const formats = ["png", "jpeg", "jpg", "webp"];
+   const formats = ["png", "jpeg", "jpg", "webp", "gif"];
 
    let foundFile;
    for (const format of formats) {
       const filename = `${name}.${format}`;
 
-      const exists = await storage.exists(category, subDirectory, filename);
+      const existingFile = await storage.getFile(category, subDirectory, filename);
 
-      if (exists) {
+      if (existingFile) {
          foundFile = {
-            file: (await storage.getFile(category, subDirectory, filename)) as ReadableStream,
+            file: existingFile,
             info: extractFileInfo(filename),
          };
       }
@@ -47,89 +50,98 @@ export async function findImageByName(category: FileCategory, subDirectory: stri
 
    if (foundFile) {
       return foundFile;
+   } else {
+      throw new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND);
    }
-
-   throw new CDNError("findImageByName", CDNErrorType.FILE_NOT_FOUND);
 }
 
 export async function transformImage(
-   input: ReadableStream,
-   output: WritableStream,
-   format?: ImageFormats,
-   quality?: number,
-   width?: number,
-   height?: number,
-): Promise<void> {
-   return await queue.add(() => {
-      const nodeWritable = bunWritableToNode(output);
-      const nodeReadable = bunReadableToNode(input);
+   input: Blob,
+   options: {
+      width?: number;
+      height?: number;
+      quality?: number;
+      format?: ImageFormats;
+   },
+): Promise<Blob> {
+   return (await queue.add<Blob>(async () => {
+      // new Bun.Image(input);
+      // const arrayBuffer = input.;
+      let img = new Bun.Image(input);
 
-      let sharpInstance = sharp();
-      if ((width && !Number.isNaN(width)) || (height && !Number.isNaN(height))) {
-         sharpInstance = sharpInstance.resize({ width, height });
-      }
-
-      if (format) {
-         sharpInstance = sharpInstance.toFormat(format, {
-            lossless: !quality || quality === 100,
-            quality: quality !== 100 && !Number.isNaN(quality) ? quality : undefined,
-         });
-      }
-
-      nodeReadable.pipe(sharpInstance).pipe(nodeWritable);
-   });
-}
-
-function bunReadableToNode(input: ReadableStream) {
-   const reader = input.getReader();
-   const nodeReadable = new Readable({ read() {} });
-
-   (async () => {
-      try {
-         while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
+      if (options.format) {
+         switch (options.format) {
+            case "jpeg":
+            case "jpg":
+               img = img.jpeg({ quality: options.quality });
                break;
-            }
-            nodeReadable.push(value);
+            case "png":
+               img = img.png({ compressionLevel: options.quality ? Math.round((9 * (100 - options.quality)) / 100) : undefined });
+               break;
+            case "webp":
+               img = img.webp({ quality: options.quality });
+               break;
          }
-         nodeReadable.push(null);
-      } catch (err) {
-         nodeReadable.destroy(err as Error);
       }
-   })();
 
-   return nodeReadable;
+      if (options.width) {
+         img = img.resize(options.width, options.height, { fit: "inside" });
+      }
+
+      return await img.blob();
+   })) as Blob;
 }
 
-function bunWritableToNode(input: WritableStream) {
-   const writer = input.getWriter();
+// function bunReadableToNode(input: ReadableStream) {
+//    const reader = input.getReader();
+//    const nodeReadable = new Readable({ read() {} });
 
-   return new Writable({
-      async write(chunk, encoding, callback) {
-         try {
-            await writer.write(chunk);
-            callback();
-         } catch (err) {
-            callback(err as Error);
-         }
-      },
-      async final(callback) {
-         try {
-            await writer.close();
-            callback();
-         } catch (err) {
-            callback(err as Error);
-         }
-      },
-      destroy(error, callback) {
-         try {
-            if (error) {
-               writer.abort(error);
-            }
-            // oxlint-disable-next-line no-unused-vars
-         } catch (e) {}
-         callback();
-      },
-   });
-}
+//    (async () => {
+//       try {
+//          while (true) {
+//             const { done, value } = await reader.read();
+//             if (done) {
+//                break;
+//             }
+//             nodeReadable.push(value);
+//          }
+//          nodeReadable.push(null);
+//       } catch (err) {
+//          nodeReadable.destroy(err as Error);
+//       }
+//    })();
+
+//    return nodeReadable;
+// }
+
+// function bunWritableToNode(input: WritableStream) {
+//    const writer = input.getWriter();
+
+//    return new Writable({
+//       async write(chunk, encoding, callback) {
+//          try {
+//             await writer.write(chunk);
+//             callback();
+//          } catch (err) {
+//             callback(err as Error);
+//          }
+//       },
+//       async final(callback) {
+//          try {
+//             await writer.close();
+//             callback();
+//          } catch (err) {
+//             callback(err as Error);
+//          }
+//       },
+//       destroy(error, callback) {
+//          try {
+//             if (error) {
+//                writer.abort(error);
+//             }
+//             // oxlint-disable-next-line no-unused-vars
+//          } catch (e) {}
+//          callback();
+//       },
+//    });
+// }
