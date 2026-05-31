@@ -1,13 +1,12 @@
 {
    "name": "huginn-app-react",
-   "version": "0.71.0",
+   "version": "0.71.1",
    "description": "Huginn Desktop Application",
    "author": {
       "name": "Matin Tat",
       "email": "matin.tat85@gmail.com",
       "url": "https://github.com/WerdoxDev"
    },
-   
    "repository": {
       "url": "https://github.com/WerdoxDev/Huginn"
    },

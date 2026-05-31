@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.71.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.0...app@v0.71.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* **app:** force an update ([d20918f](https://github.com/WerdoxDev/Huginn/commit/d20918fb2833e1d7174779f617772e746935000d))
+
 ## [0.71.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.70.0...app@v0.71.0) (2026-05-31)
 
 
