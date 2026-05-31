@@ -1,40 +1,36 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.3.14-alpine AS base
-LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
+FROM node:24-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
+RUN corepack enable
 WORKDIR /src
 
 # install dependencies into temp directory
-# this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/deps
-COPY package.json bun.lock bunfig.toml .npmrc /temp/deps/
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc /temp/deps/
 COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-backend-shared/package.json
 COPY packages/huginn-runtime-shared/package.json /temp/deps/packages/huginn-runtime-shared/package.json
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-cdn/package.json /temp/deps/packages/huginn-cdn/package.json
-RUN cd /temp/deps && bun install
-# RUN ls -lah /temp/deps && tree /temp/deps
 
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/deps/node_modules node_modules
-# COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packages/huginn-backend-shared/node_modules
-# COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules
-# COPY --from=install /temp/deps/packages/huginn-cdn/node_modules packages/huginn-cdn/node_modules
+RUN cd /temp/deps && pnpm install --frozen-lockfile --ignore-scripts
+
+FROM oven/bun:1.3.14-alpine AS prerelease
+LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
+WORKDIR /src
+
 COPY . /src
+COPY --from=install /temp/deps/node_modules node_modules
+COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packages/huginn-backend-shared/node_modules
+COPY --from=install /temp/deps/packages/huginn-runtime-shared/node_modules packages/huginn-runtime-shared/node_modules
+COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules
+COPY --from=install /temp/deps/packages/huginn-cdn/node_modules packages/huginn-cdn/node_modules
+
 RUN cd packages/huginn-backend-shared && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# run the app
-# RUN mkdir -p packages/huginn-cdn/uploads
-# RUN chown -R bun:bun packages/huginn-cdn/uploads
-# RUN chown -R bun:bun packages/huginn-cdn/package.json
-# RUN chmod 755 packages/huginn-cdn/uploads
-# RUN chmod 755 packages/huginn-server/package.json
-# USER bun
 EXPOSE 3002/tcp
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["packages/huginn-cdn", "cdn"]

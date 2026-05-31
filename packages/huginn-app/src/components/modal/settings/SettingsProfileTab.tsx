@@ -1,6 +1,7 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import HuginnLabel from "@components/HuginnLabel";
+import LoadingBackground from "@components/LoadingBackground";
 import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
@@ -230,16 +231,15 @@ export default function SettingsProfileTab() {
                         <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                      </>
-                  ) : isImageBannerLoading ? (
-                     <div className="bg-surface/40 flex h-full w-full items-center justify-center">
-                        <LoadingIcon className="size-16" />
-                     </div>
                   ) : (
-                     <>
-                        <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                     </>
+                     !isImageBannerLoading && (
+                        <>
+                           <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
+                           <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
+                        </>
+                     )
                   )}
+                  <LoadingBackground hasError={false} isLoaded={!isImageBannerLoading} />
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
                         {displayBanner && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}

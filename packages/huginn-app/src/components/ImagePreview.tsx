@@ -6,6 +6,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
+import LoadingBackground from "./LoadingBackground";
 import LoadingIcon from "./LoadingIcon";
 
 export default function ImagePreview(props: {
@@ -63,7 +64,7 @@ export default function ImagePreview(props: {
    }
 
    return (
-      <>
+      <div className="relative overflow-hidden rounded-md" style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}>
          <img
             crossOrigin={useCors ? undefined : "anonymous"}
             onContextMenu={(e) => open({ message: context.message, imgRef }, e)}
@@ -74,21 +75,9 @@ export default function ImagePreview(props: {
             src={src}
             alt={props.filename}
             onClick={onClick}
-            className={clsx("cursor-pointer overflow-hidden rounded-md object-contain", hasError && "hidden")}
-            style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
+            className={clsx("h-full w-full cursor-pointer overflow-hidden object-contain", hasError && "hidden")}
          />
-         <Transition show={!isLoaded || hasError}>
-            <div
-               className={clsx(
-                  !hasError && "absolute inset-0",
-                  "bg-surface/40 flex items-center justify-center rounded-md duration-200 data-closed:opacity-0",
-               )}
-               style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
-            >
-               {!isLoaded && !hasError && <LoadingIcon className="size-16" />}
-               {hasError && <IconMingcuteWarningFill className="text-negative-100 size-16" />}
-            </div>
-         </Transition>
-      </>
+         <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
+      </div>
    );
 }

@@ -1,8 +1,10 @@
-import { runMediasoupWorker } from "#mediasoup";
+import "dotenv/config";
 import { readEnv } from "@huginn/runtime-shared";
 import { defineHooks } from "crossws";
 import { serve } from "crossws/server";
 import Elysia from "elysia";
+
+import { runMediasoupWorker } from "#mediasoup";
 
 import { VoiceWebsocket } from "./voice-websocket";
 

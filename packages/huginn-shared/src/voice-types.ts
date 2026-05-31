@@ -1,5 +1,5 @@
 import type { types } from "mediasoup";
-import type { DtlsParameters, IceCandidate, IceParameters, ProducerType, RtpCapabilities, RtpParameters } from "mediasoup/types";
+import type { DtlsParameters, IceCandidate, IceParameters, RtpCapabilities, RtpParameters } from "mediasoup/types";
 
 import type { Snowflake } from "./snowflake";
 

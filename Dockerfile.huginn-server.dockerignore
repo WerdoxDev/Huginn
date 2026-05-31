@@ -17,8 +17,7 @@
 **/.vscode
 **/Makefile
 **/helm-charts
-**/.env
-*.env
+**/.env*
 **/.editorconfig
 **/.idea
 **/coverage*
