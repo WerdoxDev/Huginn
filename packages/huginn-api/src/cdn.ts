@@ -23,6 +23,10 @@ export class CDN {
       return this.dynamicMakeURL(`/channel-icons/${id}/${hash}`, hash, options);
    }
 
+   public emoji(name: string): string {
+      return this.makeURL(`/emoji/${name}`, { format: "svg" });
+   }
+
    /**
     * Constructs the URL for the resource, checking whether or not `hash` starts with `a_` if `dynamic` is set to `true`.
     *
@@ -43,11 +47,11 @@ export class CDN {
    public makeURL(route: string, { format = "webp", size }: Readonly<ImageURLOptions> = {}): string {
       format = String(format).toLowerCase() as ImageFormats;
 
-      if (!CONSTANTS.ALLOWED_IMAGE_FORMATS.includes(format)) {
+      if (CONSTANTS.ALLOWED_IMAGE_FORMATS.indexOf(format) === -1) {
          throw new RangeError(`Invalid format provided: ${format}\nMust be one of: ${CONSTANTS.ALLOWED_IMAGE_FORMATS.join(", ")}`);
       }
 
-      if (size && !CONSTANTS.ALLOWED_IMAGE_SIZES.includes(size)) {
+      if (size && CONSTANTS.ALLOWED_IMAGE_SIZES.indexOf(size) === -1) {
          throw new RangeError(`Invalid size provided: ${size}\nMust be one of: ${CONSTANTS.ALLOWED_IMAGE_SIZES.join(", ")}`);
       }
 
