@@ -56,7 +56,22 @@ type AttachmentElement = {
    contentType: string;
 };
 
-type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement | AttachmentElement | InlineCodeElement;
+export type EmojiElement = {
+   type: "emoji";
+   emojiId: string;
+   emoji: string;
+   children: Descendant[];
+};
+
+type CustomElement =
+   | ParagraphElement
+   | SpoilerElement
+   | EmbedElement
+   | LinkElement
+   | CodeElement
+   | AttachmentElement
+   | InlineCodeElement
+   | EmojiElement;
 
 type TextFormats = {
    bold?: boolean;

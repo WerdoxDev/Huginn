@@ -1,4 +1,5 @@
 import EditorLeaf from "@components/editor/EditorLeaf";
+import EmojiElement from "@components/editor/EmojiElement";
 import { markdownMainEditor } from "@lib/markdown-main";
 import { markdownSpoiler } from "@lib/markdown-spoiler";
 import { markdownUnderline } from "@lib/markdown-underline";
@@ -23,8 +24,67 @@ import type { HuginnToken } from "@/types";
 
 let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
 
+function withHuginn(editor: Editor) {
+   const { isInline, insertText, isVoid } = editor;
+
+   editor.isInline = (element) => {
+      return element.type === "emoji" || isInline(element);
+   };
+
+   editor.isVoid = (element) => {
+      return element.type === "emoji" || isVoid(element);
+   };
+
+   editor.insertText = (text) => {
+      if (checkAndInsertEmojis(editor, text, insertText)) {
+         return;
+      }
+      insertText(text);
+   };
+
+   return editor;
+}
+
+function checkAndInsertEmojis(editor: Editor, text: string, insertText: (text: string) => void) {
+   const matches = text.matchAll(
+      /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/gu,
+   );
+
+   let lastIndex = 0;
+   for (const match of matches) {
+      const matchStart = match.index ?? 0;
+      const matchEnd = matchStart + match[0].length;
+
+      if (matchStart > lastIndex) {
+         insertText(text.slice(lastIndex, matchStart));
+      }
+
+      insertEmoji(editor, match[0]);
+
+      lastIndex = matchEnd;
+   }
+   if (lastIndex < text.length) {
+      insertText(text.slice(lastIndex));
+   }
+
+   return !!matches;
+}
+
+function insertEmoji(editor: Editor, text: string) {
+   const emojiId = [...text].map((x) => x.codePointAt(0)?.toString(16)).join("-");
+   const emoji: Element = {
+      type: "emoji",
+      emojiId: emojiId,
+      emoji: text,
+      children: [{ text: "" }],
+   };
+
+   editor.insertNodes(emoji);
+   editor.move({ unit: "offset" });
+}
+
 export function usePreviewMessageRenderer() {
-   const editor = useMemo(() => withReact(createEditor()), []);
+   const editor = useMemo(() => withHuginn(withReact(createEditor())), []);
    const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
@@ -32,7 +92,12 @@ export function usePreviewMessageRenderer() {
    }, []);
 
    const renderElement = useCallback((props: RenderElementProps) => {
-      return <DefaultElement {...props} />;
+      switch (props.element.type) {
+         case "emoji":
+            return <EmojiElement {...props} />;
+         default:
+            return <DefaultElement {...props} />;
+      }
    }, []);
 
    function getAllChildren() {

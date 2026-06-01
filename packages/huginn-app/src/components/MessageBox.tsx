@@ -56,7 +56,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       // Clear attachments and reset local state for new channel
       clearAttachments();
       resetState();
-      console.log("RESET");
 
       if (isMobile || !editor) return;
 
@@ -81,7 +80,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
-      <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 lg:px-5" ref={containerRef}>
+      <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 select-text lg:px-5" ref={containerRef}>
          <DraggingIndicator isDragging={dragging} />
          {/* <form className="w-full"> */}
          <div
