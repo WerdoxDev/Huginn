@@ -1,3 +1,8 @@
+import cors from "@elysiajs/cors";
+import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
+import consola from "consola";
+import Elysia from "elysia";
+
 import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
 import { getApplicationIcon } from "#routes/application-icons/[applicationId!]/[iconHash].get";
 import { postMessageAttachment } from "#routes/attachments/[channelId]/[messageId].post";
@@ -8,11 +13,8 @@ import { postUserBanner } from "#routes/banners/[userId].post";
 import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
+import { getEmoji } from "#routes/emoji/[name].get";
 import { envs } from "#setup";
-import cors from "@elysiajs/cors";
-import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
-import consola from "consola";
-import Elysia from "elysia";
 
 import { getIndex } from "./routes";
 
@@ -53,9 +55,12 @@ export const main = new Elysia({})
    .onAfterHandle(({ request, set }) => {
       const url = new URL(request.url);
 
-      if (/\.(jpg|jpeg|png|webp|gif|svg|ico|woff2|js|css)$/i.test(url.pathname)) {
+      if (/(avatars|channel-icons|banners)/i.test(url.pathname)) {
          set.headers["Vary"] = "Accept-Encoding";
          set.headers["Cache-Control"] = "private, max-age=31536000";
+      } else if (/(emoji)/i.test(url.pathname)) {
+         set.headers["Vary"] = "Accept-Encoding";
+         set.headers["Cache-Control"] = "private, max-age=31536000, immutable";
       }
    })
    .use(getUserAvatar)
@@ -64,6 +69,7 @@ export const main = new Elysia({})
    .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
+   .use(getEmoji)
 
    .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
       consola.box(`Listening on ${server.hostname}:${server.port}`);
