@@ -22,6 +22,7 @@ const certFile = isHttps ? fs.readFileSync("./certs/cert.pem") : undefined;
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
+   const isElectronDev = mode === "electron-dev";
    const isCapacitor = mode === "capacitor";
    const base = isElectron ? "./" : isCapacitor ? "/" : "/app";
    return {
@@ -92,7 +93,7 @@ export default defineConfig(({ mode }) => {
 
       define: {
          __APP_VERSION__: JSON.stringify(version.toString()),
-         __IS_ELECTRON__: JSON.stringify(isElectron),
+         __IS_ELECTRON__: JSON.stringify(isElectron || isElectronDev),
       },
 
       resolve: {

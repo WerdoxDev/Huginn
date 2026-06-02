@@ -1,6 +1,6 @@
 import { type Snowflake } from "@huginn/shared";
 import { listenEvent } from "@lib/event-handler";
-import { useChannelReadState } from "@stores/readStatesStore";
+import { useChannelReadState } from "@stores/readStateStore";
 import { useThisUser } from "@stores/userStore";
 import { useEffect, useState } from "react";
 

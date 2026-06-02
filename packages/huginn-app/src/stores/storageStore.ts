@@ -1,18 +1,17 @@
-import { StorageController } from "@lib/storage-controller";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
 import type { ClientInfo, StorageMap, FileType } from "@/types";
 
+import { BridgeStorage } from "../../shared/bridge-storage";
+import { LocalStorage } from "../../shared/local-storage";
+import { StorageController } from "../../shared/storage-controller";
 import { clientStore } from "./clientStore";
 
-const storage = new StorageController(window.electronAPI ? "electron" : "web");
+const storage = new StorageController(window.electronAPI ? new BridgeStorage() : new LocalStorage());
 const initialStore = () => ({
-   storage: storage,
    cache: {} as StorageMap,
 });
-
-type StoreType = ReturnType<typeof initialStore>;
 
 const store = createStore(
    subscribeWithSelector(
@@ -42,19 +41,12 @@ const store = createStore(
    ),
 );
 
-export async function initializeStorage() {
+export async function initStorageStoreEarly() {
    const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
    const cache = {} as StorageMap;
 
-   // Setup client info when needed
-   const value = await storage.loadFile("client-info");
-   if (value.created || !value.data.id) {
-      const data = value.data as ClientInfo;
-      if (window.isSecureContext) data.id = window.crypto.randomUUID();
-      await storage.saveFile("client-info", data);
-   }
-
    await storage.checkFiles();
+   await storage.setupClientInfo();
 
    for (const key of keys) {
       const value = await storage.loadFile(key);
@@ -67,7 +59,7 @@ export async function initializeStorage() {
    store.setState({ cache: cache });
 }
 
-export function initializeStorage2() {
+export function initStorageStoreClient() {
    const client = clientStore.getState().client;
 
    const unlisten = client?.gateway.listen("ready", async () => {

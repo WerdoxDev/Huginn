@@ -10,7 +10,7 @@ import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { getChannelComputedName } from "@lib/query-utils";
 import { convertToAppDirectChannel } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
-import { useReadStates } from "@stores/readStatesStore";
+import { useReadStates } from "@stores/readStateStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useEffect } from "react";

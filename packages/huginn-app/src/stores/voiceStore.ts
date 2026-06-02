@@ -101,7 +101,7 @@ const store = createStore(
    ),
 );
 
-export function initializeVoice() {
+export function initVoiceStore() {
    log("app:voice-store", "default", "initializing");
 
    const client = clientStore.getState().client;
@@ -197,37 +197,6 @@ export function initializeVoice() {
          store.setState({ voiceState: d });
       }),
    );
-
-   // unlisteners.push(voiceClient.listenToVoiceEvents());
-
-   // unlisteners.push(
-   //    client.voice.listen("local_voice_state_changed", (d) => {
-   //       log("app:voice-store", "voice-recv", "update", "am:", d.isAudioMuted, "ap:", d.isAudioPaused, "cm:", d.isAudioDeafened, "s:", d.isStreaming);
-
-   //       if (!client?.user) {
-   //          return;
-   //       }
-
-   //       const thisStore = store.getState();
-
-   //       // If we have a mic producer, manage it's state
-   //       const producer = client.voice.producers.get("microphone");
-   //       if (producer) {
-   //          if (d.isAudioMuted || d.isAudioPaused) {
-   //             thisStore.updateSpeakingState(client.user.id, false);
-   //          } else if (!d.isAudioMuted && !d.isAudioPaused) {
-   //             thisStore.updateSpeakingState(client.user.id, true);
-   //          }
-   //       }
-
-   //       thisStore.updateLocalVoiceState({
-   //          isAudioDeafened: d.isAudioDeafened,
-   //          isCameraOn: d.isCameraOn,
-   //          isAudioMuted: d.isAudioMuted,
-   //          isStreaming: d.isStreaming,
-   //       });
-   //    }),
-   // );
 
    return () => {
       log("app:voice-store", "default", "uninitialize");

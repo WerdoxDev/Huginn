@@ -3,9 +3,13 @@ import { logger } from "@huginn/shared";
 
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
+import { initAnalytics } from "@lib/analytics";
 import { clientStore } from "@stores/clientStore";
-import { initializeStorage, storageStore } from "@stores/storageStore";
+import { initStorageStoreEarly, storageStore } from "@stores/storageStore";
+import { initWindowStore } from "@stores/windowStore";
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
 import { RemoteLogger } from "../shared/remote-logger";
@@ -51,7 +55,9 @@ logger.excludeEventLogs({ "app:voice-store": ["speaking-state"] });
 logger.setIsRaw(import.meta?.env?.PROD ?? false);
 let _remoteLogger: RemoteLogger;
 
-await initializeStorage();
+await initStorageStoreEarly();
+await initWindowStore();
+initAnalytics();
 
 if (window.electronAPI) {
    logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
@@ -88,5 +94,9 @@ const rootElement = document.getElementById("root")!;
 
 if (!rootElement.innerHTML) {
    const root = createRoot(rootElement);
-   root.render(<RouterProvider router={router} />);
+   root.render(
+      <PostHogProvider client={posthog}>
+         <RouterProvider router={router} />
+      </PostHogProvider>,
+   );
 }

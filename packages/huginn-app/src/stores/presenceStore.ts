@@ -39,12 +39,9 @@ const store = createStore(
    })),
 );
 
-export function initializePresence() {
+export function initPresenceStore() {
    const client = clientStore.getState().client;
-
-   if (!client) {
-      return;
-   }
+   if (!client) return;
 
    const unlisten = client.gateway.listen("ready", async (d) => {
       const thisStore = store.getState();

@@ -21,7 +21,7 @@ const store = createStore(
    ),
 );
 
-export function initializeUser() {
+export function initUserStore() {
    const client = clientStore.getState().client;
    if (!client) {
       return;

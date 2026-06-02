@@ -11,7 +11,7 @@ import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateApp
 import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useReadStates } from "@stores/readStatesStore";
+import { useReadStates } from "@stores/readStateStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { type InfiniteData, notifyManager, useQueryClient } from "@tanstack/react-query";

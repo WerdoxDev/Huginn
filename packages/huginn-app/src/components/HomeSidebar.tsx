@@ -2,7 +2,7 @@ import type { Snowflake } from "@huginn/shared";
 
 import { usePinnedChannels } from "@hooks/usePinnedChannels";
 import { useModals } from "@stores/modalsStore";
-import { useReadStates } from "@stores/readStatesStore";
+import { useReadStates } from "@stores/readStateStore";
 import { useParams } from "@tanstack/react-router";
 import { animate, createAnimatable, createScope, Scope, spring, type AnimatableObject } from "animejs";
 import clsx from "clsx";

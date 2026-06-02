@@ -1,6 +1,6 @@
 import { getChannelsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
-import { useReadStates } from "@stores/readStatesStore";
+import { useReadStates } from "@stores/readStateStore";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useMemo } from "react";

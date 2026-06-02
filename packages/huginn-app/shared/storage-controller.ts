@@ -1,17 +1,28 @@
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
 
-import { storageDefaults } from "../../shared/storage-defaults";
-import { LocalStorageController } from "./local-storage-controller";
+import type { StorageAdapter } from "./storage-adapter";
 
-export class StorageController {
-   private storageType: "electron" | "web";
-   private localStorageController?: LocalStorageController;
+import { storageDefaults } from "./storage-defaults";
 
-   constructor(storageType: "electron" | "web") {
-      this.storageType = storageType;
+export class StorageController<A extends StorageAdapter> {
+   public adapter: A;
 
-      if (storageType === "web") {
-         this.localStorageController = new LocalStorageController();
+   constructor(adapter: A) {
+      this.adapter = adapter;
+   }
+
+   public async setupClientInfo() {
+      const value = await this.loadFile("client-info");
+      if (value.created || !value.data.id) {
+         const data = value.data;
+
+         if (typeof window !== "undefined" && window.isSecureContext) data.id = window.crypto.randomUUID();
+         else {
+            const crypto = await import("node:crypto");
+            data.id = crypto.randomUUID();
+         }
+
+         await this.saveFile("client-info", data);
       }
    }
 
@@ -52,18 +63,10 @@ export class StorageController {
    }
 
    public async loadFile<K extends FileType>(type: K): Promise<LoadFileResult<K>> {
-      if (this.storageType === "electron") {
-         return await window.electronAPI.loadFile(type);
-      } else {
-         return this.localStorageController!.loadItem(type);
-      }
+      return await this.adapter!.loadFile(type);
    }
 
    public async saveFile<K extends FileType>(type: K, data: StorageMap[K]): Promise<SaveFileResult> {
-      if (this.storageType === "electron") {
-         return await window.electronAPI.saveFile(type, data);
-      } else {
-         return this.localStorageController!.saveItem(type, data);
-      }
+      return await this.adapter!.saveFile(type, data);
    }
 }
