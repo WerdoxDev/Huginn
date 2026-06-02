@@ -1,8 +1,5 @@
 import type { Endpoints } from "@octokit/types";
-import type { Octokit } from "octokit";
 
-import { octokit, resend } from "#setup";
-import { envs } from "#setup";
 import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import {
@@ -23,6 +20,9 @@ import {
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
+
+import { octokit, resend } from "#setup";
+import { envs } from "#setup";
 
 import { cdnUpload } from "./server-request";
 

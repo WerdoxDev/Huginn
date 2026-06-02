@@ -1,3 +1,9 @@
+import { cors } from "@elysiajs/cors";
+import { staticPlugin } from "@elysiajs/static";
+import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import consola from "consola";
+import Elysia from "elysia";
+
 import { getAllReleases } from "#routes/all-releases.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
 import { getKnownApplications } from "#routes/applications/known.get";
@@ -47,16 +53,8 @@ import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { getUser } from "#routes/users/[userId].get";
 import { getUserProfile } from "#routes/users/[userId]/profile.get";
 import { envs } from "#setup";
-import { fromTypes, openapi } from "@elysia/openapi";
-import { cors } from "@elysiajs/cors";
-import { staticPlugin } from "@elysiajs/static";
-import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
-import consola from "consola";
-import Elysia from "elysia";
 
 import { getIndex } from "./routes";
-
-// console.log(envs.AXIOM_DATASET, envs.AXIOM_TOKEN);
 
 export const app = new Elysia({
    cookie: {
