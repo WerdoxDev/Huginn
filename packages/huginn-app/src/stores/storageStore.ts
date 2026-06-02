@@ -1,15 +1,17 @@
+import { analyticsShim } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import type { ClientInfo, StorageMap, FileType } from "@/types";
+import type { StorageMap, FileType } from "@/types";
 
 import { BridgeStorage } from "../../shared/bridge-storage";
 import { LocalStorage } from "../../shared/local-storage";
 import { StorageController } from "../../shared/storage-controller";
 import { clientStore } from "./clientStore";
 
-const storage = new StorageController(window.electronAPI ? new BridgeStorage() : new LocalStorage());
+const storage = new StorageController(window.electronAPI ? new BridgeStorage(analyticsShim) : new LocalStorage(analyticsShim));
 const initialStore = () => ({
+   storage: storage,
    cache: {} as StorageMap,
 });
 

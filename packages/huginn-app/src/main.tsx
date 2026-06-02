@@ -3,7 +3,7 @@ import { logger } from "@huginn/shared";
 
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { initAnalytics } from "@lib/analytics";
+import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
 import { initStorageStoreEarly, storageStore } from "@stores/storageStore";
 import { initWindowStore } from "@stores/windowStore";

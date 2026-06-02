@@ -1,7 +1,7 @@
-import { error, log, logger, type LogArgs } from "@huginn/shared";
+import { analytics, analyticsShim, error, initAnalytics, log, type LogArgs } from "@huginn/shared";
+import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
 import { Tray, app, Menu, ipcMain } from "electron";
 import updater from "electron-updater";
-import { randomUUID } from "node:crypto";
 import path from "node:path";
 
 import { ElectronStorage } from "../shared/electron-storage";
@@ -22,7 +22,7 @@ export class HuginnApp {
 
    public constructor(allowedToRun: boolean) {
       this.allowedToRun = allowedToRun;
-      this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev"));
+      this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev", analyticsShim));
       this.cache = new CacheController();
       this.configureUpdater();
       this.eventListeners();
@@ -34,10 +34,10 @@ export class HuginnApp {
    }
 
    async initAsync() {
-      await this.storage.checkFiles();
+      // await this.storage.checkFiles();
       await this.storage.adapter.tryMigrate();
       await this.storage.setupClientInfo();
-      await this.initializeLogger();
+      await this.initAnalytics();
    }
 
    private eventListeners() {
@@ -82,17 +82,30 @@ export class HuginnApp {
       this.mainWindow?.window.focus();
    }
 
-   async initializeLogger() {
+   async initAnalytics() {
       try {
-         const { data } = await this.storage.loadFile("settings");
-         const apiHostname = data.hostnamePresets.find((x) => x.name === data.activePresetName)?.apiHostname;
-
+         // const content = await fs.readFile(this.storage.adapter.getFilePath("client-info"), "utf-8");
+         const { data: settings } = await this.storage.loadFile("settings");
          const { data: info } = await this.storage.loadFile("client-info");
-         const endpoint = new URL("/api/log", apiHostname).toString();
-         logger.enableLogs({
-            "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"],
-         });
-         this.remoteLogger = new RemoteLogger(logger, endpoint, info.id);
+         const analyticsHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.analyticsHostname;
+
+         initAnalytics(
+            new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
+               serviceName: "app-electron",
+               posthogHost: analyticsHostname ?? "",
+               otlpHost: process.env.VITE_PUBLIC_OTEL_HOST,
+               clientId: info.id,
+               // host: apiHostname,
+            }),
+         );
+
+         this.storage.adapter.setAnalytics(analytics);
+         // const { data: info } = await this.storage.loadFile("client-info");
+         // const endpoint = new URL("/api/log", apiHostname).toString();
+         // logger.enableLogs({
+         //    "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"],
+         // });
+         // this.remoteLogger = new RemoteLogger(logger, endpoint, info.id);
       } catch (e) {
          error("app:electron", "logger setup failed:", e);
       }

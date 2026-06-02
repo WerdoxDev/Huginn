@@ -1,5 +1,3 @@
-import type { BrowserWindow } from "electron";
-
 import path from "node:path";
 
 import { BaseWindow } from "./base-window";

@@ -61,6 +61,7 @@
       "motion": "^11.18.2",
       "native-addon": "workspace:*",
       "posthog-js": "^1.375.0",
+      "posthog-node": "^5.35.8",
       "react": "^19.2.0",
       "react-cropper": "^2.3.3",
       "react-dom": "^19.2.0",
