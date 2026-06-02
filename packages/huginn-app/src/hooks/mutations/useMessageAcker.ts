@@ -1,7 +1,7 @@
 import { type Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
-import { useChannelReadState, useReadStates } from "@stores/readStatesStore";
+import { useChannelReadState, useReadStates } from "@stores/readStateStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

@@ -3,11 +3,11 @@ import type { Snowflake } from "@huginn/shared";
 import LoadingDot from "@components/LoadingDot";
 import { Transition } from "@headlessui/react";
 import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
-import { useTypings } from "@stores/typingStore";
+import { useTypingStore } from "@stores/typingStore";
 import { useMemo, useRef } from "react";
 
 export default function ChannelTypingIndicator(props: { channelId: Snowflake }) {
-   const { typings } = useTypings();
+   const { typings } = useTypingStore();
    const { recipients } = useChannelRecipients(props.channelId, undefined);
 
    const lastValue = useRef<{ count: number; recipientsText: string; channelId: Snowflake }>(undefined);

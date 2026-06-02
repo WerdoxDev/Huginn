@@ -5,19 +5,19 @@ import path from "node:path";
 
 import type { FileType, StorageMap, LoadFileResult, SaveFileResult } from "@/types";
 
-import { storageDefaults } from "../shared/storage-defaults";
-import { exists } from "./utils";
+import { exists } from "../electron/utils";
+import { StorageAdapter } from "./storage-adapter";
+import { storageDefaults } from "./storage-defaults";
 
-export class FileController {
+export class ElectronStorage extends StorageAdapter {
    private basePath: string;
-   private defaultContents: StorageMap;
    private prefix: string;
 
    constructor(prefix: string = "") {
+      super();
       this.basePath = app.getPath("userData");
       this.prefix = prefix;
 
-      this.defaultContents = { ...storageDefaults };
       this.eventListeners();
    }
 

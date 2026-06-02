@@ -3,7 +3,7 @@ import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, l
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
-import { createStore, useStore } from "zustand";
+import { createStore, useStore, type ExtractState } from "zustand";
 
 import { storageStore } from "./storageStore";
 

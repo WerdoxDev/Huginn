@@ -6,8 +6,6 @@ import { combine } from "zustand/middleware";
 
 import type { Environment } from "@/types";
 
-import { router } from "@/main";
-
 const store = createStore(
    combine(
       {
@@ -28,7 +26,7 @@ const store = createStore(
    ),
 );
 
-export async function initializeWindow() {
+export async function initWindowStore() {
    store.setState({
       maximized: false,
       fullscreen: false,
@@ -38,8 +36,6 @@ export async function initializeWindow() {
       version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
       processId: window.electronAPI ? await window.electronAPI.processId() : 0,
    });
-
-   console.log("Environment:", store.getState().environment);
 
    const controller = new AbortController();
 
@@ -84,7 +80,6 @@ export async function initializeWindow() {
       unlisteners.push(
          (
             await App.addListener("appUrlOpen", (event) => {
-               console.log("Received deep link:", event.url);
                dispatchEvent("deep_link", event.url);
             })
          ).remove,

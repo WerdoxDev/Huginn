@@ -83,12 +83,9 @@ const store = createStore(
    })),
 );
 
-export function initializeReadStates() {
+export function initReadStateStore() {
    const client = clientStore.getState().client;
-
-   if (!client) {
-      return;
-   }
+   if (!client) return;
 
    const unlisten = client.gateway.listen("ready", (d) => {
       store.setState({

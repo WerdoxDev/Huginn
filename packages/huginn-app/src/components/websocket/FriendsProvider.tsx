@@ -3,7 +3,7 @@ import type { GatewayRelationshipCreateData, Snowflake } from "@huginn/shared";
 import { RelationshipType } from "@huginn/shared";
 import { convertToAppRelationship } from "@lib/utils";
 import { useClient, useClientStore } from "@stores/clientStore";
-import { useReadStates } from "@stores/readStatesStore";
+import { useReadStates } from "@stores/readStateStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 import { type ReactNode, useEffect } from "react";

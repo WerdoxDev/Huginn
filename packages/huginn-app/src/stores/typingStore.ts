@@ -54,7 +54,7 @@ function startTimeout(userId: Snowflake, channelId: Snowflake) {
    return id;
 }
 
-export function initializeTyping() {
+export function initTypingStore() {
    const client = clientStore.getState().client;
    if (!client) {
       return;
@@ -81,6 +81,6 @@ export function useTyping(userId: Snowflake) {
    return { ...thisStore.removeTyping, typings };
 }
 
-export function useTypings() {
+export function useTypingStore() {
    return useStore(store);
 }
