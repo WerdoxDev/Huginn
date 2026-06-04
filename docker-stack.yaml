@@ -23,6 +23,7 @@ services:
          - SERVER_PORT=3004
          - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/,https://huginn.dev
          - CDN_LOCAL_URL=http://cdn:3002/cdn
+         - OTEL_SERVICE_NAME=server
       secrets:
          - backend_secrets
       networks:
@@ -45,6 +46,7 @@ services:
       environment:
          - CDN_HOST=0.0.0.0
          - CDN_PORT=3002
+         - OTEL_SERVICE_NAME=cdn
       secrets:
          - backend_secrets
       networks:
@@ -64,6 +66,7 @@ services:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
          - MEDIA_LISTEN_INFOS=udp:44443:0.0.0.0:monolith.werdox.com;udp:44444:0.0.0.0:midgard.huginn.dev
+         - OTEL_SERVICE_NAME=voice
       ports:
          - target: 44444
            published: 44444
