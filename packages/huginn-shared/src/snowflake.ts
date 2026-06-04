@@ -37,4 +37,5 @@ export enum WorkerID {
    VOICE = 13,
    MESSAGE_REFERENCE = 14,
    EMAIL_VERIFICATION = 15,
+   VIDEO = 16,
 }

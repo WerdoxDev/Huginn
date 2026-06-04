@@ -51,4 +51,10 @@ export const analytics: Analytics = new Proxy({} as Analytics, {
    },
 });
 
+export function recordSpanError(error: Error, providedAnalytics: Analytics = analytics): void {
+   const span = providedAnalytics.getActiveSpan();
+   span?.recordException(error);
+   span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+}
+
 export { SpanStatusCode };
