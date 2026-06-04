@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import { recordSpanError, type Snowflake } from "@huginn/shared";
 
 import { Prisma, prisma } from "#database";
 import { DBError, isDBError } from "#elysia-errors";
@@ -22,19 +22,25 @@ export function assertId(methodName: string, ...ids: (Snowflake | undefined)[]) 
       }
       // oxlint-disable-next-line no-unused-vars
    } catch (e) {
-      throw new DBError(methodName, DBErrorType.INVALID_ID, ids[lastValidIndex + 1]);
+      const error = new DBError(methodName, DBErrorType.INVALID_ID, ids[lastValidIndex + 1]);
+      recordSpanError(error);
+      throw error;
    }
 }
 
 export function assertObj<T>(methodName: string, obj: T, errorType: DBErrorType, cause?: string): asserts obj is NonNullable<T> {
    if (obj === null || typeof obj !== "object") {
-      throw new DBError(methodName, errorType, cause);
+      const error = new DBError(methodName, errorType, cause);
+      recordSpanError(error);
+      throw error;
    }
 }
 
 export function assertCondition(methodName: string, shouldThrow: boolean, errorType: DBErrorType, cause?: string) {
    if (shouldThrow) {
-      throw new DBError(methodName, errorType, cause);
+      const error = new DBError(methodName, errorType, cause);
+      recordSpanError(error);
+      throw error;
    }
 }
 

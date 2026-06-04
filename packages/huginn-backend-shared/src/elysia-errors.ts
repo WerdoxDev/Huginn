@@ -1,8 +1,9 @@
 import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
 
+import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
+
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
 import { CDNErrorType, DBErrorType } from "#types";
-import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
 
 export class DBError extends Error {
    public constructor(
@@ -10,7 +11,7 @@ export class DBError extends Error {
       public type: DBErrorType,
       public cause?: string,
    ) {
-      super(`Unhandled Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
+      super(`Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
          cause: cause,
       });
    }
@@ -26,7 +27,7 @@ export class CDNError extends Error {
       public type: CDNErrorType,
       public cause?: string,
    ) {
-      super(`Unhandled CDN Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
+      super(`CDN Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
          cause: cause,
       });
    }
