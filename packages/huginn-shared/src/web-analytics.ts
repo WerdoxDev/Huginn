@@ -1,4 +1,4 @@
-import { trace, type Span } from "@opentelemetry/api";
+import { context, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
 import posthog, { type CaptureResult } from "posthog-js";
 
 import type { LogLevel } from "./analytics";
@@ -71,6 +71,10 @@ export class WebAnalytics extends Analytics {
    startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> {
       const tracer = trace.getTracer(this.options.serviceName);
       return tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, fn);
+   }
+
+   withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
+      return context.with(ROOT_CONTEXT, fn);
    }
 
    getActiveSpan(): Span | undefined {

@@ -1,4 +1,4 @@
-import { trace, type Span } from "@opentelemetry/api";
+import { context, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
@@ -56,6 +56,10 @@ export class RuntimeAnalytics extends Analytics {
 
    getActiveSpan(): Span | undefined {
       return trace.getActiveSpan();
+   }
+
+   withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
+      return context.with(ROOT_CONTEXT, fn);
    }
 
    public identify(id: string, properties?: Record<string, any>): void {
