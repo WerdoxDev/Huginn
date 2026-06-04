@@ -1,4 +1,4 @@
-import { log } from "@huginn/shared";
+import { analytics, recordSpanError } from "@huginn/shared";
 
 import type { VoiceTransportManager } from "./voice-transport-manager";
 
@@ -9,42 +9,124 @@ export class VoiceDeviceManager {
       this.transport = transport;
    }
 
-   public async openMicrophone(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-device", "default", "open microphone");
+   private getDefaultAttributes(): Record<string, string | number | boolean> {
+      return {
+         "voice.transport.status": this.transport.status,
+      };
+   }
 
-      await this.transport.createProducer("microphone", track);
+   public async openMicrophone(track: MediaStreamTrack): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceDevice.openMicrophone", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "microphone",
+            "track.track_id": track.id,
+         });
+
+         try {
+            await this.transport.createProducer("microphone", track);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async replaceMicrophoneTrack(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-device", "default", "replace microphone track");
+      return await analytics.startActiveSpan("apiVoiceDevice.replaceMicrophoneTrack", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "microphone",
+            "track.track_id": track.id,
+         });
 
-      await this.transport.replaceProducerTrack("microphone", track);
+         try {
+            await this.transport.replaceProducerTrack("microphone", track);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async closeMicrophone(): Promise<void> {
-      log("api:voice-device", "default", "close microphone");
+      return await analytics.startActiveSpan("apiVoiceDevice.closeMicrophone", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "microphone",
+         });
 
-      await this.transport.closeProducer("microphone");
+         try {
+            await this.transport.closeProducer("microphone");
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async openCamera(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-device", "default", "open camera");
+      return await analytics.startActiveSpan("apiVoiceDevice.openCamera", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "camera",
+            "track.track_id": track.id,
+         });
 
-      await this.transport.createProducer("camera", track, {
-         encodings: [{ scalabilityMode: "L1T3", scaleResolutionDownBy: 1 }],
-         codecOptions: { videoGoogleStartBitrate: 1000 },
+         try {
+            await this.transport.createProducer("camera", track, {
+               encodings: [{ scalabilityMode: "L1T3", scaleResolutionDownBy: 1 }],
+               codecOptions: { videoGoogleStartBitrate: 1000 },
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async replaceCameraTrack(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-device", "default", "replace camera track");
+      return await analytics.startActiveSpan("apiVoiceDevice.replaceCameraTrack", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "camera",
+            "track.track_id": track.id,
+         });
 
-      await this.transport.replaceProducerTrack("camera", track);
+         try {
+            await this.transport.replaceProducerTrack("camera", track);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async closeCamera(): Promise<void> {
-      log("api:voice-device", "default", "close camera");
+      return await analytics.startActiveSpan("apiVoiceDevice.closeCamera", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "track.kind": "camera",
+         });
 
-      await this.transport.closeProducer("camera");
+         try {
+            await this.transport.closeProducer("camera");
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 }

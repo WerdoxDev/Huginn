@@ -9,7 +9,18 @@ import type {
    Snowflake,
 } from "@huginn/shared";
 
-import { error, GatewayCode, type GatewayWebsocketEvents, type GatewayHello, GatewayOperations, type GatewayReadyData, log } from "@huginn/shared";
+import {
+   error,
+   GatewayCode,
+   type GatewayWebsocketEvents,
+   type GatewayHello,
+   GatewayOperations,
+   type GatewayReadyData,
+   log,
+   analytics,
+   recordSpanError,
+   SpanStatusCode,
+} from "@huginn/shared";
 
 import type { GatewayOptions } from "./types";
 
@@ -54,10 +65,15 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private setStatus(newStatus: GatewayStatus) {
-      if (this._status !== newStatus) {
-         this._status = newStatus;
-         this.emit("status_changed", newStatus);
-      }
+      analytics.startActiveSpan("apiGateway.setStatus", (span) => {
+         span.setAttributes({ ...this.getDefaultAttributes(), "gateway.new_status": newStatus, "gateway.old_status": this._status });
+         if (this._status !== newStatus) {
+            this._status = newStatus;
+            this.emit("status_changed", newStatus);
+         }
+
+         span.end();
+      });
    }
 
    public get status(): GatewayStatus {
@@ -89,55 +105,76 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    public connect(): void {
-      log("api:gateway", "default", "connect");
+      analytics.startActiveSpan("apiGateway.connect", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         try {
+            if (this.status !== "idle" && this.status !== "disconnected") {
+               throw new Error("Gateway socket is already connected or is connecting");
+            }
 
-      if (this.status !== "idle" && this.status !== "disconnected") {
-         throw new Error("Gateway socket is already connected or is connecting");
-      }
+            this.intentionalClose = false;
+            this.setStatus("connecting");
+            this.socket = this.options.createSocket(this.options.url);
 
-      this.intentionalClose = false;
-      this.setStatus("connecting");
-      this.socket = this.options.createSocket(this.options.url);
-
-      this.socket.onopen = () => this.onOpen();
-      this.socket.onclose = (e) => this.onClose(e);
-      this.socket.onmessage = (e) => this.onMessage(e);
-      this.socket.onerror = (e) => {
-         error("api:gateway", "gateway websocket encountered an error");
-      };
+            this.socket.onopen = () => this.onOpen();
+            this.socket.onclose = (e) => this.onClose(e);
+            this.socket.onmessage = (e) => this.onMessage(e);
+            this.socket.onerror = () => this.onError();
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    /**
     * Intentionally closes the connection and prevents automatic reconnection. This should be used when the user explicitly wants to disconnect, such as logging out or switching accounts.
     */
    public close(): void {
-      log("api:gateway", "default", "intentional close");
+      analytics.startActiveSpan("apiGateway.close", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      this.intentionalClose = true;
-      this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
+         this.intentionalClose = true;
+         this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
+         span.end();
+      });
    }
 
    public async authenticate(): Promise<AuthenticationResult> {
-      log("api:gateway", "default", "authenticate");
+      return await analytics.startActiveSpan("apiGateway.authenticate", async (span): Promise<AuthenticationResult> => {
+         span.setAttributes(this.getDefaultAttributes());
+         try {
+            log("api:gateway", "default", "authenticate");
 
-      if (this.isAuthenticated) {
-         return { authenticated: true, retryable: true, status: "success" };
-      }
+            if (this.isAuthenticated) {
+               return { authenticated: true, retryable: true, status: "success" };
+            }
 
-      if (!this.isConnected) {
-         const result = await this.ensureConnected();
-         if (!result) {
-            return { authenticated: false, retryable: true, status: "network_error" };
+            if (!this.isConnected) {
+               const result = await this.ensureConnected();
+               if (!result) {
+                  span.setStatus({ code: SpanStatusCode.ERROR, message: "Failed to connect to gateway" });
+                  return { authenticated: false, retryable: true, status: "network_error" };
+               }
+            }
+
+            span.setAttribute("gateway.can_resume", this.canResume);
+            if (this.canResume) {
+               this.sendResume();
+            } else {
+               this.sendIdentify();
+            }
+
+            return await this.waitForAuthentication();
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
          }
-      }
-
-      if (this.canResume) {
-         this.sendResume();
-      } else {
-         this.sendIdentify();
-      }
-
-      return this.waitForAuthentication();
+      });
    }
 
    // ============================================================
@@ -145,46 +182,65 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    private onOpen() {
-      log("api:gateway", "default", "connected");
+      analytics.startActiveSpan("apiGateway.onOpen", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      this.setStatus("connected");
-      this.emit("connected", undefined);
+         this.setStatus("connected");
+         this.emit("connected", undefined);
+         span.end();
+      });
    }
 
    private onClose(e: CloseEvent) {
-      log("api:gateway", "default", "closed", "c:", e.code, "r:", e.reason);
+      analytics.startActiveSpan("apiGateway.onClose", (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "event.close.code": e.code,
+            "event.close.reason": e.reason,
+         });
+         try {
+            this.cleanup();
+            this.setStatus("disconnected");
+            this.emit("disconnected", e.code);
 
-      this.cleanup();
-      this.setStatus("disconnected");
-      this.emit("disconnected", e.code);
+            span.setAttribute("gateway.intentional_close", this.intentionalClose);
+            span.setAttribute("gateway.can_resume", this.canResume);
 
-      // Completely reset if it was intentionally closed or session was invalid
-      if (this.shouldReset(e.code)) {
-         this.reset();
-      }
+            const shouldReset = this.shouldReset(e.code);
+            span.setAttribute("gateway.should_reset", shouldReset);
+            // Completely reset if it was intentionally closed or session was invalid
+            if (shouldReset) {
+               this.reset();
+            }
 
-      // Don't reconnect if it was intentionally closed
-      if (!this.intentionalClose && e.code !== GatewayCode.SWITCHING_CONNECTION) {
-         this.scheduleReconnect();
-      }
+            // Don't reconnect if it was intentionally closed
+            if (!this.intentionalClose && e.code !== GatewayCode.SWITCHING_CONNECTION) {
+               analytics.withRootContext(() => {
+                  this.scheduleReconnect();
+               });
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
+   private onError() {
+      analytics.startActiveSpan("apiGateway.onError", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         span.setStatus({ code: SpanStatusCode.ERROR });
+         span.end();
+      });
+   }
    // ============================================================
    // Private - Message Processing
    // ============================================================
 
    private async onMessage(e: MessageEvent) {
       const data: GatewayPayload = JSON.parse(e.data);
-
-      if (data.op === GatewayOperations.DISPATCH) {
-         log("api:gateway", "recv", "op:", data.op, "t:", data.t);
-         log("api:gateway", "recv-detail", "op:", data.op, "t:", data.t, "d:", data.d);
-      } else {
-         log("api:gateway", "recv", "op:", data.op);
-         if ("d" in data) {
-            log("api:gateway", "recv-detail", "op:", data.op, "d:", data.d);
-         }
-      }
 
       switch (data.op) {
          case GatewayOperations.HELLO: {
@@ -236,43 +292,91 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    public async getVoiceToken(guildId: Snowflake | null, channelId: Snowflake, voiceState?: GatewayVoiceStateFlags): Promise<string | undefined> {
-      this.sendVoiceStateUpdate({
-         guildId,
-         channelId,
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isCameraOn: false,
-         isAudioStreaming: false,
-         isScreenSharing: false,
-         ...voiceState,
+      return await analytics.startActiveSpan("apiGateway.getVoiceToken", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.guild_id": guildId ?? "null",
+            "params.channel_id": channelId,
+            "params.is_camera_on": !!voiceState?.isCameraOn,
+            "params.is_deafened": !!voiceState?.isAudioDeafened,
+            "params.is_muted": !!voiceState?.isAudioMuted,
+            "params.is_streaming": !!voiceState?.isAudioStreaming,
+            "params.is_screen_sharing": !!voiceState?.isScreenSharing,
+         });
+
+         try {
+            this.sendVoiceStateUpdate({
+               guildId,
+               channelId,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isCameraOn: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
+               ...voiceState,
+            });
+
+            const [tokenResult, _voiceStateResult] = await Promise.allSettled([
+               this.waitForVoiceServerUpdate(),
+               this.waitForVoiceStateUpdate(channelId),
+            ]);
+
+            span.setAttribute("token.result", tokenResult.status);
+
+            return tokenResult.status === "fulfilled" ? tokenResult.value : undefined;
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
-
-      const [tokenResult, _voiceStateResult] = await Promise.allSettled([this.waitForVoiceServerUpdate(), this.waitForVoiceStateUpdate(channelId)]);
-
-      return tokenResult.status === "fulfilled" ? tokenResult.value : undefined;
    }
 
    public async sendDefaultVoiceState(): Promise<void> {
-      log("api:gateway", "default", "send default voice state");
+      return await analytics.startActiveSpan("apiGateway.sendDefaultVoiceState", async (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         try {
+            this.sendVoiceStateUpdate({
+               channelId: null,
+               guildId: null,
+               isAudioDeafened: false,
+               isAudioMuted: false,
+               isAudioStreaming: false,
+               isScreenSharing: false,
+               isCameraOn: false,
+            });
 
-      this.sendVoiceStateUpdate({
-         channelId: null,
-         guildId: null,
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isAudioStreaming: false,
-         isScreenSharing: false,
-         isCameraOn: false,
+            await this.waitForVoiceStateUpdate(null);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
-
-      this.waitForVoiceStateUpdate(null);
    }
 
    public async updateVoiceState(options: GatewayVoiceStateFlags, channelId: Snowflake, guildId: Snowflake | null): Promise<GatewayVoiceState> {
-      log("api:gateway", "default", "update voice state", "opts:", JSON.stringify(options));
+      return await analytics.startActiveSpan("apiGateway.updateVoiceState", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.channel_id": channelId,
+            "params.guild_id": guildId ?? "null",
+            "params.is_camera_on": !!options.isCameraOn,
+            "params.is_deafened": !!options.isAudioDeafened,
+            "params.is_muted": !!options.isAudioMuted,
+            "params.is_streaming": !!options.isAudioStreaming,
+            "params.is_screen_sharing": !!options.isScreenSharing,
+         });
 
-      this.sendVoiceStateUpdate({ channelId, guildId, ...options });
-      return this.waitForVoiceStateUpdate(channelId);
+         try {
+            this.sendVoiceStateUpdate({ channelId, guildId, ...options });
+            return await this.waitForVoiceStateUpdate(channelId);
+         } finally {
+            span.end();
+         }
+      });
    }
 
    // ============================================================
@@ -280,18 +384,26 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    public updatePresence(options: GatewayUpdatePresenceData): void {
-      log("api:gateway", "default", "update presence", "sts:", options.status);
+      return analytics.startActiveSpan("apiGateway.updatePresence", (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.status": options.status,
+            "params.activities_count": options.activities.length,
+         });
 
-      if (this.status !== "authenticated") {
-         return;
-      }
+         try {
+            if (this.status !== "authenticated") return;
 
-      const updatePresenceData: GatewayPayload = {
-         op: GatewayOperations.PRESENCE_UPDATE,
-         d: { status: options.status, activities: options.activities },
-      };
+            const updatePresenceData: GatewayPayload = {
+               op: GatewayOperations.PRESENCE_UPDATE,
+               d: { status: options.status, activities: options.activities },
+            };
 
-      this.send(updatePresenceData);
+            this.send(updatePresenceData);
+         } finally {
+            span.end();
+         }
+      });
    }
 
    // ============================================================
@@ -315,21 +427,35 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private async waitForAuthentication(): Promise<AuthenticationResult> {
-      const result = await this.waitForEvents(["ready", "resumed", "disconnected"], true);
+      return await analytics.startActiveSpan("apiGateway.waitForAuthentication", async (span): Promise<AuthenticationResult> => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      switch (result.event) {
-         case "ready":
-         case "resumed":
-            return { authenticated: true, retryable: true, status: "success" };
-         case "disconnected":
-            return {
-               authenticated: false,
-               retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED,
-               status: result.data !== GatewayCode.AUTHENTICATION_FAILED ? "network_error" : "authentication_failed",
-            };
-         default:
-            return { authenticated: false, retryable: false, status: "authentication_failed" };
-      }
+         try {
+            const result = await this.waitForEvents(["ready", "resumed", "disconnected"], true);
+
+            span.setAttribute("auth.event", result.event);
+            switch (result.event) {
+               case "ready":
+               case "resumed":
+                  return { authenticated: true, retryable: true, status: "success" };
+               case "disconnected":
+                  span.setAttribute("auth.data", result.data as GatewayCode);
+                  span.setStatus({ code: SpanStatusCode.ERROR, message: "Disconnected while waiting for authentication" });
+                  return {
+                     authenticated: false,
+                     retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED,
+                     status: result.data !== GatewayCode.AUTHENTICATION_FAILED ? "network_error" : "authentication_failed",
+                  };
+               default:
+                  return { authenticated: false, retryable: false, status: "authentication_failed" };
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    private sendResume(): void {
@@ -345,16 +471,27 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private sendIdentify() {
-      const token = this.client.tokenHandler.token;
-      if (!token) throw new Error("Cannot identify: no token");
+      analytics.startActiveSpan("apiGateway.sendIdentify", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         try {
+            const token = this.client.tokenHandler.token;
+            span.setAttribute("gateway.has_token", !!token);
+            if (!token) throw new Error("Cannot identify: no token");
 
-      this.send({
-         op: GatewayOperations.IDENTIFY,
-         d: {
-            token,
-            intents: this.options.intents,
-            properties: { os: "windows", browser: "idk", device: "idk" },
-         },
+            this.send({
+               op: GatewayOperations.IDENTIFY,
+               d: {
+                  token,
+                  intents: this.options.intents,
+                  properties: { os: "windows", browser: "idk", device: "idk" },
+               },
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
@@ -394,19 +531,15 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    private startHeartbeat(interval: number) {
-      log("api:gateway", "heartbeat", "start");
-
       this.stopHeartbeat();
 
       this.heartbeatInterval = setInterval(() => {
-         log("api:gateway", "heartbeat", "sent", "s:", this.sequence);
          this.send({ op: GatewayOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
    private stopHeartbeat() {
       if (this.heartbeatInterval) {
-         log("api:gateway", "heartbeat", "stop");
          clearInterval(this.heartbeatInterval);
          this.heartbeatInterval = undefined;
       }
@@ -419,27 +552,30 @@ export class Gateway extends SharedWebsocket<Events> {
    private scheduleReconnect(): void {
       this.clearReconnectTimeout();
 
-      log("api:gateway", "default", "schedule reconnect");
-
       this.reconnectTimeout = setTimeout(() => {
          this.attemptReconnect();
       }, 2000);
    }
 
    private async attemptReconnect() {
-      log("api:gateway", "default", "attempt reconnect");
-
-      this.connect();
-
-      // If we had a user, re-authenticate
-      if (this.user) {
+      analytics.startActiveSpan("apiGateway.attemptReconnect", async (span) => {
+         span.setAttributes(this.getDefaultAttributes());
          try {
-            await this.authenticate();
-            this.emit("reconnected", undefined);
+            this.connect();
+
+            span.setAttribute("gateway.had_user", !!this.user);
+            // If we had a user, re-authenticate
+            if (this.user) {
+               await this.authenticate();
+               this.emit("reconnected", undefined);
+            }
          } catch (e) {
-            error("api:gateway", "reconnect failed", e);
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
          }
-      }
+      });
    }
 
    private clearReconnectTimeout(): void {
@@ -467,7 +603,6 @@ export class Gateway extends SharedWebsocket<Events> {
     * This is called when we determine that the session is invalid and we need to reset everything, including sequence and session ID.
     */
    public reset(): void {
-      log("api:gateway", "default", "reset session");
       this.sequence = undefined;
       this.sessionId = undefined;
    }
@@ -488,8 +623,17 @@ export class Gateway extends SharedWebsocket<Events> {
    private send(data: GatewayPayload): void {
       this.socket?.send(JSON.stringify(data));
       this.emit("send", data as GatewayPayload);
+   }
 
-      log("api:gateway", "send", "op:", data.op, "t:", "t" in data ? data.t : "_");
-      log("api:gateway", "send-detail", "op:", data.op, "t:", "t" in data ? data.t : "_", "d:", "d" in data ? data.d : "_");
+   private getDefaultAttributes(): Record<string, any> {
+      return {
+         "gateway.url": this.options.url,
+         "gateway.intents": this.options.intents,
+         "gateway.status": this.status,
+         "gateway.session_id": this.sessionId ?? "null",
+         "gateway.user.id": this.user?.id ?? "null",
+         "gateway.is_authenticated": this.isAuthenticated,
+         "gateway.is_connected": this.isConnected,
+      };
    }
 }

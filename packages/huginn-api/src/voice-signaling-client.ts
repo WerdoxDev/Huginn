@@ -1,26 +1,22 @@
 import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-client/types";
 
 import {
+   analytics,
    CONSTANTS,
-   error,
    EventEmitter,
    GatewayCode,
-   log,
+   recordSpanError,
+   SpanStatusCode,
    VoiceOperations,
-   VoiceSignallingError,
    type HMediaKind,
    type Snowflake,
    type VoiceCloseConsumerResult,
    type VoiceCloseProducerResult,
    type VoiceConnectTransportResult,
    type VoiceConsumeResultData,
-   type VoiceCreateTransportData,
    type VoiceCreateTransportResult,
-   type VoiceError,
-   type VoiceHeartbeat,
    type VoiceHelloData,
    type VoicePayload,
-   type VoicePing,
    type VoiceProduceResult,
    type VoiceReadyData,
    type VoiceRestartIceResult,
@@ -71,83 +67,151 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.options = options;
    }
 
-   public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
-      log("api:voice-signaling", "default", "connect", "cid:", channelId, "gid:", guildId);
-
-      if (this.status !== "idle" && this.status !== "disconnected") {
-         throw new Error("Voice socket is already connected or is connecting");
-      }
-
-      this.intentionalClose = false;
-      this.connectionData = { token, channelId, guildId };
-      this.setStatus("connecting");
-      this.socket = this.options.createSocket(this.options.url);
-
-      this.socket.onopen = () => this.onOpen();
-      this.socket.onclose = (e) => this.onClose(e);
-      this.socket.onmessage = (e) => this.onMessage(e);
-      this.socket.onerror = (e) => {
-         error("api:gateway", "voice websocket encountered an error");
+   private getDefaultAttributes(): Record<string, string | number | boolean> {
+      return {
+         "voice.user.id": this.client.currentUser?.id ?? "null",
+         "voice.signaling.status": this.status,
+         "voice.signaling.url": this.options.url,
+         "voice.signaling.can_resume": this.canResume,
+         "voice.signaling.session_id": this.sessionId ?? "null",
+         "voice.signaling.sequence": this.sequence ?? "null",
+         "voice.signaling.channel_id": this.connectionData?.channelId ?? "null",
+         "voice.signaling.guild_id": this.connectionData?.guildId ?? "null",
       };
    }
 
-   public close(): void {
-      log("api:voice-signaling", "default", "close");
+   public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
+      analytics.startActiveSpan("apiVoiceSignaling.connect", (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.channel_id": channelId,
+            "params.guild_id": guildId ?? "null",
+            "params.has_token": !!token,
+         });
 
-      this.intentionalClose = true;
-      this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
-      this.hardReset();
+         try {
+            if (this.status !== "idle" && this.status !== "disconnected") {
+               throw new Error("Voice socket is already connected or is connecting");
+            }
+
+            this.intentionalClose = false;
+            this.connectionData = { token, channelId, guildId };
+            this.setStatus("connecting");
+            this.socket = this.options.createSocket(this.options.url);
+
+            this.socket.onopen = () => this.onOpen();
+            this.socket.onclose = (e) => this.onClose(e);
+            this.socket.onmessage = (e) => this.onMessage(e);
+            this.socket.onerror = () => this.onError();
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
+   }
+
+   public close(): void {
+      analytics.startActiveSpan("apiVoiceSignaling.close", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+
+         try {
+            this.intentionalClose = true;
+            this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
+            this.hardReset();
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    private onOpen(): void {
-      log("api:voice-signaling", "default", "connected");
+      analytics.startActiveSpan("apiVoiceSignaling.onOpen", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      this.setStatus("connected");
-      this.emit("connected", undefined);
+         try {
+            this.setStatus("connected");
+            this.emit("connected", undefined);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    private onClose(e: CloseEvent): void {
-      log("api:voice-signaling", "default", "closed", "c:", e.code, "r:", e.reason);
+      analytics.startActiveSpan("apiVoiceSignaling.onClose", (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "event.close.code": e.code,
+            "event.close.reason": e.reason,
+            "voice.signaling.intentional_close": this.intentionalClose,
+         });
 
-      // Server told us to disconnect but we didn't intentionally disconnect
-      if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
-         this.hardReset();
-      }
+         try {
+            // Server told us to disconnect but we didn't intentionally disconnect
+            if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
+               this.hardReset();
+            }
 
-      if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
-         if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
-            this.resetSession();
-         } else {
-            this.softReset();
+            if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
+               if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
+                  this.resetSession();
+               } else {
+                  this.softReset();
+               }
+
+               this.setStatus("disconnected");
+               this.emit("disconnected", undefined);
+
+               analytics.withRootContext(() => {
+                  window.setTimeout(() => {
+                     void this.tryReconnect();
+                  }, 1000);
+               });
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
          }
+      });
+   }
 
-         this.setStatus("disconnected");
-         this.emit("disconnected", undefined);
-
-         window.setTimeout(() => {
-            this.tryReconnect();
-         }, 1000);
-      }
+   private onError(): void {
+      analytics.startActiveSpan("apiVoiceSignaling.onError", (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         span.setStatus({ code: SpanStatusCode.ERROR });
+         span.end();
+      });
    }
 
    private async tryReconnect() {
-      if (!this.connectionData) throw new Error("Connection Data cannot be undefined when reconnecting voice");
+      return await analytics.startActiveSpan("apiVoiceSignaling.tryReconnect", async (span) => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      this.connect(this.connectionData.token, this.connectionData.channelId, this.connectionData.guildId);
+         try {
+            if (!this.connectionData) throw new Error("Connection Data cannot be undefined when reconnecting voice");
+
+            this.connect(this.connectionData.token, this.connectionData.channelId, this.connectionData.guildId);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    private async onMessage(e: MessageEvent): Promise<void> {
       const data: VoicePayload = JSON.parse(e.data);
-
-      if (data.op === VoiceOperations.DISPATCH) {
-         log("api:voice-signaling", "recv", "op:", data.op, "t:", data.t);
-         log("api:voice-signaling", "recv-detail", "op:", data.op, "t:", data.t, "d:", data.d);
-      } else {
-         log("api:voice-signaling", "recv", "op:", data.op);
-         if ("d" in data) {
-            log("api:voice-signaling", "recv-detail", "op:", data.op, "d:", data.d);
-         }
-      }
 
       switch (data.op) {
          case VoiceOperations.HELLO:
@@ -265,8 +329,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    private onPong() {
       const rtt = Date.now() - (this.lastPingStart ?? 0);
 
-      log("api:voice-signaling", "ping", "pong", "now:", Date.now(), "rtt:", rtt);
-
       this.pingTimeout = setTimeout(() => {
          this.sendPing();
       }, CONSTANTS.VOICE_CLIENT_PING_INTERVAL);
@@ -275,11 +337,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    }
 
    private startHeartbeatInterval(interval: number) {
-      log("api:voice-signaling", "heartbeat", "start heartbeat");
-
       this.heartbeatInterval = setInterval(() => {
-         log("api:voice-signaling", "heartbeat", "sent", "seq:", this.sequence);
-
          this.send({ op: VoiceOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
@@ -293,12 +351,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
    private send(data: VoicePayload): void {
       this.socket?.send(JSON.stringify(data));
-      if (data.op === VoiceOperations.DISPATCH) {
-         log("api:voice-signaling", "send", "op:", data.op, "t:", data.t);
-         log("api:voice-signaling", "send-detail", "op:", data.op, "t:", data.t, "d:", data.d);
-      } else {
-         log("api:voice-signaling", "send", "op:", data.op);
-      }
    }
 
    private sendPing() {
@@ -341,188 +393,287 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    }
 
    public async sendCreateTransport(direction: "send" | "recv"): Promise<VoiceCreateTransportResult> {
-      this.checkStatus();
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "create_transport",
-         d: { channelId: this.connectionData.channelId, direction, nonce },
-      });
-
-      return await new Promise<VoiceCreateTransportResult>((res) => {
-         const unlisten = this.listen("create_transport_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendCreateTransport", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.direction": direction,
          });
+
+         try {
+            this.checkStatus();
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "create_transport",
+               d: { channelId: this.connectionData.channelId, direction, nonce },
+            });
+
+            return await new Promise<VoiceCreateTransportResult>((res) => {
+               const unlisten = this.listen("create_transport_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendConnectTransport(transportId: string, dtlsParameters: DtlsParameters): Promise<VoiceConnectTransportResult> {
-      this.checkStatus();
-      const channelId = this.connectionData?.channelId;
-
-      log("api:voice-signaling", "default", "connect transport", "tid:", transportId, "cid:", channelId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "connect_transport",
-         d: { channelId, transportId, dtlsParameters, nonce },
-      });
-
-      // Wait for the transport to get connected
-      return await new Promise<VoiceConnectTransportResult>((res) => {
-         const unlisten = this.listen("connect_transport_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendConnectTransport", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.transport_id": transportId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData?.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "connect_transport",
+               d: { channelId, transportId, dtlsParameters, nonce },
+            });
+
+            // Wait for the transport to get connected
+            return await new Promise<VoiceConnectTransportResult>((res) => {
+               const unlisten = this.listen("connect_transport_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendCreateProducer(kind: HMediaKind, transportId: string, rtpParameters: RtpParameters): Promise<VoiceProduceResult> {
-      this.checkStatus();
-      const channelId = this.connectionData?.channelId;
-
-      log("api:voice-signaling", "default", "create producer", "knd:", kind, "tid:", transportId, "cid:", channelId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "produce",
-         d: { channelId, transportId, kind, rtpParameters, nonce },
-      });
-
-      // Wait for the producer to be created
-      return await new Promise<VoiceProduceResult>((res) => {
-         const unlisten = this.listen("produce_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendCreateProducer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.kind": kind,
+            "params.transport_id": transportId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData?.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "produce",
+               d: { channelId, transportId, kind, rtpParameters, nonce },
+            });
+
+            // Wait for the producer to be created
+            return await new Promise<VoiceProduceResult>((res) => {
+               const unlisten = this.listen("produce_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendCloseProducer(producerId: string): Promise<VoiceCloseProducerResult> {
-      this.checkStatus();
-      const channelId = this.connectionData?.channelId;
-
-      log("api:voice-signaling", "default", "close producer", "pid:", producerId, "cid:", channelId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "close_producer",
-         d: { producerId, channelId, nonce },
-      });
-
-      return await new Promise<VoiceCloseProducerResult>((res) => {
-         const unlisten = this.listen("close_producer_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendCloseProducer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.producer_id": producerId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData?.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "close_producer",
+               d: { producerId, channelId, nonce },
+            });
+
+            return await new Promise<VoiceCloseProducerResult>((res) => {
+               const unlisten = this.listen("close_producer_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendCreateConsumer(producerId: string, transportId: string, rtpCapabilities: RtpCapabilities): Promise<VoiceConsumeResultData> {
-      this.checkStatus();
-      const channelId = this.connectionData?.channelId;
-
-      log("api:voice-signaling", "default", "create consumer", "pid:", producerId, "tid:", transportId, "cid:", channelId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "consume",
-         d: { channelId, producerId, rtpCapabilities, transportId, nonce },
-      });
-
-      // Wait for the consumer to be created
-      return await new Promise<VoiceConsumeResultData>((res, rej) => {
-         const unlisten = this.listen("consume_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-
-               if ("error" in d) rej(d.error);
-               else res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendCreateConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.producer_id": producerId,
+            "params.transport_id": transportId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData?.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "consume",
+               d: { channelId, producerId, rtpCapabilities, transportId, nonce },
+            });
+
+            // Wait for the consumer to be created
+            return await new Promise<VoiceConsumeResultData>((res, rej) => {
+               const unlisten = this.listen("consume_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+
+                     if ("error" in d) rej(d.error);
+                     else res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendResumeConsumer(consumerId: string): Promise<VoiceResumeConsumerResult> {
-      this.checkStatus();
-      const channelId = this.connectionData.channelId;
-
-      log("api:voice-signaling", "default", "resume consumer", "cid:", consumerId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "resume_consumer",
-         d: { channelId, consumerId, nonce },
-      });
-
-      return await new Promise<VoiceResumeConsumerResult>((res) => {
-         const unlisten = this.listen("resume_consumer_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendResumeConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer_id": consumerId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "resume_consumer",
+               d: { channelId, consumerId, nonce },
+            });
+
+            return await new Promise<VoiceResumeConsumerResult>((res) => {
+               const unlisten = this.listen("resume_consumer_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendCloseConsumer(consumerId: string): Promise<VoiceCloseConsumerResult> {
-      this.checkStatus();
-      const channelId = this.connectionData.channelId;
-
-      log("api:voice-signaling", "default", "close consumer", "cid:", consumerId);
-
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "close_consumer",
-         d: { channelId, consumerId, nonce },
-      });
-
-      return await new Promise<VoiceCloseConsumerResult>((res) => {
-         const unlisten = this.listen("close_consumer_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendCloseConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer_id": consumerId,
          });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "close_consumer",
+               d: { channelId, consumerId, nonce },
+            });
+
+            return await new Promise<VoiceCloseConsumerResult>((res) => {
+               const unlisten = this.listen("close_consumer_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
    public async sendRestartIce(transportId: string): Promise<VoiceRestartIceResult> {
-      this.checkStatus();
-      const channelId = this.connectionData.channelId;
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendRestartIce", async (span) => {
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData.channelId;
+            span.setAttributes({
+               ...this.getDefaultAttributes(),
+               "params.transport_id": transportId,
+            });
 
-      log("api:voice-signaling", "default", "restart ice", "tid:", transportId);
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "restart_ice",
+               d: { channelId, transportId, nonce },
+            });
 
-      const nonce = this.client.generateNonce();
-      this.send({
-         op: VoiceOperations.DISPATCH,
-         t: "restart_ice",
-         d: { channelId, transportId, nonce },
-      });
-
-      return await new Promise<VoiceRestartIceResult>((res) => {
-         const unlisten = this.listen("restart_ice_result", (d) => {
-            if (d.nonce === nonce) {
-               unlisten();
-               res(d);
-            }
-         });
+            return await new Promise<VoiceRestartIceResult>((res) => {
+               const unlisten = this.listen("restart_ice_result", (d) => {
+                  if (d.nonce === nonce) {
+                     unlisten();
+                     res(d);
+                  }
+               });
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 }

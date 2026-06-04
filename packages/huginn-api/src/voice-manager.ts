@@ -1,4 +1,4 @@
-import { type Snowflake, log } from "@huginn/shared";
+import { analytics, type Snowflake, recordSpanError } from "@huginn/shared";
 
 import type { Voice } from ".";
 import type { Gateway } from "./gateway";
@@ -30,17 +30,28 @@ export class VoiceManager<V extends Voice = Voice> {
       });
    }
 
+   private getDefaultAttributes() {
+      return {
+         "gateway.user.id": this.gateway.user?.id ?? "null",
+         "voice.gateway.status": this.gateway.status,
+         "voice.status": this.voice.status,
+         "voice.is_connecting": this.isConnecting,
+      };
+   }
+
    private listenVoiceManagerEvents() {
       this.voiceState.on("update_gateway_voice_state", async (d) => {
          // Try catch is to simply confirm the voice state when signaling is not connected
          try {
             this.voice.signaling.checkStatus();
+
             const connectionData = this.voice.signaling.connectionData;
             const { isAudioDeafened, isAudioMuted, isAudioStreaming, isScreenSharing, isCameraOn } = await this.gateway.updateVoiceState(
                d.voiceState,
                connectionData.channelId,
                connectionData.guildId,
             );
+
             d.callback({
                isAudioDeafened,
                isAudioMuted,
@@ -115,52 +126,75 @@ export class VoiceManager<V extends Voice = Voice> {
     * @param token if a token is already available, it will use that to connect the voice websocket (use with caution)
     */
    public async connectVoice(guildId: Snowflake | null, channelId: Snowflake, token?: string): Promise<void> {
-      log("api:voice-manager", "default", "connect to voice");
-
-      if (this.gateway.status !== "authenticated") throw new Error(`Gateway is not in the correct state: ${this.gateway.status}`);
-      if (this.isConnecting) throw new Error("Already trying to connect to a voice channel");
-
-      if (this.voice.signaling.connectionData?.channelId === channelId && this.voice.signaling.connectionData.guildId === guildId) {
-         throw new Error("Already connected to the same voice channel");
-      }
-
-      this.isConnecting = true;
-
-      try {
-         if (this.voice.status !== "idle") {
-            this.voice.signaling.close();
-         }
-
-         let voiceToken: string | undefined;
-         if (token) {
-            voiceToken = token;
-         } else {
-            voiceToken = await this.gateway.getVoiceToken(guildId, channelId, this.voiceState.gatewayVoiceState);
-         }
-
-         if (!voiceToken) throw new Error("Couldn't get a token for voice");
-
-         this.voice.signaling.connect(voiceToken, channelId, guildId);
-
-         // Wait for ready
-         await new Promise<void>((r) => {
-            const unlisten = this.voice.listen("status_changed", (d) => {
-               if (d === "ready") {
-                  unlisten();
-                  r();
-               }
-            });
+      return await analytics.startActiveSpan("apiVoiceManager.connectVoice", async (span): Promise<void> => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.guild_id": guildId ?? "null",
+            "params.channel_id": channelId,
+            "params.has_token": !!token,
          });
-      } finally {
-         this.isConnecting = false;
-      }
+
+         try {
+            if (this.gateway.status !== "authenticated") throw new Error(`Gateway is not in the correct state: ${this.gateway.status}`);
+            if (this.isConnecting) throw new Error("Already trying to connect to a voice channel");
+
+            if (this.voice.signaling.connectionData?.channelId === channelId && this.voice.signaling.connectionData.guildId === guildId) {
+               throw new Error("Already connected to the same voice channel");
+            }
+
+            this.isConnecting = true;
+
+            try {
+               if (this.voice.status !== "idle") {
+                  this.voice.signaling.close();
+               }
+
+               let voiceToken: string | undefined;
+               if (token) {
+                  voiceToken = token;
+               } else {
+                  voiceToken = await this.gateway.getVoiceToken(guildId, channelId, this.voiceState.gatewayVoiceState);
+               }
+
+               if (!voiceToken) throw new Error("Couldn't get a token for voice");
+
+               this.voice.signaling.connect(voiceToken, channelId, guildId);
+
+               // Wait for ready
+               await new Promise<void>((r) => {
+                  const unlisten = this.voice.listen("status_changed", (d) => {
+                     if (d === "ready") {
+                        unlisten();
+                        r();
+                     }
+                  });
+               });
+            } finally {
+               this.isConnecting = false;
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async disconnectVoice(): Promise<void> {
-      log("api:voice-manager", "default", "disconnect voice");
+      return await analytics.startActiveSpan("apiVoiceManager.disconnectVoice", async (span): Promise<void> => {
+         span.setAttributes(this.getDefaultAttributes());
 
-      await this.gateway.sendDefaultVoiceState();
-      this.voice.signaling.close();
-      this.isConnecting = false;
+         try {
+            await this.gateway.sendDefaultVoiceState();
+            this.voice.signaling.close();
+            this.isConnecting = false;
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 }
