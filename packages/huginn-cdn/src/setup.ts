@@ -1,9 +1,10 @@
+import { readEnv } from "@huginn/runtime-shared";
+import pathe from "pathe";
+
 import type { Storage } from "#storage/storage";
 
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
-import { readEnv } from "@huginn/runtime-shared";
-import pathe from "pathe";
 
 export const envs = readEnv([
    "CDN_HOST",
@@ -18,6 +19,8 @@ export const envs = readEnv([
    { key: "UPLOADS_DIR", default: pathe.resolve(import.meta.dir, "../uploads") },
    { key: "CACHE_DIR", default: pathe.resolve(import.meta.dir, "../cache") },
    "CDN_HMAC_SECRET",
+   "OTEL_SERVICE_NAME",
+   "SIGNOZ_API_URL",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

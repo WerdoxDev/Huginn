@@ -11,6 +11,7 @@
    },
    "dependencies": {
       "@elysiajs/cors": "^1.4.0",
+      "@elysiajs/opentelemetry": "^1.4.11",
       "@huginn/backend-shared": "workspace:*",
       "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
@@ -21,6 +22,8 @@
       "sharp": "^0.34.5"
    },
    "devDependencies": {
+      "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+      "@opentelemetry/sdk-trace-base": "^2.7.1",
       "@types/bun": "latest"
    }
 }
