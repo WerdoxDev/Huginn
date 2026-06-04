@@ -5,14 +5,13 @@ import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
-import { initStorageStoreEarly, storageStore } from "@stores/storageStore";
+import { initStorageStoreEarly } from "@stores/storageStore";
 import { initWindowStore } from "@stores/windowStore";
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
-import { RemoteLogger } from "../shared/remote-logger";
 import { routeTree } from "./routeTree.gen";
 
 if (import.meta.env.DEV) {
@@ -53,25 +52,24 @@ logger.enableLogs({
 
 logger.excludeEventLogs({ "app:voice-store": ["speaking-state"] });
 logger.setIsRaw(import.meta?.env?.PROD ?? false);
-let _remoteLogger: RemoteLogger;
 
 await initStorageStoreEarly();
 await initWindowStore();
 initAnalytics();
 
-if (window.electronAPI) {
-   logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
-   logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
-} else {
-   const thisStore = storageStore.getState();
-   const settings = thisStore.getCachedValue("settings");
-   const clientInfo = thisStore.getCachedValue("client-info");
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-   if (activePreset?.apiHostname) {
-      const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
-      _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
-   }
-}
+// if (window.electronAPI) {
+//    logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
+//    logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
+// } else {
+//    const thisStore = storageStore.getState();
+//    const settings = thisStore.getCachedValue("settings");
+//    const clientInfo = thisStore.getCachedValue("client-info");
+//    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+//    if (activePreset?.apiHostname) {
+//       const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
+//       _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
+//    }
+// }
 
 const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
 

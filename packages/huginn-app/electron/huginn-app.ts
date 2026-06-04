@@ -16,7 +16,6 @@ export class HuginnApp {
    private storage: StorageController<ElectronStorage>;
    private cache: CacheController;
    private mainWindow?: MainWindow;
-   private remoteLogger?: RemoteLogger;
    private tray?: Tray;
    private allowedToRun: boolean;
 
@@ -41,7 +40,6 @@ export class HuginnApp {
    }
 
    private eventListeners() {
-      this.loggerCategoryEvents();
       this.cliCategoryEvents();
    }
 
@@ -100,12 +98,6 @@ export class HuginnApp {
          );
 
          this.storage.adapter.setAnalytics(analytics);
-         // const { data: info } = await this.storage.loadFile("client-info");
-         // const endpoint = new URL("/api/log", apiHostname).toString();
-         // logger.enableLogs({
-         //    "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"],
-         // });
-         // this.remoteLogger = new RemoteLogger(logger, endpoint, info.id);
       } catch (e) {
          error("app:electron", "logger setup failed:", e);
       }
@@ -164,12 +156,6 @@ export class HuginnApp {
 
       this.tray.on("click", () => {
          this.mainWindow?.window.show();
-      });
-   }
-
-   private loggerCategoryEvents() {
-      ipcMain.on("logger:add-to-buffer", (_, type: "log" | "error", section: string, level: string | undefined, ...args: LogArgs[]) => {
-         this.remoteLogger?.addToBuffer(type, section, level, ...args);
       });
    }
 

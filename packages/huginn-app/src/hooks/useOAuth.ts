@@ -24,7 +24,6 @@ export function useOAuth() {
 
       const redirectUrl = import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
       const url = client.oauth.getOAuthURL(type, huginnWindow.environment === "desktop" ? "desktop" : "browser", `${redirectUrl}`);
-      console.log(url);
 
       updateModals({
          info: {
