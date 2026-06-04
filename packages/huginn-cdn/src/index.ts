@@ -1,5 +1,8 @@
 import cors from "@elysiajs/cors";
+import { opentelemetry } from "@elysiajs/opentelemetry";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import consola from "consola";
 import Elysia from "elysia";
 
@@ -21,6 +24,18 @@ import { getIndex } from "./routes";
 export const main = new Elysia({})
    .use(cors())
    .use(globalPlugin)
+   .use(
+      opentelemetry({
+         serviceName: envs.OTEL_SERVICE_NAME,
+         spanProcessors: [
+            new BatchSpanProcessor(
+               new OTLPTraceExporter({
+                  url: envs.SIGNOZ_API_URL,
+               }),
+            ),
+         ],
+      }),
+   )
    .onError(({ error, code, status, path, request }) => {
       consola.box(path, request.method, code, error);
       if (code === "UNKNOWN") {
