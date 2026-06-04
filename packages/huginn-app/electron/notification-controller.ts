@@ -12,7 +12,6 @@ export class NotificationController {
             if (options.body) span.setAttribute("notification.body", options.body);
             if (typeof options.icon === "string") span.setAttribute("notification.icon", options.icon);
             if (this.current) span.setAttribute("notification.replacesExisting", true);
-
             if (onClick) {
                notification.on("click", onClick);
             }

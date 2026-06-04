@@ -1,4 +1,4 @@
-import { SpanStatusCode, type Analytics } from "@huginn/shared";
+import { recordSpanError, type Analytics } from "@huginn/shared";
 import { app, ipcMain } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -72,8 +72,7 @@ export class ElectronStorage extends StorageAdapter {
             span.setAttribute("file.created", false);
             return { created: false, data: data, success: true };
          } catch (e) {
-            span.recordException(e as Error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+            recordSpanError(e as Error, this.analytics);
             return {
                created: false,
                data: this.defaultContents[type],
@@ -96,8 +95,7 @@ export class ElectronStorage extends StorageAdapter {
 
             return { success: true };
          } catch (e) {
-            span.recordException(e as Error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+            recordSpanError(e as Error, this.analytics);
             return { success: false, error: (e as Error).message };
          } finally {
             span.end();
@@ -129,8 +127,7 @@ export class ElectronStorage extends StorageAdapter {
                }
             }
          } catch (e) {
-            span.recordException(e as Error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+            recordSpanError(e as Error, this.analytics);
          } finally {
             span.end();
          }

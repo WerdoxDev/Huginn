@@ -1,4 +1,4 @@
-import { SpanStatusCode } from "@huginn/shared";
+import { recordSpanError } from "@huginn/shared";
 
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
 
@@ -22,8 +22,7 @@ export class LocalStorage extends StorageAdapter {
 
             return { created: false, data: data, success: true };
          } catch (e) {
-            span.recordException(e as Error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+            recordSpanError(e as Error, this.analytics);
             return {
                created: false,
                data: this.defaultContents[type],
@@ -43,8 +42,7 @@ export class LocalStorage extends StorageAdapter {
             localStorage.setItem(type, JSON.stringify(data));
             return { success: true };
          } catch (e) {
-            span.recordException(e as Error);
-            span.setStatus({ code: SpanStatusCode.ERROR, message: (e as Error).message });
+            recordSpanError(e as Error, this.analytics);
             return { success: false, error: (e as Error).message };
          } finally {
             span.end();
