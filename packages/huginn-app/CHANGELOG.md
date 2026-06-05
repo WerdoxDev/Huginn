@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.72.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.1...app@v0.72.0) (2026-06-05)
+
+
+### Features
+
+* **app:** add one time runnable actions after update + new settings for OTLP and Posthog ([39eaad7](https://github.com/WerdoxDev/Huginn/commit/39eaad7268883cb7be943e7e0d8c8a492c8e541d))
+* **app:** bunch of cleanups around initializing stores + unified storage solution ([06bdf44](https://github.com/WerdoxDev/Huginn/commit/06bdf44eaea439bd09a08580a7e33317932dc1dc))
+* **app:** bunch of cleanups around initializing stores + unified storage solution ([8a61b40](https://github.com/WerdoxDev/Huginn/commit/8a61b4088bd1e68197da2eb6d000d4db6cd06fae))
+* **app:** implement basic OTel (just file system and notification for now) ([cfd6a6a](https://github.com/WerdoxDev/Huginn/commit/cfd6a6af2bb1e075d0ee2bcfc5555b4f8cb184c8))
+
+
+### Bug Fixes
+
+* **app:** betetr loading ui for media stuff ([7722008](https://github.com/WerdoxDev/Huginn/commit/772200853be92ec5c525c30dcdc02effd7396c42))
+* **app:** use semver-ts instead of semver ([86e8eca](https://github.com/WerdoxDev/Huginn/commit/86e8ecadbfcdcb19dc8de4ea76907bb8a8d066c3))
+* **app:** use shortened function for span error recording ([916f1a6](https://github.com/WerdoxDev/Huginn/commit/916f1a622bec7352d5f0c87c1b5451c66327f90e))
+
 ## [0.71.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.0...app@v0.71.1) (2026-05-31)
 
 

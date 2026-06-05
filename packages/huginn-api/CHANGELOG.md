@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.35.0...api@v0.36.0) (2026-06-05)
+
+
+### Features
+
+* **api:** implement OTel for all voice and gateway ([4470b76](https://github.com/WerdoxDev/Huginn/commit/4470b76f724bab4a3018d881f7b3889f74e78e24))
+
+
+### Bug Fixes
+
+* **api:** remove timeout from client initialization ([a556ac8](https://github.com/WerdoxDev/Huginn/commit/a556ac8797721cb556c0d3eb2ae75ec5f4df5972))
+
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.34.0...api@v0.35.0) (2026-05-26)
 
 
