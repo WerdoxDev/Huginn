@@ -13,7 +13,7 @@ jobs:
       runs-on: ubuntu-latest
       outputs:
          app_release_created: ${{ fromJson(steps.release.outputs['packages/huginn-app--release_created'] || 'false') }}
-         app_version: ${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
+         app_version: ${{ fromJson(steps.release.outputs['packages/huginn-app--version'] || 'unknown') }}
       steps:
          - uses: actions/checkout@v4
 
@@ -34,7 +34,12 @@ jobs:
                - platform: "windows-latest"
                  args: ""
       runs-on: ${{ matrix.platform }}
-      if: ${{needs.release-please.outputs.app_release_created == 'true'}}
+      if: |
+         always() &&
+         (
+         needs.release-please.outputs.app_release_created == 'true' ||
+         needs.release-please.result == 'skipped'
+         )
       env:
          VITE_PUBLIC_POSTHOG_KEY: ${{secrets.VITE_PUBLIC_POSTHOG_KEY}}
          VITE_PUBLIC_CLOUDFLARE_TURN_ID: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_ID}}
@@ -65,7 +70,7 @@ jobs:
            run: cd packages/huginn-app && pnpm run build
 
          - name: Inject & upload source maps to PostHog
-           uses: PostHog/upload-source-maps@v2
+           uses: PostHog/upload-source-maps@v2.0.0
            with:
               directory: packages/huginn-app/dist
               project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
