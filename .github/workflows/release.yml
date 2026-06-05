@@ -5,8 +5,8 @@ permissions:
 on:
    workflow_dispatch:
       inputs:
-         app_release_created:
-            description: "Run publish-app?"
+         force_app_release:
+            description: "Force app release even if no changes detected"
             required: false
             type: boolean
             default: true
@@ -24,7 +24,7 @@ jobs:
    release-please:
       runs-on: ubuntu-latest
       outputs:
-         app_release_created: ${{ inputs.app_release_created || steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}
+         app_release_created: ${{ inputs.force_app_release || steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}
          app_version: ${{ inputs.app_version || steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
 
       steps:
@@ -43,7 +43,7 @@ jobs:
            id: outputs
            run: |
               if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.app_version }}" ]]; then
-                 echo "app_release_created=${{ inputs.app_release_created }}" >> "$GITHUB_OUTPUT"
+                 echo "app_release_created=${{ inputs.force_app_release }}" >> "$GITHUB_OUTPUT"
                  echo "app_version=${{ inputs.app_version }}" >> "$GITHUB_OUTPUT"
               else
                  echo "app_release_created=${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
