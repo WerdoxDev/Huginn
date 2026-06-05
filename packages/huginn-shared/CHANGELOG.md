@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.35.0...shared@v0.36.0) (2026-06-05)
+
+
+### Features
+
+* **shared:** add new analytics method to reset context ([94520e8](https://github.com/WerdoxDev/Huginn/commit/94520e873848705c3e439d23afa1ce70bb5ac15a))
+* **shared:** add new recordSpanError function ([17cb912](https://github.com/WerdoxDev/Huginn/commit/17cb91290cee4efbdfaaea5a7903f1c698f1290d))
+* **shared:** implement runtime and web opentelemetry ([26cf4ab](https://github.com/WerdoxDev/Huginn/commit/26cf4ab0d0b45394c53864cccc903b33282d4afe))
+
+
+### Bug Fixes
+
+* **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
+
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.34.1...shared@v0.35.0) (2026-05-31)
 
 

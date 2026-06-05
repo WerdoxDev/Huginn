@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.1...voice@v0.17.0) (2026-06-05)
+
+
+### Features
+
+* **voice:** implement full OTel in voice websocket ([654f19e](https://github.com/WerdoxDev/Huginn/commit/654f19e0f526816de27ac3b812a523644d64ef41))
+
+
+### Bug Fixes
+
+* **voice:** use dotenv ([f61529f](https://github.com/WerdoxDev/Huginn/commit/f61529f4c2aae4c5ddfd8fa235ca5c31ee0de596))
+
 ## [0.16.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.0...voice@v0.16.1) (2026-05-31)
 
 

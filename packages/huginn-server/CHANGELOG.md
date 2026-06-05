@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.36.0...server@v0.37.0) (2026-06-05)
+
+
+### Features
+
+* **server:** add OTel to some gateway utilities ([9e2e909](https://github.com/WerdoxDev/Huginn/commit/9e2e90956fcc3029708031189ae4013b615a2a33))
+* **server:** implement OTel at elysia level ([91409a6](https://github.com/WerdoxDev/Huginn/commit/91409a69542a99b9568c7623e49337a5ae768f92))
+
+
+### Bug Fixes
+
+* **server:** remove telemetry for some messages to avoid spam ([37ac8a9](https://github.com/WerdoxDev/Huginn/commit/37ac8a99f05fdec2cb26ff85ff248054a9e4b790))
+
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.2...server@v0.36.0) (2026-05-31)
 
 
