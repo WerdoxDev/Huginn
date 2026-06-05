@@ -94,7 +94,6 @@ export enum GatewayCode {
    INVALID_SESSION = 4009,
    INTENTIONAL_CLOSE = 4010,
    NOT_AUTHORIZED = 4011,
-   SWITCHING_CONNECTION = 4012,
 }
 
 export enum FieldCode {
