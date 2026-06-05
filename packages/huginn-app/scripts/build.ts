@@ -5,7 +5,16 @@ export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:
 export const external = [...builtins];
 
 const isProd = process.argv.includes("--prod");
-const noExternal = ["@huginn/shared", "native-addon", "electron-log/main", "electron-updater", "sharp", "moment"];
+const noExternal = [
+   "@huginn/shared",
+   "@huginn/shared/runtime-analytics",
+   "native-addon",
+   "electron-log/main",
+   "electron-updater",
+   "sharp",
+   "moment",
+   "posthog-node",
+];
 
 await build({
    entry: ["./electron/main.ts", "./electron/preload.ts"],
