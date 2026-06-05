@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, log, recordSpanError } from "@huginn/shared";
+import { analytics, EventEmitter, recordSpanError } from "@huginn/shared";
 
 import type { HuginnClient, VoiceOptions, VoiceStatus } from ".";
 
