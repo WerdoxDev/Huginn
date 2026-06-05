@@ -4,6 +4,17 @@ permissions:
    pull-requests: write
 on:
    workflow_dispatch:
+      inputs:
+         app_release_created:
+            description: "Run publish-app?"
+            required: true
+            type: boolean
+            default: true
+
+         app_version:
+            description: "App version"
+            required: true
+            type: string
    push:
       branches:
          - master
@@ -12,19 +23,32 @@ jobs:
    release-please:
       runs-on: ubuntu-latest
       outputs:
-         app_release_created: ${{ fromJson(steps.release.outputs['packages/huginn-app--release_created'] || 'false') }}
-         app_version: ${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
+         app_release_created: ${{ steps.outputs.outputs.app_release_created }}
+         app_version: ${{ steps.outputs.outputs.app_version }}
+
       steps:
          - uses: actions/checkout@v4
 
          - name: run release-please on release commit or dispatch
+           id: release
            uses: googleapis/release-please-action@v4
            with:
-              target-branch: ${{github.ref_name}}
-           id: release
+              target-branch: ${{ github.ref_name }}
            if: |
-              github.event_name == 'workflow_dispatch' ||
+              github.event_name != 'workflow_dispatch' &&
               contains(github.event.head_commit.message, ': release')
+
+         - name: Compute outputs
+           id: outputs
+           shell: bash
+           run: |
+              if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                echo "app_release_created=${{ inputs.app_release_created }}" >> "$GITHUB_OUTPUT"
+                echo "app_version=${{ inputs.app_version }}" >> "$GITHUB_OUTPUT"
+              else
+                echo "app_release_created=${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
+                echo "app_version=${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}" >> "$GITHUB_OUTPUT"
+               fi
    publish-app:
       needs: release-please
       strategy:
