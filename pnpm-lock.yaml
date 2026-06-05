@@ -147,9 +147,9 @@ importers:
       react-hook-form:
         specifier: ^7.76.0
         version: 7.76.1(react@19.2.6)
-      semver:
-        specifier: ^7.8.1
-        version: 7.8.1
+      semver-ts:
+        specifier: ^1.0.3
+        version: 1.0.3
       sharp:
         specifier: ^0.34.4
         version: 0.34.5
@@ -211,9 +211,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.2
         version: 19.2.3(@types/react@19.2.15)
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
       '@vite-pwa/assets-generator':
         specifier: ^1.0.2
         version: 1.0.2
@@ -7684,6 +7681,10 @@ packages:
   semver-compare@1.0.0:
     resolution: {integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow==}
 
+  semver-ts@1.0.3:
+    resolution: {integrity: sha512-RMf2+Nbd0Hiq5u8LADzqnSRb09Vu1UKOLFw9P9nm8XY3JPeFjv3DLVYBZjPWFHUxBVz7ktIVGR3xFjYilHlXng==}
+    engines: {node: '>=0.10.0'}
+
   semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
@@ -14758,7 +14759,7 @@ snapshots:
 
   is-core-module@2.16.2:
     dependencies:
-      hasown: 2.0.3
+      hasown: 2.0.4
 
   is-data-view@1.0.2:
     dependencies:
@@ -16334,6 +16335,8 @@ snapshots:
 
   semver-compare@1.0.0:
     optional: true
+
+  semver-ts@1.0.3: {}
 
   semver@5.7.2: {}
 

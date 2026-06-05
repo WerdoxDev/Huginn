@@ -1,11 +1,10 @@
-import { analytics, analyticsShim, error, initAnalytics, log, type LogArgs } from "@huginn/shared";
+import { analytics, analyticsShim, error, initAnalytics, log } from "@huginn/shared";
 import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
 import { Tray, app, Menu, ipcMain } from "electron";
 import updater from "electron-updater";
 import path from "node:path";
 
 import { ElectronStorage } from "../shared/electron-storage";
-import { RemoteLogger } from "../shared/remote-logger";
 import { StorageController } from "../shared/storage-controller";
 import { CacheController } from "./cache-controller";
 import { MainWindow } from "./main-window";

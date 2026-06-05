@@ -17,6 +17,7 @@ await build({
 
       onlyBundle: false,
    },
+
    dts: false,
    outDir: ".electron",
    fixedExtension: true,

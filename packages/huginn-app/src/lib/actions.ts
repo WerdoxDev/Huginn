@@ -1,5 +1,5 @@
 import { storageStore } from "@stores/storageStore";
-import * as semver from "semver";
+import * as semver from "semver-ts";
 
 import { storageDefaults } from "../../shared/storage-defaults";
 
