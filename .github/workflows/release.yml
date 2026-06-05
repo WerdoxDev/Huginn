@@ -93,10 +93,10 @@ jobs:
            with:
               directory: packages/huginn-app/dist
               project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
-              api-key: ${{ needs.release-please.outputs.app_version}}
+              api-key: ${{ secrets.POSTHOG_CLI_API_KEY }}
               host: https://eu.posthog.com
               release-name: huginn-app
-              release-version: ${{ github.sha }}
+              release-version: ${{ needs.release-please.outputs.app_version}}
 
          - name: publish app
            env:
