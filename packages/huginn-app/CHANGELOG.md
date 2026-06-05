@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.72.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.0...app@v0.72.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* **app:** electron build fix ([7856de5](https://github.com/WerdoxDev/Huginn/commit/7856de50b52f3d2cb43d6efb7592ecb2abee0d6e))
+* **app:** electron build fix ([e3cb96e](https://github.com/WerdoxDev/Huginn/commit/e3cb96e65922558d42c8cbb84e671cf06dec017e))
+
 ## [0.72.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.1...app@v0.72.0) (2026-06-05)
 
 
