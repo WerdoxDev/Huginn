@@ -1,8 +1,9 @@
 import ErrorComponent from "@components/ErrorComponent";
-import { logger } from "@huginn/shared";
 
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
+import { analytics } from "@huginn/shared";
+import { runPendingActions } from "@lib/actions";
 import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
 import { initStorageStoreEarly } from "@stores/storageStore";
@@ -30,30 +31,15 @@ if (import.meta.env.DEV) {
 }
 
 window.addEventListener("unhandledrejection", (d) => {
-   console.log(d);
+   analytics.startActiveSpan("unhandledrejection", async (span) => {
+      span.setAttribute("reason", d.reason instanceof Error ? (d.reason.stack ?? d.reason.message) : JSON.stringify(d.reason));
+      console.log(d);
+      span.end();
+   });
 });
-
-logger.enableLogs({
-   // "api:voice": ["default", "send", "recv", "heartbeat"],
-   // "app:audio-level-checker": ["default"],
-   "api:voice": ["default"],
-   "api:voice-manager": ["default"],
-   "api:voice-device": ["default"],
-   "api:voice-signaling": ["heartbeat", "default"],
-   "api:voice-transport": ["default"],
-   "api:voice-stream": ["default"],
-   "app:voice-store": ["remote-sources", "default"],
-   "app:voice-client": ["voice-recv", "default"],
-   "api:gateway": ["default", "recv", "heartbeat"],
-   "api:client": ["ready-state"],
-   "app:client-store": ["default"],
-   "app:presence-store": ["default"],
-});
-
-logger.excludeEventLogs({ "app:voice-store": ["speaking-state"] });
-logger.setIsRaw(import.meta?.env?.PROD ?? false);
 
 await initStorageStoreEarly();
+await runPendingActions();
 await initWindowStore();
 initAnalytics();
 

@@ -33,8 +33,7 @@ export class HuginnApp {
    }
 
    async initAsync() {
-      // await this.storage.checkFiles();
-      await this.storage.adapter.tryMigrate();
+      await this.storage.mergeNewProperties();
       await this.storage.setupClientInfo();
       await this.initAnalytics();
    }
@@ -85,13 +84,14 @@ export class HuginnApp {
          // const content = await fs.readFile(this.storage.adapter.getFilePath("client-info"), "utf-8");
          const { data: settings } = await this.storage.loadFile("settings");
          const { data: info } = await this.storage.loadFile("client-info");
-         const analyticsHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.analyticsHostname;
+         const posthogHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.posthogHostname;
+         const otelHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.otelHostname;
 
          initAnalytics(
             new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
                serviceName: "app-electron",
-               posthogHost: analyticsHostname ?? "",
-               otlpHost: process.env.VITE_PUBLIC_OTEL_HOST,
+               posthogHost: posthogHostname,
+               otlpHost: `${otelHostname}/v1/traces`,
                clientId: info.id,
                // host: apiHostname,
             }),

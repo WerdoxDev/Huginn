@@ -17,7 +17,8 @@ type Inputs = {
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
-   analyticsHostname: string;
+   posthogHostname: string;
+   otelHostname: string;
    externalUrl: string;
 };
 
@@ -47,7 +48,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       defaultValues: {
          presetName: activePreset?.name,
          voiceHostname: activePreset?.voiceHostname,
-         analyticsHostname: activePreset?.analyticsHostname,
+         posthogHostname: activePreset?.posthogHostname,
+         otelHostname: activePreset?.otelHostname,
          apiHostname: activePreset?.apiHostname,
          cdnHostname: activePreset?.cdnHostname,
          externalUrl: activePreset?.externalHostnamesUrl,
@@ -71,7 +73,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       (activePreset.apiHostname !== initialActivePreset.current.apiHostname ||
          activePreset.cdnHostname !== initialActivePreset.current.cdnHostname ||
          activePreset.voiceHostname !== initialActivePreset.current.voiceHostname ||
-         activePreset.analyticsHostname !== initialActivePreset.current.analyticsHostname ||
+         activePreset.posthogHostname !== initialActivePreset.current.posthogHostname ||
+         activePreset.otelHostname !== initialActivePreset.current.otelHostname ||
          activePreset.externalHostnamesUrl !== initialActivePreset.current.externalHostnamesUrl ||
          activePreset.hostnameSource !== initialActivePreset.current.hostnameSource);
 
@@ -83,7 +86,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
             existingPreset.apiHostname !== values.apiHostname ||
             existingPreset.cdnHostname !== values.cdnHostname ||
             existingPreset.voiceHostname !== values.voiceHostname ||
-            existingPreset.analyticsHostname !== values.analyticsHostname ||
+            existingPreset.posthogHostname !== values.posthogHostname ||
+            existingPreset.otelHostname !== values.otelHostname ||
             existingPreset.externalHostnamesUrl !== values.externalUrl ||
             existingPreset.hostnameSource !== hostnameSource));
 
@@ -91,7 +95,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       if (values.apiHostname.endsWith("/")) setValue("apiHostname", values.apiHostname.slice(0, -1));
       if (values.cdnHostname.endsWith("/")) setValue("cdnHostname", values.cdnHostname.slice(0, -1));
       if (values.voiceHostname.endsWith("/")) setValue("voiceHostname", values.voiceHostname.slice(0, -1));
-      if (values.analyticsHostname.endsWith("/")) setValue("analyticsHostname", values.analyticsHostname.slice(0, -1));
+      if (values.posthogHostname.endsWith("/")) setValue("posthogHostname", values.posthogHostname.slice(0, -1));
+      if (values.otelHostname.endsWith("/")) setValue("otelHostname", values.otelHostname.slice(0, -1));
    }
 
    function handleHostnameModeChanged(item: SelectItem) {
@@ -108,7 +113,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       setValue("apiHostname", preset.apiHostname);
       setValue("cdnHostname", preset.cdnHostname);
       setValue("voiceHostname", preset.voiceHostname);
-      setValue("analyticsHostname", preset.analyticsHostname);
+      setValue("posthogHostname", preset.posthogHostname);
+      setValue("otelHostname", preset.otelHostname);
       setValue("externalUrl", preset.externalHostnamesUrl);
       setHostnameMode(preset.hostnameSource);
       setSelectedPreset(name);
@@ -131,7 +137,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       setValue("apiHostname", "");
       setValue("cdnHostname", "");
       setValue("voiceHostname", "");
-      setValue("analyticsHostname", "");
+      setValue("posthogHostname", "");
+      setValue("otelHostname", "");
       setValue("externalUrl", "");
       setSelectedPreset(name);
    }
@@ -147,7 +154,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          apiHostname: values.apiHostname,
          cdnHostname: values.cdnHostname,
          voiceHostname: values.voiceHostname,
-         analyticsHostname: values.analyticsHostname,
+         posthogHostname: values.posthogHostname,
+         otelHostname: values.otelHostname,
          externalHostnamesUrl: values.externalUrl,
       };
 
@@ -225,7 +233,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       setValue("apiHostname", "");
       setValue("cdnHostname", "");
       setValue("voiceHostname", "");
-      setValue("analyticsHostname", "");
+      setValue("posthogHostname", "");
+      setValue("otelHostname", "");
       setValue("externalUrl", "");
       setHostnameMode("manual");
    }
@@ -265,7 +274,8 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
          setValue("apiHostname", original.apiHostname);
          setValue("cdnHostname", original.cdnHostname);
          setValue("voiceHostname", original.voiceHostname);
-         setValue("analyticsHostname", original.analyticsHostname);
+         setValue("posthogHostname", original.posthogHostname);
+         setValue("otelHostname", original.otelHostname);
          setValue("externalUrl", original.externalHostnamesUrl);
          setHostnameMode(original.hostnameSource);
          setSelectedPreset(original.name);
@@ -436,7 +446,8 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
    const apiStatus = useConnectionStatus(props.values.apiHostname);
    const cdnStatus = useConnectionStatus(props.values.cdnHostname);
    const voiceStatus = useConnectionStatus(props.values.voiceHostname);
-   const analyticsStatus = useConnectionStatus(props.values.analyticsHostname);
+   const posthogStatus = useConnectionStatus(props.values.posthogHostname);
+   const otelStatus = useConnectionStatus(props.values.otelHostname);
 
    return (
       <div>
@@ -480,13 +491,25 @@ function HostnameInputs(props: { values: Inputs; register: ReturnType<typeof use
          <HuginnInput
             className="mt-px w-full"
             type="text"
-            {...props.register("analyticsHostname", { required: true, onBlur: props.validateHostnames })}
+            {...props.register("posthogHostname", { required: true, onBlur: props.validateHostnames })}
+            hideMessage
+         >
+            <HuginnInput.Wrapper className="rounded-t-none rounded-b-none">
+               <InputTag>posthog</InputTag>
+               <HuginnInput.Input />
+               <ConnectionIndicator status={posthogStatus.status} onRetry={posthogStatus.retry} />
+            </HuginnInput.Wrapper>
+         </HuginnInput>
+         <HuginnInput
+            className="mt-px w-full"
+            type="text"
+            {...props.register("otelHostname", { required: true, onBlur: props.validateHostnames })}
             hideMessage
          >
             <HuginnInput.Wrapper className="rounded-t-none">
-               <InputTag>analytics</InputTag>
+               <InputTag>otel</InputTag>
                <HuginnInput.Input />
-               <ConnectionIndicator status={analyticsStatus.status} onRetry={analyticsStatus.retry} />
+               <ConnectionIndicator status={otelStatus.status} onRetry={otelStatus.retry} />
             </HuginnInput.Wrapper>
          </HuginnInput>
       </div>
@@ -514,8 +537,6 @@ function ConnectionIndicator(props: { status: ConnectionStatus; onRetry: () => v
 
 function InputTag(props: { children?: ReactNode }) {
    return (
-      <div className="bg-surface-deep text-text ml-2 w-20 shrink-0 rounded-sm p-1 px-1.5 text-center text-xs uppercase select-none">
-         {props.children}
-      </div>
+      <div className="bg-surface-deep text-text ml-2 w-20 shrink-0 rounded-sm p-1 text-center text-xs uppercase select-none">{props.children}</div>
    );
 }

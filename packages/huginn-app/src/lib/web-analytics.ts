@@ -8,13 +8,13 @@ export function initAnalytics() {
    const store = storageStore.getState();
    const settings = store.cache["settings"];
    const clientInfo = store.cache["client-info"];
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+   const activePreset = settings.hostnamePresets.find((p) => p.name === settings.activePresetName)!;
 
    externalInitAnalytics(
       new WebAnalytics(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
          // TODO: use otel hostname from settings
-         otlpHost: import.meta.env.VITE_PUBLIC_OTEL_HOST ?? "",
-         posthogHost: activePreset?.analyticsHostname ?? "",
+         otlpHost: `${activePreset.otelHostname}/v1/traces`,
+         posthogHost: activePreset.posthogHostname,
          serviceName: "app-web",
          environment: import.meta.env.PROD ? "production" : "development",
          serviceVersion: __APP_VERSION__,

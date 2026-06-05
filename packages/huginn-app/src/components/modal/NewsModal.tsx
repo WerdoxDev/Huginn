@@ -19,7 +19,6 @@ export default function NewsModal() {
    const { data, isLoading } = useQuery(getChangelogOptions(client!, huginnWindow.version, modal.lastVersion));
 
    const changelogs = useMemo(() => {
-      console.log("Changelog data:", data);
       if (!data || data.length === 0) return;
       const md = new markdownit("default");
       return data.reduce(

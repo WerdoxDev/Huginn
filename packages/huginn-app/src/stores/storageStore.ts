@@ -44,10 +44,10 @@ const store = createStore(
 );
 
 export async function initStorageStoreEarly() {
-   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
+   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences", "pinned-channels"];
    const cache = {} as StorageMap;
 
-   await storage.checkFiles();
+   await storage.mergeNewProperties();
    await storage.setupClientInfo();
 
    for (const key of keys) {
@@ -123,7 +123,7 @@ export function useStorageStore() {
 }
 
 export function useStorage<K extends FileType>(type: K) {
-   return useStore(store, (state) => state.cache[type] as StorageMap[K]);
+   return useStore(store, (state) => state.getCachedValue(type));
 }
 
 export type StorageStoreType = ReturnType<typeof useStorageStore>;

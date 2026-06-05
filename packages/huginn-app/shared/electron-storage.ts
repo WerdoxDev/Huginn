@@ -7,7 +7,6 @@ import type { FileType, StorageMap, LoadFileResult, SaveFileResult } from "@/typ
 
 import { exists } from "../electron/utils";
 import { StorageAdapter } from "./storage-adapter";
-import { storageDefaults } from "./storage-defaults";
 
 export class ElectronStorage extends StorageAdapter {
    private basePath: string;
@@ -105,32 +104,5 @@ export class ElectronStorage extends StorageAdapter {
 
    public async fileExists(type: FileType) {
       return await exists(this.getFilePath(type));
-   }
-
-   public async tryMigrate() {
-      this.analytics.startActiveSpan("electron storage migration", async (span) => {
-         try {
-            const keys = Object.keys(storageDefaults) as FileType[];
-
-            for (const key of keys) {
-               const newPath = this.getFilePath(key);
-               const oldPath = path.join(this.basePath, `${key}.json`);
-               const oldExists = await exists(oldPath);
-               const newExists = await exists(newPath);
-
-               span.addEvent("migration check", { key, oldExists, newExists });
-
-               if (!newExists && oldExists) {
-                  await fs.rename(oldPath, newPath);
-               } else if (newExists && oldExists) {
-                  await fs.rm(oldPath);
-               }
-            }
-         } catch (e) {
-            recordSpanError(e as Error, this.analytics);
-         } finally {
-            span.end();
-         }
-      });
    }
 }

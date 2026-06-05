@@ -147,6 +147,9 @@ importers:
       react-hook-form:
         specifier: ^7.76.0
         version: 7.76.1(react@19.2.6)
+      semver:
+        specifier: ^7.8.1
+        version: 7.8.1
       sharp:
         specifier: ^0.34.4
         version: 0.34.5
@@ -208,6 +211,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.2
         version: 19.2.3(@types/react@19.2.15)
+      '@types/semver':
+        specifier: ^7.7.1
+        version: 7.7.1
       '@vite-pwa/assets-generator':
         specifier: ^1.0.2
         version: 1.0.2
@@ -14502,7 +14508,7 @@ snapshots:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.7.4
+      semver: 7.8.1
       serialize-error: 7.0.1
     optional: true
 

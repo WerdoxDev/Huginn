@@ -30,7 +30,6 @@ export function useInitializeClient() {
 
             const result = await client.initialize({
                tokens: { token: options.token, refreshToken: options.refreshToken },
-               timeout: 10000,
             });
 
             log("app:client-store", "default", "initialize result:", result?.status);

@@ -55,113 +55,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
       setValue(newValue);
       rangeContext.onChange?.(newValue);
    }
-   // const rangeRef = useRef<HTMLDivElement>(null);
-   // const rangeTrackRef = useRef<HTMLDivElement>(null);
-   // const minValue = rangeContext.minValue ?? 0;
-   // const maxValue = rangeContext.maxValue ?? 100;
-   // const step = rangeContext.step ?? 1;
-   // const [value, setValue] = useState(rangeContext.defaultValue ?? minValue);
-   // const isDragging = useRef(false);
-   // const isHovering = useRef(false);
    const [showTooltip, setShowTooltip] = useState(false);
-   // const lastValue = useRef(value);
-
-   // // Calculate percentage for display (0-100)
-   // const percentage = Math.floor(((value - minValue) / (maxValue - minValue)) * 100);
-
-   // useEffect(() => {
-   //    if (lastValue.current !== value) {
-   //       rangeContext.onChange?.(value);
-   //       lastValue.current = value;
-   //    }
-   // }, [value]);
-
-   // useEffect(() => {
-   //    const controller = new AbortController();
-
-   //    rangeRef.current?.addEventListener(
-   //       "mousedown",
-   //       (e) => {
-   //          isDragging.current = true;
-   //          setShowTooltip(true);
-   //          updateRange(e.clientX);
-   //       },
-   //       { signal: controller.signal },
-   //    );
-
-   //    rangeRef.current?.addEventListener("mouseenter", () => {
-   //       isHovering.current = true;
-   //       setShowTooltip(true);
-   //    });
-
-   //    rangeRef.current?.addEventListener("mouseleave", () => {
-   //       isHovering.current = false;
-   //       if (!isDragging.current) {
-   //          setShowTooltip(false);
-   //       }
-   //    });
-
-   //    document.addEventListener(
-   //       "mousemove",
-   //       (e) => {
-   //          if (!isDragging.current) return;
-   //          updateRange(e.clientX);
-   //       },
-   //       { signal: controller.signal },
-   //    );
-
-   //    document.addEventListener(
-   //       "mouseup",
-   //       () => {
-   //          if (!isHovering.current) {
-   //             setShowTooltip(false);
-   //          }
-   //          isDragging.current = false;
-   //       },
-   //       { signal: controller.signal },
-   //    );
-
-   //    document.addEventListener(
-   //       "mouseleave",
-   //       () => {
-   //          isDragging.current = false;
-   //          setShowTooltip(false);
-   //       },
-   //       { signal: controller.signal },
-   //    );
-
-   //    return () => {
-   //       controller.abort?.();
-   //    };
-   // }, []);
-
-   // function updateRange(x: number) {
-   //    if (!rangeTrackRef.current) {
-   //       return;
-   //    }
-
-   //    const rangeRect = rangeTrackRef.current.getBoundingClientRect();
-   //    let position = x - rangeRect.left;
-
-   //    if (position < 0) {
-   //       position = 0;
-   //    } else if (position > rangeRect.width) {
-   //       position = rangeRect.width;
-   //    }
-
-   //    // Calculate the actual value based on min/max range
-   //    const positionPercentage = position / rangeRect.width;
-   //    const rawValue = minValue + positionPercentage * (maxValue - minValue);
-
-   //    // Snap to step
-   //    const steppedValue = Math.round(rawValue / step) * step;
-
-   //    // Clamp to min/max bounds
-   //    const clampedValue = Math.max(minValue, Math.min(maxValue, steppedValue));
-   //    console.log(clampedValue);
-
-   //    setValue(clampedValue);
-   // }
 
    return (
       <Slider.Root
@@ -180,7 +74,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
          >
             <Slider.Track className={clsx("bg-surface-alt h-1 w-full rounded-full transition-[height] group-hover:h-2", props.backgroundClassName)}>
                <Slider.Indicator className={clsx("bg-primary-500 rounded-full select-none", props.fillClassName)} />
-               <Slider.Thumb className="relative size-3">
+               <Slider.Thumb className="relative z-10 size-3">
                   <Tooltip open={showTooltip}>
                      <Tooltip.Trigger asChild>
                         <div className="absolute size-3 scale-100 cursor-w-resize rounded-full bg-white transition-transform group-hover:scale-150"></div>
