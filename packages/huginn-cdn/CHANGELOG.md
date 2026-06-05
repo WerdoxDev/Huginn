@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.16.0...cdn@v0.17.0) (2026-06-05)
+
+
+### Features
+
+* **cdn:** implement OTel at elysia level ([83f81de](https://github.com/WerdoxDev/Huginn/commit/83f81debfea208e0ea6f8a67295675106edbac0a))
+
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.15.0...cdn@v0.16.0) (2026-05-31)
 
 

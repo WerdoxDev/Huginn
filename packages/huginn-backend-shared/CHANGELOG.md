@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.26.0...backend-shared@v0.27.0) (2026-06-05)
+
+
+### Features
+
+* **backend-shared:** implement full OTel for all database operations ([fc0d273](https://github.com/WerdoxDev/Huginn/commit/fc0d2733155f3211f07295c7795e13b4f05efc0a))
+
+
+### Bug Fixes
+
+* **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
+* **backend-shared:** remove useless telemetry ([68e9ee7](https://github.com/WerdoxDev/Huginn/commit/68e9ee7ea8883a021f4baccd03e010e08cf5e831))
+
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.1...backend-shared@v0.26.0) (2026-05-31)
 
 
