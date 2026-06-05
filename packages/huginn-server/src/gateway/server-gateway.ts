@@ -46,7 +46,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    public onOpen(session: ClientSession) {
       return analytics.startActiveSpan("gateway.onOpen", (span) => {
-         span.setAttribute("session.id", session.sessionId);
+         span.setAttribute("params.session.id", session.sessionId);
 
          try {
             const helloData: GatewayHello = {
@@ -108,6 +108,12 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    }
 
    public async onMessage(session: ClientSession, data: GatewayPayload) {
+      // To skip trace
+      if (data.op === GatewayOperations.HEARTBEAT) {
+         this.handleHeartbeat(session, data.d as GatewayHeartbeatData);
+         return;
+      }
+
       return await analytics.startActiveSpan("gateway.onMessage", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -121,9 +127,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             switch (data.op) {
                case GatewayOperations.IDENTIFY:
                   await this.handleIdentify(session, data.d);
-                  break;
-               case GatewayOperations.HEARTBEAT:
-                  this.handleHeartbeat(session, data.d);
                   break;
                case GatewayOperations.RESUME:
                   await this.handleResume(session, data.d);
@@ -161,19 +164,9 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    }
 
    private handleHeartbeat(session: ClientSession, _data: GatewayHeartbeatData) {
-      analytics.startActiveSpan("gateway.handleHeartbeat", (span) => {
-         span.setAttributes(session.getDefaultAttributes());
-         try {
-            session.resetHeartbeatTimeout();
-            const heartbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
-            session.send(heartbeatAckData, false, true);
-         } catch (e) {
-            recordSpanError(e as Error);
-            throw e;
-         } finally {
-            span.end();
-         }
-      });
+      session.resetHeartbeatTimeout();
+      const heartbeatAckData: GatewayHeartbeatAck = { op: GatewayOperations.HEARTBEAT_ACK };
+      session.send(heartbeatAckData, false, true);
    }
 
    private async handleIdentify(session: ClientSession, data: GatewayIdentifyData) {
@@ -184,10 +177,11 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             "params.properties.os": data.properties.os,
             "params.properties.device": data.properties.device,
          });
+
          try {
             const { valid, payload } = await verifyToken("user-access", data.token);
-
             span.setAttribute("token.valid", valid);
+
             if (!valid || !payload) {
                session.peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
                return;
@@ -255,6 +249,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    private async handleResume(session: ClientSession, data: GatewayResumeData) {
       return await analytics.startActiveSpan("gateway.handleResume", async (span) => {
+         span.setAttributes({ ...session.getDefaultAttributes(), "params.session_id": data.sessionId, "params.seq": data.seq });
          try {
             const { valid, payload } = await verifyToken("user-access", data.token);
             span.setAttribute("token.valid", valid);
