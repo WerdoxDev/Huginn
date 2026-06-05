@@ -7,14 +7,15 @@ on:
       inputs:
          app_release_created:
             description: "Run publish-app?"
-            required: true
+            required: false
             type: boolean
             default: true
 
          app_version:
-            description: "App version"
-            required: true
+            description: "Override app version"
+            required: false
             type: string
+
    push:
       branches:
          - master
@@ -40,15 +41,14 @@ jobs:
 
          - name: Compute outputs
            id: outputs
-           shell: bash
            run: |
-              if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-                echo "app_release_created=${{ inputs.app_release_created }}" >> "$GITHUB_OUTPUT"
-                echo "app_version=${{ inputs.app_version }}" >> "$GITHUB_OUTPUT"
+              if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.app_version }}" ]]; then
+                 echo "app_release_created=${{ inputs.app_release_created }}" >> "$GITHUB_OUTPUT"
+                 echo "app_version=${{ inputs.app_version }}" >> "$GITHUB_OUTPUT"
               else
-                echo "app_release_created=${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
-                echo "app_version=${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}" >> "$GITHUB_OUTPUT"
-               fi
+                 echo "app_release_created=${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
+                 echo "app_version=${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}" >> "$GITHUB_OUTPUT"
+              fi
    publish-app:
       needs: release-please
       strategy:
