@@ -1,21 +1,27 @@
-import type { GatewayIdentifyProperties, GatewayPayload } from "@huginn/shared";
+import type { GatewayIdentifyProperties, GatewayPayload, Snowflake } from "@huginn/shared";
+import type { Peer } from "crossws";
 
 import { CommonClientSession } from "@huginn/backend-shared";
 import { prisma, selectRelationshipUser } from "@huginn/backend-shared/database";
-import { ChannelType, RelationshipType } from "@huginn/shared";
+import { ChannelType, RelationshipType, WorkerID } from "@huginn/shared";
 
 export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
    public get authenticated(): boolean {
       return !!this.user && !!this.properties;
    }
 
-   public async subscribeToTopicsExtra() {
-      if (!this.sessionId || !this.user) {
-         throw new Error("Client session was not initialized");
+   public constructor(peer: Peer, sessionId: Snowflake) {
+      super(peer, sessionId, WorkerID.GATEWAY);
+   }
+
+   public override async subscribeToTopics() {
+      await super.subscribeToTopics();
+
+      if (!this.authenticated || !this.user) {
+         return;
       }
 
-      const userId = this.user?.id;
-      this.subscribe(userId);
+      const userId = this.user.id;
 
       const relationships = await prisma.relationship.getUserRelationships(userId, {
          select: { ...selectRelationshipUser, type: true },

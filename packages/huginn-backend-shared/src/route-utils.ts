@@ -1,13 +1,14 @@
-import type { ImageData, VideoData } from "#types";
-
-import { prisma } from "#database";
-import { unauthorized } from "#elysia-errors";
-import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
-import { error, type UserTokenPayload } from "@huginn/shared";
+import { getCurrentSpan } from "@elysia/opentelemetry";
+import { error, type OAuthTokenPayload, type UserTokenPayload } from "@huginn/shared";
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
 import sharp from "sharp";
+
+import type { ImageData, VideoData } from "#types";
+
+import { unauthorized } from "#elysia-errors";
+import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
 
 export async function tryCatch<T>(fn: (() => Promise<T>) | (() => T)): Promise<[Error, null] | [null, T]> {
    try {
@@ -48,7 +49,8 @@ export async function getVideoData(source: ArrayBuffer): Promise<VideoData | und
 }
 
 export function verifyJwt<Type extends TokenType = "user-access">(type?: Type) {
-   return new Elysia({ name: "verify-jwt" }).derive({ as: "scoped" }, async ({ headers, status }) => {
+   return new Elysia({ name: "verify-jwt" }).derive({ as: "scoped" }, async function verifyJwt({ headers, status }) {
+      const tokenType = type ?? "user-access";
       const authorization = headers["authorization"];
 
       const token = authorization?.split(" ")[1];
@@ -57,19 +59,40 @@ export function verifyJwt<Type extends TokenType = "user-access">(type?: Type) {
          return unauthorized(status);
       }
 
-      const { valid, payload } = await verifyToken(type ?? "user-access", token);
+      const { valid, payload } = await verifyToken(tokenType, token);
 
       if (!valid || !payload) {
          return unauthorized(status);
       }
 
+      const span = getCurrentSpan();
+      // console.log(span);
+      span?.setAttributes({ "token.type": tokenType });
+      if (tokenType) {
+         const data = payload as UserTokenPayload;
+         span?.setAttributes({
+            "user.id": data.id,
+            "user.auth_type": data.authType,
+            "user.last_authenticated": data.lastAuthenticatedAt,
+            distinct_id: data.id,
+         });
+      } else if (tokenType === "oauth") {
+         const data = payload as OAuthTokenPayload;
+         span?.setAttributes({
+            "oauth.provider_id": data.providerId,
+            "oauth.user_id": data.providerUserId,
+            "oauth.username": data.username,
+         });
+         if (data.avatarHash) span?.setAttributes({ "oauth.avatar_hash": data.avatarHash });
+      }
+
       // We may have deleted the user form the db
 
-      if ((["user-access", "user-refresh"] as TokenType[]).includes(type ?? "user-access")) {
-         if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
-            return unauthorized(status);
-         }
-      }
+      // if ((["user-access", "user-refresh"] as TokenType[]).includes(type ?? "user-access")) {
+      //    if (!(await prisma.user.exists({ id: BigInt((payload as UserTokenPayload).id) }))) {
+      //       return unauthorized(status);
+      //    }
+      // }
 
       return { token: token, tokenPayload: payload as TokenPayload<Type> };
    });
@@ -87,7 +110,7 @@ class GlobalElysia {
    }
 }
 
-export const globalPlugin = new Elysia({ name: "global-plugin" }).derive({ as: "scoped" }, () => {
+export const globalPlugin = new Elysia({ name: "global-plugin" }).derive({ as: "scoped" }, function globalPlugin() {
    return { global: new GlobalElysia() };
 });
 

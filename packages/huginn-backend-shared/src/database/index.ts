@@ -1,5 +1,6 @@
-import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+
+import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
 
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";

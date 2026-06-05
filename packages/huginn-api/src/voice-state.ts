@@ -1,4 +1,4 @@
-import { error, EventEmitter, log, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
+import { analytics, EventEmitter, recordSpanError, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
 
 type Events = {
    update_gateway_voice_state: {
@@ -22,52 +22,69 @@ export class VoiceState extends EventEmitter<Events> {
    public localVoiceState: LocalVoiceState = { isAudioPaused: false };
 
    public async updateGatewayVoiceState(update: Partial<GatewayVoiceStateFlags>): Promise<void> {
-      log("api:gateway-voice", "default", "update gateway voice state", "upd:", JSON.stringify(update));
-
-      const final = { ...this.gatewayVoiceState, ...update };
-
-      // If the provided update is the same as the current state, ignore
-      if (JSON.stringify(final) === JSON.stringify(this.gatewayVoiceState)) {
-         log("api:gateway-voice", "default", "ignoring gateway voice state update");
-         return;
-      }
-
-      this.pendingGatewayVoiceState = { ...this.gatewayVoiceState };
-      this.gatewayVoiceState = { ...this.gatewayVoiceState, ...update };
-
-      this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
-
-      const confirmed = await new Promise<GatewayVoiceStateFlags | undefined>((r) => {
-         this.emit("update_gateway_voice_state", {
-            voiceState: this.gatewayVoiceState,
-            callback: r,
+      return await analytics.startActiveSpan("apiVoiceState.updateGatewayVoiceState", async (span) => {
+         const final = { ...this.gatewayVoiceState, ...update };
+         span.setAttributes({
+            "voice.state.is_audio_deafened": final.isAudioDeafened,
+            "voice.state.is_audio_muted": final.isAudioMuted,
+            "voice.state.is_camera_on": final.isCameraOn,
+            "voice.state.is_screen_sharing": final.isScreenSharing,
+            "voice.state.is_audio_streaming": final.isAudioStreaming,
          });
+
+         try {
+            // If the provided update is the same as the current state, ignore
+            if (JSON.stringify(final) === JSON.stringify(this.gatewayVoiceState)) {
+               span.setAttribute("voice.state.update_ignored", true);
+               return;
+            }
+
+            this.pendingGatewayVoiceState = { ...this.gatewayVoiceState };
+            this.gatewayVoiceState = { ...this.gatewayVoiceState, ...update };
+
+            this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
+
+            const confirmed = await new Promise<GatewayVoiceStateFlags | undefined>((r) => {
+               this.emit("update_gateway_voice_state", {
+                  voiceState: this.gatewayVoiceState,
+                  callback: r,
+               });
+            });
+
+            if (!confirmed) return;
+
+            this.gatewayVoiceState = { ...confirmed };
+            this.pendingGatewayVoiceState = undefined;
+
+            this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
+
+            if (JSON.stringify(confirmed) !== JSON.stringify(this.gatewayVoiceState)) {
+               throw new Error("Confirmed gateway voice state does not match local state");
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
-
-      if (!confirmed) {
-         return;
-      }
-
-      this.gatewayVoiceState = { ...confirmed };
-      this.pendingGatewayVoiceState = undefined;
-
-      this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
-
-      if (JSON.stringify(confirmed) !== JSON.stringify(this.gatewayVoiceState)) {
-         error(
-            "api:gateway-voice",
-            "Mismatch between server and local voice state",
-            "lvs:",
-            JSON.stringify(this.gatewayVoiceState),
-            "gvs:",
-            JSON.stringify(confirmed),
-         );
-         return;
-      }
    }
 
    public updateLocalVoiceState(update: Partial<LocalVoiceState>): void {
-      this.localVoiceState = { ...this.localVoiceState, ...update };
-      this.emit("local_voice_state_updated", this.localVoiceState);
+      analytics.startActiveSpan("apiVoiceState.updateLocalVoiceState", (span) => {
+         span.setAttributes({
+            "voice.state.is_audio_paused": update.isAudioPaused ?? this.localVoiceState.isAudioPaused,
+         });
+
+         try {
+            this.localVoiceState = { ...this.localVoiceState, ...update };
+            this.emit("local_voice_state_updated", this.localVoiceState);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 }

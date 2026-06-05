@@ -30,7 +30,6 @@ export type InitializationResult = {
 
 type ConnectOptions = {
    tokens?: Partial<Tokens>;
-   timeout?: number;
 };
 
 export class HuginnClient<V extends Voice = Voice> {
@@ -88,7 +87,7 @@ export class HuginnClient<V extends Voice = Voice> {
    }
 
    public async initialize(options: ConnectOptions = {}): Promise<InitializationResult> {
-      const { tokens, timeout = 10000 } = options;
+      const { tokens } = options;
       try {
          if (tokens?.token || tokens?.refreshToken) {
             const tokenResult = await this.restoreSession(tokens);
@@ -102,7 +101,7 @@ export class HuginnClient<V extends Voice = Voice> {
             }
          }
 
-         const authResult = await this.authenticate(timeout);
+         const authResult = await this.authenticate();
 
          if (!authResult.success) {
             return authResult;
@@ -116,15 +115,12 @@ export class HuginnClient<V extends Voice = Voice> {
       }
    }
 
-   private async authenticate(timeout: number): Promise<InitializationResult> {
-      const result = await Promise.race([
-         this.gateway.authenticate(),
-         new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), timeout)),
-      ]);
+   private async authenticate(): Promise<InitializationResult> {
+      const result = await this.gateway.authenticate();
 
-      if (!result) {
-         return { status: "timeout", success: false, retryable: true };
-      }
+      // if (!result) {
+      //    return { status: "timeout", success: false, retryable: true };
+      // }
 
       if (!result.authenticated) {
          return {

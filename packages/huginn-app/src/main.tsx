@@ -1,18 +1,18 @@
 import ErrorComponent from "@components/ErrorComponent";
-import { logger } from "@huginn/shared";
 
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { initAnalytics } from "@lib/analytics";
+import { analytics } from "@huginn/shared";
+import { runPendingActions } from "@lib/actions";
+import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
-import { initStorageStoreEarly, storageStore } from "@stores/storageStore";
+import { initStorageStoreEarly } from "@stores/storageStore";
 import { initWindowStore } from "@stores/windowStore";
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
-import { RemoteLogger } from "../shared/remote-logger";
 import { routeTree } from "./routeTree.gen";
 
 if (import.meta.env.DEV) {
@@ -31,47 +31,31 @@ if (import.meta.env.DEV) {
 }
 
 window.addEventListener("unhandledrejection", (d) => {
-   console.log(d);
+   analytics.startActiveSpan("unhandledrejection", async (span) => {
+      span.setAttribute("reason", d.reason instanceof Error ? (d.reason.stack ?? d.reason.message) : JSON.stringify(d.reason));
+      console.log(d);
+      span.end();
+   });
 });
-
-logger.enableLogs({
-   // "api:voice": ["default", "send", "recv", "heartbeat"],
-   // "app:audio-level-checker": ["default"],
-   "api:voice": ["default"],
-   "api:voice-manager": ["default"],
-   "api:voice-device": ["default"],
-   "api:voice-signaling": ["heartbeat", "default"],
-   "api:voice-transport": ["default"],
-   "api:voice-stream": ["default"],
-   "app:voice-store": ["remote-sources", "default"],
-   "app:voice-client": ["voice-recv", "default"],
-   "api:gateway": ["default", "recv", "heartbeat"],
-   "api:client": ["ready-state"],
-   "app:client-store": ["default"],
-   "app:presence-store": ["default"],
-});
-
-logger.excludeEventLogs({ "app:voice-store": ["speaking-state"] });
-logger.setIsRaw(import.meta?.env?.PROD ?? false);
-let _remoteLogger: RemoteLogger;
 
 await initStorageStoreEarly();
+await runPendingActions();
 await initWindowStore();
 initAnalytics();
 
-if (window.electronAPI) {
-   logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
-   logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
-} else {
-   const thisStore = storageStore.getState();
-   const settings = thisStore.getCachedValue("settings");
-   const clientInfo = thisStore.getCachedValue("client-info");
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-   if (activePreset?.apiHostname) {
-      const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
-      _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
-   }
-}
+// if (window.electronAPI) {
+//    logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
+//    logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
+// } else {
+//    const thisStore = storageStore.getState();
+//    const settings = thisStore.getCachedValue("settings");
+//    const clientInfo = thisStore.getCachedValue("client-info");
+//    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+//    if (activePreset?.apiHostname) {
+//       const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
+//       _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
+//    }
+// }
 
 const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
 

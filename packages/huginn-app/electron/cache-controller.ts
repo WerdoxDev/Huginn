@@ -39,9 +39,7 @@ export class CacheController {
       ipcMain.handle("cache:save-image", async (_, url: string, key: string) => {
          log("app:electron", "recv", "cache save image", "url:", url, "key:", key);
 
-         if (this.cachedKeys.has(key)) {
-            return;
-         }
+         if (this.cachedKeys.has(key)) return;
 
          const filePath = this.getCacheFilePath(key);
 

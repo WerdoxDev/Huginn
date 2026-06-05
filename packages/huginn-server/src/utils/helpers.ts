@@ -1,4 +1,3 @@
-import { envs } from "#setup";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
@@ -22,6 +21,8 @@ import {
    pick,
    type Snowflake,
 } from "@huginn/shared";
+
+import { envs } from "#setup";
 
 import { dispatchToTopic } from "./gateway-utils";
 

@@ -16,12 +16,7 @@ export default function ErrorComponent(props: { error: unknown }) {
       queryErrorResetBoundary.reset();
    }, [queryErrorResetBoundary]);
 
-   useEffect(() => {
-      console.log(props.error);
-   }, [props.error]);
-
    function handleRetry() {
-      console.log(queryErrorResetBoundary.isReset());
       router.invalidate();
    }
 

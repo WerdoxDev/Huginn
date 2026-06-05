@@ -27,8 +27,8 @@ export default defineConfig(({ mode }) => {
    const base = isElectron ? "./" : isCapacitor ? "/" : "/app";
    return {
       base,
-      publicDir: "public",
 
+      publicDir: "public",
       // optimizeDeps: ["@huginn/shared"],
       plugins: [
          // basicSsl({ domains: ["192.168.178.21"] }),
@@ -108,6 +108,7 @@ export default defineConfig(({ mode }) => {
       },
       clearScreen: false,
       build: {
+         sourcemap: true,
          target: "esnext",
          outDir: "./dist",
       },

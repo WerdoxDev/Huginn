@@ -1,11 +1,10 @@
-import { error, log, logger, type LogArgs } from "@huginn/shared";
+import { analytics, analyticsShim, error, initAnalytics, log } from "@huginn/shared";
+import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
 import { Tray, app, Menu, ipcMain } from "electron";
 import updater from "electron-updater";
-import { randomUUID } from "node:crypto";
 import path from "node:path";
 
 import { ElectronStorage } from "../shared/electron-storage";
-import { RemoteLogger } from "../shared/remote-logger";
 import { StorageController } from "../shared/storage-controller";
 import { CacheController } from "./cache-controller";
 import { MainWindow } from "./main-window";
@@ -16,13 +15,12 @@ export class HuginnApp {
    private storage: StorageController<ElectronStorage>;
    private cache: CacheController;
    private mainWindow?: MainWindow;
-   private remoteLogger?: RemoteLogger;
    private tray?: Tray;
    private allowedToRun: boolean;
 
    public constructor(allowedToRun: boolean) {
       this.allowedToRun = allowedToRun;
-      this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev"));
+      this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev", analyticsShim));
       this.cache = new CacheController();
       this.configureUpdater();
       this.eventListeners();
@@ -34,14 +32,12 @@ export class HuginnApp {
    }
 
    async initAsync() {
-      await this.storage.checkFiles();
-      await this.storage.adapter.tryMigrate();
+      await this.storage.mergeNewProperties();
       await this.storage.setupClientInfo();
-      await this.initializeLogger();
+      await this.initAnalytics();
    }
 
    private eventListeners() {
-      this.loggerCategoryEvents();
       this.cliCategoryEvents();
    }
 
@@ -82,17 +78,25 @@ export class HuginnApp {
       this.mainWindow?.window.focus();
    }
 
-   async initializeLogger() {
+   async initAnalytics() {
       try {
-         const { data } = await this.storage.loadFile("settings");
-         const apiHostname = data.hostnamePresets.find((x) => x.name === data.activePresetName)?.apiHostname;
-
+         // const content = await fs.readFile(this.storage.adapter.getFilePath("client-info"), "utf-8");
+         const { data: settings } = await this.storage.loadFile("settings");
          const { data: info } = await this.storage.loadFile("client-info");
-         const endpoint = new URL("/api/log", apiHostname).toString();
-         logger.enableLogs({
-            "app:electron": ["default", "loopback", "recv", "send", "updater", "file-controller"],
-         });
-         this.remoteLogger = new RemoteLogger(logger, endpoint, info.id);
+         const posthogHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.posthogHostname;
+         const otelHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.otelHostname;
+
+         initAnalytics(
+            new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
+               serviceName: "app-electron",
+               posthogHost: posthogHostname,
+               otlpHost: `${otelHostname}/v1/traces`,
+               clientId: info.id,
+               // host: apiHostname,
+            }),
+         );
+
+         this.storage.adapter.setAnalytics(analytics);
       } catch (e) {
          error("app:electron", "logger setup failed:", e);
       }
@@ -151,12 +155,6 @@ export class HuginnApp {
 
       this.tray.on("click", () => {
          this.mainWindow?.window.show();
-      });
-   }
-
-   private loggerCategoryEvents() {
-      ipcMain.on("logger:add-to-buffer", (_, type: "log" | "error", section: string, level: string | undefined, ...args: LogArgs[]) => {
-         this.remoteLogger?.addToBuffer(type, section, level, ...args);
       });
    }
 

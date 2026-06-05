@@ -1,5 +1,3 @@
-import { startCronJobs } from "#cron-jobs";
-import { ServerGateway } from "#gateway/server-gateway";
 import { S3Client } from "@aws-sdk/client-s3";
 import { readEnv } from "@huginn/runtime-shared";
 import { logger } from "@huginn/shared";
@@ -7,6 +5,9 @@ import { Client } from "@notionhq/client";
 import { NotionConverter } from "notion-to-md";
 import { Octokit } from "octokit";
 import { Resend } from "resend";
+
+import { startCronJobs } from "#cron-jobs";
+import { ServerGateway } from "#gateway/server-gateway";
 
 // logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
 logger.enableLogs({ "backend-shared:websocket": ["default"], "server:cron": ["default"] });
@@ -33,10 +34,10 @@ export const envs = readEnv([
    "CDN_HMAC_SECRET",
    "IGDB_CLIENT_ID",
    "IGDB_CLIENT_SECRET",
-   "AXIOM_TOKEN",
-   "AXIOM_DATASET",
+   "SIGNOZ_API_URL",
    "RESEND_API_KEY",
    "NOTION_TOKEN",
+   "OTEL_SERVICE_NAME",
 ] as const);
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);

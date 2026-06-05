@@ -1,9 +1,7 @@
 import { error, log } from "@huginn/shared";
 import * as loopback from "application-loopback";
-import { app } from "electron";
+import { app, dialog } from "electron";
 import path from "node:path";
-
-import { HuginnApp } from "./huginn-app";
 
 let allowedToRun: boolean = false;
 try {
@@ -34,5 +32,11 @@ if (app.isPackaged) {
    loopback.setExecutablesRoot(path.resolve(import.meta.dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));
 }
 
-const huginn = new HuginnApp(allowedToRun);
-await huginn.initAsync();
+try {
+   const { HuginnApp } = await import("./huginn-app");
+   const huginn = new HuginnApp(allowedToRun);
+   await huginn.initAsync();
+} catch (e) {
+   dialog.showErrorBox("Failed to start Huginn", `An error occurred while starting Huginn:\n\n${e instanceof Error ? e.stack : String(e)}`);
+   app.exit(1);
+}

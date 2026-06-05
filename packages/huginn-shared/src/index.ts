@@ -16,3 +16,4 @@ export * from "./snowflake";
 export * from "./utils";
 export * from "./cache-storage";
 export * from "./event-emitter";
+export * from "./analytics";

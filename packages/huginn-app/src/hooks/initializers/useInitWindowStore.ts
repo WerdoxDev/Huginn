@@ -1,5 +1,4 @@
 import { useClientStore } from "@stores/clientStore";
-import { initDeviceStore } from "@stores/deviceStore";
 import { initWindowStore } from "@stores/windowStore";
 import { useEffect } from "react";
 

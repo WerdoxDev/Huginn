@@ -20,6 +20,8 @@
       "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
       "@notionhq/client": "^5.22.0",
+      "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+      "@opentelemetry/sdk-trace-base": "^2.7.1",
       "@std/encoding": "npm:@jsr/std__encoding",
       "@std/text": "npm:@jsr/std__text",
       "@types/jsdom": "^28.0.3",

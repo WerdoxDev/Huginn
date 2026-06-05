@@ -1,15 +1,17 @@
+import { analyticsShim } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import type { ClientInfo, StorageMap, FileType } from "@/types";
+import type { StorageMap, FileType } from "@/types";
 
 import { BridgeStorage } from "../../shared/bridge-storage";
 import { LocalStorage } from "../../shared/local-storage";
 import { StorageController } from "../../shared/storage-controller";
 import { clientStore } from "./clientStore";
 
-const storage = new StorageController(window.electronAPI ? new BridgeStorage() : new LocalStorage());
+const storage = new StorageController(window.electronAPI ? new BridgeStorage(analyticsShim) : new LocalStorage(analyticsShim));
 const initialStore = () => ({
+   storage: storage,
    cache: {} as StorageMap,
 });
 
@@ -42,10 +44,10 @@ const store = createStore(
 );
 
 export async function initStorageStoreEarly() {
-   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences"];
+   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences", "pinned-channels"];
    const cache = {} as StorageMap;
 
-   await storage.checkFiles();
+   await storage.mergeNewProperties();
    await storage.setupClientInfo();
 
    for (const key of keys) {
@@ -121,7 +123,7 @@ export function useStorageStore() {
 }
 
 export function useStorage<K extends FileType>(type: K) {
-   return useStore(store, (state) => state.cache[type] as StorageMap[K]);
+   return useStore(store, (state) => state.getCachedValue(type));
 }
 
 export type StorageStoreType = ReturnType<typeof useStorageStore>;

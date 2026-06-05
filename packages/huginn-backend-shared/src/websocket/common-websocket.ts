@@ -1,8 +1,10 @@
-import type { CommonPayload, WebsocketOptions } from "#types";
 import type { Message, Peer } from "crossws";
 
+import { analytics, GatewayCode, recordSpanError, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
+
+import type { CommonPayload, WebsocketOptions } from "#types";
+
 import { prisma, selectPrivateUser } from "#database";
-import { error, GatewayCode, log, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
 
 import type { CommonClientSession } from "./common-client-session";
 
@@ -26,41 +28,63 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    }
 
    public async _internalOnOpen(peer: Peer) {
-      const sessionId = snowflake.generateString(this.options.workerId);
-      log("backend-shared:websocket", "default", "open", "wid:", this.options.workerId, "sid:", sessionId);
+      analytics.startActiveSpan("commonWebsocket.onOpen", async (span) => {
+         span.setAttribute("params.peer.id", peer.id);
+         try {
+            const sessionId = snowflake.generateString(this.options.workerId);
 
-      peer.context.sessionId = sessionId;
-      const session = this.createSession(peer, sessionId);
+            peer.context.sessionId = sessionId;
+            const session = this.createSession(peer, sessionId);
+            span.setAttributes(session.getDefaultAttributes());
 
-      await session.enqueue(() => this.onOpen(session));
+            await session.enqueue(() => this.onOpen(session));
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async _internalOnClose(peer: Peer, event: { code?: number; reason?: string }) {
-      log("backend-shared:websocket", "default", "close", "wid:", this.options.workerId, "sid:", peer.context.sessionId, "code:", event.code);
+      analytics.startActiveSpan("commonWebsocket.onClose", async (span) => {
+         span.setAttribute("params.peer.id", peer.id);
+         if (event.code) span.setAttribute("params.event.code", event.code);
+         if (event.reason) span.setAttribute("params.event.reason", event.reason);
+         try {
+            const session = this.sessions.get(peer.context.sessionId);
+            span.setAttribute("session.exists", !!session);
+            if (!session) return;
+            else span.setAttributes(session.getDefaultAttributes());
 
-      const session = this.sessions.get(peer.context.sessionId);
-      if (!session) return;
+            await session.enqueue(() => this.onClose(session, event));
 
-      await session.enqueue(() => this.onClose(session, event));
+            session.stopHeartbeatTimeout();
 
-      session.stopHeartbeatTimeout();
-
-      if (event.code === GatewayCode.SWITCHING_CONNECTION) return;
-
-      if (
-         session.authenticated &&
-         (event.code === GatewayCode.INVALID_SESSION || event.code === GatewayCode.INTENTIONAL_CLOSE || event.code === GatewayCode.GOING_AWAY)
-      ) {
-         this.deleteSession(session.sessionId);
-      } else if (session.authenticated) {
-         session.isStale = true;
-         this.queueSessionDelete(session.sessionId);
-      } else {
-         this.deleteSession(session.sessionId);
-      }
+            if (
+               session.authenticated &&
+               (event.code === GatewayCode.INVALID_SESSION || event.code === GatewayCode.INTENTIONAL_CLOSE || event.code === GatewayCode.GOING_AWAY)
+            ) {
+               this.deleteSession(session.sessionId);
+            } else if (session.authenticated) {
+               session.isStale = true;
+               this.queueSessionDelete(session.sessionId);
+            } else {
+               this.deleteSession(session.sessionId);
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async _internalOnMessage(peer: Peer, message: Message) {
+      // return await analytics.startActiveSpan("commonWebsocket.onMessage", async (span) => {
+      // span.setAttribute("params.peer.id", peer.id);
       try {
          const data: Payload = message.json();
 
@@ -70,13 +94,14 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          }
 
          const session = this.sessions.get(peer.context.sessionId);
+         // span.setAttribute("session.exists", !!session);
          if (!session) return;
+         // else span.setAttributes(session.getDefaultAttributes());
 
-         await session.enqueue(() => this.onMessage(session, data));
+         await session.enqueue(async () => await this.onMessage(session, data));
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         error("backend-shared:websocket", "error in onMessage:", e);
-
+         // recordSpanError(e as Error);
          if (e instanceof SyntaxError) {
             peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
             return;
@@ -84,11 +109,13 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
          peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
       }
+      // } finally {
+      // span.end();
+      // }
+      // });
    }
 
    public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
-      log("backend-shared:websocket", "subscriptions", "subscribe", "wid:", this.options.workerId, "uid:", userId, "tpc:", topic);
-
       for (const [_sessionId, session] of this.sessions) {
          if (session.user?.id === userId) {
             session.subscribe(topic);
@@ -97,8 +124,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    }
 
    public unsubscribeSessionsFromTopic(userId: Snowflake, topic: string) {
-      log("backend-shared:websocket", "subscriptions", "unsubscribe", "wid:", this.options.workerId, "uid:", userId, "tpc:", topic);
-
       for (const [_sessionId, session] of this.sessions) {
          if (session.user?.id === userId) {
             session.unsubscribe(topic);
@@ -123,96 +148,152 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    }
 
    private queueSessionDelete(sessionId: Snowflake) {
-      log("backend-shared:websocket", "default", "queue session delete", "wid:", this.options.workerId, "sid:", sessionId);
+      return analytics.startActiveSpan("commonWebsocket.queueSessionDelete", (span) => {
+         span.setAttribute("params.session.id", sessionId);
+         try {
+            const timeout = setTimeout(async () => {
+               const session = this.sessions.get(sessionId);
+               if (!session || !session.isStale) return;
 
-      const timeout = setTimeout(async () => {
-         const session = this.sessions.get(sessionId);
-         if (!session || !session.isStale) return;
+               this.deleteSession(sessionId);
+            }, this.options.sessionDeleteTimeout);
 
-         log("backend-shared:websocket", "default", "delete session (queued)", "wid:", this.options.workerId, "sid:", sessionId);
+            if (this.sessionDeleteTimeouts.has(sessionId)) {
+               this.cancelSessionDelete(sessionId);
+            }
 
-         this.deleteSession(sessionId);
-      }, this.options.sessionDeleteTimeout);
-
-      if (this.sessionDeleteTimeouts.has(sessionId)) {
-         this.cancelSessionDelete(sessionId);
-      }
-
-      this.sessionDeleteTimeouts.set(sessionId, timeout);
+            this.sessionDeleteTimeouts.set(sessionId, timeout);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public cancelSessionDelete(sessionId: Snowflake) {
-      log("backend-shared:websocket", "default", "cancel session delete", "wid:", this.options.workerId, "sid:", sessionId);
-
-      if (this.sessionDeleteTimeouts.has(sessionId)) {
-         const timeout = this.sessionDeleteTimeouts.get(sessionId);
-         clearTimeout(timeout);
-         this.sessionDeleteTimeouts.delete(sessionId);
-      }
+      return analytics.startActiveSpan("commonWebsocket.cancelSessionDelete", (span) => {
+         span.setAttribute("params.session.id", sessionId);
+         try {
+            const exists = this.sessionDeleteTimeouts.has(sessionId);
+            span.setAttribute("session_delete_timeout.exists", exists);
+            if (exists) {
+               const timeout = this.sessionDeleteTimeouts.get(sessionId);
+               clearTimeout(timeout);
+               this.sessionDeleteTimeouts.delete(sessionId);
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async resumeSession(session: ClientSession, oldSessionId: Snowflake, lastSequence: number, userId: Snowflake) {
-      const oldSession = this.sessions.get(oldSessionId);
+      return await analytics.startActiveSpan("commonWebsocket.resumeSession", async (span) => {
+         span.setAttributes({
+            ...session.getDefaultAttributes(),
+            "params.old_session_id": oldSessionId,
+            "params.last_sequence": lastSequence,
+            "params.user_id": userId,
+         });
+         try {
+            const oldSession = this.sessions.get(oldSessionId);
 
-      log("backend-shared:websocket", "default", "resume", "wid:", this.options.workerId, "osid:", oldSession?.sessionId, "sid:", session.sessionId);
+            span.setAttribute("old_session.exists", !!oldSession);
+            if (oldSession) span.setAttributes(oldSession.getDefaultAttributes("old_session"));
 
-      if (!oldSession || !oldSession.authenticated || !oldSession.properties) {
-         session.peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
-         return;
-      }
+            if (!oldSession || !oldSession.authenticated || !oldSession.properties) {
+               session.peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+               return;
+            }
 
-      if (oldSession.sequence === undefined || lastSequence > oldSession.sequence) {
-         session.peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-         return;
-      }
+            if (oldSession.sequence === undefined || lastSequence > oldSession.sequence) {
+               session.peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+               return;
+            }
 
-      // Sometimes the new session reconnects so fast that the old one is still actually not considered as "disconnected" from the server
-      if (oldSession.peer.websocket.readyState === WebSocket.OPEN) {
-         oldSession.peer.close(GatewayCode.SWITCHING_CONNECTION, "SWITCHING_CONNECTION");
-      }
+            // Sometimes the new session reconnects so fast that the old one is still actually not considered as "disconnected" from the server
+            // if (oldSession.peer.websocket.readyState === WebSocket.OPEN) {
+            //    oldSession.peer.close(GatewayCode.SWITCHING_CONNECTION, "SWITCHING_CONNECTION");
+            // }
 
-      log("backend-shared:websocket", "default", "resuming", "wid:", this.options.workerId, "osid:", oldSession.sessionId, "seq:", lastSequence);
+            const user = await prisma.user.getById(userId, { select: selectPrivateUser });
+            span.setAttribute("user.id", user.id);
 
-      const user = await prisma.user.getById(userId, { select: selectPrivateUser });
+            session.peer.context.sessionId = oldSession.sessionId;
+            oldSession.peer = session.peer;
+            oldSession.isStale = false;
+            // Reset the old session's timeout when resumed
+            oldSession.resetHeartbeatTimeout();
+            this.cancelSessionDelete(oldSession.sessionId);
+            await oldSession.initialize(user, { ...oldSession.properties });
 
-      session.peer.context.sessionId = oldSession.sessionId;
-      oldSession.peer = session.peer;
-      oldSession.isStale = false;
-      // Reset the old session's timeout when resumed
-      oldSession.resetHeartbeatTimeout();
-      this.cancelSessionDelete(oldSession.sessionId);
-      await oldSession.initialize(user, { ...oldSession.properties });
+            // This session is initialized for the peer right at connection. We need to delete it.
+            session.stopHeartbeatTimeout();
+            this.deleteSession(session.sessionId);
 
-      // This session is initialized for the peer right at connection. We need to delete it.
-      session.stopHeartbeatTimeout();
-      this.deleteSession(session.sessionId);
+            const messageQueue = oldSession.getMessages();
+            span.setAttribute("old_session.message_queue.size", messageQueue.size);
 
-      const messageQueue = oldSession.getMessages();
+            let resendCount = 0;
+            for (const [seq, _data] of messageQueue) {
+               if (seq <= lastSequence) continue;
 
-      for (const [seq, _data] of messageQueue) {
-         if (seq <= lastSequence) continue;
+               oldSession.send(_data, false, false);
+               resendCount++;
+            }
+            span.setAttribute("old_session.message_queue.resend_count", resendCount);
 
-         oldSession.send(_data, false, false);
-      }
-
-      return { oldSession, user };
+            return { oldSession, user };
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async deleteSession(sessionId: Snowflake) {
-      log("backend-shared:websocket", "default", "delete session", "wid:", this.options.workerId, "sid:", sessionId);
-      const session = this.sessions.get(sessionId);
-      if (session) {
-         await this.onDeleteSession?.(session);
-         this.sessions.delete(sessionId);
-      }
+      return await analytics.startActiveSpan("commonWebsocket.deleteSession", async (span) => {
+         span.setAttribute("params.session.id", sessionId);
+         try {
+            const session = this.sessions.get(sessionId);
+            span.setAttribute("session.exists", !!session);
+
+            if (session) {
+               span.setAttributes(session.getDefaultAttributes());
+               await this.onDeleteSession?.(session);
+               this.sessions.delete(sessionId);
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    private createSession(peer: Peer, sessionId: Snowflake) {
-      log("backend-shared:websocket", "default", "create session", "wid:", this.options.workerId, "sid:", sessionId);
+      return analytics.startActiveSpan("commonWebsocket.createSession", (span) => {
+         span.setAttributes({ "params.session.id": sessionId, "params.peer.id": peer.id });
+         try {
+            const session = new this.clientSessionConstructor(peer, sessionId);
+            span.setAttributes(session.getDefaultAttributes());
+            this.sessions.set(sessionId, session);
 
-      const session = new this.clientSessionConstructor(peer, sessionId);
-      this.sessions.set(sessionId, session);
-
-      return session;
+            return session;
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 }

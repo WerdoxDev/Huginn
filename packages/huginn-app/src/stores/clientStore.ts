@@ -1,9 +1,18 @@
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
-import { type APIPublicUser, error, type GatewayReadyData, type GatewayStatus, log, type Snowflake, type UserSettings } from "@huginn/shared";
+import {
+   analytics,
+   type APIPublicUser,
+   error,
+   type GatewayReadyData,
+   type GatewayStatus,
+   log,
+   type Snowflake,
+   type UserSettings,
+} from "@huginn/shared";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
-import { createStore, useStore, type ExtractState } from "zustand";
+import { createStore, useStore } from "zustand";
 
 import { storageStore } from "./storageStore";
 
@@ -142,6 +151,8 @@ export function initializeClient() {
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
          queryClient.setQueryData(["relationships"], getInitialRelationships());
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
+
+         analytics.setDefaultAttributes({ "user.id": d.user.id });
       }),
    );
 

@@ -1,7 +1,7 @@
 // import { usePostHog } from "posthog-js/react";
 import type { InitializationResult } from "@huginn/api";
 
-import { error, log } from "@huginn/shared";
+import { analytics, error, log } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
@@ -30,7 +30,6 @@ export function useInitializeClient() {
 
             const result = await client.initialize({
                tokens: { token: options.token, refreshToken: options.refreshToken },
-               timeout: 10000,
             });
 
             log("app:client-store", "default", "initialize result:", result?.status);
@@ -49,11 +48,11 @@ export function useInitializeClient() {
                localStorage.setItem("refresh-token", client.tokenHandler.refreshToken);
             }
 
-            posthog.identify(client?.currentUser?.id, {
+            analytics.identify(client!.currentUser!.id, {
+               userId: client?.currentUser?.id,
                username: client?.currentUser?.username,
                displayName: client?.currentUser?.displayName,
                email: client?.currentUser?.email,
-               clientId: clientInfo.id,
             });
 
             await options.onSuccess?.();

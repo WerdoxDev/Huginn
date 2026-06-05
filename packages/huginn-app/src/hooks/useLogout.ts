@@ -1,3 +1,4 @@
+import { analytics } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useNavigate } from "@tanstack/react-router";
@@ -9,7 +10,7 @@ export function useLogout() {
    const navigate = useNavigate();
    const { resetScrolls } = useChannelStore();
 
-   const mutation = useHuginnMutation({
+   const logoutMutation = useHuginnMutation({
       async mutationFn() {
          await client?.logout();
          await client?.gateway.waitForEvents(["disconnected"]);
@@ -25,7 +26,8 @@ export function useLogout() {
          await client?.voiceManager.disconnectVoice();
       }
 
-      await mutation.mutateAsync();
+      await logoutMutation.mutateAsync();
+      analytics.reset();
       await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
 
       resetScrolls();

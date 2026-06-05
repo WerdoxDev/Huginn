@@ -1,7 +1,8 @@
-import type { CommonPayload } from "#types";
 import type { Peer } from "crossws";
 
-import { type APIUser, CONSTANTS, error, GatewayCode, log, type Snowflake } from "@huginn/shared";
+import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type Snowflake, WorkerID } from "@huginn/shared";
+
+import type { CommonPayload } from "#types";
 
 export abstract class CommonClientSession<Payload extends CommonPayload, Properties = undefined> {
    public sessionId: Snowflake;
@@ -11,6 +12,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
 
    public isStale = false;
    public sequence?: number;
+   private workerId: WorkerID;
 
    private heartbeatTimeout?: NodeJS.Timeout;
    private sentMessages: Map<number, Payload>;
@@ -20,44 +22,63 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       return !!this.user;
    }
 
-   public constructor(peer: Peer, sessionId: Snowflake) {
+   public constructor(peer: Peer, sessionId: Snowflake, workerId: WorkerID) {
       this.peer = peer;
       this.sessionId = sessionId;
+      this.workerId = workerId;
       this.sentMessages = new Map();
 
       this.resetHeartbeatTimeout();
    }
 
    public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
-      if (increaseSequence) {
-         data.s = this.getIncreasedSequence();
-      }
+      // analytics.startActiveSpan("commonClientSession.send", (span) => {
+      // span.setAttributes({
+      //    ...this.getDefaultAttributes("send"),
+      //    "params.op": data.op,
+      //    "params.t": data.t ?? "null",
+      //    "params.has_sequence": data.s !== undefined,
+      //    "params.increase_sequence": increaseSequence,
+      //    "params.resumable": resumable,
+      // });
 
-      if (resumable && data.s) {
-         this.sentMessages.set(data.s, data);
-      }
+      // try {
+      if (increaseSequence) data.s = this.getIncreasedSequence();
+      if (resumable && data.s) this.sentMessages.set(data.s, data);
+      // span.setAttribute("session.new_sequence", data.s ?? "null");
 
       this.peer.send(JSON.stringify(data));
+      // } catch (e) {
+      // recordSpanError(e as Error);
+      // throw e;
+      // } finally {
+      // span.end();
+      // }
+      // });
    }
 
    public async initialize(user: APIUser, properties: Properties) {
-      log("backend-shared:client-session", "default", "initialize", "uid:", user.id);
+      analytics.startActiveSpan("commonClientSession.initialize", async (span) => {
+         span.setAttributes({ ...this.getDefaultAttributes(), "user.id": user.id });
+         try {
+            this.user = user;
+            this.properties = properties;
 
-      this.user = user;
-      this.properties = properties;
-
-      await this.subscribeToTopics();
+            await this.subscribeToTopics();
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public subscribe(topic: string) {
-      log("backend-shared:client-session", "subscriptions", "subscribe", topic);
-
       this.peer.subscribe(topic);
    }
 
    public unsubscribe(topic: string) {
-      log("backend-shared:client-session", "subscriptions", "unsubscribe", topic);
-
       this.peer.unsubscribe(topic);
    }
 
@@ -94,10 +115,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public async subscribeToTopics() {
-      log("backend-shared:client-session", "subscriptions", "subscribe to defaults", "sid:", this.sessionId);
-
       if (!this.authenticated || !this.user) {
-         error("backend-shared:client-session", "Client session is not authenticated");
          return;
       }
 
@@ -105,19 +123,26 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       this.subscribe(this.peer.id);
       this.subscribe(this.sessionId);
       this.subscribe(userId);
-
-      await this.subscribeToTopicsExtra();
    }
-
-   public abstract subscribeToTopicsExtra(): Promise<void> | void;
 
    public enqueue(fn: () => Promise<void> | void, onError?: (e: any) => void) {
       const result = this.queue.then(() => fn());
       this.queue = result.catch((e) => {
-         error("backend-shared:client-session", "error in enqueued function: ", e);
          onError?.(e);
       });
 
       return result;
+   }
+
+   public getDefaultAttributes(prefix = "session") {
+      return {
+         [`${prefix}.id`]: this.sessionId,
+         [`${prefix}.peer.id`]: this.peer.id,
+         [`${prefix}.user.id`]: this.user?.id ?? "null",
+         [`${prefix}.worker_id`]: this.workerId,
+         [`${prefix}.sequence`]: this.sequence !== undefined ? this.sequence : "null",
+         [`${prefix}.is_authenticated`]: this.authenticated,
+         [`${prefix}.is_stale`]: this.isStale,
+      };
    }
 }

@@ -1,3 +1,8 @@
+import { initAnalytics } from "@huginn/shared";
+import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
+
+initAnalytics(new RuntimeAnalytics(process.env.POSTHOG_KEY!, { serviceName: process.env.OTEL_SERVICE_NAME!, otlpHost: process.env.SIGNOZ_API_URL }));
+
 export * from "./error-factory";
 export * from "./elysia-errors";
 export * from "./route-importer";

@@ -1,10 +1,12 @@
-import type { ClientSession } from "#client-session";
-import type { RouterData } from "#utils/types";
 import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
 
-import { envs } from "#index";
-import { GatewayCode, type Snowflake } from "@huginn/shared";
+import { analytics, GatewayCode, type Snowflake } from "@huginn/shared";
 import mediasoup from "mediasoup";
+
+import type { ClientSession } from "#client-session";
+import type { RouterData } from "#utils/types";
+
+import { envs } from "#index";
 
 export const routers = new Map<string, RouterData>();
 
@@ -91,8 +93,9 @@ export async function createTransport(router: Router) {
    return transport;
 }
 
-export function verifyPeer(router: RouterData | undefined, session: ClientSession, channelId: Snowflake): router is RouterData {
+export function verifySession(router: RouterData | undefined, session: ClientSession, channelId: Snowflake): router is RouterData {
    if (!router || router.channelId !== channelId) {
+      analytics.getActiveSpan()?.setAttribute("session.invalid_router", true);
       session.peer.close(GatewayCode.NOT_AUTHORIZED, "NOT_AUTHORIZED");
       return false;
    }

@@ -3,16 +3,14 @@ import { spawn } from "bun";
 try {
    const frontend = spawn(["bun", "run", "vite:dev", "--mode", "electron-dev"], {
       stdin: "inherit",
-      stdout: "pipe",
+      stdout: "inherit",
       cwd: process.cwd(),
    });
-   let electron: Bun.Subprocess | undefined;
-   const decoder = new TextDecoder();
    // for await (const chunk of frontend.stdout) {
    //    const line = decoder.decode(chunk);
    //    process.stdout.write(chunk);
    //    if (line.includes("ready") && !electron) {
-   electron = spawn(["bun", "run", "electron:run", ...process.argv.slice(2)], {
+   const electron = spawn(["bun", "run", "electron:run", ...process.argv.slice(2)], {
       stdin: "inherit",
       stdout: "inherit",
       cwd: process.cwd(),

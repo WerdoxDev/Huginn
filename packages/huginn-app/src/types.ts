@@ -318,7 +318,8 @@ export type HostnamePreset = {
    apiHostname: string;
    cdnHostname: string;
    voiceHostname: string;
-   analyticsHostname: string;
+   posthogHostname: string;
+   otelHostname: string;
    externalHostnamesUrl: string;
 };
 

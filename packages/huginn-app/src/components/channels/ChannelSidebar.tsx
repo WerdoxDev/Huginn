@@ -36,10 +36,6 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
       [user, props.channel.recipientIds],
    );
 
-   useEffect(() => {
-      console.log(recipients);
-   }, [props.channel]);
-
    function handleAddMember() {
       updateModals({ addRecipient: { isOpen: true, channelId: props.channel.id } });
    }

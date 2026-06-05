@@ -1,6 +1,6 @@
 import type { RtpEncodingParameters } from "mediasoup-client/types";
 
-import { clamp, CONSTANTS, EventEmitter, log } from "@huginn/shared";
+import { analytics, clamp, CONSTANTS, EventEmitter, recordSpanError } from "@huginn/shared";
 
 import type { VoiceStreamOptions } from ".";
 import type { VoiceTransportManager } from "./voice-transport-manager";
@@ -19,41 +19,67 @@ export class VoiceStreamManager extends EventEmitter<Events> {
       this.transport = transport;
    }
 
+   private getDefaultAttributes() {
+      return {
+         "voice.transport.status": this.transport.status,
+         "voice.stream.has_audio": !!this.transport.getProducer("stream_audio"),
+         "voice.stream.has_video": !!this.transport.getProducer("stream_video"),
+      };
+   }
+
    public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
-      log("api:voice-stream", "default", "open stream");
-      const maxVideoBitrate = clamp(
-         options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE,
-         CONSTANTS.MIN_VIDEO_BITRATE,
-         CONSTANTS.MAX_VIDEO_BITRATE,
-      );
-      const maxAudioBitrate = clamp(
-         options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE,
-         CONSTANTS.MIN_AUDIO_BITRATE,
-         CONSTANTS.MAX_AUDIO_BITRATE,
-      );
-      const scalabilityMode = "L1T3";
-      const useSimulcast = options?.useSimulcast ?? true;
+      return await analytics.startActiveSpan("apiVoiceStream.openStream", async (span) => {
+         const maxVideoBitrate = clamp(
+            options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE,
+            CONSTANTS.MIN_VIDEO_BITRATE,
+            CONSTANTS.MAX_VIDEO_BITRATE,
+         );
+         const maxAudioBitrate = clamp(
+            options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE,
+            CONSTANTS.MIN_AUDIO_BITRATE,
+            CONSTANTS.MAX_AUDIO_BITRATE,
+         );
+         const scalabilityMode = "L1T3";
+         const useSimulcast = options?.useSimulcast ?? true;
 
-      if (videoTrack) {
-         // ENCODING ORDERING MATTERS FOR SIMULCAST
-         const encodings: RtpEncodingParameters[] = useSimulcast
-            ? [
-                 { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
-                 { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
-              ]
-            : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
-         await this.transport.createProducer("stream_video", videoTrack, {
-            encodings,
-            codecOptions: { videoGoogleStartBitrate: 1000 },
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.stream.has_video_track": !!videoTrack,
+            "voice.stream.has_audio_track": !!audioTrack,
+            "voice.stream.max_video_bitrate": maxVideoBitrate,
+            "voice.stream.max_audio_bitrate": maxAudioBitrate,
+            "voice.stream.use_simulcast": useSimulcast,
+            "voice.stream.scalability_mode": scalabilityMode,
          });
-      }
 
-      if (audioTrack) {
-         await this.transport.createProducer("stream_audio", audioTrack, {
-            encodings: [{ maxBitrate: maxAudioBitrate }],
-            codecOptions: { opusStereo: true },
-         });
-      }
+         try {
+            if (videoTrack) {
+               // ENCODING ORDERING MATTERS FOR SIMULCAST
+               const encodings: RtpEncodingParameters[] = useSimulcast
+                  ? [
+                       { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
+                       { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
+                    ]
+                  : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
+               await this.transport.createProducer("stream_video", videoTrack, {
+                  encodings,
+                  codecOptions: { videoGoogleStartBitrate: 1000 },
+               });
+            }
+
+            if (audioTrack) {
+               await this.transport.createProducer("stream_audio", audioTrack, {
+                  encodings: [{ maxBitrate: maxAudioBitrate }],
+                  codecOptions: { opusStereo: true },
+               });
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    /**
@@ -63,36 +89,47 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param frameRate - Target frame rate
     */
    public async updateVideoConstraints(width?: number, height?: number, frameRate?: number): Promise<void> {
-      log("api:voice-stream", "default", "update video constraints");
+      return await analytics.startActiveSpan("apiVoiceStream.updateVideoConstraints", async (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         if (width) span.setAttribute("params.width", width);
+         if (height) span.setAttribute("params.height", height);
+         if (frameRate) span.setAttribute("params.frame_rate", frameRate);
 
-      const producer = this.transport.getProducer("stream_video");
-      if (!producer) {
-         throw new Error("No video producer found");
-      }
+         try {
+            const producer = this.transport.getProducer("stream_video");
+            if (!producer) {
+               throw new Error("No video producer found");
+            }
 
-      const track = producer.track;
-      if (!track) {
-         throw new Error("No video track found on producer");
-      }
+            const track = producer.track;
+            if (!track) {
+               throw new Error("No video track found on producer");
+            }
 
-      const settings = track.getSettings();
-      const constraints: MediaTrackConstraints = {};
-      // if (width !== undefined || height !== undefined) {
-      constraints.width = width ?? settings.width;
-      constraints.height = height ?? settings.height;
-      // }
-      // if (frameRate !== undefined) {
-      constraints.frameRate = frameRate ?? settings.frameRate;
-      // }
+            const settings = track.getSettings();
+            const constraints: MediaTrackConstraints = {};
+            // if (width !== undefined || height !== undefined) {
+            constraints.width = width ?? settings.width;
+            constraints.height = height ?? settings.height;
+            // }
+            // if (frameRate !== undefined) {
+            constraints.frameRate = frameRate ?? settings.frameRate;
+            // }
 
-      await track.applyConstraints(constraints);
-      log("api:voice-stream", "default", `video constraints updated: ${JSON.stringify(constraints)}`);
+            await track.applyConstraints(constraints);
 
-      const newSettings = track.getSettings();
-      this.emit("video_constraints_updated", {
-         width: newSettings.width,
-         height: newSettings.height,
-         frameRate: newSettings.frameRate,
+            const newSettings = track.getSettings();
+            this.emit("video_constraints_updated", {
+               width: newSettings.width,
+               height: newSettings.height,
+               frameRate: newSettings.frameRate,
+            });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
@@ -101,32 +138,44 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param maxBitrate - Maximum bitrate in bps
     */
    public async updateVideoBitrate(maxBitrate: number): Promise<void> {
-      log("api:voice-stream", "default", "update video bitrate");
+      return await analytics.startActiveSpan("apiVoiceStream.updateVideoBitrate", async (span) => {
+         const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.max_bitrate": maxBitrate,
+            "params.clamped_bitrate": clampedBitrate,
+         });
 
-      const producer = this.transport.getProducer("stream_video");
-      if (!producer) {
-         throw new Error("No video producer found");
-      }
+         try {
+            const producer = this.transport.getProducer("stream_video");
+            if (!producer) {
+               throw new Error("No video producer found");
+            }
 
-      const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
-      const params = producer.rtpSender?.getParameters();
+            const params = producer.rtpSender?.getParameters();
 
-      if (!params) {
-         throw new Error("Failed to get RTP parameters");
-      }
+            if (!params) {
+               throw new Error("Failed to get RTP parameters");
+            }
 
-      // Update encodings based on simulcast configuration
-      if (params.encodings.length > 1) {
-         params.encodings[0].maxBitrate = clampedBitrate / 3;
-         params.encodings[1].maxBitrate = clampedBitrate;
-      } else if (params.encodings.length > 0) {
-         params.encodings[0].maxBitrate = clampedBitrate;
-      }
+            // Update encodings based on simulcast configuration
+            if (params.encodings.length > 1) {
+               params.encodings[0].maxBitrate = clampedBitrate / 3;
+               params.encodings[1].maxBitrate = clampedBitrate;
+            } else if (params.encodings.length > 0) {
+               params.encodings[0].maxBitrate = clampedBitrate;
+            }
 
-      await producer.rtpSender?.setParameters(params);
-      log("api:voice-stream", "default", `video bitrate updated to: ${clampedBitrate}`);
+            await producer.rtpSender?.setParameters(params);
 
-      this.emit("video_bitrate_updated", { maxBitrate: clampedBitrate });
+            this.emit("video_bitrate_updated", { maxBitrate: clampedBitrate });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    /**
@@ -134,28 +183,40 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param maxBitrate - Maximum bitrate in bps
     */
    public async updateAudioBitrate(maxBitrate: number): Promise<void> {
-      log("api:voice-stream", "default", "update audio bitrate");
+      return await analytics.startActiveSpan("apiVoiceStream.updateAudioBitrate", async (span) => {
+         const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.max_bitrate": maxBitrate,
+            "params.clamped_bitrate": clampedBitrate,
+         });
 
-      const producer = this.transport.getProducer("stream_audio");
-      if (!producer) {
-         throw new Error("No audio producer found");
-      }
+         try {
+            const producer = this.transport.getProducer("stream_audio");
+            if (!producer) {
+               throw new Error("No audio producer found");
+            }
 
-      const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
-      const params = producer.rtpSender?.getParameters();
+            const params = producer.rtpSender?.getParameters();
 
-      if (!params) {
-         throw new Error("Failed to get RTP parameters");
-      }
+            if (!params) {
+               throw new Error("Failed to get RTP parameters");
+            }
 
-      if (params.encodings.length > 0) {
-         params.encodings[0].maxBitrate = clampedBitrate;
-      }
+            if (params.encodings.length > 0) {
+               params.encodings[0].maxBitrate = clampedBitrate;
+            }
 
-      await producer.rtpSender?.setParameters(params);
-      log("api:voice-stream", "default", `audio bitrate updated to: ${clampedBitrate}`);
+            await producer.rtpSender?.setParameters(params);
 
-      this.emit("audio_bitrate_updated", { maxBitrate: clampedBitrate });
+            this.emit("audio_bitrate_updated", { maxBitrate: clampedBitrate });
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    /**
@@ -163,45 +224,128 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param options - Combined options for constraints and bitrate
     */
    public async updateVideoParameters(options: { width?: number; height?: number; frameRate?: number; maxBitrate?: number }): Promise<void> {
-      log("api:voice-stream", "default", "update video parameters");
+      return await analytics.startActiveSpan("apiVoiceStream.updateVideoParameters", async (span) => {
+         span.setAttributes(this.getDefaultAttributes());
+         if (options.width) span.setAttribute("params.width", options.width);
+         if (options.height) span.setAttribute("params.height", options.height);
+         if (options.frameRate) span.setAttribute("params.frame_rate", options.frameRate);
+         if (options.maxBitrate) span.setAttribute("params.max_bitrate", options.maxBitrate);
 
-      const { width, height, frameRate, maxBitrate } = options;
+         try {
+            const { width, height, frameRate, maxBitrate } = options;
 
-      // Update constraints if any are provided
-      if (width !== undefined || height !== undefined || frameRate !== undefined) {
-         await this.updateVideoConstraints(width, height, frameRate);
-      }
+            // Update constraints if any are provided
+            if (width !== undefined || height !== undefined || frameRate !== undefined) {
+               await this.updateVideoConstraints(width, height, frameRate);
+            }
 
-      // Update bitrate if provided
-      if (maxBitrate !== undefined) {
-         await this.updateVideoBitrate(maxBitrate);
-      }
+            // Update bitrate if provided
+            if (maxBitrate !== undefined) {
+               await this.updateVideoBitrate(maxBitrate);
+            }
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async replaceStreamVideoTrack(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-stream", "default", "replace stream video track");
-      await this.transport.replaceProducerTrack("stream_video", track);
+      return await analytics.startActiveSpan("apiVoiceStream.replaceStreamVideoTrack", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.media.kind": "stream_video",
+            "voice.track.id": track.id,
+            "voice.track.kind": track.kind,
+         });
+
+         try {
+            await this.transport.replaceProducerTrack("stream_video", track);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async replaceStreamAudioTrack(track: MediaStreamTrack): Promise<void> {
-      log("api:voice-stream", "default", "replace stream audio track");
-      await this.transport.replaceProducerTrack("stream_audio", track);
+      return await analytics.startActiveSpan("apiVoiceStream.replaceStreamAudioTrack", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.media.kind": "stream_audio",
+            "voice.track.id": track.id,
+            "voice.track.kind": track.kind,
+         });
+
+         try {
+            await this.transport.replaceProducerTrack("stream_audio", track);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async closeStreamAudio(): Promise<void> {
-      log("api:voice-stream", "default", "close stream audio");
-      await this.transport.closeProducer("stream_audio");
+      return await analytics.startActiveSpan("apiVoiceStream.closeStreamAudio", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.media.kind": "stream_audio",
+         });
+
+         try {
+            await this.transport.closeProducer("stream_audio");
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async closeStreamVideo(): Promise<void> {
-      log("api:voice-stream", "default", "close stream video");
-      await this.transport.closeProducer("stream_video");
+      return await analytics.startActiveSpan("apiVoiceStream.closeStreamVideo", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.media.kind": "stream_video",
+         });
+
+         try {
+            await this.transport.closeProducer("stream_video");
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 
    public async closeStream(): Promise<void> {
-      log("api:voice-stream", "default", "close stream");
-      const hasAudio = !!this.transport.getProducer("stream_audio");
-      const hasVideo = !!this.transport.getProducer("stream_video");
-      await Promise.all([hasAudio && this.transport.closeProducer("stream_audio"), hasVideo && this.transport.closeProducer("stream_video")]);
+      return await analytics.startActiveSpan("apiVoiceStream.closeStream", async (span) => {
+         const hasAudio = !!this.transport.getProducer("stream_audio");
+         const hasVideo = !!this.transport.getProducer("stream_video");
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "voice.stream.has_audio": hasAudio,
+            "voice.stream.has_video": hasVideo,
+         });
+
+         try {
+            await Promise.all([hasAudio && this.transport.closeProducer("stream_audio"), hasVideo && this.transport.closeProducer("stream_video")]);
+         } catch (e) {
+            recordSpanError(e as Error);
+            throw e;
+         } finally {
+            span.end();
+         }
+      });
    }
 }

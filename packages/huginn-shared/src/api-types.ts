@@ -1,4 +1,3 @@
-import type { Merge } from ".";
 import type { Snowflake } from "./snowflake";
 
 export type LoginCredentials = APIPostLoginJSONBody;

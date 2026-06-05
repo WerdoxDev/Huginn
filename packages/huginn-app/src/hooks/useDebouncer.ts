@@ -40,7 +40,6 @@ export function useDebouncer<T extends any[], R>(callback: (...args: T) => R | P
       return new Promise((resolve) => {
          // Check if args are the same as last call
          if (argsEqual(lastArgsRef.current, args) && lastResultRef.current !== undefined) {
-            console.log(lastArgsRef.current, args, "ARE EQUAL");
             // Return cached result immediately without calling the function
             resolve(lastResultRef.current);
             return;

@@ -1,56 +1,78 @@
+import {
+   DEFAULT_SERVER_SETTINGS,
+   analytics,
+   recordSpanError,
+   type APIPatchUserSettingsJSONBody,
+   type Snowflake,
+   type UserSettings,
+} from "@huginn/shared";
+
 import { assertExists, assertId, assertObj, prisma, Prisma } from "#database";
 import { DBErrorType } from "#types";
-import { DEFAULT_SERVER_SETTINGS, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginn/shared";
 
 export const settingsExtension = Prisma.defineExtension({
    model: {
       settings: {
          async getOrCreateSettings(userId: Snowflake) {
-            const methodName = "settings.getOrCreateSettings";
-            try {
-               assertId(methodName, userId);
+            return analytics.startActiveSpan("db.settings.getOrCreateSettings", async (span) => {
+               span.setAttribute("query.user.id", userId);
+               const methodName = "settings.getOrCreateSettings";
+               try {
+                  assertId(methodName, userId);
 
-               const exists = await prisma.settings.exists({ userId: BigInt(userId) });
+                  const exists = await prisma.settings.exists({ userId: BigInt(userId) });
 
-               let settings;
-               if (!exists) {
-                  settings = await prisma.settings.create({
-                     data: { userId: BigInt(userId), json: DEFAULT_SERVER_SETTINGS },
-                     select: { json: true },
-                  });
-               } else {
-                  settings = await prisma.settings.findUnique({
-                     where: { userId: BigInt(userId) },
-                     select: { json: true },
-                  });
+                  span.setAttribute("settings.exists", exists);
+
+                  let settings;
+                  if (!exists) {
+                     settings = await prisma.settings.create({
+                        data: { userId: BigInt(userId), json: DEFAULT_SERVER_SETTINGS },
+                        select: { json: true },
+                     });
+                  } else {
+                     settings = await prisma.settings.findUnique({
+                        where: { userId: BigInt(userId) },
+                        select: { json: true },
+                     });
+                  }
+
+                  assertObj(methodName, settings, DBErrorType.NULL_SETTINGS);
+
+                  return settings?.json as UserSettings;
+               } catch (e) {
+                  recordSpanError(e as Error);
+                  await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
+                  throw e;
+               } finally {
+                  span.end();
                }
-
-               assertObj(methodName, settings, DBErrorType.NULL_SETTINGS);
-
-               return settings?.json as UserSettings;
-            } catch (e) {
-               await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
-               throw e;
-            }
+            });
          },
          async updateSettings(userId: Snowflake, options: APIPatchUserSettingsJSONBody) {
-            const methodName = "settings.getOrCreateSettings";
-            try {
-               assertId(methodName, userId);
+            return analytics.startActiveSpan("db.settings.updateSettings", async (span) => {
+               span.setAttributes({ "query.user.id": userId, "query.key_count": Object.keys(options).length });
+               const methodName = "settings.getOrCreateSettings";
+               try {
+                  assertId(methodName, userId);
 
-               const currentSettings = await prisma.settings.getOrCreateSettings(userId);
-               const updatedSettings = await prisma.settings.update({
-                  where: { userId: BigInt(userId) },
-                  data: { json: { ...currentSettings, ...options } },
-                  select: { json: true },
-               });
-               assertObj(methodName, options, DBErrorType.NULL_SETTINGS);
+                  const currentSettings = await prisma.settings.getOrCreateSettings(userId);
+                  const updatedSettings = await prisma.settings.update({
+                     where: { userId: BigInt(userId) },
+                     data: { json: { ...currentSettings, ...options } },
+                     select: { json: true },
+                  });
+                  assertObj(methodName, options, DBErrorType.NULL_SETTINGS);
 
-               return updatedSettings.json as UserSettings;
-            } catch (e) {
-               await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
-               throw e;
-            }
+                  return updatedSettings.json as UserSettings;
+               } catch (e) {
+                  recordSpanError(e as Error);
+                  await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
+                  throw e;
+               } finally {
+                  span.end();
+               }
+            });
          },
       },
    },
