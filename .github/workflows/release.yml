@@ -24,8 +24,8 @@ jobs:
    release-please:
       runs-on: ubuntu-latest
       outputs:
-         app_release_created: ${{ steps.outputs.outputs.app_release_created }}
-         app_version: ${{ steps.outputs.outputs.app_version }}
+         app_release_created: ${{ inputs.app_release_created || steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}
+         app_version: ${{ inputs.app_version || steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
 
       steps:
          - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
            with:
               target-branch: ${{ github.ref_name }}
            if: |
-              github.event_name != 'workflow_dispatch' &&
+              github.event_name == 'workflow_dispatch' ||
               contains(github.event.head_commit.message, ': release')
 
          - name: Compute outputs
