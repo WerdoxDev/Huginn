@@ -29,7 +29,7 @@ export default {
    directories: {
       output: "dist/electron",
    },
-   asarUnpack: ["**/*"],
+   // asarUnpack: ["**/*"],
    icon: "electron-assets/icon.ico",
    extraResources: ["electron-assets"],
 } as Configuration;
