@@ -1,6 +1,6 @@
 import type { Message, Peer } from "crossws";
 
-import { analytics, error, GatewayCode, log, recordSpanError, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
+import { analytics, GatewayCode, recordSpanError, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
 
 import type { CommonPayload, WebsocketOptions } from "#types";
 
@@ -62,8 +62,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
             session.stopHeartbeatTimeout();
 
-            if (event.code === GatewayCode.SWITCHING_CONNECTION) return;
-
             if (
                session.authenticated &&
                (event.code === GatewayCode.INVALID_SESSION || event.code === GatewayCode.INTENTIONAL_CLOSE || event.code === GatewayCode.GOING_AWAY)
@@ -85,35 +83,36 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
    }
 
    public async _internalOnMessage(peer: Peer, message: Message) {
-      return await analytics.startActiveSpan("commonWebsocket.onMessage", async (span) => {
-         span.setAttribute("params.peer.id", peer.id);
-         try {
-            const data: Payload = message.json();
+      // return await analytics.startActiveSpan("commonWebsocket.onMessage", async (span) => {
+      // span.setAttribute("params.peer.id", peer.id);
+      try {
+         const data: Payload = message.json();
 
-            if (!validateGatewayData(data)) {
-               peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-               return;
-            }
-
-            const session = this.sessions.get(peer.context.sessionId);
-            span.setAttribute("session.exists", !!session);
-            if (!session) return;
-            else span.setAttributes(session.getDefaultAttributes());
-
-            await session.enqueue(async () => await this.onMessage(session, data));
-            // oxlint-disable-next-line no-unused-vars
-         } catch (e) {
-            recordSpanError(e as Error);
-            if (e instanceof SyntaxError) {
-               peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
-               return;
-            }
-
-            peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
-         } finally {
-            span.end();
+         if (!validateGatewayData(data)) {
+            peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+            return;
          }
-      });
+
+         const session = this.sessions.get(peer.context.sessionId);
+         // span.setAttribute("session.exists", !!session);
+         if (!session) return;
+         // else span.setAttributes(session.getDefaultAttributes());
+
+         await session.enqueue(async () => await this.onMessage(session, data));
+         // oxlint-disable-next-line no-unused-vars
+      } catch (e) {
+         // recordSpanError(e as Error);
+         if (e instanceof SyntaxError) {
+            peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
+            return;
+         }
+
+         peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
+      }
+      // } finally {
+      // span.end();
+      // }
+      // });
    }
 
    public subscribeSessionsToTopic(userId: Snowflake, topic: string) {
@@ -197,9 +196,9 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return await analytics.startActiveSpan("commonWebsocket.resumeSession", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
-            "params.old_session.id": oldSessionId,
+            "params.old_session_id": oldSessionId,
             "params.last_sequence": lastSequence,
-            "params.user.id": userId,
+            "params.user_id": userId,
          });
          try {
             const oldSession = this.sessions.get(oldSessionId);
@@ -218,9 +217,9 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             }
 
             // Sometimes the new session reconnects so fast that the old one is still actually not considered as "disconnected" from the server
-            if (oldSession.peer.websocket.readyState === WebSocket.OPEN) {
-               oldSession.peer.close(GatewayCode.SWITCHING_CONNECTION, "SWITCHING_CONNECTION");
-            }
+            // if (oldSession.peer.websocket.readyState === WebSocket.OPEN) {
+            //    oldSession.peer.close(GatewayCode.SWITCHING_CONNECTION, "SWITCHING_CONNECTION");
+            // }
 
             const user = await prisma.user.getById(userId, { select: selectPrivateUser });
             span.setAttribute("user.id", user.id);

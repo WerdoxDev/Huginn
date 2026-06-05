@@ -1,6 +1,6 @@
 import type { Peer } from "crossws";
 
-import { analytics, type APIUser, CONSTANTS, error, GatewayCode, log, recordSpanError, type Snowflake, WorkerID } from "@huginn/shared";
+import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type Snowflake, WorkerID } from "@huginn/shared";
 
 import type { CommonPayload } from "#types";
 
@@ -32,29 +32,29 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
-      analytics.startActiveSpan("commonClientSession.send", (span) => {
-         span.setAttributes({
-            ...this.getDefaultAttributes("send"),
-            "params.op": data.op,
-            "params.t": data.t ?? "null",
-            "params.has_sequence": data.s !== undefined,
-            "params.increase_sequence": increaseSequence,
-            "params.resumable": resumable,
-         });
+      // analytics.startActiveSpan("commonClientSession.send", (span) => {
+      // span.setAttributes({
+      //    ...this.getDefaultAttributes("send"),
+      //    "params.op": data.op,
+      //    "params.t": data.t ?? "null",
+      //    "params.has_sequence": data.s !== undefined,
+      //    "params.increase_sequence": increaseSequence,
+      //    "params.resumable": resumable,
+      // });
 
-         try {
-            if (increaseSequence) data.s = this.getIncreasedSequence();
-            if (resumable && data.s) this.sentMessages.set(data.s, data);
-            span.setAttribute("session.new_sequence", data.s ?? "null");
+      // try {
+      if (increaseSequence) data.s = this.getIncreasedSequence();
+      if (resumable && data.s) this.sentMessages.set(data.s, data);
+      // span.setAttribute("session.new_sequence", data.s ?? "null");
 
-            this.peer.send(JSON.stringify(data));
-         } catch (e) {
-            recordSpanError(e as Error);
-            throw e;
-         } finally {
-            span.end();
-         }
-      });
+      this.peer.send(JSON.stringify(data));
+      // } catch (e) {
+      // recordSpanError(e as Error);
+      // throw e;
+      // } finally {
+      // span.end();
+      // }
+      // });
    }
 
    public async initialize(user: APIUser, properties: Properties) {
@@ -75,14 +75,10 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public subscribe(topic: string) {
-      log("backend-shared:client-session", "subscriptions", "subscribe", topic);
-
       this.peer.subscribe(topic);
    }
 
    public unsubscribe(topic: string) {
-      log("backend-shared:client-session", "subscriptions", "unsubscribe", topic);
-
       this.peer.unsubscribe(topic);
    }
 
@@ -119,10 +115,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public async subscribeToTopics() {
-      log("backend-shared:client-session", "subscriptions", "subscribe to defaults", "sid:", this.sessionId);
-
       if (!this.authenticated || !this.user) {
-         error("backend-shared:client-session", "Client session is not authenticated");
          return;
       }
 
@@ -135,7 +128,6 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    public enqueue(fn: () => Promise<void> | void, onError?: (e: any) => void) {
       const result = this.queue.then(() => fn());
       this.queue = result.catch((e) => {
-         error("backend-shared:client-session", "error in enqueued function: ", e);
          onError?.(e);
       });
 
