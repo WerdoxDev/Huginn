@@ -13,7 +13,7 @@ jobs:
       runs-on: ubuntu-latest
       outputs:
          app_release_created: ${{ fromJson(steps.release.outputs['packages/huginn-app--release_created'] || 'false') }}
-         app_version: ${{ fromJson(steps.release.outputs['packages/huginn-app--version'] || 'unknown') }}
+         app_version: ${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
       steps:
          - uses: actions/checkout@v4
 
@@ -34,12 +34,7 @@ jobs:
                - platform: "windows-latest"
                  args: ""
       runs-on: ${{ matrix.platform }}
-      if: |
-         always() &&
-         (
-         needs.release-please.outputs.app_release_created == 'true' ||
-         needs.release-please.result == 'skipped'
-         )
+      if: ${{needs.release-please.outputs.app_release_created == 'true'}}
       env:
          VITE_PUBLIC_POSTHOG_KEY: ${{secrets.VITE_PUBLIC_POSTHOG_KEY}}
          VITE_PUBLIC_CLOUDFLARE_TURN_ID: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_ID}}
