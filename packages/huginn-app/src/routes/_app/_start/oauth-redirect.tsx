@@ -43,7 +43,7 @@ function OAuthRedirectComponent() {
    const navigate = useNavigate();
    const { updateModals } = useModals();
    const initializeClient = useInitializeClient();
-   const { openFileDialog } = useFileDialog("image/*");
+   const { openFileDialog } = useFileDialog("image");
    const posthog = usePostHog();
    const router = useRouter();
 

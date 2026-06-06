@@ -5,12 +5,17 @@ interface FileDialogResult {
    mimeType: string;
 }
 
-export function useFileDialog(accept: string = "image/*") {
+const accepts = {
+   image: "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif,image/svg+xml",
+} as const;
+
+export function useFileDialog(accept: keyof typeof accepts) {
    const openFileDialog = useCallback(async (): Promise<FileDialogResult | null> => {
       return new Promise((resolve) => {
          const input = document.createElement("input");
          input.type = "file";
-         input.accept = accept;
+         console.log(accepts[accept]);
+         input.accept = accepts[accept];
 
          input.onchange = (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];

@@ -26,7 +26,7 @@ export default function EditGroupModal() {
    const client = useClient();
    const { editGroup: modal, updateModals } = useModals();
 
-   const { openFileDialog } = useFileDialog("image/*");
+   const { openFileDialog } = useFileDialog("image");
 
    const { setValue, handleErrors, register, handleSubmit } = useHuginnForm<Input>();
 

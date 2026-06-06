@@ -2,6 +2,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 
 import "../../cropper.css";
+import { analytics } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -21,30 +22,36 @@ export default function ImageCropModal() {
 
    async function confirm() {
       if (cropperRef.current) {
-         let data: string;
+         return analytics.startActiveSpan("app.image_copper_confirm", async (span) => {
+            if (!cropperRef.current) return;
 
-         if (modal.mimeType !== "image/gif") {
-            const canvasSize = isBanner ? { width: 444, height: 128 } : { width: 512, height: 512 };
-            data = cropperRef.current?.cropper.getCroppedCanvas(canvasSize).toDataURL();
-         } else {
-            const imageCropper = new SuperImageCropper();
-            data = (await imageCropper.crop({
-               cropperInstance: cropperRef.current.cropper,
-               outputType: "base64",
-               src: modal.originalImageData,
-            })) as string;
-         }
+            span.setAttributes({ crop_type: modal.cropType, mime_type: modal.mimeType, data_length: modal.originalImageData.length });
+            setIsLoading(true);
+            let data: string;
 
-         setIsLoading(true);
-         try {
-            await modal.callback?.(data);
-         } finally {
-            setIsLoading(false);
-         }
+            if (modal.mimeType !== "image/gif") {
+               const canvasSize = isBanner ? { width: 444, height: 128 } : { width: 512, height: 512 };
+               data = cropperRef.current?.cropper.getCroppedCanvas(canvasSize).toDataURL();
+            } else {
+               const imageCropper = new SuperImageCropper();
+               data = (await imageCropper.crop({
+                  cropperInstance: cropperRef.current.cropper,
+                  outputType: "base64",
+                  src: modal.originalImageData,
+               })) as string;
+            }
+
+            try {
+               await modal.callback?.(data);
+            } finally {
+               setIsLoading(false);
+               span.end();
+               close();
+            }
+         });
          // dispatchEvent("image_cropper_done", {
          //    croppedImageData: data,
          // });
-         close();
       }
    }
 

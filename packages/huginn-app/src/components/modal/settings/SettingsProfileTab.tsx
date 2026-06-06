@@ -27,7 +27,7 @@ export default function SettingsProfileTab() {
    const { user, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
    const isOAuth = useIsOAuth();
-   const { openFileDialog } = useFileDialog("image/*");
+   const { openFileDialog } = useFileDialog("image");
 
    const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
