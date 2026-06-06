@@ -22,7 +22,7 @@ export default function ImageCropModal() {
 
    async function confirm() {
       if (cropperRef.current) {
-         return analytics.startActiveSpan("app.image_copper_confirm", async (span) => {
+         return analytics.startActiveSpan("app.imageCropperConfirm", async (span) => {
             if (!cropperRef.current) return;
 
             span.setAttributes({ crop_type: modal.cropType, mime_type: modal.mimeType, data_length: modal.originalImageData.length });
