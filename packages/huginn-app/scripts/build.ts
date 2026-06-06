@@ -11,7 +11,6 @@ const noExternal = [
    "native-addon",
    "electron-log/main",
    "electron-updater",
-   "sharp",
    "moment",
    "posthog-node",
 ];

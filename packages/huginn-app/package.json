@@ -68,7 +68,6 @@
       "react-error-boundary": "^6.1.1",
       "react-hook-form": "^7.76.0",
       "semver-ts": "^1.0.3",
-      "sharp": "^0.34.4",
       "slate": "^0.124.1",
       "slate-react": "^0.124.2",
       "super-image-cropper": "^1.0.27",

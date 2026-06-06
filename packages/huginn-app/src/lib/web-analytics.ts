@@ -13,7 +13,8 @@ export function initAnalytics() {
    externalInitAnalytics(
       new WebAnalytics(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
          // TODO: use otel hostname from settings
-         otlpHost: `${activePreset.otelHostname}/v1/traces`,
+         otlpTraceUrl: `${activePreset.otelHostname}/v1/traces`,
+         otlpLogUrl: `${activePreset.otelHostname}/v1/logs`,
          posthogHost: activePreset.posthogHostname,
          serviceName: "app-web",
          environment: import.meta.env.PROD ? "production" : "development",
