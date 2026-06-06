@@ -1,3 +1,4 @@
+import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
@@ -12,7 +13,7 @@ import clsx from "clsx";
 import moment from "moment";
 import { useContext, useMemo, useState } from "react";
 
-import type { AppMessage, ProcessedAppMessage } from "@/types";
+import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types";
 
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 
@@ -49,6 +50,7 @@ export default function DefaultMessage() {
    const isEdited = !context.message.isPreview && context.message.editedTimestamp !== null;
    const isPreview = context.message.isPreview;
    const error = isPreview ? context.message.error : undefined;
+   const nextError = context.nextMessage?.isPreview ? context.nextMessage.error : undefined;
    const isNextPreview = context.nextMessage?.isPreview;
    const isNextSeparate =
       !context.nextMessage ||
@@ -88,7 +90,6 @@ export default function DefaultMessage() {
                isEditing ? "bg-positive-400" : isReplying || isJumpHighlighted ? "bg-primary-400" : undefined,
             )}
          ></div>
-         {error}
          {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
             <div className="flex items-center gap-x-2">
@@ -123,6 +124,8 @@ export default function DefaultMessage() {
                isNextPreview={isNextPreview}
                isEdited={isEdited}
                extrasRef={extrasRef}
+               error={error}
+               nextError={nextError}
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
@@ -199,21 +202,25 @@ function DefaultRenderer(props: {
    isLastAction: boolean;
    isPreview: boolean;
    isEdited?: boolean;
+   error?: MessageErrorType;
+   nextError?: MessageErrorType;
    extrasRef: React.RefObject<HTMLDivElement | null>;
 }) {
    const { messageUploadProgresses } = useChannelStore();
    const context = useContext(MessageContext);
    const progress = useMemo(() => messageUploadProgresses.find((x) => x.messageId === context.message.id), [messageUploadProgresses]);
    const { children } = useMessageRenderer(context.message);
-   // const innerRef = useRef<HTMLDivElement>(null);
 
-   // const
+   function handleRetry() {
+      if (!context.message.isPreview) return;
+      context.onRetrySendMessage?.(context.message);
+   }
 
    return (
       <div
          className={clsx(
             "group relative w-full px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
-            props.isPreview && "text-white/50",
+            props.isPreview && props.error === undefined && "text-white/50",
          )}
       >
          <div className="absolute inset-y-0 left-0 flex">
@@ -221,7 +228,13 @@ function DefaultRenderer(props: {
                <div
                   className={clsx(
                      "pointer-events-none z-0 h-full w-full transition-[background-color_shadow] group-hover:shadow-sm",
-                     props.isPreview ? "bg-surface" : props.isSelf ? "bg-primary-800" : "bg-surface",
+                     props.error === undefined && props.isPreview
+                        ? "bg-surface"
+                        : props.error !== undefined
+                          ? "bg-negative-600"
+                          : props.isSelf
+                            ? "bg-primary-800"
+                            : "bg-surface",
                      props.isUnread && !props.isSeparate && "rounded-t-none!",
                      (props.isSeparate || props.isLastAction) && "rounded-t-xl!",
                      props.isNextSeparate && "rounded-b-xl!",
@@ -236,12 +249,17 @@ function DefaultRenderer(props: {
                         <div
                            className={clsx(
                               "h-full w-full overflow-hidden transition-[border-radius]",
-                              props.isSelf
-                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
-                                 : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+                              props.error !== undefined
+                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-negative-600))]"
+                                 : props.isSelf
+                                   ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
+                                   : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
                            )}
                            style={{
-                              borderTopLeftRadius: props.isPreview ? "0px" : `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
+                              borderTopLeftRadius:
+                                 props.isPreview && props.error === undefined
+                                    ? "0px"
+                                    : `${clamp((props.widths.lastWidth - props.widths.width) / 2, 0, 12)}px`,
                            }}
                         />
                      </div>
@@ -252,27 +270,48 @@ function DefaultRenderer(props: {
                      <div
                         className={clsx(
                            "h-full w-full overflow-hidden transition-[border-radius]",
-                           props.isSelf
-                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
-                              : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
+                           props.error !== undefined
+                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-negative-600))]"
+                              : props.isSelf
+                                ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
+                                : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
                         )}
                         style={{
-                           borderBottomLeftRadius: props.isNextPreview
-                              ? "0px"
-                              : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
+                           borderBottomLeftRadius:
+                              props.isNextPreview && props.nextError === undefined
+                                 ? "0px"
+                                 : `${clamp((props.widths.nextWidth - props.widths.width) / 2, 0, 12)}px`,
                         }}
                      />
                   </div>
                )}
             </div>
-            {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
-               <div className={clsx("mt-2.5 flex h-max shrink-0 items-center gap-x-1", "px-2")} ref={props.extrasRef}>
-                  {context.message.isEditing ? (
-                     <IconMingcuteEdit2Fill className="text-positive-100 size-4" />
-                  ) : context.message.isReplying ? (
-                     <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4" />
-                  ) : null}
-                  {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
+            {(context.message.isEditing || context.message.isReplying || props.isEdited || props.error !== undefined) && (
+               <div className={clsx("z-20 flex shrink-0 items-center gap-x-1", props.isSeparate ? "px-2" : "pl-2")} ref={props.extrasRef}>
+                  {props.error !== undefined && (
+                     <div className="flex h-full items-center justify-center">
+                        <Tooltip>
+                           <Tooltip.Trigger
+                              className="bg-caution-500 hover:bg-caution-600 active:bg-caution-700 rounded-md p-1 transition-colors"
+                              onClick={handleRetry}
+                           >
+                              <IconMingcuteRefreshAnticlockwise1Line className="size-5" />
+                           </Tooltip.Trigger>
+                           <Tooltip.Content>Retry</Tooltip.Content>
+                        </Tooltip>
+                     </div>
+                  )}
+
+                  {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
+                     <div className="flex shrink-0 items-center gap-x-1">
+                        {context.message.isEditing ? (
+                           <IconMingcuteEdit2Fill className="text-positive-100 size-4" />
+                        ) : context.message.isReplying ? (
+                           <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4" />
+                        ) : null}
+                        {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
+                     </div>
+                  )}
                </div>
             )}
          </div>

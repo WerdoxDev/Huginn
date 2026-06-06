@@ -5,7 +5,7 @@ import type { UploadProgress } from "@/types";
 
 export default function AttachmentUploadProgress(props: { progress: UploadProgress }) {
    return (
-      <div className="bg-surface-alt my-1 flex w-[24rem] items-center gap-x-2 rounded-lg px-2 py-3">
+      <div className="bg-surface-alt my-1 flex max-w-[24rem] items-center gap-x-2 rounded-lg px-2 py-3">
          <IconMingcuteFileFill className="size-10 shrink-0 text-white/50" />
          <div className="flex w-full flex-col justify-center gap-y-2 overflow-hidden">
             <div className="flex gap-x-1">

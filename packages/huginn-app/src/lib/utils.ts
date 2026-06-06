@@ -10,6 +10,7 @@ import {
    type DirectChannel,
    HuginnAPIError,
    type HuginnError,
+   MessageFlags,
    MessageType,
    type PresenceStatus,
    type PresenceUser,
@@ -23,7 +24,7 @@ import {
 import { clientStore } from "@stores/clientStore";
 import { Children, isValidElement } from "react";
 
-import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
+import type { AppAttachment, AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
 import { getMessage } from "./query-utils";
@@ -204,6 +205,8 @@ export function createPreviewMessage(
       channelId: Snowflake;
       authorId: Snowflake;
       nonce: Snowflake;
+      flags?: MessageFlags;
+      attachments?: AppAttachment[];
       messageReference?: APIPostMessageReferenceJSONBody;
    },
 ) {
@@ -217,6 +220,8 @@ export function createPreviewMessage(
       channelId: data.channelId,
       authorId: data.authorId,
       nonce: data.nonce,
+      flags: data.flags,
+      attachments: data.attachments,
       referencedMessage: referencedMessage,
       abortController: new AbortController(),
    };

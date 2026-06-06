@@ -1,12 +1,17 @@
-import type { Snowflake } from "@huginn/shared";
-
 import MessageRenderer from "@components/message/MessageRenderer";
+import { useSendMessage } from "@hooks/mutations/useSendMessage";
+import { snowflake, WorkerID, type Snowflake } from "@huginn/shared";
+import { deleteAppMessage } from "@lib/query-utils";
+import { createPreviewMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
+import { useClient } from "@stores/clientStore";
+import { useThisUser } from "@stores/userStore";
+import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
 import { createContext, useCallback, type RefObject } from "react";
 
-import type { ProcessedMessage } from "@/types";
+import type { PreviewAppMessage, ProcessedMessage } from "@/types";
 
 type MessageProviderProps = {
    channelId?: Snowflake;
@@ -24,14 +29,18 @@ type MessageProviderProps = {
 
 type MessageContextType = Omit<MessageProviderProps, "channelId"> & {
    onReferencedMessageClick?: (messageId: Snowflake) => void;
+   onRetrySendMessage?: (previewMessage: PreviewAppMessage) => void;
 };
 
 export const MessageContext = createContext<MessageContextType>(undefined!);
 
 export function MessageProvider(props: MessageProviderProps) {
+   const queryClient = useQueryClient();
+   const { user } = useThisUser();
+   const client = useClient();
    const { requestJumpToMessage } = useChannelStore();
    const { channelId, ...contextProps } = props;
-   const onReferencedMessageClick = useCallback(
+   const handleReferencedMessageClick = useCallback(
       (messageId: Snowflake) => {
          if (!channelId) return;
          requestJumpToMessage(channelId, messageId);
@@ -39,8 +48,34 @@ export function MessageProvider(props: MessageProviderProps) {
       [channelId, requestJumpToMessage],
    );
 
+   const mutation = useSendMessage();
+
+   const handleRetrySendMessage = useCallback(
+      async (previewMessage: PreviewAppMessage) => {
+         if (!channelId || !client || !user) return;
+
+         deleteAppMessage(queryClient, channelId, previewMessage.id);
+         const nonce = client.generateNonce();
+         const newPreviewMessage: PreviewAppMessage = { ...previewMessage, id: snowflake.generateString(WorkerID.APP), nonce, error: undefined };
+
+         await mutation.mutateAsync({
+            // content: props.message.content,
+            // channelId,
+            // attachments: [],
+            previewMessage: newPreviewMessage,
+            // flags:
+            // attachments: props.message.attachments,
+            // flags: props.message.flags,
+            // previewMessage: props.message,
+         });
+      },
+      [channelId],
+   );
+
    return (
-      <MessageContext.Provider value={{ ...contextProps, onReferencedMessageClick }}>
+      <MessageContext.Provider
+         value={{ ...contextProps, onReferencedMessageClick: handleReferencedMessageClick, onRetrySendMessage: handleRetrySendMessage }}
+      >
          {contextProps.message.isUnread && !contextProps.message.hasNewDate && (
             <li
                className={clsx(
