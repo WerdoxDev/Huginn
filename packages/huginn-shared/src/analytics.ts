@@ -1,4 +1,5 @@
 import { SpanStatusCode, type Span } from "@opentelemetry/api";
+import { SeverityNumber } from "@opentelemetry/api-logs";
 
 export type LogLevel = "info" | "warn" | "error" | "debug" | "fatal" | "trace";
 
@@ -59,6 +60,23 @@ export function recordSpanError(error: Error, providedAnalytics: Analytics = ana
    const span = providedAnalytics.getActiveSpan();
    span?.recordException(error);
    span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+}
+
+export function logLevelToSeverityNumber(level: LogLevel): SeverityNumber {
+   switch (level) {
+      case "trace":
+         return SeverityNumber.TRACE;
+      case "debug":
+         return SeverityNumber.DEBUG;
+      case "info":
+         return SeverityNumber.INFO;
+      case "warn":
+         return SeverityNumber.WARN;
+      case "error":
+         return SeverityNumber.ERROR;
+      case "fatal":
+         return SeverityNumber.FATAL;
+   }
 }
 
 export { SpanStatusCode };

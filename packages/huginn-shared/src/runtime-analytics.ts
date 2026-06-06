@@ -8,7 +8,7 @@ import { NodeSDK } from "@opentelemetry/sdk-node";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { PostHog } from "posthog-node";
 
-import { Analytics, type LogLevel } from "#analytics";
+import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
 
 type Options = { posthogHost?: string; otlpHost?: string; serviceName: string; clientId?: string };
 
@@ -66,11 +66,17 @@ export class RuntimeAnalytics extends Analytics {
       this.client.identify({ distinctId: id, properties });
    }
 
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string }): void {
+   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void {
       const logger = logs.getLogger(this.options.serviceName);
 
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
-      logger.emit({ severityText: options.level, body: options.body, attributes: mergedAttributes });
+      logger.emit({
+         severityNumber: logLevelToSeverityNumber(options.level),
+         severityText: options.level.toUpperCase(),
+         exception: options.exception,
+         body: options.body,
+         attributes: mergedAttributes,
+      });
    }
 
    public reset(): void {

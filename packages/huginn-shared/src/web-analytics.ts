@@ -1,14 +1,16 @@
-import { context, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
+import { context, ROOT_CONTEXT, trace, type Span, type Tracer } from "@opentelemetry/api";
+import { logs, type Logger } from "@opentelemetry/api-logs";
 import posthog, { type CaptureResult } from "posthog-js";
 
 import type { LogLevel } from "./analytics";
 
-import { Analytics } from "./analytics";
+import { Analytics, logLevelToSeverityNumber } from "./analytics";
 import { setupWebInstrumentation } from "./web-instrumentation";
 
 type Options = {
    posthogHost: string;
-   otlpHost: string;
+   otlpTraceUrl: string;
+   otlpLogUrl: string;
    serviceName: string;
    serviceVersion?: string;
    environment?: string;
@@ -17,6 +19,8 @@ type Options = {
 
 export class WebAnalytics extends Analytics {
    private readonly options: Options;
+   private tracer: Tracer;
+   private logger: Logger;
 
    public constructor(posthogApiKey: string, options: Options) {
       super();
@@ -52,16 +56,35 @@ export class WebAnalytics extends Analytics {
       });
 
       setupWebInstrumentation(
-         { serviceName: options.serviceName, url: options.otlpHost, serviceVersion: options.serviceVersion, clientId: options.clientId },
+         {
+            serviceName: options.serviceName,
+            traceUrl: options.otlpTraceUrl,
+            logUrl: options.otlpLogUrl,
+            serviceVersion: options.serviceVersion,
+            clientId: options.clientId,
+         },
          (span) => {
             span.setAttribute("distinct.id", posthog.get_distinct_id());
          },
       );
+
+      this.tracer = trace.getTracer(options.serviceName, options.serviceVersion);
+      this.logger = logs.getLogger(options.serviceName, options.serviceVersion);
    }
 
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string }): void {
+   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception: unknown }): void {
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
       posthog.captureLog({ body: options.body, level: options.level, attributes: mergedAttributes, trace_id: options.traceId });
+      this.logger.emit({
+         body: options.body,
+         severityNumber: logLevelToSeverityNumber(options.level),
+         severityText: options.level.toUpperCase(),
+         attributes: {
+            ...mergedAttributes,
+            "distinct.id": posthog.get_distinct_id(),
+         },
+         exception: options.exception,
+      });
    }
 
    public identify(id: string, properties?: Record<string, any>): void {
@@ -69,8 +92,7 @@ export class WebAnalytics extends Analytics {
    }
 
    startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> {
-      const tracer = trace.getTracer(this.options.serviceName);
-      return tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, fn);
+      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, fn);
    }
 
    withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
