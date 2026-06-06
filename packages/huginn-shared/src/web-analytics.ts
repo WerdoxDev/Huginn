@@ -1,4 +1,4 @@
-import { context, ROOT_CONTEXT, trace, type Span, type Tracer } from "@opentelemetry/api";
+import { context, propagation, ROOT_CONTEXT, trace, type Span, type Tracer } from "@opentelemetry/api";
 import { logs, type Logger } from "@opentelemetry/api-logs";
 import posthog, { type CaptureResult } from "posthog-js";
 
@@ -101,6 +101,12 @@ export class WebAnalytics extends Analytics {
 
    getActiveSpan(): Span | undefined {
       return trace.getActiveSpan();
+   }
+
+   getTraceparent(): string | undefined {
+      const carrier: { traceparent?: string } = {};
+      propagation.inject(context.active(), carrier);
+      return carrier.traceparent;
    }
 
    public reset(): void {

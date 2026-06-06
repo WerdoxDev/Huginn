@@ -1,5 +1,14 @@
 import { setAttributes } from "@elysiajs/opentelemetry";
-import { createErrorFactory, createHuginnError, globalPlugin, invalidBody, missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
+import {
+   createErrorFactory,
+   createHuginnError,
+   globalPlugin,
+   invalidBody,
+   missingAccess,
+   serverError,
+   tryCatch,
+   verifyJwt,
+} from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";

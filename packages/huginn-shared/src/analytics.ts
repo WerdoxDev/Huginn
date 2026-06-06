@@ -16,6 +16,7 @@ export abstract class Analytics {
    abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F>;
    abstract getActiveSpan(): Span | undefined;
    abstract withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F>;
+   abstract getTraceparent(): string | undefined;
 }
 
 class AnalyticsShim extends Analytics {
@@ -37,6 +38,9 @@ class AnalyticsShim extends Analytics {
    }
    withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
       return fn();
+   }
+   getTraceparent() {
+      return undefined;
    }
 }
 

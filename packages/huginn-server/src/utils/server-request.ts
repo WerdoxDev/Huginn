@@ -19,7 +19,6 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
 
    const token = await createToken("cdn", undefined, CONSTANTS.CDN_TOKEN_EXPIRE_TIME);
 
-   logCDNRequest(fullRoute, "POST");
    return (await request({
       ...options,
       root: envs.CDN_LOCAL_URL,

@@ -1,4 +1,4 @@
-import { context, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
+import { context, propagation, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
@@ -81,5 +81,11 @@ export class RuntimeAnalytics extends Analytics {
 
    public reset(): void {
       throw new Error("reset() is not supported in RuntimeAnalytics");
+   }
+
+   public getTraceparent(): string | undefined {
+      const carrier: { traceparent?: string } = {};
+      propagation.inject(context.active(), carrier);
+      return carrier.traceparent;
    }
 }
