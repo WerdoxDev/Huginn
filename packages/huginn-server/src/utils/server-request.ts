@@ -1,4 +1,3 @@
-import { envs } from "#setup";
 import { createToken } from "@huginn/backend-shared";
 import { logCDNRequest } from "@huginn/runtime-shared";
 import {
@@ -10,7 +9,10 @@ import {
    CONSTANTS,
    parseResponse,
    resolveRequest,
+   analytics,
 } from "@huginn/shared";
+
+import { envs } from "#setup";
 
 export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = {}) {
    if (!envs.CDN_LOCAL_URL) {
@@ -19,13 +21,18 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
 
    const token = await createToken("cdn", undefined, CONSTANTS.CDN_TOKEN_EXPIRE_TIME);
 
+   const traceparent = analytics.getTraceparent();
    return (await request({
       ...options,
       root: envs.CDN_LOCAL_URL,
       method: "POST",
       fullRoute,
       throw: true,
-      headers: { ...options.headers, Authorization: `Bearer ${token}` },
+      headers: {
+         ...options.headers,
+         Authorization: `Bearer ${token}`,
+         ...(traceparent ? { Traceparent: traceparent } : {}),
+      },
    })) as Promise<T>;
 }
 
