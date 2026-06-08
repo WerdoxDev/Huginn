@@ -28,7 +28,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
       code?: { lang?: string; tokens?: Array<MarkedCodeToken> },
       link?: { href: string },
       list?: { ordered: boolean; index: number; total: number },
-      emoji?: { emojiId: string; emoji: string },
+      emoji?: { slug?: string; emoji?: string },
    ) {
       // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);
       // if (existing) {
@@ -123,8 +123,8 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
             pushRange("link", " ", lineIndex, offset, offset + token.raw.length, token.raw, undefined, { href: token.href });
          } else if (token.type === "emoji") {
             pushRange("emoji", null, lineIndex, offset, offset + token.raw.length, token.raw, undefined, undefined, undefined, {
-               emojiId: token.id,
-               emoji: token.text,
+               slug: token.slug,
+               emoji: token.emoji,
             });
          } else {
             pushRange(token.type, mark, lineIndex, offset, offset + token.raw.length, token.raw);
@@ -148,7 +148,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          continue;
       }
 
-      if (block.type === "code") {
+      if (block.type === "code" && !block.codeBlockStyle) {
          lineIndex = handleCodeBlock(block as Tokens.Code, lineIndex);
          continue;
       }

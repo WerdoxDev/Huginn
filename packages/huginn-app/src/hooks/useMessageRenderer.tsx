@@ -63,7 +63,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                   </LinkElement>
                );
             case "emoji":
-               return <MessageEmojiElement emojiId={node.emojiId} emoji={node.emoji} key={key} />;
+               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} key={key} />;
             case "code":
                return <CodeElement code={node.code} language={node.language} key={key} />;
             case "code_inline":
@@ -115,8 +115,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          } else if (token.type === "emoji" && token.emoji) {
-            console.log("Emoji token:", token);
-            deepestNode.children.push({ type: "emoji", emojiId: token.emoji.emojiId, emoji: token.emoji.emoji, children: [] });
+            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, children: [] });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);

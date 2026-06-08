@@ -50,7 +50,7 @@ interface UseMessageBoxActionsOptions {
    editorRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function useMessageBoxActions({ editor, decorate, messages, attachments, clearAttachments, editorRef }: UseMessageBoxActionsOptions) {
+export function useMessageBoxActions({ editor, decorate, messages, attachments, clearAttachments }: UseMessageBoxActionsOptions) {
    const params = useParams({ strict: false });
    const queryClient = useQueryClient();
    const client = useClient();
@@ -71,7 +71,9 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    }
 
    function sendMessage(flags: MessageFlags) {
-      const content = serialize(editor.children);
+      if (isEditorEmpty() && attachments.length === 0) return;
+
+      const content = serialize(editor.children).trim();
       const channelId = params.channelId;
 
       if (!content && !attachments.length) return;
@@ -115,9 +117,17 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       clearEditor();
    }
 
+   function insertEmoji(emoji: string) {
+      editor.insertNode({ type: "emoji", emoji, children: [{ text: "" }] });
+      editor.move({ unit: "offset" });
+      editor.insertText(" ");
+      ReactEditor.focus(editor);
+   }
+
    function editMessage() {
-      const content = serialize(editor.children);
-      if (!content || !currentEditingMessageId) return;
+      const content = serialize(editor.children).trim();
+      if (!content || !currentEditingMessageId || isEditorEmpty()) return;
+      console.log("MUTATE");
 
       editMessageMutation.mutate({
          channelId: params.channelId ?? "",
@@ -141,6 +151,17 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    function resetState() {
       setReplyingMessageId(undefined);
       setEditingMessageId(undefined);
+   }
+
+   function isEditorEmpty() {
+      const editorNodes = [
+         ...editor.nodes({
+            at: { anchor: editor.start([]), focus: editor.end([]) },
+            match: (x) => (Text.isText(x) && x.text !== "") || (Element.isElement(x) && x.type === "emoji"),
+         }),
+      ];
+
+      return editorNodes.length === 0;
    }
 
    function toggleMarkAtSelection(markType: "bold" | "italic" | "underline") {
@@ -353,7 +374,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       else if (editor.selection && Range.isCollapsed(editor.selection)) skipEmojiElementOnArrowNavigation(event);
 
       // Edit last message on ArrowUp with empty editor
-      if (event.key === "ArrowUp" && editor.string([]) === "") {
+      if (event.key === "ArrowUp" && isEditorEmpty()) {
          const lastEditableMessage = messages.findLast((x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT);
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
@@ -385,8 +406,11 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
                if (currentEditingMessageId) cancelEditMessage();
                if (currentReplyingMessageId) cancelReplyMessage();
             }
-            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.key !== "Enter") {
-               editorRef.current?.focus();
+            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !ReactEditor.isFocused(editor)) {
+               editor.select(editor.end([]));
+               ReactEditor.focus(editor);
+               // e.preventDefault();
+               // editor.insertText(e.key);
             }
          },
          { signal: controller.signal },
@@ -413,20 +437,22 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       for (const line of lines) {
          if (lineIndex !== 0) editor.insertNode({ type: "paragraph", children: [{ text: "" }] });
          editor.insertText(line);
+         console.log(line);
          lineIndex++;
       }
 
-      editorRef.current?.focus();
+      ReactEditor.focus(editor);
    }, [currentEditingMessageId]);
 
    // Focus editor when replying
    useEffect(() => {
       if (!currentReplyingMessageId) return;
-      editorRef.current?.focus();
+      ReactEditor.focus(editor);
    }, [currentReplyingMessageId]);
 
    return {
       sendMessage,
+      insertEmoji,
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,

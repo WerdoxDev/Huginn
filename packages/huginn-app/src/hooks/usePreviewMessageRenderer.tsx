@@ -28,20 +28,20 @@ function withHuginn(editor: Editor) {
 }
 
 function checkAndInsertEmojis(editor: Editor, text: string, insertText: (text: string) => void) {
-   const matches = text
-      .replace(/[\uFE00-\uFE0F]/g, "")
-      .matchAll(
-         /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/gu,
-      );
+   const matches = text.matchAll(
+      /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/gu,
+   );
 
    let lastIndex = 0;
    let matchCount = 0;
    for (const match of matches) {
       matchCount++;
-      editor.insertNode({ text: "\uFEFF", throwaway: true });
+      if (match.index === 0) {
+         editor.insertNode({ text: "\uFEFF", throwaway: true });
+      }
 
       const matchStart = match.index ?? 0;
-      const matchEnd = matchStart + match[0].length + 1;
+      const matchEnd = matchStart + match[0].length;
 
       if (matchStart > lastIndex) {
          insertText(text.slice(lastIndex, matchStart));
@@ -64,10 +64,8 @@ function checkAndInsertEmojis(editor: Editor, text: string, insertText: (text: s
 }
 
 function insertEmoji(editor: Editor, text: string) {
-   const emojiId = [...text].map((x) => x.codePointAt(0)?.toString(16)).join("-");
    const emoji: Element = {
       type: "emoji",
-      emojiId: emojiId,
       emoji: text,
       children: [{ text: "" }],
    };

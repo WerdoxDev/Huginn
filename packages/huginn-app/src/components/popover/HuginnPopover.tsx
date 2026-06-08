@@ -1,7 +1,7 @@
 import { Popover } from "@base-ui/react";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { useState, type HTMLProps, type ReactNode } from "react";
+import { isValidElement, useState, type HTMLProps, type ReactNode } from "react";
 
 export default function HuginnPopover(props: {
    children?: ReactNode;
@@ -34,10 +34,15 @@ export default function HuginnPopover(props: {
    );
 }
 
-function Trigger(props: HTMLProps<HTMLButtonElement> & { type?: Popover.Trigger.Props["type"] }) {
+function Trigger(props: HTMLProps<HTMLButtonElement> & { type?: Popover.Trigger.Props["type"]; asChild?: boolean }) {
+   const { asChild, children, className, ...rest } = props;
+
+   if (asChild && isValidElement(children)) {
+      return <Popover.Trigger {...rest} type={props.type} className={clsx("cursor-pointer", className)} render={children} />;
+   }
    return (
-      <Popover.Trigger {...props} className={clsx("cursor-pointer", props.className)}>
-         {props.children}
+      <Popover.Trigger {...rest} className={clsx("cursor-pointer", className)}>
+         {children}
       </Popover.Trigger>
    );
 }
@@ -49,9 +54,10 @@ function Panel(props: {
    align?: "start" | "center" | "end";
    sideGap?: number;
    alignGap?: number;
+   keepMounted?: boolean;
 }) {
    return (
-      <Popover.Portal keepMounted={false}>
+      <Popover.Portal keepMounted={props.keepMounted}>
          <Popover.Positioner
             align={props.align ?? "end"}
             side={props.side ?? "bottom"}

@@ -47,7 +47,15 @@ const emojiExtension: TokenizerExtension = {
    name: "emoji",
    level: "inline",
    start(src) {
-      return src.indexOf(":");
+      const emojiStartRegex =
+         /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+      const colon = src.indexOf(":");
+      const emoji = src.search(emojiStartRegex);
+
+      if (colon === -1) return emoji;
+      if (emoji === -1) return colon;
+
+      return Math.min(colon, emoji);
    },
    tokenizer(src) {
       const match = src.match(/^:([a-zA-Z0-9_]+):/);
@@ -55,14 +63,11 @@ const emojiExtension: TokenizerExtension = {
          /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u,
       );
       if (match || unicodeEmojiMatch) {
-         const emojiId = [...(match ? match[0] : unicodeEmojiMatch![0]).replace(/[\uFE00-\uFE0F]/g, "")]
-            .map((x) => x.codePointAt(0)?.toString(16))
-            .join("-");
          return {
             type: "emoji",
+            slug: match ? match[1] : undefined,
+            emoji: unicodeEmojiMatch ? unicodeEmojiMatch[0] : undefined,
             raw: match ? match[0] : unicodeEmojiMatch![0],
-            id: emojiId,
-            text: match ? match[1] : unicodeEmojiMatch![0],
          };
       }
    },

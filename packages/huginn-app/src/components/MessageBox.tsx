@@ -14,6 +14,8 @@ import { Editable, Slate, ReactEditor } from "slate-react";
 import type { AppMessage } from "@/types";
 
 import AttachmentsPreview from "./AttachmentsPreview";
+import HuginnButton from "./button/HuginnButton";
+import EmojiPickerPopover from "./channels/EmojiPickerPopover";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import ReplyingPreview from "./ReplyingPreview";
@@ -52,6 +54,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       currentReplyingMessageId,
       channelId,
       resetState,
+      insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, editorRef });
 
    // Focus on the message box when we change channel
@@ -139,10 +142,23 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
                <div className="ml-2 flex h-8 gap-x-2 p-2">
                   <div className="bg-surface h-8 w-8 rounded-full" />
-                  <div className="bg-surface h-8 w-8 rounded-full" />
-                  <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
-                     <IconLetsIconsSendHorFill className="text-text size-full" />
-                  </button>
+                  <EmojiPickerPopover onEmojiSelect={insertEmoji} />
+                  {/* <HuginnButton
+                     color="primary"
+                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
+                     type="button"
+                  >
+                     <IconMingcuteEmoji2Fill className="text-text size-5" />
+                  </HuginnButton> */}
+                  {/* <div className="bg-surface h-8 w-8 rounded-full" /> */}
+                  <HuginnButton
+                     color="primary"
+                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
+                     type="button"
+                     onClick={() => sendMessage(MessageFlags.NONE)}
+                  >
+                     <IconLetsIconsSendHorFill className="text-text size-6" />
+                  </HuginnButton>
                </div>
             </div>
          </div>

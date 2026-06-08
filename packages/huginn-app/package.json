@@ -47,6 +47,7 @@
       "@tanstack/react-query": "^5.100.11",
       "@tanstack/react-router": "^1.170.7",
       "@tanstack/react-router-devtools": "^1.167.0",
+      "@tanstack/react-virtual": "^3.14.2",
       "animejs": "^4.4.1",
       "application-loopback": "1.2.7",
       "blobs": "^2.3.0-beta.2",
@@ -72,6 +73,7 @@
       "slate": "^0.124.1",
       "slate-react": "^0.124.2",
       "super-image-cropper": "^1.0.27",
+      "unicode-emoji-json": "^0.9.0",
       "zod": "^4.4.3",
       "zustand": "^5.0.13"
    },

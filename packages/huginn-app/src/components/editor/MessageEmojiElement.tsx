@@ -1,17 +1,14 @@
+import { getEmojiFromSlug, getEmojiId } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useMemo } from "react";
-import { type RenderElementProps } from "slate-react";
 
-import type { EmojiElement } from "@/index";
-
-export default function MessageEmojiElement(props: { emojiId: string; emoji: string }) {
-   // const element = props.element as EmojiElement;
+export default function MessageEmojiElement(props: { emoji?: string; slug?: string }) {
    const client = useClient();
-   const src = useMemo(() => client?.cdn.emoji(props.emojiId), [props.emojiId]);
+   const emoji = useMemo(() => props.emoji ?? (props.slug ? getEmojiFromSlug(props.slug) : undefined), [props.emoji, props.slug]);
+   const src = useMemo(() => (emoji ? client?.cdn.emoji(getEmojiId(emoji)) : undefined), [emoji]);
    return (
-      <div className="inline-block align-sub [&>span]:hidden">
-         {/* <Emoji data={data} id={element.emojiId} size={20} /> */}
-         <img src={src} data-type="emoji" alt={props.emojiId} className="size-5 object-contain" />
+      <div className="inline-block align-sub">
+         <img src={src} draggable={false} data-type="emoji" alt={props.emoji} className="size-5 object-contain" />
       </div>
    );
 }

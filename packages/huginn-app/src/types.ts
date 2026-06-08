@@ -277,7 +277,7 @@ export type MarkedToken = {
    code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
    link?: { href: string };
    list?: { ordered: boolean; index?: number };
-   emoji?: { emojiId: string; emoji: string };
+   emoji?: { slug?: string; emoji?: string };
 };
 
 export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
