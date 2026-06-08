@@ -1,6 +1,7 @@
 import type { MediaKind } from "mediasoup/types";
 
 import { hash } from "ohash";
+import emojis from "unicode-emoji-json/data-by-emoji.json" with { type: "json" };
 
 import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
@@ -439,4 +440,17 @@ export function interpolateColor(color1: string, color2: string, progress: numbe
    const g = g1 + (g2 - g1) * progress;
    const b = b1 + (b2 - b1) * progress;
    return rgbToHex(r, g, b);
+}
+
+export function getEmojiId(emoji: string): string {
+   const id = [...emoji]
+      .map((cp) => cp.codePointAt(0)?.toString(16))
+      .filter((cp) => cp !== "fe0f")
+      .join("-");
+   return id;
+}
+
+export function getEmojiFromSlug(slug: string): string | undefined {
+   const emoji = Object.entries(emojis).find(([_, emoji]) => emoji.slug === slug)?.[0];
+   return emoji;
 }
