@@ -69,21 +69,23 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
          channelId,
          content,
          nonce,
-         messageReference,
-      });
-
-      sendMessageMutation.mutate({
-         previewMessage,
-         channelId,
-         content,
          flags,
-         attachments: attachments.map((x) => ({
+         attachments: attachments?.map((x) => ({
             id: x.id,
             contentType: x.contentType,
             data: x.arrayBuffer,
             filename: x.filename,
             description: x.description,
          })),
+         messageReference,
+      });
+
+      sendMessageMutation.mutate({
+         previewMessage,
+         // channelId: previewMessage.channelId,
+         // content: previewMessage.content,
+         // flags: previewMessage.flags,
+
          messageReference,
       });
 

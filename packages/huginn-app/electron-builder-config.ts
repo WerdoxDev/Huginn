@@ -14,6 +14,7 @@ export default {
          useMultipleRangeRequest: false,
       },
    },
+
    npmRebuild: false,
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
    files: [
@@ -21,15 +22,12 @@ export default {
       "!dist/electron",
       "!node_modules",
       "node_modules/application-loopback/**/*",
-      "node_modules/sharp/**/*",
-      "node_modules/@img/**/*",
       "node_modules/native-addon/**/*",
       ".electron/**/*",
    ],
    directories: {
       output: "dist/electron",
    },
-   // asarUnpack: ["**/*"],
    icon: "electron-assets/icon.ico",
    extraResources: ["electron-assets"],
 } as Configuration;

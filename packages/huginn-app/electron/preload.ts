@@ -40,9 +40,6 @@ export const electronAPI = {
       };
    },
 
-   // Cache
-   saveImageToCache: (url: string, hash: string) => ipcRenderer.invoke("cache:save-image", url, hash) as Promise<void>,
-
    // Keybinds
    updateKeybinds: (keybinds: Array<{ type: KeybindType; combination: string[] }>) =>
       ipcRenderer.invoke("keybinds:update", keybinds) as Promise<boolean>,

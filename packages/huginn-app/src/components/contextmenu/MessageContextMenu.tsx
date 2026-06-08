@@ -3,10 +3,12 @@ import { usePinMessage } from "@hooks/mutations/usePinMessage";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useOpen } from "@hooks/useOpen";
 import { error } from "@huginn/shared";
+import { deleteAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import ContextMenu from "./ContextMenu";
@@ -15,6 +17,7 @@ export default function MessageContextMenu() {
    const { data } = useContextMenu("message");
    const { openUrl } = useOpen();
    const { showError } = useModals();
+   const queryClient = useQueryClient();
    const { setEditingMessageId, setReplyingMessageId } = useChannelStore();
    const { user } = useThisUser();
    const deleteMessageMutation = useDeleteMessage();
@@ -62,7 +65,10 @@ export default function MessageContextMenu() {
    }
 
    async function deleteMessage() {
-      if (deleteMessageMutation.isPending || !data) {
+      if (deleteMessageMutation.isPending || !data) return;
+
+      if (data.message.isPreview) {
+         deleteAppMessage(queryClient, data.message.channelId, data.message.id);
          return;
       }
 
@@ -100,24 +106,30 @@ export default function MessageContextMenu() {
 
    return (
       <>
-         {isAuthor && (
+         {isAuthor && !data.message.isPreview && (
             <ContextMenu.Item label="Edit Message" onClick={() => setEditingMessageId(data.message.id)}>
                <IconMingcuteEdit2Fill />
             </ContextMenu.Item>
          )}
-         <ContextMenu.Item label="Reply" onClick={() => setReplyingMessageId(data.message.id)}>
-            <IconMingcuteCornerUpLeftFill />
-         </ContextMenu.Item>
-         <ContextMenu.Divider />
+         {!data.message.isPreview && (
+            <>
+               <ContextMenu.Item label="Reply" onClick={() => setReplyingMessageId(data.message.id)}>
+                  <IconMingcuteCornerUpLeftFill />
+               </ContextMenu.Item>
+               <ContextMenu.Divider />
+            </>
+         )}
          <ContextMenu.Item label="Copy Text" onClick={() => navigator.clipboard.writeText(data.message.content)}>
             <IconMingcuteCopy2Fill />
          </ContextMenu.Item>
          <ContextMenu.Item label="Copy Message Link (soon)" disabled>
             <IconMingcuteLink2Fill />
          </ContextMenu.Item>
-         <ContextMenu.Item label={isPinned ? "Unpin Message" : "Pin Message"} onClick={togglePin} disabled={isPinning}>
-            <IconMingcutePinFill />
-         </ContextMenu.Item>
+         {!data.message.isPreview && (
+            <ContextMenu.Item label={isPinned ? "Unpin Message" : "Pin Message"} onClick={togglePin} disabled={isPinning}>
+               <IconMingcutePinFill />
+            </ContextMenu.Item>
+         )}
          {isAuthor && (
             <>
                <ContextMenu.Divider />

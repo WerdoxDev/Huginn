@@ -6,14 +6,13 @@ import path from "node:path";
 
 import { ElectronStorage } from "../shared/electron-storage";
 import { StorageController } from "../shared/storage-controller";
-import { CacheController } from "./cache-controller";
 import { MainWindow } from "./main-window";
 
 const { autoUpdater } = updater;
 
 export class HuginnApp {
    private storage: StorageController<ElectronStorage>;
-   private cache: CacheController;
+   // private cache: CacheController;
    private mainWindow?: MainWindow;
    private tray?: Tray;
    private allowedToRun: boolean;
@@ -21,7 +20,7 @@ export class HuginnApp {
    public constructor(allowedToRun: boolean) {
       this.allowedToRun = allowedToRun;
       this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev", analyticsShim));
-      this.cache = new CacheController();
+      // this.cache = new CacheController();
       this.configureUpdater();
       this.eventListeners();
 
@@ -49,7 +48,7 @@ export class HuginnApp {
          return;
       }
 
-      this.mainWindow = new MainWindow(this.cache);
+      this.mainWindow = new MainWindow();
       this.configureTray();
 
       // Setup as Startup App

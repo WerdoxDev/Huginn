@@ -10,6 +10,7 @@ import {
    type DirectChannel,
    HuginnAPIError,
    type HuginnError,
+   MessageFlags,
    MessageType,
    type PresenceStatus,
    type PresenceUser,
@@ -23,7 +24,7 @@ import {
 import { clientStore } from "@stores/clientStore";
 import { Children, isValidElement } from "react";
 
-import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
+import type { AppAttachment, AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
 import { getMessage } from "./query-utils";
@@ -204,6 +205,8 @@ export function createPreviewMessage(
       channelId: Snowflake;
       authorId: Snowflake;
       nonce: Snowflake;
+      flags?: MessageFlags;
+      attachments?: AppAttachment[];
       messageReference?: APIPostMessageReferenceJSONBody;
    },
 ) {
@@ -217,9 +220,58 @@ export function createPreviewMessage(
       channelId: data.channelId,
       authorId: data.authorId,
       nonce: data.nonce,
+      flags: data.flags,
+      attachments: data.attachments,
       referencedMessage: referencedMessage,
       abortController: new AbortController(),
    };
 
    return previewMessage;
+}
+
+export function getDataURLFromSrc(src: string, circle: boolean = true): Promise<string> {
+   return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+         const canvas = document.createElement("canvas");
+         canvas.width = img.width;
+         canvas.height = img.height;
+         const ctx = canvas.getContext("2d");
+
+         if (circle && ctx) {
+            const radius = Math.min(canvas.width, canvas.height) / 2;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+         }
+
+         if (ctx) ctx.drawImage(img, 0, 0);
+
+         resolve(canvas.toDataURL("image/png", 1.0));
+      };
+      img.onerror = reject;
+      img.src = src;
+   });
+}
+
+export function getSolidColorDataURL(color: string, size: number, circle = true) {
+   const canvas = document.createElement("canvas");
+   canvas.width = size;
+   canvas.height = size;
+   const ctx = canvas.getContext("2d");
+
+   if (circle && ctx) {
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, Math.min(size, size) / 2, 0, Math.PI * 2);
+      ctx.clip(); // clip all future drawing to the circle
+   }
+
+   if (ctx) {
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, size, size);
+   }
+
+   return canvas.toDataURL("image/png");
 }

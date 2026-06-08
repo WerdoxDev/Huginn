@@ -1,5 +1,5 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
-import { type APIPostMessageReferenceJSONBody, type MessageFlags, type Snowflake } from "@huginn/shared";
+import { MessageReferenceType, type APIPostMessageReferenceJSONBody } from "@huginn/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
@@ -7,7 +7,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { MessageErrorType, type AppAttachment, type PreviewAppMessage } from "@/types";
+import { MessageErrorType, type PreviewAppMessage } from "@/types";
 
 export function useSendMessage() {
    const client = useClient();
@@ -18,24 +18,17 @@ export function useSendMessage() {
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
-      onMutate: async (data: {
-         previewMessage: PreviewAppMessage;
-         channelId: Snowflake;
-         content: string;
-         flags: MessageFlags;
-         attachments: AppAttachment[];
-         messageReference?: APIPostMessageReferenceJSONBody;
-      }) => {
+      onMutate: async (data: { previewMessage: PreviewAppMessage }) => {
          if (!user) return;
 
-         const filenames = data.attachments.map((x) => x.filename);
+         const filenames = data.previewMessage.attachments?.map((x) => x.filename);
 
          const onAbort = () => {
             data.previewMessage.abortController?.abort();
-            deleteAppMessage(queryClient, data.channelId, data.previewMessage.id);
+            deleteAppMessage(queryClient, data.previewMessage.channelId, data.previewMessage.id);
          };
 
-         if (data.attachments.length) {
+         if (data.previewMessage.attachments?.length) {
             updateMessageUploadProgress({
                messageId: data.previewMessage.id,
                percentage: 0,
@@ -45,8 +38,8 @@ export function useSendMessage() {
             });
          }
 
-         const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
-         appendAppMessage(queryClient, data.channelId, data.previewMessage, targetChannel, currentChannel);
+         const targetChannel = findChannel(getChannels(undefined, queryClient), data.previewMessage.channelId);
+         appendAppMessage(queryClient, data.previewMessage.channelId, data.previewMessage, targetChannel, currentChannel);
 
          dispatchEvent("message_added", {
             message: data.previewMessage,
@@ -64,25 +57,34 @@ export function useSendMessage() {
       mutationFn: async (data) => {
          const { previewMessage } = data;
 
+         let messageReference: APIPostMessageReferenceJSONBody | undefined;
+         if (previewMessage.referencedMessage) {
+            messageReference = {
+               channelId: previewMessage.referencedMessage?.channelId,
+               messageId: previewMessage.referencedMessage?.id,
+               type: MessageReferenceType.DEFAULT,
+            };
+         }
+
          const message = await client!.channels.createMessage(
-            data.channelId,
+            data.previewMessage.channelId,
             {
-               attachments: data.attachments.map((x) => ({
+               attachments: data.previewMessage.attachments?.map((x) => ({
                   id: x.id,
                   filename: x.filename,
                   description: x.description,
                })),
-               content: data.content,
-               flags: data.flags,
+               content: data.previewMessage.content,
+               flags: data.previewMessage.flags,
                nonce: previewMessage.nonce,
-               messageReference: data.messageReference,
+               messageReference,
             },
-            data.attachments.map((x) => ({
+            data.previewMessage.attachments?.map((x) => ({
                data: x.data,
                name: x.filename,
                contentType: x.contentType,
-            })),
-            data.attachments.length
+            })) ?? [],
+            data.previewMessage.attachments?.length
                ? (event) =>
                     updateMessageUploadProgress({
                        messageId: previewMessage.id,
@@ -96,9 +98,9 @@ export function useSendMessage() {
          return { message };
       },
       onError(_error, data) {
-         const targetChannel = findChannel(getChannels(undefined, queryClient), data.channelId);
+         const targetChannel = findChannel(getChannels(undefined, queryClient), data.previewMessage.channelId);
          updateAppMessage(queryClient, {
-            channelId: data.channelId,
+            channelId: data.previewMessage.channelId,
             messageId: data.previewMessage.id,
             patch: { error: MessageErrorType.FAILED_TO_SEND },
             targetChannel,

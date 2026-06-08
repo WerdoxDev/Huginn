@@ -1,9 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
+import { analytics, ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
 import { playAudio } from "@lib/audio-player";
 import { listenEvent } from "@lib/event-handler";
 import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
+import { getDataURLFromSrc, getSolidColorDataURL } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
 import { produce } from "immer";
 import { useMemo } from "react";
@@ -137,9 +138,19 @@ export function initReadStateStore() {
                   break;
             }
 
-            const theme = themeStore.getState().themeType;
+            const theme = themeStore.getState().theme;
 
-            sendNotification(data.message.channelId, title, content ?? "", author?.avatar ?? theme ?? undefined);
+            let dataURL;
+            if (author && author.avatar) {
+               const url = client.cdn.avatar(author?.id, author?.avatar, { format: "png", size: 64 });
+               dataURL = await getDataURLFromSrc(url);
+               analytics.log({ body: "notification icon conversion", level: "info", attributes: { url, length: dataURL.length } });
+            } else {
+               dataURL = getSolidColorDataURL(theme["primary-700"], 64);
+               analytics.log({ body: "notification default icon", level: "info", attributes: { theme, length: dataURL.length } });
+            }
+
+            sendNotification(data.message.channelId, title, content ?? "", dataURL);
          }
 
          playAudio("notification", true);

@@ -18,6 +18,7 @@ import type {
    RelationshipType,
    Snowflake,
    UserPresence,
+   MessageFlags,
 } from "@huginn/shared";
 import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
@@ -229,6 +230,8 @@ export type PreviewAppMessage = {
    channelId: Snowflake;
    referencedMessage?: AppMessage | null;
    error?: MessageErrorType;
+   attachments?: AppAttachment[];
+   flags?: MessageFlags;
    abortController?: AbortController;
 };
 

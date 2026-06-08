@@ -1,4 +1,5 @@
 import { SpanStatusCode, type Span } from "@opentelemetry/api";
+import { SeverityNumber } from "@opentelemetry/api-logs";
 
 export type LogLevel = "info" | "warn" | "error" | "debug" | "fatal" | "trace";
 
@@ -15,6 +16,7 @@ export abstract class Analytics {
    abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F>;
    abstract getActiveSpan(): Span | undefined;
    abstract withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F>;
+   abstract getTraceparent(): string | undefined;
 }
 
 class AnalyticsShim extends Analytics {
@@ -36,6 +38,9 @@ class AnalyticsShim extends Analytics {
    }
    withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
       return fn();
+   }
+   getTraceparent() {
+      return undefined;
    }
 }
 
@@ -59,6 +64,23 @@ export function recordSpanError(error: Error, providedAnalytics: Analytics = ana
    const span = providedAnalytics.getActiveSpan();
    span?.recordException(error);
    span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+}
+
+export function logLevelToSeverityNumber(level: LogLevel): SeverityNumber {
+   switch (level) {
+      case "trace":
+         return SeverityNumber.TRACE;
+      case "debug":
+         return SeverityNumber.DEBUG;
+      case "info":
+         return SeverityNumber.INFO;
+      case "warn":
+         return SeverityNumber.WARN;
+      case "error":
+         return SeverityNumber.ERROR;
+      case "fatal":
+         return SeverityNumber.FATAL;
+   }
 }
 
 export { SpanStatusCode };

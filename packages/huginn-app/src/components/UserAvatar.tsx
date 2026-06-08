@@ -45,34 +45,6 @@ export default function UserAvatar(props: {
          : undefined,
    });
 
-   // const [isHovered, setIsHovered] = useState(false);
-   // const isAnimatedAvatar = props.avatarHash?.startsWith("a_");
-   // const animatedMode = props.animatedMode ?? "hover";
-   // const isHoverControlled = props.hovered !== undefined;
-   // const hoverActive = isHoverControlled ? props.hovered : isHovered;
-
-   // const src = useMemo(() => {
-   //    if (props.imageSrc !== undefined) {
-   //       return props.imageSrc || undefined;
-   //    }
-
-   //    if (!props.avatarHash || !client) return undefined;
-
-   //    const modifiedUrl = client.cdn.avatar(props.userId, props.avatarHash, { format: "webp", size: props.cdnSize ?? 64, forceStatic: true });
-   //    const baseUrl = client.cdn.avatar(props.userId, props.avatarHash);
-
-   //    if (isAnimatedAvatar) {
-   //       if (animatedMode === "always") return client.cdn.avatar(props.userId, props.avatarHash);
-   //       if (animatedMode === "hover") {
-   //          return hoverActive ? baseUrl : modifiedUrl;
-   //       }
-
-   //       return modifiedUrl;
-   //    }
-
-   //    return modifiedUrl;
-   // }, [props.imageSrc, props.avatarHash, props.userId, props.cdnSize, client, isAnimatedAvatar, animatedMode, hoverActive]);
-
    function onLoad() {
       setIsLoaded(true);
       setHasError(false);
@@ -93,10 +65,6 @@ export default function UserAvatar(props: {
 
       if (huginnWindow.environment !== "desktop") {
          return;
-      }
-
-      if (props.avatarHash && client) {
-         window.electronAPI.saveImageToCache(client.cdn.avatar(props.userId, props.avatarHash, { size: 256, format: "png" }), props.avatarHash);
       }
    }, [props.avatarHash, props.imageSrc, props.userId, client, huginnWindow.environment]);
 
