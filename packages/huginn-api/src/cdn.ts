@@ -23,8 +23,8 @@ export class CDN {
       return this.dynamicMakeURL(`/channel-icons/${id}/${hash}`, hash, options);
    }
 
-   public emoji(name: string): string {
-      return this.makeURL(`/emoji/${name}`, { format: "svg" });
+   public emoji(id: string): string {
+      return this.makeURL(`/emoji/${id}`, { format: "svg" });
    }
 
    /**
