@@ -3,24 +3,22 @@ import CodeElement from "@components/editor/CodeElement";
 import EmbedElement from "@components/editor/EmbedElement";
 import InlineCodeElement from "@components/editor/InlineCodeElement";
 import LinkElement from "@components/editor/LinkElement";
+import ListElement from "@components/editor/ListElement";
+import ListItemElement from "@components/editor/ListItemElement";
+import MessageEmojiElement from "@components/editor/MessageEmojiElement";
 import MessageLeaf from "@components/editor/MessageLeaf";
 import SpoilerElement from "@components/editor/SpoilerElement";
-import { markdownMainMessage } from "@lib/markdown-main";
-import { markdownSpoiler } from "@lib/markdown-spoiler";
-import { markdownUnderline } from "@lib/markdown-underline";
-import { organizeTokens, isElementOpenToken, isElementCloseToken, isOpenToken, isCloseToken, getSlateFormats } from "@lib/markdown-utils";
+import { marked } from "@lib/marked";
+import { organizeMarkedTokens } from "@lib/marked-utils";
 import clsx from "clsx";
-import markdownit from "markdown-it";
 import { useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type { AppMessage, HuginnToken } from "@/types";
+import type { AppMessage, MarkedToken } from "@/types";
 
-import type { CustomElement, ParagraphElement } from "..";
+import type { CustomElement, ListItemElement as SlateListItemElement, ParagraphElement } from "..";
 
 export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean) {
-   const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainMessage), []);
-
    function getNodeByPath(rootNode: CustomElement, path: number[]) {
       let current = rootNode;
 
@@ -64,6 +62,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                      {children}
                   </LinkElement>
                );
+            case "emoji":
+               return <MessageEmojiElement emojiId={node.emojiId} emoji={node.emoji} key={key} />;
             case "code":
                return <CodeElement code={node.code} language={node.language} key={key} />;
             case "code_inline":
@@ -72,6 +72,16 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <AttachmentElement {...node} key={key} />;
             case "embed":
                return <EmbedElement {...node} key={key} />;
+            case "ordered-list":
+               return (
+                  <ListElement key={key} ordered>
+                     {children}
+                  </ListElement>
+               );
+            case "list-item":
+               return <ListItemElement key={key}>{children}</ListItemElement>;
+            case "unordered-list":
+               return <ListElement key={key}>{children}</ListElement>;
          }
       } else if (Text.isText(node)) {
          return (
@@ -82,17 +92,55 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       }
    }
 
+   const elementTypes = new Set(["spoiler", "link"]);
+
+   function renderInlineTokens(root: CustomElement, inlineTokens: Array<MarkedToken>) {
+      let currentTokens: Array<{ start: number; end: number; type: string }> = [];
+      let currentPath: number[] = [];
+
+      for (const token of inlineTokens) {
+         const prevTokens = currentTokens;
+         currentTokens = currentTokens.filter((t) => t.end > token.start);
+
+         const prevElementCount = prevTokens.filter((t) => elementTypes.has(t.type)).length;
+         const newElementCount = currentTokens.filter((t) => elementTypes.has(t.type)).length;
+         if (newElementCount < prevElementCount) {
+            currentPath = currentPath.slice(0, newElementCount);
+         }
+
+         const deepestNode = !currentPath.length ? root : getNodeByPath(root, currentPath);
+
+         if (token.type === "spoiler") {
+            deepestNode.children.push({ type: "spoiler", children: [] });
+            currentPath.push(deepestNode.children.length - 1);
+            currentTokens.push({ start: token.start, end: token.end, type: token.type });
+         } else if (token.type === "emoji" && token.emoji) {
+            console.log("Emoji token:", token);
+            deepestNode.children.push({ type: "emoji", emojiId: token.emoji.emojiId, emoji: token.emoji.emoji, children: [] });
+         } else if (token.type === "link") {
+            deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
+            currentPath.push(deepestNode.children.length - 1);
+            currentTokens.push({ start: token.start, end: token.end, type: token.type });
+         } else if (token.type === "text") {
+            deepestNode.children.push({
+               text: token.raw,
+               bold: currentTokens.some((t) => t.type === "strong"),
+               italic: currentTokens.some((t) => t.type === "em"),
+               underline: currentTokens.some((t) => t.type === "underline"),
+               strikethrough: currentTokens.some((t) => t.type === "del"),
+            });
+         } else {
+            currentTokens.push({ start: token.start, end: token.end, type: token.type });
+         }
+      }
+   }
+
    const nodes = useMemo(() => {
       let nodes: Descendant[] = [];
 
-      const result = md.parse(message.content, {});
-      const tokens = organizeTokens(result);
+      const tokens = marked.lexer(message.content);
+      const organizedTokens = organizeMarkedTokens(tokens);
 
-      let lineNode: ParagraphElement = { type: "paragraph", children: [] };
-      const currentPath: number[] = [];
-      const currentOpenedTokens: HuginnToken[] = [];
-
-      // Render attachments
       if (!message.isPreview) {
          for (const attachment of message.attachments) {
             nodes.push({
@@ -109,93 +157,101 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          }
       }
 
-      for (const lineTokens of tokens) {
-         if (lineTokens.length === 0) {
-            lineNode.children.push({ text: "" });
-            nodes.push({ ...lineNode });
-            lineNode = { type: "paragraph", children: [] };
+      function flushLine(lineElement: ParagraphElement, lineIndex: number, targetLine: number) {
+         if (lineElement.children.length) {
+            nodes.push(lineElement);
+         }
+         for (let j = lineIndex + 1; j < targetLine; j++) {
+            nodes.push({ type: "paragraph", children: [{ text: " " }] });
+         }
+      }
+
+      let lineIndex = 0;
+      let lineElement: ParagraphElement = { type: "paragraph", children: [] };
+
+      let i = 0;
+      while (i < organizedTokens.length) {
+         const token = organizedTokens[i];
+
+         if (token.type === "code-fence-open") {
+            flushLine(lineElement, lineIndex, token.line);
+
+            const lang = token.raw.replace(/^(`{3}|~{3})/, "").trim();
+            let closeLine = token.line;
+            const codeLines: string[] = [];
+            i++;
+
+            while (i < organizedTokens.length && organizedTokens[i].type !== "code-fence-close") {
+               codeLines.push(organizedTokens[i].raw);
+               closeLine = organizedTokens[i].line;
+               i++;
+            }
+            if (i < organizedTokens.length && organizedTokens[i].type === "code-fence-close") {
+               closeLine = organizedTokens[i].line;
+               i++;
+            }
+
+            nodes.push({ type: "code", language: lang, code: codeLines.join("\n"), children: [{ text: "" }] });
+            lineIndex = closeLine;
+            lineElement = { type: "paragraph", children: [] };
             continue;
          }
 
-         for (const token of lineTokens) {
-            const deepestNode = !currentPath.length ? lineNode : getNodeByPath(lineNode, currentPath);
+         if (token.type === "list-item" && token.list?.index === 0) {
+            flushLine(lineElement, lineIndex, token.line);
 
-            if (isElementOpenToken(token)) {
-               if (token.type === "link_open") {
-                  deepestNode.children.push({
-                     type: "link",
-                     children: [],
-                     url: token.attrs?.[0][1],
-                  });
-               } else if (token.type === "spoiler_open") {
-                  deepestNode.children.push({ type: "spoiler", children: [] });
-               } else if (token.type === "fence_open") {
-                  deepestNode.children.push({
-                     type: "code",
-                     children: [{ text: "" }],
-                     code: token.content,
-                     language: token.info,
-                  });
-               } else if (token.type === "code_open") {
-                  deepestNode.children.push({ type: "code_inline", children: [] });
+            const listItems: SlateListItemElement[] = [];
+            let j = i;
+
+            while (j < organizedTokens.length && organizedTokens[j].type === "list-item") {
+               const itemToken = organizedTokens[j];
+               const itemLine = itemToken.line;
+               j++;
+
+               const itemRoot: SlateListItemElement = { type: "list-item", children: [] };
+
+               // Collect all inline tokens for this item's line
+               const itemInlineTokens: Array<MarkedToken> = [];
+               while (j < organizedTokens.length && organizedTokens[j].line === itemLine) {
+                  itemInlineTokens.push(organizedTokens[j]);
+                  j++;
                }
-               currentPath.push(deepestNode.children.length - 1);
-               continue;
+
+               renderInlineTokens(itemRoot, itemInlineTokens);
+               listItems.push(itemRoot);
             }
 
-            if (isElementCloseToken(token)) {
-               currentPath.pop();
-               continue;
-            }
-
-            if (isOpenToken(token) || isCloseToken(token)) {
-               if (isOpenToken(token)) {
-                  currentOpenedTokens.push(token);
-               } else if (isCloseToken(token)) {
-                  currentOpenedTokens.pop();
-               }
-               continue;
-            }
-
-            if (!token.content) {
-               continue;
-            }
-
-            // fence token is already finished from its start because the code is passed as a whole
-            if (token.type === "fence") {
-               continue;
-            }
-
-            deepestNode.children.push({
-               ...getSlateFormats(currentOpenedTokens),
-               text: token.content,
+            nodes.push({
+               type: token.list?.ordered ? "ordered-list" : "unordered-list",
+               children: listItems,
             });
+
+            lineIndex = organizedTokens[j - 1]?.line ?? lineIndex;
+            lineElement = { type: "paragraph", children: [] };
+            i = j;
+            continue;
          }
 
-         if (lineNode.children.length) {
-            nodes.push({ ...lineNode });
-            currentPath.splice(0, currentPath.length);
-            lineNode = { type: "paragraph", children: [] };
+         if (token.line > lineIndex) {
+            flushLine(lineElement, lineIndex, token.line);
+            lineIndex = token.line;
+            lineElement = { type: "paragraph", children: [] };
          }
-      }
 
-      // add the last line
-      if (lineNode.children.length) {
-         nodes.push(lineNode);
-      }
-
-      if (message.isPreview) {
-         return nodes;
-      }
-
-      if (message.embeds.length === 1) {
-         const embed = message.embeds[0];
-         if ((embed.type === "image" || embed.type === "video") && embed.url === message.content) {
-            nodes = [];
+         // Collect all tokens on this line and render them together
+         const lineTokens: Array<MarkedToken> = [];
+         while (i < organizedTokens.length && organizedTokens[i].line === lineIndex) {
+            lineTokens.push(organizedTokens[i]);
+            i++;
          }
+
+         renderInlineTokens(lineElement, lineTokens);
       }
 
-      // Render embeds
+      nodes.push(lineElement);
+
+      if (message.isPreview) return nodes;
+
       for (const embed of message.embeds) {
          nodes.push({
             type: "embed",

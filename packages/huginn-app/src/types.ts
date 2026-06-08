@@ -267,14 +267,20 @@ export type AppAttachment = {
    description?: string;
 };
 
-export type HuginnToken = {
+export type MarkedToken = {
    type: string;
-   markup: string;
-   content: string;
-   info: string;
-   map: number[] | null;
-   attrs: Array<[string, string]> | null;
+   mark?: string | null;
+   start: number;
+   end: number;
+   line: number;
+   raw: string;
+   code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
+   link?: { href: string };
+   list?: { ordered: boolean; index?: number };
+   emoji?: { emojiId: string; emoji: string };
 };
+
+export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
 
 export type AttachmentType = {
    id: number;

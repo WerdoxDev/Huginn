@@ -14,7 +14,7 @@ import { useMemo } from "react";
 import ContextMenu from "./ContextMenu";
 
 export default function MessageContextMenu() {
-   const { data } = useContextMenu("message");
+   const { data, close } = useContextMenu("message");
    const { openUrl } = useOpen();
    const { showError } = useModals();
    const queryClient = useQueryClient();
@@ -100,9 +100,13 @@ export default function MessageContextMenu() {
       });
    }
 
-   if (!data) {
-      return;
+   function handleReply() {
+      if (!data) return;
+      close();
+      setReplyingMessageId(data.message.id);
    }
+
+   if (!data) return;
 
    return (
       <>
@@ -113,7 +117,7 @@ export default function MessageContextMenu() {
          )}
          {!data.message.isPreview && (
             <>
-               <ContextMenu.Item label="Reply" onClick={() => setReplyingMessageId(data.message.id)}>
+               <ContextMenu.Item label="Reply" onClick={handleReply}>
                   <IconMingcuteCornerUpLeftFill />
                </ContextMenu.Item>
                <ContextMenu.Divider />

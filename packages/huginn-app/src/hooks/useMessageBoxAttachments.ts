@@ -126,6 +126,7 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
    }
 
    function onPaste(e: ClipboardEvent) {
+      console.log(e);
       addAttachments(Array.from(e.clipboardData.files));
    }
 

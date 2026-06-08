@@ -63,6 +63,16 @@ export type EmojiElement = {
    children: Descendant[];
 };
 
+type ListElement = {
+   type: "unordered-list" | "ordered-list";
+   children: Descendant[];
+};
+
+export type ListItemElement = {
+   type: "list-item";
+   children: Descendant[];
+};
+
 type CustomElement =
    | ParagraphElement
    | SpoilerElement
@@ -71,7 +81,9 @@ type CustomElement =
    | CodeElement
    | AttachmentElement
    | InlineCodeElement
-   | EmojiElement;
+   | EmojiElement
+   | ListElement
+   | ListItemElement;
 
 type TextFormats = {
    bold?: boolean;
@@ -80,9 +92,12 @@ type TextFormats = {
    mark?: boolean;
    spoiler?: boolean;
    link?: boolean;
+   strikethrough?: boolean;
    inlineCode?: boolean;
-   codeToken?: string;
+   codeToken?: string | boolean;
    codeLanguage?: boolean;
+   list?: boolean;
+   throwaway?: boolean;
 };
 export type FormattedText = { text: string } & TextFormats;
 

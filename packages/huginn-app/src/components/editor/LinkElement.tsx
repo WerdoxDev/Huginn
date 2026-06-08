@@ -12,13 +12,18 @@ export default function LinkElement(props: { children?: ReactNode; url?: string;
    return (
       <span
          onContextMenu={(e) => (context.options?.disableContextMenu ? undefined : open({ message: context.message, url: props.url }, e))}
-         className={clsx("relative inline-block cursor-pointer underline", props.noWrapping && "h-max w-full")}
+         className={clsx("relative inline-block cursor-pointer", props.noWrapping && "h-max w-full")}
          onClick={() => (props.url && !props.noWrapping ? openUrl(props.url) : undefined)}
          title={props.url}
       >
-         <div className={clsx("text inline-block w-full", props.noWrapping && "overflow-clip text-ellipsis whitespace-nowrap")}>
+         <div
+            className={clsx(
+               "text text-positive-300 inline-block w-full hover:[&_span]:underline",
+               props.noWrapping && "overflow-clip text-ellipsis whitespace-nowrap",
+            )}
+         >
             {props.children}
-            {!props.noWrapping && <div className="hover:bg-text/20 absolute inset-0 -mx-0.5 rounded-xs" />}
+            {/* {!props.noWrapping && <div className="absolute inset-0 -mx-0.5 rounded-xs" />} */}
          </div>
       </span>
    );

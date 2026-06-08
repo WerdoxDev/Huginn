@@ -57,6 +57,7 @@
       "immer": "^10.2.0",
       "jose": "^5.10.0",
       "markdown-it": "^14.1.0",
+      "marked": "^18.0.5",
       "moment": "^2.30.1",
       "motion": "^11.18.2",
       "native-addon": "workspace:*",

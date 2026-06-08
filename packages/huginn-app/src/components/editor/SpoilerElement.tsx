@@ -10,11 +10,14 @@ export default function SpoilerElement(props: { children?: ReactNode }) {
             "relative inline-block rounded-sm px-0.5 transition-colors",
             hidden ? "bg-surface-deep text-surface-deep cursor-pointer" : "bg-text/20",
          )}
-         onClick={() => {
+         onClick={(e) => {
+            if (hidden) e.stopPropagation();
             setHidden(false);
          }}
       >
-         <span className={clsx(hidden && "pointer-events-none")}>{props.children}</span>
+         <span id="content" className={clsx(hidden && "pointer-events-none")}>
+            {props.children}
+         </span>
       </div>
    );
 }

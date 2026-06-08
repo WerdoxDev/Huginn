@@ -1,11 +1,11 @@
-import { getCodeLanguage } from "@lib/markdown-utils";
+import { getCodeLanguage } from "@lib/marked-utils";
 import hljs from "highlight.js";
 import { useState, useMemo } from "react";
 
 export default function CodeElement(props: { code: string; language?: string }) {
    const [isCopied, setIsCopied] = useState(false);
 
-   const highlighted = useMemo(() => hljs.highlight(props.code, { language: getCodeLanguage(props.language ?? "") ?? "md" }), [props.code]);
+   const highlighted = useMemo(() => hljs.highlight(props.code, { language: getCodeLanguage(props.language ?? "md") }), [props.code]);
 
    async function copyToClipboard() {
       await navigator.clipboard.writeText(props.code.lastIndexOf("\n") === props.code.length - 1 ? props.code.slice(0, -1) : props.code);

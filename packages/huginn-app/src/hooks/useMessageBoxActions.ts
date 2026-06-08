@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import type { TextUnitAdjustment } from "slate";
 
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
@@ -11,7 +12,7 @@ import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { type Descendant, Editor, type NodeEntry, Node, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
+import { type Descendant, Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
 import { ReactEditor } from "slate-react";
 
 import type { AppMessage, AttachmentType } from "@/types";
@@ -38,17 +39,6 @@ function serialize(nodes: Descendant[]) {
    }
 
    return text;
-   // return nodes
-   //    .map((n) => {
-   //       console.log("Serializing node:", n);
-   //       if (Element.isElement(n) && n.type === "emoji") {
-   //          console.log("Serializing emoji element with ID:", n.emojiId, "and emoji:", n.emoji);
-   //          return n.emoji;
-   //       }
-
-   //       return Node.string(n);
-   //    })
-   //    .join("\n");
 }
 
 interface UseMessageBoxActionsOptions {
@@ -114,11 +104,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
 
       sendMessageMutation.mutate({
          previewMessage,
-         // channelId: previewMessage.channelId,
-         // content: previewMessage.content,
-         // flags: previewMessage.flags,
-
-         messageReference,
       });
 
       if (currentReplyingMessageId) {
@@ -265,17 +250,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       return null;
    }
 
-   function fixCursorPositionOnVoidElements(event: KeyboardEvent) {
-      const result = resolveEmojiNavigation(event, /* requireShift */ true);
-      if (!result || !result.selection) return;
-
-      event.preventDefault();
-      Transforms.select(editor, {
-         anchor: result.selection.anchor, // keep anchor → extends selection
-         focus: result.targetPoint,
-      });
-   }
-
    function skipEmojiElementOnArrowNavigation(event: KeyboardEvent) {
       if (event.shiftKey) return; // let the other handler take shift+arrow
       const result = resolveEmojiNavigation(event);
@@ -289,11 +263,11 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       return Element.isElement(node) && editor.isVoid(node) && node.type === "emoji";
    }
 
-   function getNextBoundary(editor: Editor, from: Point): Point | undefined {
-      let nextWord = Editor.after(editor, from, { unit: "word" });
+   function getNextBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
+      let nextWord = Editor.after(editor, from, { unit });
       if (nextWord) {
          const [parentNode] = Editor.parent(editor, nextWord);
-         if (isEmoji(editor, parentNode)) nextWord = Editor.after(editor, nextWord, { unit: "word" });
+         if (isEmoji(editor, parentNode)) nextWord = Editor.after(editor, nextWord, { unit });
       }
 
       const nextEmojiEntry = Editor.nodes(editor, {
@@ -319,12 +293,12 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       return Point.isBefore(nearestEmojiStart, nextWord) ? nearestEmojiStart : nextWord;
    }
 
-   function getPreviousBoundary(editor: Editor, from: Point): Point | undefined {
-      let previousWord = Editor.before(editor, from, { unit: "word" });
+   function getPreviousBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
+      let previousWord = Editor.before(editor, from, { unit });
       if (previousWord) {
          const [parentNode] = Editor.parent(editor, previousWord);
          if (isEmoji(editor, parentNode)) {
-            previousWord = Editor.before(editor, previousWord, { unit: "word" });
+            previousWord = Editor.before(editor, previousWord, { unit });
          }
       }
 
@@ -352,7 +326,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       return Point.isAfter(nearestEmojiEnd, previousWord) ? nearestEmojiEnd : previousWord;
    }
 
-   function interceptArrowNavigation(event: KeyboardEvent) {
+   function interceptArrowNavigation(event: KeyboardEvent, unit: TextUnitAdjustment) {
       const isRTL = checkIsRTL(editor);
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
       const isMovingRight = event.key === (!isRTL ? "ArrowRight" : "ArrowLeft");
@@ -360,7 +334,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       const { selection } = editor;
       if (!selection) return;
 
-      const boundary = isMovingRight ? getNextBoundary(editor, selection.focus) : getPreviousBoundary(editor, selection.focus);
+      const boundary = isMovingRight ? getNextBoundary(editor, selection.focus, unit) : getPreviousBoundary(editor, selection.focus, unit);
       if (boundary) {
          event.preventDefault();
 
@@ -374,8 +348,8 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
 
    function onEditorKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey) {
-         interceptArrowNavigation(event);
-      } else if (event.shiftKey) fixCursorPositionOnVoidElements(event);
+         interceptArrowNavigation(event, "word");
+      } else if (event.shiftKey) interceptArrowNavigation(event, "character");
       else if (editor.selection && Range.isCollapsed(editor.selection)) skipEmojiElementOnArrowNavigation(event);
 
       // Edit last message on ArrowUp with empty editor
@@ -411,6 +385,9 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
                if (currentEditingMessageId) cancelEditMessage();
                if (currentReplyingMessageId) cancelReplyMessage();
             }
+            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.key !== "Enter") {
+               editorRef.current?.focus();
+            }
          },
          { signal: controller.signal },
       );
@@ -425,13 +402,20 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       const message = messages.find((x) => x.id === currentEditingMessageId);
       if (!message) return;
 
-      editor.withoutNormalizing(() => {
-         const lines = message.content.split("\n");
-         editor.children = lines.map((x) => ({ type: "paragraph", children: [{ text: x }] }));
-      });
+      const lines = message.content.trim().split("\n");
 
-      editor.normalize({ force: true });
-      editor.select(editor.end([]));
+      editor.select({ anchor: editor.start([]), focus: editor.start([]) });
+      editor.delete();
+
+      editor.select(editor.start([]));
+
+      let lineIndex = 0;
+      for (const line of lines) {
+         if (lineIndex !== 0) editor.insertNode({ type: "paragraph", children: [{ text: "" }] });
+         editor.insertText(line);
+         lineIndex++;
+      }
+
       editorRef.current?.focus();
    }, [currentEditingMessageId]);
 
@@ -439,7 +423,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    useEffect(() => {
       if (!currentReplyingMessageId) return;
       editorRef.current?.focus();
-   });
+   }, [currentReplyingMessageId]);
 
    return {
       sendMessage,

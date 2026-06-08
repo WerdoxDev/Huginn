@@ -8,7 +8,7 @@ import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import clsx from "clsx";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Editable, Slate, ReactEditor } from "slate-react";
 
 import type { AppMessage } from "@/types";
@@ -19,18 +19,21 @@ import EditingPreview from "./EditingPreview";
 import ReplyingPreview from "./ReplyingPreview";
 import Tooltip from "./tooltip/Tooltip";
 
-const initialValue: Descendant[] = [
-   {
-      type: "paragraph",
-      children: [
+export default function MessageBox(props: { messages: AppMessage[] }) {
+   const initialValue: Descendant[] = useMemo(
+      () => [
          {
-            text: "",
+            type: "paragraph",
+            children: [
+               {
+                  text: "",
+               },
+            ],
          },
       ],
-   },
-];
+      [],
+   );
 
-export default function MessageBox(props: { messages: AppMessage[] }) {
    const editorRef = useRef<HTMLDivElement>(null);
    const containerRef = useRef<HTMLDivElement>(null);
    const currentChannel = useCurrentChannel();
