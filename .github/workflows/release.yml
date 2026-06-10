@@ -24,8 +24,8 @@ jobs:
    release-please:
       runs-on: ubuntu-latest
       outputs:
-         app_release_created: ${{ inputs.force_app_release || steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}
-         app_version: ${{ inputs.app_version || steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}
+         app_release_created: ${{ steps.outputs.outputs.app_release_created }}
+         app_version: ${{ steps.outputs.outputs.app_version }}
 
       steps:
          - uses: actions/checkout@v4
