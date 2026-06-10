@@ -3,10 +3,12 @@ import type { Snowflake } from "@huginn/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation } from "@tanstack/react-query";
+import { usePostHog } from "posthog-js/react";
 
 export function useDeleteMessage() {
    const client = useClient();
    const { user } = useThisUser();
+   const posthog = usePostHog();
 
    const mutation = useMutation({
       mutationKey: ["delete-message"],
@@ -15,6 +17,7 @@ export function useDeleteMessage() {
             return;
          }
 
+         posthog.capture("message:deleted");
          return await client?.channels.deleteMessage(data.channelId, data.messageId);
       },
    });

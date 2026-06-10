@@ -123,10 +123,10 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
                                        "flex h-10 w-10 cursor-pointer items-center justify-center rounded transition-colors",
                                        lastHoveredEmoji?.slug === entry.slug ? "bg-surface" : "",
                                     )}
-                                    onClick={() => props.onEmojiSelect?.(entry.emoji)}
+                                    onClick={() => props.onEmojiSelect?.(`:${entry.slug}:`)}
                                     onMouseEnter={() => setLastHoveredEmoji(entry)}
                                  >
-                                    <Emoji emoji={entry.emoji} />
+                                    <Emoji emoji={entry.emoji} slug={entry.slug} />
                                  </button>
                               ))}
                            </div>
@@ -137,17 +137,19 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
             </div>
          </div>
          <div className="bg-surface h-px shrink-0" />
-         <div className="flex w-full shrink-0 items-center gap-x-2 px-4 py-2">
-            <Emoji emoji={lastHoveredEmoji?.emoji || ""} />
-            <div className="text-white">:{lastHoveredEmoji?.slug || ""}:</div>
-         </div>
+         {lastHoveredEmoji && (
+            <div className="flex w-full shrink-0 items-center gap-x-2 px-4 py-2">
+               <Emoji emoji={lastHoveredEmoji.emoji} slug={lastHoveredEmoji.slug} />
+               <div className="text-white">:{lastHoveredEmoji.slug}:</div>
+            </div>
+         )}
       </div>
    );
 }
 
-function Emoji(props: { emoji: string }) {
+function Emoji(props: { emoji: string; slug: string }) {
    const client = useClient();
    const src = useMemo(() => client?.cdn.emoji(getEmojiId(props.emoji)), [props.emoji]);
 
-   return <img draggable={false} loading="lazy" src={src} alt={props.emoji} className="size-7" />;
+   return <img draggable={false} loading="lazy" src={src} alt={props.slug} className="size-7" />;
 }

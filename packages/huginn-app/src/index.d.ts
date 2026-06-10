@@ -58,8 +58,8 @@ type AttachmentElement = {
 
 export type EmojiElement = {
    type: "emoji";
-   slug?: string;
-   emoji?: string;
+   slug: string;
+   emoji: string;
    children: Descendant[];
 };
 

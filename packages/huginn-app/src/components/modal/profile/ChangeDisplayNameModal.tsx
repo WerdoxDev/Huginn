@@ -7,6 +7,7 @@ import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
 import HuginnDialogPanel from "../HuginnDialogPanel";
@@ -23,7 +24,9 @@ export default function ChangeDisplayNameModal() {
       },
    });
    const { updateModals, changeDisplayName: modal } = useModals();
+   const posthog = usePostHog();
    const mutation = usePatchUser(() => {
+      posthog.capture("profile:display_name_changed");
       updateModals({ changeDisplayName: { isOpen: false } });
    }, handleErrors);
 

@@ -14,7 +14,6 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-// import { usePostHog } from "posthog-js/react";
 
 type Inputs = {
    login: string;

@@ -41,7 +41,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const currentChannel = useCurrentChannel();
    const isMobile = useIsMobile();
    const { setMessageBoxHeight } = useChannelStore();
-   const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
+   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange } = usePreviewMessageRenderer();
 
    const { attachments, dragging, addFiles, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments(editorRef, props.messages);
 
@@ -118,7 +118,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </Tooltip>
                )}
                <div className="h-full w-full overflow-hidden">
-                  <Slate editor={editor} initialValue={initialValue}>
+                  <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
                      <Editable
                         onPaste={onPaste}
                         ref={editorRef}

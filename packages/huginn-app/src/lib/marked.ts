@@ -1,4 +1,5 @@
 import { marked, type TokenizerExtension } from "marked";
+import emojis from "unicode-emoji-json/data-by-emoji.json";
 
 const spoilerExtension: TokenizerExtension = {
    name: "spoiler",
@@ -58,16 +59,31 @@ const emojiExtension: TokenizerExtension = {
       return Math.min(colon, emoji);
    },
    tokenizer(src) {
-      const match = src.match(/^:([a-zA-Z0-9_]+):/);
-      const unicodeEmojiMatch = src.match(
+      const slugMatch = src.match(/^:([a-zA-Z0-9_]+):/);
+      const emojiMatch = src.match(
          /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u,
       );
-      if (match || unicodeEmojiMatch) {
+      // if (slugMatch) {
+      //    if (!Object.values(emojis).some((x) => x.slug === slugMatch[1])) {
+      //       return;
+      //    }
+      // }
+
+      let emoji = emojiMatch?.[0];
+      let slug = slugMatch?.[1];
+      const raw = emoji ?? `:${slug}:`;
+      let initial = slug ? "slug" : "emoji";
+
+      if (emoji && !slug) slug = emojis[emoji as keyof typeof emojis]?.slug;
+      if (slug && !emoji) emoji = Object.entries(emojis).find(([, value]) => value.slug === slug)?.[0];
+
+      if (emoji && slug) {
          return {
             type: "emoji",
-            slug: match ? match[1] : undefined,
-            emoji: unicodeEmojiMatch ? unicodeEmojiMatch[0] : undefined,
-            raw: match ? match[0] : unicodeEmojiMatch![0],
+            slug: `:${slug}:`,
+            emoji,
+            initial,
+            raw,
          };
       }
    },

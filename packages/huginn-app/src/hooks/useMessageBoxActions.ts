@@ -11,6 +11,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 import { type Descendant, Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
 import { ReactEditor } from "slate-react";
@@ -28,7 +29,7 @@ function serialize(nodes: Descendant[]) {
       const children = serialize(node.children);
 
       if (Element.isElement(node) && node.type === "emoji") {
-         text += node.emoji;
+         text += node.emoji ? node.emoji : `:${node.slug}:`;
          continue;
       }
 
@@ -56,6 +57,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    const client = useClient();
    const { user } = useThisUser();
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
+   const posthog = usePostHog();
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -78,6 +80,13 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
 
       if (!content && !attachments.length) return;
       if (!user || !channelId || !client) return;
+
+      posthog.capture("message:send", {
+         has_attachments: attachments.length > 0,
+         attachment_count: attachments.length,
+         is_reply: !!currentReplyingMessageId,
+         has_suppress_notifications: !!(flags & MessageFlags.SUPPRESS_NOTIFICATIONS),
+      });
 
       const messageReference = currentReplyingMessageId
          ? {
@@ -117,9 +126,10 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       clearEditor();
    }
 
-   function insertEmoji(emoji: string) {
-      editor.insertNode({ type: "emoji", emoji, children: [{ text: "" }] });
-      editor.move({ unit: "offset" });
+   function insertEmoji(slug: string) {
+      editor.insertText(slug);
+      // editor.insertNode({ type: "emoji", slug, children: [{ text: "" }] });
+      // editor.move({ unit: "offset" });
       editor.insertText(" ");
       ReactEditor.focus(editor);
    }
@@ -127,8 +137,8 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    function editMessage() {
       const content = serialize(editor.children).trim();
       if (!content || !currentEditingMessageId || isEditorEmpty()) return;
-      console.log("MUTATE");
 
+      posthog.capture("message:edited");
       editMessageMutation.mutate({
          channelId: params.channelId ?? "",
          messageId: currentEditingMessageId,
@@ -277,7 +287,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       if (!result) return;
 
       event.preventDefault();
-      Transforms.select(editor, result.targetPoint); // collapses to target → moves cursor
+      Transforms.select(editor, result.targetPoint); // collapses to target
    }
 
    function isEmoji(editor: Editor, node: any) {

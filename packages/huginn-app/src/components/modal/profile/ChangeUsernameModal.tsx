@@ -13,6 +13,7 @@ import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
 import HuginnDialogPanel from "../HuginnDialogPanel";
@@ -29,7 +30,9 @@ export default function ChangeUsernameModal() {
    });
    const { validate } = useUniqueUsernameMessage(control, user?.username);
    const { updateModals, changeUsername: modal } = useModals();
+   const posthog = usePostHog();
    const mutation = usePatchUser(() => {
+      posthog.capture("profile:username_changed");
       updateModals({ changeUsername: { isOpen: false } });
    }, onError);
    const startOAuth = useOAuth();

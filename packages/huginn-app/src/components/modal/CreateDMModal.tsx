@@ -16,8 +16,9 @@ import { useEffect, useState } from "react";
 
 import type { AppUser } from "@/types";
 
+import { usePostHog } from "posthog-js/react";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-// import { usePostHog } from "posthog-js/react";
 
 type Input = {
    name?: string;
@@ -27,7 +28,7 @@ export default function CreateDMModal() {
    const { createDM: modal, updateModals } = useModals();
 
    const client = useClient();
-   // const posthog = usePostHog();
+   const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client!));
 
    const [selectedUsers, setSelectedUsers] = useState<AppUser[]>([]);
@@ -39,10 +40,7 @@ export default function CreateDMModal() {
 
    useEffect(() => {
       if (modal.isOpen) {
-         // posthog.capture("create_group_modal_opened");
          setSelectedUsers([]);
-      } else {
-         // posthog.capture("create_group_modal_closed");
       }
    }, [modal.isOpen]);
 
@@ -61,6 +59,10 @@ export default function CreateDMModal() {
    }
 
    async function findOrCreate() {
+      posthog.capture("dm:channel_find_or_create", {
+         recipient_count: selectedUsers.length,
+         is_group: selectedUsers.length > 1,
+      });
       await mutation.mutateAsync({
          recipients: selectedUsers?.map((x) => x.id),
          name: values.name,

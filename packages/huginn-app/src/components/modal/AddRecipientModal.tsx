@@ -14,14 +14,15 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { AppUser } from "@/types";
 
+import { usePostHog } from "posthog-js/react";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
-// import { usePostHog } from "posthog-js/react";
 
 export default function AddRecipientModal() {
    const { addRecipient: modal, updateModals } = useModals();
    const client = useClient();
 
-   // const posthog = usePostHog();
+   const posthog = usePostHog();
    const { data } = useQuery(getRelationshipsOptions(client!));
 
    const { recipients } = useChannelRecipients(modal.channelId, "@me");
@@ -33,10 +34,7 @@ export default function AddRecipientModal() {
 
    useEffect(() => {
       if (modal.isOpen) {
-         // posthog.capture("add_recipient_modal_opened");
          setSelectedUsers([]);
-      } else {
-         // posthog.capture("add_recipient_modal_closed");
       }
    }, [modal.isOpen]);
 
@@ -49,6 +47,7 @@ export default function AddRecipientModal() {
    }
 
    async function add() {
+      posthog.capture("channel:recipient_added", { recipient_count: selectedUsers.length });
       for (const user of selectedUsers) {
          mutation.mutate({
             channelId: modal.channelId,

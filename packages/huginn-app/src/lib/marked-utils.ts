@@ -28,7 +28,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
       code?: { lang?: string; tokens?: Array<MarkedCodeToken> },
       link?: { href: string },
       list?: { ordered: boolean; index: number; total: number },
-      emoji?: { slug?: string; emoji?: string },
+      emoji?: { slug: string; emoji: string; initial: "slug" | "emoji" },
    ) {
       // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);
       // if (existing) {
@@ -46,7 +46,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
 
       let hasFenceClose = false;
 
-      const tokens = tokenizeHighlightJS(token.text, getCodeLanguage(token.lang ?? "md"));
+      let codeTokens = tokenizeHighlightJS(token.text, getCodeLanguage(token.lang ?? "md"));
 
       let codeLineIndex = 0;
       for (let i = 0; i < trimmed.length; i++) {
@@ -60,7 +60,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          } else {
             pushRange("code-line", null, lineIndex, 0, raw.length, raw, {
                lang: token.lang,
-               tokens: tokens.filter((t) => t.line === codeLineIndex),
+               tokens: codeTokens.filter((t) => t.line === codeLineIndex),
             });
             codeLineIndex++;
          }
@@ -125,6 +125,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
             pushRange("emoji", null, lineIndex, offset, offset + token.raw.length, token.raw, undefined, undefined, undefined, {
                slug: token.slug,
                emoji: token.emoji,
+               initial: token.initial,
             });
          } else {
             pushRange(token.type, mark, lineIndex, offset, offset + token.raw.length, token.raw);
@@ -144,7 +145,8 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
    let lineIndex = 0;
    for (const block of tokens) {
       if (block.type === "space") {
-         lineIndex += block.raw.split("\n").length - 2;
+         if (lineIndex === 0) lineIndex += block.raw.split("\n").length - 1;
+         else lineIndex += block.raw.split("\n").length - 2;
          continue;
       }
 
@@ -198,7 +200,8 @@ function tokenizeHighlightJS(code: string, language: string): Array<MarkedCodeTo
    const parser = new DOMParser();
    const doc = parser.parseFromString(highlighted, "text/html");
 
-   const ranges: Array<MarkedCodeToken> = [];
+   const ranges: Array<MarkedCodeToken> = code.split("\n").map((line, index) => ({ line: index, start: -1, end: -1, types: [], text: "" }));
+   // const ranges: Array<MarkedCodeToken> = [];
    let line = 0;
    let offset = 0;
 
@@ -216,6 +219,7 @@ function tokenizeHighlightJS(code: string, language: string): Array<MarkedCodeTo
                   // hljs class names like "hljs-keyword", "hljs-string" etc.
                   types: [...activeTypes],
                });
+
                offset += part.length;
             }
 
