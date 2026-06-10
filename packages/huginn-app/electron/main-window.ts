@@ -173,6 +173,7 @@ export class MainWindow extends BaseWindow {
             fetchWindowIcons: true,
             thumbnailSize: { width: 300, height: 300 },
          });
+
          return sources
             .filter((x) => !x.thumbnail.isEmpty())
             .map(

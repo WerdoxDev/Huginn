@@ -12,7 +12,7 @@ import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { type Descendant, Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
 import { ReactEditor } from "slate-react";
 
@@ -58,6 +58,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    const { user } = useThisUser();
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
    const posthog = usePostHog();
+   const shouldFocusEditor = useRef(true);
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -405,6 +406,10 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       sendTypingMutate(event, { channelId: params.channelId ?? "" });
    }
 
+   function onEmojiPanelOpenChanged(open: boolean) {
+      shouldFocusEditor.current = !open;
+   }
+
    // Escape key handler for canceling edit/reply
    useEffect(() => {
       const controller = new AbortController();
@@ -416,7 +421,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
                if (currentEditingMessageId) cancelEditMessage();
                if (currentReplyingMessageId) cancelReplyMessage();
             }
-            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !ReactEditor.isFocused(editor)) {
+            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !ReactEditor.isFocused(editor) && shouldFocusEditor.current) {
                editor.select(editor.end([]));
                ReactEditor.focus(editor);
                // e.preventDefault();
@@ -466,6 +471,7 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
+      onEmojiPanelOpenChanged,
       resetState,
       currentEditingMessageId,
       currentReplyingMessageId,
