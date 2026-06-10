@@ -13,6 +13,7 @@ const noExternal = [
    "electron-updater",
    "moment",
    "posthog-node",
+   "unicode-emoji-json",
 ];
 
 await build({
