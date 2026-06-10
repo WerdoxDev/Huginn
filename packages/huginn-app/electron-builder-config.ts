@@ -23,6 +23,7 @@ export default {
       "!node_modules",
       "node_modules/application-loopback/**/*",
       "node_modules/native-addon/**/*",
+      "node_modules/unicode-emoji-json/**/*",
       ".electron/**/*",
    ],
    directories: {
