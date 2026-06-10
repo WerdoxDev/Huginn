@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.73.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.0...app@v0.73.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **app:** add unicode-emoji-json to build deps ([c9bdc5f](https://github.com/WerdoxDev/Huginn/commit/c9bdc5f5f3335a04ff1666210f37026e5b5c6cb0))
+* **app:** add unicode-emoji-json to config ([f60d2db](https://github.com/WerdoxDev/Huginn/commit/f60d2db0f3ff61c6b81775a05fd6c7283183f747))
+
 ## [0.73.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.1...app@v0.73.0) (2026-06-10)
 
 
