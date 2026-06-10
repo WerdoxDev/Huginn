@@ -3,6 +3,7 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
+import { usePostHog } from "posthog-js/react";
 
 import ContextMenu from "./ContextMenu";
 
@@ -11,6 +12,7 @@ export default function RelationshipContextMenu() {
    const removeMutation = useRemoveRelationship();
    const createMutation = useCreateDMChannel("create-dm-channel_other");
    const { updateModals } = useModals();
+   const posthog = usePostHog();
 
    if (!data) return;
 
@@ -33,6 +35,7 @@ export default function RelationshipContextMenu() {
          <ContextMenu.Item
             label="Remove friend"
             onClick={() => {
+               posthog.capture("friend:removed");
                removeMutation.mutate(data.user.id);
             }}
             color="negative"

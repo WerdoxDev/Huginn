@@ -2,6 +2,7 @@ import { Tabs } from "@base-ui/react";
 import AddFriendInput from "@components/input/AddFriendInput";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 
 type Input = {
@@ -10,6 +11,7 @@ type Input = {
 
 export default function AddFriendTab() {
    const { register, values, handleErrors, setCustomMessage, handleSubmit, formState } = useHuginnForm<Input>();
+   const posthog = usePostHog();
 
    const [disabled, setDisabled] = useState(false);
 
@@ -25,6 +27,7 @@ export default function AddFriendTab() {
    }, [values]);
 
    async function onSubmit() {
+      posthog.capture("friend:request_sent");
       await mutation.mutateAsync({ username: values.username });
    }
 

@@ -56,7 +56,34 @@ type AttachmentElement = {
    contentType: string;
 };
 
-type CustomElement = ParagraphElement | SpoilerElement | EmbedElement | LinkElement | CodeElement | AttachmentElement | InlineCodeElement;
+export type EmojiElement = {
+   type: "emoji";
+   slug: string;
+   emoji: string;
+   children: Descendant[];
+};
+
+type ListElement = {
+   type: "unordered-list" | "ordered-list";
+   children: Descendant[];
+};
+
+export type ListItemElement = {
+   type: "list-item";
+   children: Descendant[];
+};
+
+type CustomElement =
+   | ParagraphElement
+   | SpoilerElement
+   | EmbedElement
+   | LinkElement
+   | CodeElement
+   | AttachmentElement
+   | InlineCodeElement
+   | EmojiElement
+   | ListElement
+   | ListItemElement;
 
 type TextFormats = {
    bold?: boolean;
@@ -65,9 +92,12 @@ type TextFormats = {
    mark?: boolean;
    spoiler?: boolean;
    link?: boolean;
+   strikethrough?: boolean;
    inlineCode?: boolean;
-   codeToken?: string;
+   codeToken?: string | boolean;
    codeLanguage?: boolean;
+   list?: boolean;
+   throwaway?: boolean;
 };
 export type FormattedText = { text: string } & TextFormats;
 

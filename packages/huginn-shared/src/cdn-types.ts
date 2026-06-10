@@ -19,6 +19,7 @@ export const fileTypes = {
    jpg: "image/jpeg",
    webp: "image/webp",
    gif: "image/gif",
+   svg: "image/svg+xml",
    zip: "application/zip",
    other: "application/octet-stream",
    webm: "video/webm",

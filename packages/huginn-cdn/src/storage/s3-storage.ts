@@ -1,10 +1,12 @@
+import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
+import { S3Client, type S3Stats } from "bun";
+import { join } from "pathe";
+
 import type { FileCategory } from "#utils/types";
 
 import { envs } from "#setup";
 import { Storage } from "#storage/storage";
-import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
-import { S3Client, type S3Stats } from "bun";
-import { join } from "pathe";
+import { extractFileInfo } from "#utils/file-utils";
 
 export class S3Storage extends Storage {
    private s3: S3Client;

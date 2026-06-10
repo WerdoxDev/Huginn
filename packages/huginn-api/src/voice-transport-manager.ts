@@ -737,14 +737,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            for (const producer of this.producers.values()) {
-               producer.close();
-            }
-
-            for (const consumer of this.consumers.values()) {
-               consumer.close();
-            }
-
             this.sendTransport?.close();
             this.recvTransport?.close();
          } catch (e) {
@@ -756,6 +748,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             this.remoteProducers.clear();
             this.remoteConsumers.clear();
+
             this.producers.clear();
             this.consumers.clear();
 

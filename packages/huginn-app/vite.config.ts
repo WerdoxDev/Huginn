@@ -1,3 +1,4 @@
+import posthog from "@posthog/rollup-plugin";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -24,8 +25,10 @@ export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
    const isElectronDev = mode === "electron-dev";
    const isCapacitor = mode === "capacitor";
-   const vercelEnv = process.env.VERCEL_ENV;
-   const base = vercelEnv === "preview" ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app";
+   const shouldUploadSourcemaps = process.env.VERCEL === "1" || process.env.CI === "true";
+   const isVercelPreview = process.env.VERCEL_ENV === "preview";
+   // const isVercelPreview = process.env.VERCEL === "1";
+   const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app";
    return {
       base,
 
@@ -82,6 +85,16 @@ export default defineConfig(({ mode }) => {
                type: "module",
             },
          }),
+         posthog({
+            personalApiKey: process.env.POSTHOG_CLI_API_KEY!,
+            projectId: process.env.POSTHOG_PROJECT_ID,
+            host: "https://eu.posthog.com",
+            sourcemaps: {
+               enabled: shouldUploadSourcemaps,
+               releaseName: "huginn-app",
+               releaseVersion: isVercelPreview ? process.env.VERCEL_GITHUB_COMMIT_SHA : version.toString(),
+            },
+         }),
       ],
       server: {
          https: isHttps
@@ -109,7 +122,7 @@ export default defineConfig(({ mode }) => {
       },
       clearScreen: false,
       build: {
-         sourcemap: true,
+         // sourcemap: true,
          target: "esnext",
          outDir: "./dist",
       },

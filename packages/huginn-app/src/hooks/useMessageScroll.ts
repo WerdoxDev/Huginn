@@ -30,9 +30,7 @@ interface UseMessageScrollOptions {
 
 export function useMessageScroll(options: UseMessageScrollOptions) {
    const { user } = useThisUser();
-   const { savedScrolls, saveScroll, currentEditingMessageId, messageBoxHeight, currentVisibleMessages, removeMessageUploadProgress } =
-      useChannelStore();
-   const previousMessageBoxHeight = usePrevious(messageBoxHeight);
+   const { savedScrolls, saveScroll, messageBoxHeight, removeMessageUploadProgress } = useChannelStore();
    const { setRef, getRef } = useDynamicRefs<HTMLLIElement>();
 
    const scrollRef = useRef<HTMLDivElement>(null);

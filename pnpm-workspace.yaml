@@ -1,6 +1,7 @@
 packages:
   - "packages/*"
 allowBuilds:
+  '@posthog/cli': set this to true or false
   '@prisma/engines': false
   core-js: false
   electron-winstaller: false

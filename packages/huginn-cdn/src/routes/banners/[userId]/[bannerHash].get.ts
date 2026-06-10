@@ -1,7 +1,9 @@
-import { storage } from "#setup";
-import { tryResolveImage } from "#utils/route-utils";
 import { globalPlugin } from "@huginn/backend-shared";
 import Elysia, { StatusMap } from "elysia";
+
+import { storage } from "#setup";
+import { extractFileInfo } from "#utils/file-utils";
+import { tryResolveImage } from "#utils/route-utils";
 
 export const getUserBanner = new Elysia()
    .use(globalPlugin)
@@ -14,5 +16,5 @@ export const getUserBanner = new Elysia()
          });
       }
 
-      return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": file.type } });
+      return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": extractFileInfo(bannerHash).mimeType } });
    });

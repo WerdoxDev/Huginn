@@ -1,4 +1,3 @@
-// import { usePostHog } from "posthog-js/react";
 import type { InitializationResult } from "@huginn/api";
 
 import { analytics, error, log } from "@huginn/shared";

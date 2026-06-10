@@ -8,35 +8,40 @@ import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import clsx from "clsx";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Editable, Slate, ReactEditor } from "slate-react";
 
 import type { AppMessage } from "@/types";
 
 import AttachmentsPreview from "./AttachmentsPreview";
+import HuginnButton from "./button/HuginnButton";
+import EmojiPickerPopover from "./channels/EmojiPickerPopover";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import ReplyingPreview from "./ReplyingPreview";
 import Tooltip from "./tooltip/Tooltip";
 
-const initialValue: Descendant[] = [
-   {
-      type: "paragraph",
-      children: [
+export default function MessageBox(props: { messages: AppMessage[] }) {
+   const initialValue: Descendant[] = useMemo(
+      () => [
          {
-            text: "",
+            type: "paragraph",
+            children: [
+               {
+                  text: "",
+               },
+            ],
          },
       ],
-   },
-];
+      [],
+   );
 
-export default function MessageBox(props: { messages: AppMessage[] }) {
    const editorRef = useRef<HTMLDivElement>(null);
    const containerRef = useRef<HTMLDivElement>(null);
    const currentChannel = useCurrentChannel();
    const isMobile = useIsMobile();
    const { setMessageBoxHeight } = useChannelStore();
-   const { decorate, editor, renderElement, renderLeaf } = usePreviewMessageRenderer();
+   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange } = usePreviewMessageRenderer();
 
    const { attachments, dragging, addFiles, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments(editorRef, props.messages);
 
@@ -45,10 +50,12 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
+      onEmojiPanelOpenChanged,
       currentEditingMessageId,
       currentReplyingMessageId,
       channelId,
       resetState,
+      insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, editorRef });
 
    // Focus on the message box when we change channel
@@ -56,7 +63,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       // Clear attachments and reset local state for new channel
       clearAttachments();
       resetState();
-      console.log("RESET");
 
       if (isMobile || !editor) return;
 
@@ -81,7 +87,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
-      <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 lg:px-5" ref={containerRef}>
+      <div className="bottom-0 z-10 flex-col px-1.5 py-1.5 select-text lg:px-5" ref={containerRef}>
          <DraggingIndicator isDragging={dragging} />
          {/* <form className="w-full"> */}
          <div
@@ -113,7 +119,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </Tooltip>
                )}
                <div className="h-full w-full overflow-hidden">
-                  <Slate editor={editor} initialValue={initialValue}>
+                  <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
                      <Editable
                         onPaste={onPaste}
                         ref={editorRef}
@@ -137,10 +143,23 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
                <div className="ml-2 flex h-8 gap-x-2 p-2">
                   <div className="bg-surface h-8 w-8 rounded-full" />
-                  <div className="bg-surface h-8 w-8 rounded-full" />
-                  <button className="bg-primary-700 h-8 w-8 rounded-full p-0.5" type="button" onClick={() => sendMessage(MessageFlags.NONE)}>
-                     <IconLetsIconsSendHorFill className="text-text size-full" />
-                  </button>
+                  <EmojiPickerPopover onEmojiSelect={insertEmoji} onOpenChange={onEmojiPanelOpenChanged} />
+                  {/* <HuginnButton
+                     color="primary"
+                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
+                     type="button"
+                  >
+                     <IconMingcuteEmoji2Fill className="text-text size-5" />
+                  </HuginnButton> */}
+                  {/* <div className="bg-surface h-8 w-8 rounded-full" /> */}
+                  <HuginnButton
+                     color="primary"
+                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
+                     type="button"
+                     onClick={() => sendMessage(MessageFlags.NONE)}
+                  >
+                     <IconLetsIconsSendHorFill className="text-text size-6" />
+                  </HuginnButton>
                </div>
             </div>
          </div>

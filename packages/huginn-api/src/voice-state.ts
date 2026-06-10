@@ -71,20 +71,7 @@ export class VoiceState extends EventEmitter<Events> {
    }
 
    public updateLocalVoiceState(update: Partial<LocalVoiceState>): void {
-      analytics.startActiveSpan("apiVoiceState.updateLocalVoiceState", (span) => {
-         span.setAttributes({
-            "voice.state.is_audio_paused": update.isAudioPaused ?? this.localVoiceState.isAudioPaused,
-         });
-
-         try {
-            this.localVoiceState = { ...this.localVoiceState, ...update };
-            this.emit("local_voice_state_updated", this.localVoiceState);
-         } catch (e) {
-            recordSpanError(e as Error);
-            throw e;
-         } finally {
-            span.end();
-         }
-      });
+      this.localVoiceState = { ...this.localVoiceState, ...update };
+      this.emit("local_voice_state_updated", this.localVoiceState);
    }
 }

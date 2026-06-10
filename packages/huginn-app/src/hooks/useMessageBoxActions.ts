@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import type { TextUnitAdjustment } from "slate";
 
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
@@ -10,13 +11,35 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { type Descendant, Editor, type NodeEntry, Node, type Range } from "slate";
+import { usePostHog } from "posthog-js/react";
+import { useEffect, useRef } from "react";
+import { type Descendant, Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
+import { ReactEditor } from "slate-react";
 
 import type { AppMessage, AttachmentType } from "@/types";
 
 function serialize(nodes: Descendant[]) {
-   return nodes.map((n) => Node.string(n)).join("\n");
+   let text = "";
+   for (const node of nodes) {
+      if (Text.isText(node)) {
+         text += node.text;
+         continue;
+      }
+
+      const children = serialize(node.children);
+
+      if (Element.isElement(node) && node.type === "emoji") {
+         text += node.emoji ? node.emoji : `:${node.slug}:`;
+         continue;
+      }
+
+      if (Element.isElement(node) && node.type === "paragraph") {
+         text += children + "\n";
+         continue;
+      }
+   }
+
+   return text;
 }
 
 interface UseMessageBoxActionsOptions {
@@ -28,12 +51,14 @@ interface UseMessageBoxActionsOptions {
    editorRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function useMessageBoxActions({ editor, decorate, messages, attachments, clearAttachments, editorRef }: UseMessageBoxActionsOptions) {
+export function useMessageBoxActions({ editor, decorate, messages, attachments, clearAttachments }: UseMessageBoxActionsOptions) {
    const params = useParams({ strict: false });
    const queryClient = useQueryClient();
    const client = useClient();
    const { user } = useThisUser();
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
+   const posthog = usePostHog();
+   const shouldFocusEditor = useRef(true);
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -49,11 +74,20 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    }
 
    function sendMessage(flags: MessageFlags) {
-      const content = serialize(editor.children);
+      if (isEditorEmpty() && attachments.length === 0) return;
+
+      const content = serialize(editor.children).trim();
       const channelId = params.channelId;
 
       if (!content && !attachments.length) return;
       if (!user || !channelId || !client) return;
+
+      posthog.capture("message:send", {
+         has_attachments: attachments.length > 0,
+         attachment_count: attachments.length,
+         is_reply: !!currentReplyingMessageId,
+         has_suppress_notifications: !!(flags & MessageFlags.SUPPRESS_NOTIFICATIONS),
+      });
 
       const messageReference = currentReplyingMessageId
          ? {
@@ -82,11 +116,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
 
       sendMessageMutation.mutate({
          previewMessage,
-         // channelId: previewMessage.channelId,
-         // content: previewMessage.content,
-         // flags: previewMessage.flags,
-
-         messageReference,
       });
 
       if (currentReplyingMessageId) {
@@ -98,10 +127,19 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       clearEditor();
    }
 
-   function editMessage() {
-      const content = serialize(editor.children);
-      if (!content || !currentEditingMessageId) return;
+   function insertEmoji(slug: string) {
+      editor.insertText(slug);
+      // editor.insertNode({ type: "emoji", slug, children: [{ text: "" }] });
+      // editor.move({ unit: "offset" });
+      editor.insertText(" ");
+      ReactEditor.focus(editor);
+   }
 
+   function editMessage() {
+      const content = serialize(editor.children).trim();
+      if (!content || !currentEditingMessageId || isEditorEmpty()) return;
+
+      posthog.capture("message:edited");
       editMessageMutation.mutate({
          channelId: params.channelId ?? "",
          messageId: currentEditingMessageId,
@@ -124,6 +162,17 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    function resetState() {
       setReplyingMessageId(undefined);
       setEditingMessageId(undefined);
+   }
+
+   function isEditorEmpty() {
+      const editorNodes = [
+         ...editor.nodes({
+            at: { anchor: editor.start([]), focus: editor.end([]) },
+            match: (x) => (Text.isText(x) && x.text !== "") || (Element.isElement(x) && x.type === "emoji"),
+         }),
+      ];
+
+      return editorNodes.length === 0;
    }
 
    function toggleMarkAtSelection(markType: "bold" | "italic" | "underline") {
@@ -174,14 +223,173 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       }
    }
 
+   function checkIsRTL(editor: Editor) {
+      const { selection } = editor;
+      if (!selection) return false;
+
+      const [parentElement] = editor.node(selection.focus, { depth: 1 });
+      const domNode = ReactEditor.toDOMNode(editor, parentElement);
+
+      const isRTL = domNode.dir === "rtl";
+      return isRTL;
+   }
+
+   function resolveEmojiNavigation(
+      event: KeyboardEvent,
+      requireShift?: boolean,
+   ): { targetPoint: Point; isExtendingLeft: boolean; selection: BaseSelection } | null {
+      if (requireShift && !event.shiftKey) return null;
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return null;
+
+      const { selection } = editor;
+      if (!selection) return null;
+
+      const isRTL = checkIsRTL(editor);
+      const isExtendingLeft = event.key === (isRTL ? "ArrowRight" : "ArrowLeft");
+
+      const adjacent = isExtendingLeft
+         ? Editor.before(editor, selection.focus, { unit: "block" })
+         : Editor.after(editor, selection.focus, { unit: "block" });
+      if (!adjacent) return null;
+
+      const [, path] = Editor.node(editor, adjacent);
+
+      try {
+         const [parentNode, parentPath] = Editor.parent(editor, path);
+         if (Element.isElement(parentNode) && parentNode.type === "emoji") {
+            // Verify the cursor is immediately adjacent to the emoji boundary,
+            // not somewhere further away inside the same block.
+            const emojiEdgePoint = isExtendingLeft
+               ? Editor.after(editor, parentPath, { unit: "block" })
+               : Editor.before(editor, parentPath, { unit: "block" });
+
+            if (!emojiEdgePoint || !Point.equals(selection.focus, emojiEdgePoint)) {
+               return null;
+            }
+
+            const targetPoint = isExtendingLeft
+               ? Editor.before(editor, parentPath, { unit: "block" })
+               : Editor.after(editor, parentPath, { unit: "block" });
+
+            if (!targetPoint) return null;
+
+            return { targetPoint, isExtendingLeft, selection };
+         }
+      } catch {
+         return null;
+      }
+
+      return null;
+   }
+
+   function skipEmojiElementOnArrowNavigation(event: KeyboardEvent) {
+      if (event.shiftKey) return; // let the other handler take shift+arrow
+      const result = resolveEmojiNavigation(event);
+      if (!result) return;
+
+      event.preventDefault();
+      Transforms.select(editor, result.targetPoint); // collapses to target
+   }
+
+   function isEmoji(editor: Editor, node: any) {
+      return Element.isElement(node) && editor.isVoid(node) && node.type === "emoji";
+   }
+
+   function getNextBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
+      let nextWord = Editor.after(editor, from, { unit });
+      if (nextWord) {
+         const [parentNode] = Editor.parent(editor, nextWord);
+         if (isEmoji(editor, parentNode)) nextWord = Editor.after(editor, nextWord, { unit });
+      }
+
+      const nextEmojiEntry = Editor.nodes(editor, {
+         at: [],
+         match: (n) => Element.isElement(n) && n.type === "emoji",
+      });
+
+      let nearestEmojiStart: Point | null = null;
+
+      for (const [, path] of nextEmojiEntry) {
+         const before = Editor.before(editor, path);
+         if (!before) continue;
+
+         if (Point.isAfter(before, from)) {
+            nearestEmojiStart = before;
+            break;
+         }
+      }
+
+      if (!nearestEmojiStart) return nextWord;
+      if (!nextWord) return nearestEmojiStart;
+
+      return Point.isBefore(nearestEmojiStart, nextWord) ? nearestEmojiStart : nextWord;
+   }
+
+   function getPreviousBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
+      let previousWord = Editor.before(editor, from, { unit });
+      if (previousWord) {
+         const [parentNode] = Editor.parent(editor, previousWord);
+         if (isEmoji(editor, parentNode)) {
+            previousWord = Editor.before(editor, previousWord, { unit });
+         }
+      }
+
+      const previousEmojiEntry = Editor.nodes(editor, {
+         at: [],
+         match: (n) => Element.isElement(n) && n.type === "emoji",
+         reverse: true,
+      });
+
+      let nearestEmojiEnd: Point | null = null;
+
+      for (const [, path] of previousEmojiEntry) {
+         const after = Editor.after(editor, path);
+         if (!after) continue;
+
+         if (Point.isBefore(after, from)) {
+            nearestEmojiEnd = after;
+            break;
+         }
+      }
+
+      if (!nearestEmojiEnd) return previousWord;
+      if (!previousWord) return nearestEmojiEnd;
+
+      return Point.isAfter(nearestEmojiEnd, previousWord) ? nearestEmojiEnd : previousWord;
+   }
+
+   function interceptArrowNavigation(event: KeyboardEvent, unit: TextUnitAdjustment) {
+      const isRTL = checkIsRTL(editor);
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const isMovingRight = event.key === (!isRTL ? "ArrowRight" : "ArrowLeft");
+
+      const { selection } = editor;
+      if (!selection) return;
+
+      const boundary = isMovingRight ? getNextBoundary(editor, selection.focus, unit) : getPreviousBoundary(editor, selection.focus, unit);
+      if (boundary) {
+         event.preventDefault();
+
+         if (event.shiftKey) {
+            Transforms.select(editor, { anchor: selection.anchor, focus: boundary });
+         } else {
+            Transforms.select(editor, boundary);
+         }
+      }
+   }
+
    function onEditorKeyDown(event: KeyboardEvent) {
+      if (event.ctrlKey) {
+         interceptArrowNavigation(event, "word");
+      } else if (event.shiftKey) interceptArrowNavigation(event, "character");
+      else if (editor.selection && Range.isCollapsed(editor.selection)) skipEmojiElementOnArrowNavigation(event);
+
       // Edit last message on ArrowUp with empty editor
-      if (event.key === "ArrowUp" && editor.string([]) === "") {
+      if (event.key === "ArrowUp" && isEditorEmpty()) {
          const lastEditableMessage = messages.findLast((x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT);
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }
-
       if (!event.shiftKey && event.code === "Enter") {
          if (currentEditingMessageId) {
             editMessage();
@@ -191,13 +399,15 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
          }
          event.preventDefault();
       }
-
       if (event.ctrlKey && event.key === "b" && editor.selection) toggleMarkAtSelection("bold");
       if (event.ctrlKey && event.key === "i" && editor.selection) toggleMarkAtSelection("italic");
       if (event.ctrlKey && event.key === "u" && editor.selection) toggleMarkAtSelection("underline");
       if (event.key === "Escape") clearAttachments();
-
       sendTypingMutate(event, { channelId: params.channelId ?? "" });
+   }
+
+   function onEmojiPanelOpenChanged(open: boolean) {
+      shouldFocusEditor.current = !open;
    }
 
    // Escape key handler for canceling edit/reply
@@ -210,6 +420,12 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
             if (e.key === "Escape") {
                if (currentEditingMessageId) cancelEditMessage();
                if (currentReplyingMessageId) cancelReplyMessage();
+            }
+            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !ReactEditor.isFocused(editor) && shouldFocusEditor.current) {
+               editor.select(editor.end([]));
+               ReactEditor.focus(editor);
+               // e.preventDefault();
+               // editor.insertText(e.key);
             }
          },
          { signal: controller.signal },
@@ -225,27 +441,37 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       const message = messages.find((x) => x.id === currentEditingMessageId);
       if (!message) return;
 
-      editor.withoutNormalizing(() => {
-         const lines = message.content.split("\n");
-         editor.children = lines.map((x) => ({ type: "paragraph", children: [{ text: x }] }));
-      });
+      const lines = message.content.trim().split("\n");
 
-      editor.normalize({ force: true });
-      editor.select(editor.end([]));
-      editorRef.current?.focus();
+      editor.select({ anchor: editor.start([]), focus: editor.start([]) });
+      editor.delete();
+
+      editor.select(editor.start([]));
+
+      let lineIndex = 0;
+      for (const line of lines) {
+         if (lineIndex !== 0) editor.insertNode({ type: "paragraph", children: [{ text: "" }] });
+         editor.insertText(line);
+         console.log(line);
+         lineIndex++;
+      }
+
+      ReactEditor.focus(editor);
    }, [currentEditingMessageId]);
 
    // Focus editor when replying
    useEffect(() => {
       if (!currentReplyingMessageId) return;
-      editorRef.current?.focus();
-   });
+      ReactEditor.focus(editor);
+   }, [currentReplyingMessageId]);
 
    return {
       sendMessage,
+      insertEmoji,
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
+      onEmojiPanelOpenChanged,
       resetState,
       currentEditingMessageId,
       currentReplyingMessageId,

@@ -1,7 +1,9 @@
-import { storage } from "#setup";
-import { tryResolveImage } from "#utils/route-utils";
 import { globalPlugin } from "@huginn/backend-shared";
 import Elysia, { StatusMap, t } from "elysia";
+
+import { storage } from "#setup";
+import { extractFileInfo } from "#utils/file-utils";
+import { tryResolveImage } from "#utils/route-utils";
 
 const querySchema = t.Object({
    size: t.Optional(t.Number()),
@@ -19,7 +21,7 @@ export const getChannelIcon = new Elysia().use(globalPlugin).get(
          });
       }
 
-      return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": file.type } });
+      return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": extractFileInfo(iconHash).mimeType } });
    },
    { query: querySchema },
 );

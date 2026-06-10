@@ -64,6 +64,9 @@ jobs:
          VITE_PUBLIC_CLOUDFLARE_TURN_ID: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_ID}}
          VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN: ${{secrets.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN}}
          VITE_PUBLIC_OAUTH_REDIRECT: ${{secrets.VITE_PUBLIC_OAUTH_REDIRECT}}
+         POSTHOG_CLI_API_KEY: ${{secrets.POSTHOG_CLI_API_KEY}}
+         POSTHOG_PROJECT_ID: ${{secrets.POSTHOG_PROJECT_ID}}
+         CI: ${{github.env.CI}}
       steps:
          - uses: actions/checkout@v4
 
@@ -88,15 +91,15 @@ jobs:
          - name: build app
            run: cd packages/huginn-app && pnpm run build
 
-         - name: Inject & upload source maps to PostHog
-           uses: PostHog/upload-source-maps@v2.0.0
-           with:
-              directory: packages/huginn-app/dist
-              project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
-              api-key: ${{ secrets.POSTHOG_CLI_API_KEY }}
-              host: https://eu.posthog.com
-              release-name: huginn-app
-              release-version: ${{ needs.release-please.outputs.app_version}}
+         # - name: Inject & upload source maps to PostHog
+         #   uses: PostHog/upload-source-maps@v2.0.0
+         #   with:
+         #      directory: packages/huginn-app/dist
+         #      project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
+         #      api-key: ${{ secrets.POSTHOG_CLI_API_KEY }}
+         #      host: https://eu.posthog.com
+         #      release-name: huginn-app
+         #      release-version: ${{ needs.release-please.outputs.app_version}}
 
          - name: publish app
            env:

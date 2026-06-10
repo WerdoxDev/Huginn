@@ -1,41 +1,54 @@
 import EditorLeaf from "@components/editor/EditorLeaf";
-import { markdownMainEditor } from "@lib/markdown-main";
-import { markdownSpoiler } from "@lib/markdown-spoiler";
-import { markdownUnderline } from "@lib/markdown-underline";
-import {
-   organizeTokens,
-   getCodeLanguage,
-   splitHighlightedTokens,
-   getHighlightedLineTokens,
-   getTokenLength,
-   isOpenToken,
-   isCloseToken,
-   hasMarkup,
-   getSlateFormats,
-} from "@lib/markdown-utils";
-import hljs from "highlight.js";
-import markdownit from "markdown-it";
-import { useCallback, useMemo } from "react";
-import { createEditor, Editor, Element, Node, Path, Range } from "slate";
+import PreviewEmojiElement from "@components/editor/PreviewEmojiElement";
+import { marked } from "@lib/marked";
+import { organizeMarkedTokens } from "@lib/marked-utils";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Point, Transforms } from "slate";
+import { createEditor, Editor, Element, Node, Path, Range, Text } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
 
-import type { HuginnToken } from "@/types";
+import type { EmojiElement } from "..";
 
-let cache: { text: string; decorations: Record<number, Range[]> } | undefined;
+function withHuginn(editor: Editor) {
+   const { isInline, insertText, isVoid } = editor;
+
+   editor.isInline = (element) => {
+      return element.type === "emoji" || isInline(element);
+   };
+
+   editor.isVoid = (element) => {
+      return element.type === "emoji" || isVoid(element);
+   };
+
+   editor.insertText = (text, options) => {
+      // if (checkAndInsertEmojis(editor, text, insertText)) {
+      //    return;
+      // }
+      insertText(text, options);
+   };
+
+   return editor;
+}
 
 export function usePreviewMessageRenderer() {
-   const editor = useMemo(() => withReact(createEditor()), []);
-   const md = useMemo(() => new markdownit({ linkify: true }).use(markdownSpoiler).use(markdownUnderline).use(markdownMainEditor), []);
+   const editor = useMemo(() => withHuginn(withReact(createEditor())), []);
+   const cachedDecorations = useRef<Map<number, Range[]>>(new Map());
+   const [decorateVersion, setDecorateVersion] = useState(0);
 
    const renderLeaf = useCallback((props: RenderLeafProps) => {
       return <EditorLeaf {...props} />;
    }, []);
 
    const renderElement = useCallback((props: RenderElementProps) => {
-      return <DefaultElement {...props} />;
+      switch (props.element.type) {
+         case "emoji":
+            return <PreviewEmojiElement {...props} />;
+         default:
+            return <DefaultElement {...props} />;
+      }
    }, []);
 
-   function getAllChildren() {
+   const getAllChildren = useCallback(() => {
       const children = Array.from(
          Editor.nodes(editor, {
             at: [],
@@ -45,150 +58,285 @@ export function usePreviewMessageRenderer() {
       );
 
       return children;
-   }
+   }, [editor]);
 
-   function calculateRanges() {
-      const decorations: Record<number, Range[]> = {};
-      const children = getAllChildren();
+   function lineOffsetToPoint(editor: Editor, lineIndex: number, charOffset: number): Point {
+      const lineNode = editor.children[lineIndex] as Element;
 
-      const text = children.map((x) => Node.string(x[0])).join("\n");
+      let remaining = charOffset;
 
-      if (cache?.text === text) {
-         return { ...cache.decorations };
-      }
+      for (let i = 0; i < lineNode.children.length; i++) {
+         const child = lineNode.children[i];
+         const childPath = [lineIndex, i];
 
-      const result = md.parse(text, {});
-      const tokens = organizeTokens(result);
-
-      for (const [i, lineTokens] of tokens.entries()) {
-         const child = children.find((x) => x[1][0] === i);
-         if (!child) {
+         // Skip void/inline elements (emojis) — they contribute 0 chars
+         if (Editor.isVoid(editor, child as Element)) {
             continue;
          }
 
-         const ranges: Range[] = [];
-         const path = child[1];
+         const textLen = Node.string(child).length;
 
-         let index = 0;
-         const currentOpenedTokens: HuginnToken[] = [];
-         let currentLinkHref: string | undefined;
-
-         for (const token of lineTokens) {
-            if (token.type === "fence" && token.map) {
-               const highlighted = hljs.highlight(token.content, {
-                  language: getCodeLanguage(token.info) ?? "md",
-               });
-               const parser = new DOMParser();
-
-               const doc = parser.parseFromString(highlighted.value, "text/html");
-
-               let tokens: Array<{ type: string; content: string | null }> = [];
-
-               function parseNode(node: ChildNode): Array<{ type: string; content: string | null }> | { type: string; content: string | null } {
-                  if (node.nodeType === window.Node.ELEMENT_NODE) {
-                     const tokenType = (node as HTMLElement)?.className; // e.g., "hljs-keyword", "hljs-string"
-
-                     const onlyHasText = Array.from(node.childNodes).every((child) => child.nodeType === window.Node.TEXT_NODE);
-
-                     if (!onlyHasText) {
-                        return Array.from(node.childNodes)
-                           .flatMap(parseNode)
-                           .map((token: { type: string; content: string | null }) => ({
-                              type: token.type,
-                              content: token.content,
-                           }));
-                     }
-
-                     return { type: tokenType, content: node.textContent };
-                  }
-
-                  if (node.nodeType === window.Node.TEXT_NODE) {
-                     return [{ type: "text", content: node.textContent }];
-                  }
-
-                  return [];
-               }
-
-               tokens = Array.from(doc.body.childNodes).flatMap((node) => parseNode(node));
-
-               tokens = splitHighlightedTokens(tokens);
-               tokens = getHighlightedLineTokens(tokens, i - (token.map[0] + 1));
-
-               let codeIndex = 0;
-               for (const token of tokens) {
-                  ranges.push({
-                     anchor: { path, offset: codeIndex },
-                     focus: { path, offset: codeIndex + (token.content?.length ?? 0) },
-                     codeToken: token.type,
-                  });
-                  codeIndex += token.content?.length ?? 0;
-               }
-
-               continue;
-            }
-
-            const currentTokenEnd = currentLinkHref?.length ?? getTokenLength(token);
-
-            if (isOpenToken(token) || isCloseToken(token)) {
-               if (hasMarkup(token.markup)) {
-                  ranges.push({
-                     mark: true,
-                     anchor: { path, offset: index },
-                     focus: { path, offset: index + currentTokenEnd },
-                  });
-               }
-
-               if (isOpenToken(token)) {
-                  currentOpenedTokens.push(token);
-               } else if (isCloseToken(token)) {
-                  currentOpenedTokens.pop();
-               }
-
-               if (token.type === "fence_open" && getCodeLanguage(token.info)) {
-                  ranges.push({
-                     codeLanguage: true,
-                     anchor: { path, offset: index + 3 },
-                     focus: { path, offset: index + 3 + token.info.length },
-                  });
-               }
-            }
-
-            // Links have an special href which include the actual whole link instead of the normalized one
-            if (token.type === "link_open") {
-               currentLinkHref = token.attrs?.[0]?.[1];
-               index += currentTokenEnd;
-               continue;
-            }
-
-            const indexOffset = currentOpenedTokens.some((x) => x.type.includes("code")) ? 1 : 0;
-            if (token.content) {
-               ranges.push({
-                  ...getSlateFormats(currentOpenedTokens),
-                  anchor: { path, offset: index - indexOffset },
-                  focus: { path, offset: index + currentTokenEnd + indexOffset },
-               });
-               currentLinkHref = undefined;
-            }
-            index += currentTokenEnd;
+         if (remaining <= textLen) {
+            return { path: childPath, offset: remaining };
          }
 
-         decorations[i] = ranges;
+         remaining -= textLen;
       }
 
-      cache = { text, decorations: decorations };
-
-      return decorations;
+      // Fallback: clamp to end of last text node
+      const lastIndex = lineNode.children.length - 1;
+      const lastChild = lineNode.children[lastIndex];
+      return {
+         path: [lineIndex, lastIndex],
+         offset: Node.string(lastChild).length,
+      };
    }
 
-   function decorate([_node, path]: [Node, Path]) {
-      const ranges = calculateRanges();
+   function calculateAllDecorations(editor: Editor): Map<number, Range[]> {
+      const result = new Map<number, Range[]>();
+      const children = getAllChildren();
+      const text = children.map((x) => Node.string(x[0])).join("\n");
 
-      if (path[0] in ranges) {
-         return [...ranges[path[0]]];
+      const tokens = marked.lexer(text);
+      const organizedTokens = organizeMarkedTokens(tokens);
+
+      for (const [, path] of Node.children(editor, [])) {
+         const lineIndex = path[0];
+         const filteredTokens = organizedTokens.filter((t) => t.line === lineIndex);
+         const toPoint = (offset: number) => lineOffsetToPoint(editor, lineIndex, offset);
+
+         const decorations: Range[] = [];
+         let currentTokens: Array<{ start: number; end: number; type: string }> = [];
+
+         for (const token of filteredTokens) {
+            currentTokens = currentTokens.filter((t) => t.end > token.start);
+
+            if (token.type !== "text") {
+               currentTokens.push({ start: token.start, end: token.end, type: token.type });
+
+               if (token.mark && token.type !== "link") {
+                  decorations.push({
+                     anchor: toPoint(token.start),
+                     focus: toPoint(token.start + token.mark.length),
+                     mark: true,
+                  });
+
+                  if (token.type !== "code-fence-open" && token.type !== "code-fence-close" && token.type !== "list-item") {
+                     decorations.push({
+                        anchor: toPoint(token.end - token.mark.length),
+                        focus: toPoint(token.end),
+                        mark: true,
+                     });
+                  }
+
+                  if (token.type === "code-fence-open" && token.code?.lang) {
+                     decorations.push({
+                        anchor: toPoint(token.start + token.mark.length),
+                        focus: toPoint(token.start + token.mark.length + token.code.lang.length),
+                        codeLanguage: true,
+                     });
+                  }
+               }
+
+               if (token.type === "code-line" && token.code?.tokens) {
+                  decorations.push(
+                     ...token.code.tokens.map(
+                        (x) =>
+                           ({
+                              anchor: toPoint(token.start + x.start),
+                              focus: toPoint(token.start + x.end),
+                              codeToken: x.types.length === 0 ? true : x.types.join(" "),
+                           }) as Range,
+                     ),
+                  );
+               }
+
+               if (token.type === "link" && token.link) {
+                  decorations.push({
+                     anchor: toPoint(token.end - token.link.href.length - 1),
+                     focus: toPoint(token.end - 1),
+                     link: true,
+                  });
+               }
+            } else {
+               decorations.push({
+                  anchor: toPoint(token.start),
+                  focus: toPoint(token.end),
+                  bold: currentTokens.some((t) => t.type === "strong"),
+                  italic: currentTokens.some((t) => t.type === "em"),
+                  underline: currentTokens.some((t) => t.type === "underline"),
+                  spoiler: currentTokens.some((t) => t.type === "spoiler"),
+                  inlineCode: currentTokens.some((t) => t.type === "codespan"),
+                  strikethrough: currentTokens.some((t) => t.type === "del"),
+                  list: currentTokens.some((t) => t.type === "list-item"),
+               });
+            }
+         }
+
+         result.set(path[0], decorations);
       }
 
-      return [];
+      return result;
    }
 
-   return { decorate, editor, renderElement, renderLeaf };
+   const decorate = useCallback(
+      ([_node, path]: [Node, Path]): Range[] => {
+         if (path.length !== 1) return [];
+         decorateVersion.toString(); // magic thingy to update all leaves
+         return cachedDecorations.current.get(path[0]) ?? [];
+      },
+      [decorateVersion],
+   );
+
+   const iter = useRef(0);
+   function replaceEmojis() {
+      iter.current++;
+      // if (iter.current > 10) return; // safety check to prevent infinite loops
+      const replacements: Array<{
+         path: Path;
+         start: number;
+         end: number;
+         slug: string;
+         emoji: string;
+         initial: "slug" | "emoji";
+         asElement?: boolean;
+      }> = [];
+
+      // Walk every text node individually
+      for (const [node, path] of Node.texts(editor)) {
+         const ranges = cachedDecorations.current.get(path[0]);
+         if (ranges?.some((x) => x.codeToken)) continue; // skip code blocks
+         const text = node.text;
+         const tokens = marked.lexer(text);
+         const organizedTokens = organizeMarkedTokens(tokens);
+         const emojiTokens = organizedTokens.filter((t) => t.type === "emoji");
+
+         for (const emojiToken of emojiTokens) {
+            replacements.push({
+               path,
+               start: emojiToken.start,
+               end: emojiToken.end,
+               slug: emojiToken.emoji!.slug,
+               emoji: emojiToken.emoji!.emoji,
+               initial: emojiToken.emoji!.initial,
+            });
+         }
+      }
+
+      if (replacements.length === 0) return;
+
+      // Sort in reverse order (last offset first) so earlier offsets stay valid
+      replacements.sort((a, b) => {
+         const pathCmp = Path.compare(b.path, a.path);
+         if (pathCmp !== 0) return pathCmp;
+         return b.start - a.start; // reverse offset order within same path
+      });
+
+      // Wrap in a single batch to produce one undo step
+      // Editor.withoutNormalizing(editor, () => {
+      // console.log(replacements);
+
+      let insertionCount = 0;
+      let firstInsertedAt: Path | null = null;
+      let lastInsertedAt: Path | null = null;
+
+      for (const { path, start, end, slug, emoji } of replacements) {
+         let deletePath = path;
+         if (start === 0) {
+            // editor.insertText("\uFEFF", );
+            editor.insertNode({ text: "\uFEFF", throwaway: true }, { at: { path, offset: 0 } });
+            deletePath = editor.after(path, { unit: "offset" })!.path;
+         }
+
+         // Delete the matched text
+         editor.delete({ at: { anchor: { path: deletePath, offset: start }, focus: { path: deletePath, offset: end } } });
+
+         // Insert the emoji node where the text was
+         const emojiElement: Element = { type: "emoji", slug, emoji, children: [{ text: "" }] };
+         editor.insertNodes(emojiElement, { at: { path, offset: start } });
+
+         firstInsertedAt = firstInsertedAt ?? path;
+         lastInsertedAt = path;
+         // if (!firstInsertedEmoji) {
+         //    firstInsertedEmoji = emojiElement;
+         // }
+
+         editor.removeNodes({
+            at: { anchor: editor.start([]), focus: editor.end([]) },
+            match: (node) => Text.isText(node) && (node.throwaway ?? false),
+         });
+
+         insertionCount++;
+      }
+
+      if (insertionCount && firstInsertedAt && lastInsertedAt) {
+         const adjustedPath: Path = [...firstInsertedAt.slice(0, -1), firstInsertedAt[firstInsertedAt.length - 1] + (insertionCount - 1) * 2];
+         const after = editor.after(adjustedPath, { distance: 2 });
+         const before = editor.start(lastInsertedAt);
+         const selection = editor.selection;
+         if (after && before && selection && Range.surrounds({ anchor: after, focus: before }, selection)) {
+            editor.select(after);
+         }
+      }
+
+      // if (firstInsertedEmoji) {
+
+      // }
+
+      // asdasd a💀 asdad 💀 🔧 💀 💀 💀 💀 asd
+      // });
+      // editor.move({ unit: "offset", distance: 2 });
+   }
+   function replaceEmojiElementsInCode() {
+      const replacements: Array<{
+         path: Path;
+         slug: string;
+         emoji: string;
+      }> = [];
+
+      // Walk every emoji element node
+      for (const [node, path] of Node.elements(editor)) {
+         if ((node as Element).type !== "emoji") continue;
+
+         const slug = (node as EmojiElement).slug;
+         const emoji = (node as EmojiElement).emoji;
+         const lineIndex = path[0];
+
+         // Get cached decorations for this line
+         const ranges = cachedDecorations.current.get(lineIndex);
+         if (ranges?.some((x) => x.codeToken)) {
+            // console.log(path, node);
+            replacements.push({ path, slug, emoji });
+         }
+      }
+
+      if (replacements.length === 0) return;
+
+      // Reverse so deeper/later paths don't shift earlier ones
+      replacements.sort((a, b) => {
+         const cmp = Path.compare(b.path, a.path);
+         return cmp;
+      });
+
+      Editor.withoutNormalizing(editor, () => {
+         for (const { path, slug } of replacements) {
+            // Replace the void emoji node with plain text
+            editor.delete({ at: path });
+            // editor.removeNodes({ at: path });
+            editor.insertNodes({ text: slug }, { at: path });
+         }
+      });
+   }
+
+   function handleEditorOnChange() {
+      // Collect all replacements first, then apply in reverse order
+
+      cachedDecorations.current = calculateAllDecorations(editor);
+      setDecorateVersion((v) => v + 1); // bump so decorate is seen as "new"
+
+      replaceEmojiElementsInCode();
+      replaceEmojis();
+   }
+
+   return { decorate, editor, renderElement, renderLeaf, handleEditorOnChange };
 }
