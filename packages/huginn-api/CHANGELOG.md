@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.36.0...api@v0.37.0) (2026-06-10)
+
+
+### Features
+
+* **api:** add get emoji route to cdn ([1cc9126](https://github.com/WerdoxDev/Huginn/commit/1cc9126e2fc10c289c8473841abd89e00bf6e221))
+
+
+### Bug Fixes
+
+* **api:** remove spamming trace + bug with closing voice transports ([0acb73c](https://github.com/WerdoxDev/Huginn/commit/0acb73cb0965bf2dea029b63d7e8876cec7d195f))
+
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.35.0...api@v0.36.0) (2026-06-05)
 
 

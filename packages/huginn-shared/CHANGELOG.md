@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.36.0...shared@v0.37.0) (2026-06-10)
+
+
+### Features
+
+* **shared:** add helper functions for emoji processing ([8bb7015](https://github.com/WerdoxDev/Huginn/commit/8bb701500440058b4059e10e86d5ee91594a659a))
+* **shared:** add log exporter for web-analytics ([5c9b0b6](https://github.com/WerdoxDev/Huginn/commit/5c9b0b605ecec67431e98788a037c076070de1b6))
+* **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
+* **shared:** type changes for emojis ([bd0d76f](https://github.com/WerdoxDev/Huginn/commit/bd0d76fd5de4dc5c0c66dfb7e6448bf4d6d6b8eb))
+
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.35.0...shared@v0.36.0) (2026-06-05)
 
 

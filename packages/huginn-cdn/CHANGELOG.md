@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.17.0...cdn@v0.18.0) (2026-06-10)
+
+
+### Features
+
+* **cdn:** add get emoji route + script to upoad all emojis to cdn ([b30ac11](https://github.com/WerdoxDev/Huginn/commit/b30ac113716ebbad9bf72b0a795dc2dc33bd7923))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.16.0...cdn@v0.17.0) (2026-06-05)
 
 

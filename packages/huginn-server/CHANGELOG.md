@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.37.0...server@v0.38.0) (2026-06-10)
+
+
+### Features
+
+* **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
+
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.36.0...server@v0.37.0) (2026-06-05)
 
 
