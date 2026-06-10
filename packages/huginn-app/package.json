@@ -42,6 +42,7 @@
       "@headlessui/react": "^2.2.9",
       "@huginn/api": "workspace:*",
       "@huginn/shared": "workspace:*",
+      "@posthog/rollup-plugin": "^1.4.4",
       "@rolldown/plugin-babel": "^0.2.3",
       "@svgr/core": "^8.1.0",
       "@tanstack/react-query": "^5.100.11",

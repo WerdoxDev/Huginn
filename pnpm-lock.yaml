@@ -72,6 +72,9 @@ importers:
       '@huginn/shared':
         specifier: workspace:*
         version: link:../huginn-shared
+      '@posthog/rollup-plugin':
+        specifier: ^1.4.4
+        version: 1.4.4(rollup@4.60.4)
       '@rolldown/plugin-babel':
         specifier: ^0.2.3
         version: 0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.0.3)(vite@8.0.14(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
@@ -3484,11 +3487,24 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  '@posthog/cli@0.7.21':
+    resolution: {integrity: sha512-1Meh6BbPdwcDE/o8F41U9x/mcUGDbJ6cEedGUfwr2qw32Gle74XTIhiO6WBeJRnpHor05AshAhO1WwSGZlYSZw==}
+    engines: {node: '>=14.14', npm: '>=6'}
+    hasBin: true
+
   '@posthog/core@1.29.12':
     resolution: {integrity: sha512-r/2RUa4zbN0XdBp6d+Yk8Jw1rPWXHxyXIgSm/wJf9yDLIouZbH0Pdkgbc1RIuhwL6BIHCFrOqK5jy8TFKTI6iw==}
 
   '@posthog/core@1.29.15':
     resolution: {integrity: sha512-jHdTo/hcZsZu1QJMi3GSysPzhkCwVncKB6IKocheFLypmMbGZp39ZGep9ECKNb1v6zBNdtHhcPqhfV+r+iLZNw==}
+
+  '@posthog/plugin-utils@1.1.1':
+    resolution: {integrity: sha512-vCbaFeuwf9Pc0gI5bkCGvkOn2Bxru2KbZJtOa6loTJjanCNoMsjECEPijr7X5oln1IIg+VKnGiwV4tKY2b7NuQ==}
+
+  '@posthog/rollup-plugin@1.4.4':
+    resolution: {integrity: sha512-2r9x4lhIaFX/5YOGY94eN7B0LeL11KVR3JqtmwOpSEXDDUxG/yLEvu77S49IvpjrXsVkWqfsMpAlagENBOZgVw==}
+    peerDependencies:
+      rollup: '>= 4.0.0'
 
   '@posthog/types@1.376.3':
     resolution: {integrity: sha512-w21lBoz3/ZGw7BZT7t2lJq1mpJwMvWpZijW7vEwBFNAQlq0KfKf2mj5KKUYZMXM1GdIQ0jHnn931uXPB1Ae60w==}
@@ -11962,6 +11978,10 @@ snapshots:
     dependencies:
       playwright: 1.60.0
 
+  '@posthog/cli@0.7.21':
+    dependencies:
+      detect-libc: 2.1.2
+
   '@posthog/core@1.29.12':
     dependencies:
       '@posthog/types': 1.376.3
@@ -11969,6 +11989,16 @@ snapshots:
   '@posthog/core@1.29.15':
     dependencies:
       '@posthog/types': 1.376.6
+
+  '@posthog/plugin-utils@1.1.1':
+    dependencies:
+      cross-spawn: 7.0.6
+
+  '@posthog/rollup-plugin@1.4.4(rollup@4.60.4)':
+    dependencies:
+      '@posthog/cli': 0.7.21
+      '@posthog/plugin-utils': 1.1.1
+      rollup: 4.60.4
 
   '@posthog/types@1.376.3': {}
 
