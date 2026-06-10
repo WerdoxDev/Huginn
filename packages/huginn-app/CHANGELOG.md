@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.73.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.1...app@v0.73.0) (2026-06-10)
+
+
+### Features
+
+* **app:** add experimental emoji picker with all unicode emojis from v17 ([c3b7e24](https://github.com/WerdoxDev/Huginn/commit/c3b7e24b65d3c352f85dbbfffb29762042aade64))
+* **app:** add proper message error indicator with retry function ([cac3333](https://github.com/WerdoxDev/Huginn/commit/cac33333620013e13f8aa233a888f0b45043c558))
+* **app:** bunch of work for emoji rendering and correct void element navigation ([24a600f](https://github.com/WerdoxDev/Huginn/commit/24a600f498df0569e9610eec3da9c63131368396))
+* **app:** emoji picker search bar ([df82619](https://github.com/WerdoxDev/Huginn/commit/df82619bdbe9014d64a53a633cc2088c42eb233b))
+* **app:** more emoji fixes + emoji rendering + migrate to MarkedJS ([d9afde3](https://github.com/WerdoxDev/Huginn/commit/d9afde3d6a1dd911acbfac340efe1128ec9b8d3d))
+
+
+### Bug Fixes
+
+* **app:** better naming for image crop modal ([5ea57b2](https://github.com/WerdoxDev/Huginn/commit/5ea57b255393f6c48b78ef57f64bbaf608f9ceeb))
+* **app:** lots more emoji fixes + ran posthog wizard for fun ([b683a91](https://github.com/WerdoxDev/Huginn/commit/b683a912f3dec78e3058bcfbfc1026da34ac2d02))
+* **app:** remove support for heic images ([66734a4](https://github.com/WerdoxDev/Huginn/commit/66734a495664967525d091f44c3bb58950b157a0))
+* **app:** set path to / for vercel previews ([dd4786b](https://github.com/WerdoxDev/Huginn/commit/dd4786b0055d4e76608eda03ebe544892b83e70c))
+* **app:** use data url for notifications + remove cache controller from electron ([5438ffd](https://github.com/WerdoxDev/Huginn/commit/5438ffd1977ca1a2e693214e47429600b089aee3))
+* new vercel structure ([1fed326](https://github.com/WerdoxDev/Huginn/commit/1fed326d43e2a8aef71b72204313c6a87b9bbac2))
+* new vercel structure ([618187e](https://github.com/WerdoxDev/Huginn/commit/618187e28add4e173cb8152ee339e4ebc08ca5b4))
+
 ## [0.72.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.0...app@v0.72.1) (2026-06-05)
 
 
