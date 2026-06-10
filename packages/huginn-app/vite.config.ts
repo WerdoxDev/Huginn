@@ -24,7 +24,8 @@ export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
    const isElectronDev = mode === "electron-dev";
    const isCapacitor = mode === "capacitor";
-   const base = isElectron ? "./" : isCapacitor ? "/" : "/app";
+   const vercelEnv = process.env.VERCEL_ENV;
+   const base = vercelEnv === "preview" ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app";
    return {
       base,
 
