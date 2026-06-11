@@ -55,6 +55,7 @@
       "clsx": "^2.1.1",
       "electron-log": "^5.4.4",
       "electron-updater": "^6.6.2",
+      "emojibase-data": "^17.0.0",
       "highlight.js": "^11.11.1",
       "immer": "^10.2.0",
       "jose": "^5.10.0",
@@ -74,7 +75,6 @@
       "slate": "^0.124.1",
       "slate-react": "^0.124.2",
       "super-image-cropper": "^1.0.27",
-      "unicode-emoji-json": "^0.9.0",
       "zod": "^4.4.3",
       "zustand": "^5.0.13"
    },
@@ -101,6 +101,7 @@
       "electron": "42.2.0",
       "electron-builder": "^26.0.12",
       "mediasoup-client": "^3.20.0",
+      "sharp": "^0.34.5",
       "tailwindcss": "^4.1.16",
       "tsdown": "^0.22.0",
       "typescript": "^6.0.3",

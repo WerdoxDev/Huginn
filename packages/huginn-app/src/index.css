@@ -236,6 +236,10 @@ video::-webkit-media-controls {
    @apply border-2;
 }
 
+.scroll-hidden::-webkit-scrollbar {
+   @apply hidden;
+}
+
 input[type="range"] {
    appearance: none;
    background: transparent;

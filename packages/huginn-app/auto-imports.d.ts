@@ -19,6 +19,7 @@ declare global {
   const IconMingcuteCamera2Fill: typeof import('~icons/mingcute/camera2-fill.jsx').default
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx').default
   const IconMingcuteChecksFill: typeof import('~icons/mingcute/checks-fill.jsx').default
+  const IconMingcuteClockwiseFill: typeof import('~icons/mingcute/clockwise-fill.jsx').default
   const IconMingcuteCloseFill: typeof import('~icons/mingcute/close-fill.jsx').default
   const IconMingcuteColorPickerFill: typeof import('~icons/mingcute/color-picker-fill.jsx').default
   const IconMingcuteCopy2Fill: typeof import('~icons/mingcute/copy2-fill.jsx').default
@@ -42,6 +43,7 @@ declare global {
   const IconMingcuteFullscreenFill: typeof import('~icons/mingcute/fullscreen-fill.jsx').default
   const IconMingcuteGame2Fill: typeof import('~icons/mingcute/game2-fill.jsx').default
   const IconMingcuteGroup2Fill: typeof import('~icons/mingcute/group2-fill.jsx').default
+  const IconMingcuteHistoryAnticlockwiseLine: typeof import('~icons/mingcute/history-anticlockwise-line.jsx').default
   const IconMingcuteIdcardFill: typeof import('~icons/mingcute/idcard-fill.jsx').default
   const IconMingcuteInfoLine: typeof import('~icons/mingcute/info-line.jsx').default
   const IconMingcuteInformationFill: typeof import('~icons/mingcute/information-fill.jsx').default

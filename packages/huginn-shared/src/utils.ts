@@ -1,7 +1,9 @@
 import type { MediaKind } from "mediasoup/types";
 
+// import emojis from "unicode-emoji-json/data-by-emoji.json" with { type: "json" };
+import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
+import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };
 import { hash } from "ohash";
-import emojis from "unicode-emoji-json/data-by-emoji.json" with { type: "json" };
 
 import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
@@ -442,15 +444,44 @@ export function interpolateColor(color1: string, color2: string, progress: numbe
    return rgbToHex(r, g, b);
 }
 
+const U200D = "\u200D"; // Zero-width joiner
+const UFE0F = /\uFE0F/g; // Variation selector-16
 export function getEmojiId(emoji: string): string {
-   const id = [...emoji]
-      .map((cp) => cp.codePointAt(0)?.toString(16))
-      .filter((cp) => cp !== "fe0f")
-      .join("-");
-   return id;
+   // Twemoji strips FE0F unless the sequence contains a ZWJ (U+200D).
+   // ZWJ sequences use FE0F as part of the gender/presentation distinction
+   // (e.g. 👨‍⚕️), so it must be preserved there.
+   const normalized = emoji.indexOf(U200D) < 0 ? emoji.replace(UFE0F, "") : emoji;
+
+   // Walk UTF-16 code units manually to handle surrogate pairs,
+   // matching exactly how twemoji's toCodePoint works.
+   const codePoints: string[] = [];
+   let i = 0;
+   while (i < normalized.length) {
+      const c = normalized.charCodeAt(i++);
+      if (c >= 0xd800 && c <= 0xdbff) {
+         // High surrogate — pair it with the next low surrogate
+         const next = normalized.charCodeAt(i++);
+         codePoints.push((0x10000 + ((c - 0xd800) << 10) + (next - 0xdc00)).toString(16));
+      } else {
+         codePoints.push(c.toString(16));
+      }
+   }
+
+   return codePoints.join("-");
 }
 
 export function getEmojiFromSlug(slug: string): string | undefined {
-   const emoji = Object.entries(emojis).find(([_, emoji]) => emoji.slug === slug)?.[0];
+   const hexcode = Object.entries(emojiShortcodes).find(([, slugs]) =>
+      Array.isArray(slugs) ? slugs.some((s: string) => s.includes(slug)) : slugs.includes(slug),
+   )?.[0];
+   const emoji = emojiData.find((x) => x.hexcode === hexcode)?.unicode;
    return emoji;
+}
+
+export function getSlugsFromEmoji(emoji: string): string[] | undefined {
+   const hexcode = emojiData.find((x) => x.unicode === emoji)?.hexcode;
+   if (!hexcode) return undefined;
+
+   const slugs = emojiShortcodes[hexcode];
+   return slugs && Array.isArray(slugs) ? slugs : [slugs];
 }

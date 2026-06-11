@@ -49,6 +49,7 @@ function Trigger(props: HTMLProps<HTMLButtonElement> & { type?: Popover.Trigger.
 
 function Panel(props: {
    children?: ReactNode;
+   style?: React.CSSProperties;
    className?: string;
    side?: "top" | "right" | "bottom" | "left";
    align?: "start" | "center" | "end";
@@ -70,6 +71,7 @@ function Panel(props: {
                   props.className,
                   "border-surface bg-surface-deep z-40 rounded-lg border shadow-xl transition-[opacity_transform] duration-200 outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
                )}
+               style={props.style}
             >
                {props.children}
             </Popover.Popup>

@@ -7,10 +7,10 @@ import { join } from "path";
 const PREFIX = "twemoji/";
 const TOKEN = process.env.GITHUB_TOKEN;
 const CONCURRENCY = 20;
-const OWNER = "twitter";
+const OWNER = "jdecked";
 const REPO = "twemoji";
 const SVG_PATH = "assets/svg";
-const REF = "master";
+const REF = "main";
 
 const s3 = new S3Client({
    region: process.env.AWS_REGION,

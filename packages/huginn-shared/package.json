@@ -27,11 +27,11 @@
       "@opentelemetry/sdk-trace-web": "^2.7.1",
       "@sapphire/snowflake": "^3.5.3",
       "@std/encoding": "npm:@jsr/std__encoding",
+      "emojibase-data": "^17.0.0",
       "file-type": "^22.0.1",
       "ohash": "^2.0.11",
       "posthog-js": "^1.376.3",
-      "posthog-node": "^5.35.8",
-      "unicode-emoji-json": "^0.9.0"
+      "posthog-node": "^5.35.8"
    },
    "devDependencies": {
       "@types/bun": "latest",

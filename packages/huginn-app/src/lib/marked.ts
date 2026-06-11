@@ -1,5 +1,6 @@
+import { getEmojiFromSlug, getSlugsFromEmoji } from "@huginn/shared";
 import { marked, type TokenizerExtension } from "marked";
-import emojis from "unicode-emoji-json/data-by-emoji.json";
+// import emojis from "unicode-emoji-json/data-by-emoji.json";
 
 const spoilerExtension: TokenizerExtension = {
    name: "spoiler",
@@ -74,8 +75,8 @@ const emojiExtension: TokenizerExtension = {
       const raw = emoji ?? `:${slug}:`;
       let initial = slug ? "slug" : "emoji";
 
-      if (emoji && !slug) slug = emojis[emoji as keyof typeof emojis]?.slug;
-      if (slug && !emoji) emoji = Object.entries(emojis).find(([, value]) => value.slug === slug)?.[0];
+      if (emoji && !slug) slug = getSlugsFromEmoji(emoji)?.[0];
+      if (slug && !emoji) emoji = getEmojiFromSlug(slug);
 
       if (emoji && slug) {
          return {
