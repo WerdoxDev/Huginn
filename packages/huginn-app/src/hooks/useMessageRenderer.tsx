@@ -1,13 +1,14 @@
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
+import CodespanElement from "@components/editor/CodespanElement";
 import EmbedElement from "@components/editor/EmbedElement";
-import InlineCodeElement from "@components/editor/InlineCodeElement";
 import LinkElement from "@components/editor/LinkElement";
 import ListElement from "@components/editor/ListElement";
 import ListItemElement from "@components/editor/ListItemElement";
 import MessageEmojiElement from "@components/editor/MessageEmojiElement";
 import MessageLeaf from "@components/editor/MessageLeaf";
 import SpoilerElement from "@components/editor/SpoilerElement";
+import { CONSTANTS } from "@huginn/shared";
 import { marked } from "@lib/marked";
 import { organizeMarkedTokens } from "@lib/marked-utils";
 import clsx from "clsx";
@@ -63,11 +64,11 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                   </LinkElement>
                );
             case "emoji":
-               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} key={key} />;
+               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} big={node.big} key={key} />;
             case "code":
                return <CodeElement code={node.code} language={node.language} key={key} />;
-            case "code_inline":
-               return <InlineCodeElement key={key}>{children}</InlineCodeElement>;
+            case "codespan":
+               return <CodespanElement key={key}>{children}</CodespanElement>;
             case "attachment":
                return <AttachmentElement {...node} key={key} />;
             case "embed":
@@ -98,6 +99,11 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       let currentTokens: Array<{ start: number; end: number; type: string }> = [];
       let currentPath: number[] = [];
 
+      const canRenderBigEmoji =
+         inlineTokens.every((t) => t.type === "emoji" || (t.type === "text" && /^\s*$/.test(t.raw))) &&
+         inlineTokens.filter((t) => t.type === "emoji").length <= CONSTANTS.MAX_BIG_EMOJI_COUNT;
+      console.log(root, inlineTokens, canRenderBigEmoji);
+
       for (const token of inlineTokens) {
          const prevTokens = currentTokens;
          currentTokens = currentTokens.filter((t) => t.end > token.start);
@@ -115,11 +121,13 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          } else if (token.type === "emoji" && token.emoji) {
-            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, children: [] });
+            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, big: canRenderBigEmoji, children: [] });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
+         } else if (token.type === "codespan" && token.text) {
+            deepestNode.children.push({ type: "codespan", children: [{ text: token.text }] });
          } else if (token.type === "text") {
             deepestNode.children.push({
                text: token.raw,

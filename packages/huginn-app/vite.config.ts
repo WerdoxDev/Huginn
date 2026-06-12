@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => {
                clientsClaim: true,
             },
             injectManifest: {
-               maximumFileSizeToCacheInBytes: 4194304,
+               maximumFileSizeToCacheInBytes: 149437184,
                globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
                globIgnores: ["**/electron/**"],
             },

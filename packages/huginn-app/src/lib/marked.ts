@@ -1,4 +1,6 @@
 import { getEmojiFromSlug, getSlugsFromEmoji } from "@huginn/shared";
+import emojiData from "emojibase-data/en/compact.json";
+import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json";
 import { marked, type TokenizerExtension } from "marked";
 // import emojis from "unicode-emoji-json/data-by-emoji.json";
 
@@ -45,34 +47,42 @@ const underlineExtension: TokenizerExtension = {
    },
 };
 
+const EMOJI_PICTOGRAPHIC_RE =
+   /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+const EMOJI_SLUG_RE = /^:([+\-a-zA-Z0-9_]+):/;
+const EMOJI_PICTOGRAPHIC_ANCHORED_RE =
+   /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+
+const anchorEmojiCache = new Map<string, RegExpExecArray | null>();
+const slugEmojiCache = new Map<string, RegExpExecArray | null>();
+
 const emojiExtension: TokenizerExtension = {
    name: "emoji",
    level: "inline",
    start(src) {
-      const emojiStartRegex =
-         /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
       const colon = src.indexOf(":");
-      const emoji = src.search(emojiStartRegex);
+      const emojiIdx = src.search(EMOJI_PICTOGRAPHIC_RE);
 
-      if (colon === -1) return emoji;
-      if (emoji === -1) return colon;
-
-      return Math.min(colon, emoji);
+      if (colon === -1) return emojiIdx;
+      if (emojiIdx === -1) return colon;
+      return Math.min(colon, emojiIdx);
    },
    tokenizer(src) {
-      const slugMatch = src.match(/^:([a-zA-Z0-9_]+):/);
-      const emojiMatch = src.match(
-         /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u,
-      );
-      // if (slugMatch) {
-      //    if (!Object.values(emojis).some((x) => x.slug === slugMatch[1])) {
-      //       return;
-      //    }
-      // }
+      let slugMatch = slugEmojiCache.get(src);
+      if (slugMatch === undefined) {
+         slugMatch = EMOJI_SLUG_RE.exec(src);
+         slugEmojiCache.set(src, slugMatch);
+      }
+
+      let emojiMatch = anchorEmojiCache.get(src);
+      if (emojiMatch === undefined) {
+         emojiMatch = EMOJI_PICTOGRAPHIC_ANCHORED_RE.exec(src);
+         anchorEmojiCache.set(src, emojiMatch);
+      }
 
       let emoji = emojiMatch?.[0];
-      let slug = slugMatch?.[1];
-      const raw = emoji ?? `:${slug}:`;
+      let slug = slugMatch?.[0];
+      const raw = emoji ?? slug!;
       let initial = slug ? "slug" : "emoji";
 
       if (emoji && !slug) slug = getSlugsFromEmoji(emoji)?.[0];
@@ -81,7 +91,7 @@ const emojiExtension: TokenizerExtension = {
       if (emoji && slug) {
          return {
             type: "emoji",
-            slug: `:${slug}:`,
+            slug: slug,
             emoji,
             initial,
             raw,

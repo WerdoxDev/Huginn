@@ -29,7 +29,7 @@ function serialize(nodes: Descendant[]) {
       const children = serialize(node.children);
 
       if (Element.isElement(node) && node.type === "emoji") {
-         text += node.emoji ? node.emoji : `:${node.slug}:`;
+         text += node.emoji;
          continue;
       }
 
@@ -406,10 +406,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       sendTypingMutate(event, { channelId: params.channelId ?? "" });
    }
 
-   function onEmojiPanelOpenChanged(open: boolean) {
-      shouldFocusEditor.current = !open;
-   }
-
    // Escape key handler for canceling edit/reply
    useEffect(() => {
       const controller = new AbortController();
@@ -421,11 +417,13 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
                if (currentEditingMessageId) cancelEditMessage();
                if (currentReplyingMessageId) cancelReplyMessage();
             }
-            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !ReactEditor.isFocused(editor) && shouldFocusEditor.current) {
+
+            const isPortalOpen = !!document.querySelector("[data-base-ui-portal]");
+            const isInputFocused = document.activeElement && ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName);
+
+            if (!isInputFocused && !isPortalOpen && !ReactEditor.isFocused(editor) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
                editor.select(editor.end([]));
                ReactEditor.focus(editor);
-               // e.preventDefault();
-               // editor.insertText(e.key);
             }
          },
          { signal: controller.signal },
@@ -471,7 +469,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
-      onEmojiPanelOpenChanged,
       resetState,
       currentEditingMessageId,
       currentReplyingMessageId,

@@ -93,10 +93,10 @@ export type SettingsTabProps = {
    onChange?: (value: Partial<AppSettings>) => void;
 };
 
-export type SelectItem = {
+export type SelectItem<T = string> = {
    text: string;
    icon?: ReactNode;
-   value: string;
+   value: T;
 };
 
 export type ColorTheme = {
@@ -270,6 +270,7 @@ export type AppAttachment = {
 export type MarkedToken = {
    type: string;
    mark?: string | null;
+   text?: string;
    start: number;
    end: number;
    line: number;

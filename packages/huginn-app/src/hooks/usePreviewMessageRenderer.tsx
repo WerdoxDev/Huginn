@@ -3,14 +3,38 @@ import PreviewEmojiElement from "@components/editor/PreviewEmojiElement";
 import { marked } from "@lib/marked";
 import { organizeMarkedTokens } from "@lib/marked-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Point, Transforms } from "slate";
+import { Point, type Descendant } from "slate";
 import { createEditor, Editor, Element, Node, Path, Range, Text } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
 
 import type { EmojiElement } from "..";
 
+function serializeFragments(nodes: Descendant[]): string {
+   let text = "";
+   for (const node of nodes) {
+      if (Text.isText(node)) {
+         text += node.text;
+         continue;
+      }
+
+      const children = serializeFragments(node.children);
+
+      if (Element.isElement(node) && node.type === "emoji") {
+         text += node.slug;
+         continue;
+      }
+
+      if (Element.isElement(node) && node.type === "paragraph") {
+         text += children + "\n";
+         continue;
+      }
+   }
+
+   return text;
+}
+
 function withHuginn(editor: Editor) {
-   const { isInline, insertText, isVoid } = editor;
+   const { isInline, isVoid, setFragmentData } = editor;
 
    editor.isInline = (element) => {
       return element.type === "emoji" || isInline(element);
@@ -20,11 +44,16 @@ function withHuginn(editor: Editor) {
       return element.type === "emoji" || isVoid(element);
    };
 
-   editor.insertText = (text, options) => {
-      // if (checkAndInsertEmojis(editor, text, insertText)) {
-      //    return;
-      // }
-      insertText(text, options);
+   editor.setFragmentData = (data) => {
+      setFragmentData(data);
+
+      const { selection } = editor;
+      if (!selection) return;
+      const fragment = Node.fragment(editor, selection);
+
+      const text = serializeFragments(fragment).trim();
+
+      data.setData("text/plain", text);
    };
 
    return editor;
@@ -48,29 +77,45 @@ export function usePreviewMessageRenderer() {
       }
    }, []);
 
-   const getAllChildren = useCallback(() => {
-      const children = Array.from(
-         Editor.nodes(editor, {
-            at: [],
-            mode: "highest",
-            match: (node, _path) => Element.isElement(node),
-         }),
-      );
+   const serialize = useCallback(
+      (nodes: Descendant[]) => {
+         let text = "";
+         for (const node of nodes) {
+            if (Text.isText(node)) {
+               text += node.text;
+               continue;
+            }
 
-      return children;
-   }, [editor]);
+            const children = serialize(node.children);
 
-   function lineOffsetToPoint(editor: Editor, lineIndex: number, charOffset: number): Point {
+            if (Element.isElement(node) && node.type === "emoji") {
+               text += " ";
+               continue;
+            }
+
+            if (Element.isElement(node) && node.type === "paragraph") {
+               text += children + "\n";
+               continue;
+            }
+         }
+
+         return text;
+      },
+      [editor],
+   );
+
+   function lineOffsetToPoint(editor: Editor, lineIndex: number, charOffset: number, startIndex: number = 0): Point {
       const lineNode = editor.children[lineIndex] as Element;
 
       let remaining = charOffset;
 
-      for (let i = 0; i < lineNode.children.length; i++) {
+      for (let i = startIndex; i < lineNode.children.length; i++) {
          const child = lineNode.children[i];
          const childPath = [lineIndex, i];
 
-         // Skip void/inline elements (emojis) — they contribute 0 chars
+         // void elements have " " as text so they don't disrupt tokens when alone
          if (Editor.isVoid(editor, child as Element)) {
+            remaining -= 1;
             continue;
          }
 
@@ -94,8 +139,7 @@ export function usePreviewMessageRenderer() {
 
    function calculateAllDecorations(editor: Editor): Map<number, Range[]> {
       const result = new Map<number, Range[]>();
-      const children = getAllChildren();
-      const text = children.map((x) => Node.string(x[0])).join("\n");
+      const text = serialize(editor.children);
 
       const tokens = marked.lexer(text);
       const organizedTokens = organizeMarkedTokens(tokens);
@@ -152,10 +196,19 @@ export function usePreviewMessageRenderer() {
                }
 
                if (token.type === "link" && token.link) {
+                  const isMasked = token.link.href !== token.raw;
                   decorations.push({
-                     anchor: toPoint(token.end - token.link.href.length - 1),
-                     focus: toPoint(token.end - 1),
+                     anchor: toPoint(token.end - token.link.href.length - (isMasked ? 1 : 0)),
+                     focus: toPoint(token.end - (isMasked ? 1 : 0)),
                      link: true,
+                  });
+               }
+
+               if (token.type === "codespan") {
+                  decorations.push({
+                     anchor: toPoint(token.start),
+                     focus: toPoint(token.end),
+                     codespan: true,
                   });
                }
             } else {
@@ -166,7 +219,7 @@ export function usePreviewMessageRenderer() {
                   italic: currentTokens.some((t) => t.type === "em"),
                   underline: currentTokens.some((t) => t.type === "underline"),
                   spoiler: currentTokens.some((t) => t.type === "spoiler"),
-                  inlineCode: currentTokens.some((t) => t.type === "codespan"),
+                  codespan: currentTokens.some((t) => t.type === "codespan"),
                   strikethrough: currentTokens.some((t) => t.type === "del"),
                   list: currentTokens.some((t) => t.type === "list-item"),
                });
@@ -188,154 +241,90 @@ export function usePreviewMessageRenderer() {
       [decorateVersion],
    );
 
-   const iter = useRef(0);
-   function replaceEmojis() {
-      iter.current++;
-      // if (iter.current > 10) return; // safety check to prevent infinite loops
-      const replacements: Array<{
-         path: Path;
-         start: number;
-         end: number;
-         slug: string;
-         emoji: string;
-         initial: "slug" | "emoji";
-         asElement?: boolean;
-      }> = [];
-
-      // Walk every text node individually
+   function convertEmojisToElements() {
       for (const [node, path] of Node.texts(editor)) {
-         const ranges = cachedDecorations.current.get(path[0]);
-         if (ranges?.some((x) => x.codeToken)) continue; // skip code blocks
          const text = node.text;
+         if (!text) continue;
+
+         const ranges = cachedDecorations.current.get(path[0]);
+         if (ranges?.some((x) => x.codeToken)) continue;
+
          const tokens = marked.lexer(text);
          const organizedTokens = organizeMarkedTokens(tokens);
-         const emojiTokens = organizedTokens.filter((t) => t.type === "emoji");
 
-         for (const emojiToken of emojiTokens) {
-            replacements.push({
-               path,
-               start: emojiToken.start,
-               end: emojiToken.end,
-               slug: emojiToken.emoji!.slug,
-               emoji: emojiToken.emoji!.emoji,
-               initial: emojiToken.emoji!.initial,
-            });
-         }
-      }
+         const emojiToken = organizedTokens.find((t) => t.type === "emoji");
+         if (!emojiToken) continue;
 
-      if (replacements.length === 0) return;
+         if (
+            ranges?.some(
+               (x) => x.codespan && Range.includes(x, { path, offset: emojiToken.start }) && Range.includes(x, { path, offset: emojiToken.end }),
+            )
+         )
+            continue;
 
-      // Sort in reverse order (last offset first) so earlier offsets stay valid
-      replacements.sort((a, b) => {
-         const pathCmp = Path.compare(b.path, a.path);
-         if (pathCmp !== 0) return pathCmp;
-         return b.start - a.start; // reverse offset order within same path
-      });
-
-      // Wrap in a single batch to produce one undo step
-      // Editor.withoutNormalizing(editor, () => {
-      // console.log(replacements);
-
-      let insertionCount = 0;
-      let firstInsertedAt: Path | null = null;
-      let lastInsertedAt: Path | null = null;
-
-      for (const { path, start, end, slug, emoji } of replacements) {
          let deletePath = path;
-         if (start === 0) {
-            // editor.insertText("\uFEFF", );
+
+         if (emojiToken.start === 0) {
             editor.insertNode({ text: "\uFEFF", throwaway: true }, { at: { path, offset: 0 } });
             deletePath = editor.after(path, { unit: "offset" })!.path;
          }
 
-         // Delete the matched text
-         editor.delete({ at: { anchor: { path: deletePath, offset: start }, focus: { path: deletePath, offset: end } } });
+         editor.delete({ at: { anchor: { path: deletePath, offset: emojiToken.start }, focus: { path: deletePath, offset: emojiToken.end } } });
 
-         // Insert the emoji node where the text was
-         const emojiElement: Element = { type: "emoji", slug, emoji, children: [{ text: "" }] };
-         editor.insertNodes(emojiElement, { at: { path, offset: start } });
-
-         firstInsertedAt = firstInsertedAt ?? path;
-         lastInsertedAt = path;
-         // if (!firstInsertedEmoji) {
-         //    firstInsertedEmoji = emojiElement;
-         // }
+         const emojiElement: Element = { type: "emoji", slug: emojiToken.emoji!.slug, emoji: emojiToken.emoji!.emoji, children: [{ text: "" }] };
+         editor.insertNodes(emojiElement, { at: { path, offset: emojiToken.start } });
 
          editor.removeNodes({
             at: { anchor: editor.start([]), focus: editor.end([]) },
             match: (node) => Text.isText(node) && (node.throwaway ?? false),
          });
 
-         insertionCount++;
+         if (editor.selection?.anchor.path.length === 3) editor.move({ unit: "offset" });
+         if (editor.selection && Path.equals(editor.selection.anchor.path, path) && editor.selection.anchor.offset === emojiToken.start)
+            editor.move({ distance: 2, unit: "offset" });
+
+         return true;
       }
 
-      if (insertionCount && firstInsertedAt && lastInsertedAt) {
-         const adjustedPath: Path = [...firstInsertedAt.slice(0, -1), firstInsertedAt[firstInsertedAt.length - 1] + (insertionCount - 1) * 2];
-         const after = editor.after(adjustedPath, { distance: 2 });
-         const before = editor.start(lastInsertedAt);
-         const selection = editor.selection;
-         if (after && before && selection && Range.surrounds({ anchor: after, focus: before }, selection)) {
-            editor.select(after);
-         }
-      }
-
-      // if (firstInsertedEmoji) {
-
-      // }
-
-      // asdasd a💀 asdad 💀 🔧 💀 💀 💀 💀 asd
-      // });
-      // editor.move({ unit: "offset", distance: 2 });
+      return false;
    }
-   function replaceEmojiElementsInCode() {
-      const replacements: Array<{
-         path: Path;
-         slug: string;
-         emoji: string;
-      }> = [];
 
-      // Walk every emoji element node
+   function convertEmojisToSlugs() {
       for (const [node, path] of Node.elements(editor)) {
          if ((node as Element).type !== "emoji") continue;
 
          const slug = (node as EmojiElement).slug;
-         const emoji = (node as EmojiElement).emoji;
          const lineIndex = path[0];
 
-         // Get cached decorations for this line
          const ranges = cachedDecorations.current.get(lineIndex);
-         if (ranges?.some((x) => x.codeToken)) {
-            // console.log(path, node);
-            replacements.push({ path, slug, emoji });
-         }
+         if (ranges?.every((x) => !x.codeToken && (!x.codespan || path[1] >= x.focus.path[1] || path[1] <= x.anchor.path[1]))) continue;
+
+         editor.withoutNormalizing(() => {
+            editor.delete({ at: path });
+            editor.insertNodes({ text: slug }, { at: path });
+         });
+
+         return true;
       }
 
-      if (replacements.length === 0) return;
-
-      // Reverse so deeper/later paths don't shift earlier ones
-      replacements.sort((a, b) => {
-         const cmp = Path.compare(b.path, a.path);
-         return cmp;
-      });
-
-      Editor.withoutNormalizing(editor, () => {
-         for (const { path, slug } of replacements) {
-            // Replace the void emoji node with plain text
-            editor.delete({ at: path });
-            // editor.removeNodes({ at: path });
-            editor.insertNodes({ text: slug }, { at: path });
-         }
-      });
+      return false;
    }
 
-   function handleEditorOnChange() {
-      // Collect all replacements first, then apply in reverse order
-
+   async function handleEditorOnChange() {
       cachedDecorations.current = calculateAllDecorations(editor);
-      setDecorateVersion((v) => v + 1); // bump so decorate is seen as "new"
+      setDecorateVersion((v) => v + 1);
 
-      replaceEmojiElementsInCode();
-      replaceEmojis();
+      let hasChanges = false;
+      do {
+         hasChanges = convertEmojisToElements();
+      } while (hasChanges);
+
+      await Promise.resolve();
+
+      hasChanges = false;
+      do {
+         hasChanges = convertEmojisToSlugs();
+      } while (hasChanges);
    }
 
    return { decorate, editor, renderElement, renderLeaf, handleEditorOnChange };

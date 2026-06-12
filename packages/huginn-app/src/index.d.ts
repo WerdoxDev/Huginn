@@ -29,8 +29,8 @@ type CodeElement = {
    language?: string;
 };
 
-type InlineCodeElement = {
-   type: "code_inline";
+type CodespanElement = {
+   type: "codespan";
    children: Descendant[];
 };
 
@@ -60,6 +60,7 @@ export type EmojiElement = {
    type: "emoji";
    slug: string;
    emoji: string;
+   big?: boolean;
    children: Descendant[];
 };
 
@@ -80,7 +81,7 @@ type CustomElement =
    | LinkElement
    | CodeElement
    | AttachmentElement
-   | InlineCodeElement
+   | CodespanElement
    | EmojiElement
    | ListElement
    | ListItemElement;
@@ -93,7 +94,7 @@ type TextFormats = {
    spoiler?: boolean;
    link?: boolean;
    strikethrough?: boolean;
-   inlineCode?: boolean;
+   codespan?: boolean;
    codeToken?: string | boolean;
    codeLanguage?: boolean;
    list?: boolean;

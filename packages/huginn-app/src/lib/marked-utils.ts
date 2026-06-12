@@ -20,15 +20,18 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
 
    function pushRange(
       type: string,
-      mark: string | null,
-      line: number,
-      start: number,
-      end: number,
-      raw: string,
-      code?: { lang?: string; tokens?: Array<MarkedCodeToken> },
-      link?: { href: string },
-      list?: { ordered: boolean; index: number; total: number },
-      emoji?: { slug: string; emoji: string; initial: "slug" | "emoji" },
+      options: {
+         mark: string | null;
+         line: number;
+         start: number;
+         end: number;
+         raw: string;
+         text?: string;
+         code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
+         link?: { href: string };
+         list?: { ordered: boolean; index: number; total: number };
+         emoji?: { slug: string; emoji: string; initial: "slug" | "emoji" };
+      },
    ) {
       // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);
       // if (existing) {
@@ -36,7 +39,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
       //    existing.mark = mark;
       //    return;
       // }
-      ranges.push({ type, mark, line, start, end, raw, code, link, list, emoji });
+      ranges.push({ type, ...options });
    }
 
    function handleCodeBlock(token: Tokens.Code, lineIndex: number) {
@@ -53,14 +56,18 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          const raw = trimmed[i];
 
          if (i === 0) {
-            pushRange("code-fence-open", fence, lineIndex, 0, raw.length, raw, { lang: token.lang });
+            pushRange("code-fence-open", { mark: fence, line: lineIndex, start: 0, end: raw.length, raw, code: { lang: token.lang } });
          } else if (raw.startsWith(fence)) {
-            pushRange("code-fence-close", fence, lineIndex, 0, raw.length, raw);
+            pushRange("code-fence-close", { mark: fence, line: lineIndex, start: 0, end: raw.length, raw });
             hasFenceClose = true;
          } else {
-            pushRange("code-line", null, lineIndex, 0, raw.length, raw, {
-               lang: token.lang,
-               tokens: codeTokens.filter((t) => t.line === codeLineIndex),
+            pushRange("code-line", {
+               mark: null,
+               line: lineIndex,
+               start: 0,
+               end: raw.length,
+               raw,
+               code: { lang: token.lang, tokens: codeTokens.filter((t) => t.line === codeLineIndex) },
             });
             codeLineIndex++;
          }
@@ -69,7 +76,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
       }
 
       if (!hasFenceClose) {
-         pushRange("code-fence-close", fence, lineIndex, 0, fence.length, fence);
+         pushRange("code-fence-close", { mark: fence, line: lineIndex, start: 0, end: fence.length, raw: fence });
          lineIndex += 1;
       }
 
@@ -84,7 +91,14 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
 
          // Emit the list-item-open marker so the renderer knows a new item starts
          const marker = token.ordered ? `${(token.start as string) + i}.` : "-";
-         pushRange("list-item", marker, lineIndex, 0, item.raw.length, item.raw, undefined, undefined, { ordered: token.ordered, index: i, total });
+         pushRange("list-item", {
+            mark: marker,
+            line: lineIndex,
+            start: 0,
+            end: item.raw.length,
+            raw: item.raw,
+            list: { ordered: token.ordered, index: i, total },
+         });
 
          // Walk the item's inline tokens at offset = marker width + space (e.g. "- " or "1. ")
          const prefixLength = marker.length + 1;
@@ -107,7 +121,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
             for (let i = 0; i < parts.length; i++) {
                const part = parts[i];
                if (part.length > 0) {
-                  pushRange("text", null, lineIndex, offset, offset + part.length, part);
+                  pushRange("text", { mark: null, line: lineIndex, start: offset, end: offset + part.length, raw: part });
                   offset += part.length;
                   // }
                }
@@ -120,15 +134,27 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          }
 
          if (token.type === "link") {
-            pushRange("link", " ", lineIndex, offset, offset + token.raw.length, token.raw, undefined, { href: token.href });
-         } else if (token.type === "emoji") {
-            pushRange("emoji", null, lineIndex, offset, offset + token.raw.length, token.raw, undefined, undefined, undefined, {
-               slug: token.slug,
-               emoji: token.emoji,
-               initial: token.initial,
+            pushRange("link", {
+               mark: " ",
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               link: { href: token.href },
             });
+         } else if (token.type === "emoji") {
+            pushRange("emoji", {
+               mark: null,
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               emoji: { slug: token.slug, emoji: token.emoji, initial: token.initial },
+            });
+         } else if (token.type === "codespan") {
+            pushRange("codespan", { mark: null, text: token.text, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
          } else {
-            pushRange(token.type, mark, lineIndex, offset, offset + token.raw.length, token.raw);
+            pushRange(token.type, { mark, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
          }
 
          if ("tokens" in token && token.tokens) {
