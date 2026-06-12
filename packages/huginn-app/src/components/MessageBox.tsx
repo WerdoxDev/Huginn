@@ -50,7 +50,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
-      onEmojiPanelOpenChanged,
       currentEditingMessageId,
       currentReplyingMessageId,
       channelId,
@@ -143,7 +142,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
                <div className="ml-2 flex h-8 gap-x-2 p-2">
                   <div className="bg-surface h-8 w-8 rounded-full" />
-                  <EmojiPickerPopover onEmojiSelect={insertEmoji} onOpenChange={onEmojiPanelOpenChanged} />
+                  <EmojiPickerPopover onEmojiSelect={insertEmoji} />
                   {/* <HuginnButton
                      color="primary"
                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"

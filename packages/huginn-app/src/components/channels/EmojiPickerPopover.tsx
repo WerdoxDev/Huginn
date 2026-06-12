@@ -1,18 +1,19 @@
 import type { Range } from "@tanstack/react-virtual";
 
 import HuginnButton from "@components/button/HuginnButton";
+import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnInput from "@components/input/HuginnInput";
 import HuginnPopover from "@components/popover/HuginnPopover";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { getEmojiId } from "@huginn/shared";
+import { getEmojiFromHexcode, getEmojiId, getEmojis } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
-import emojiData from "emojibase-data/en/compact.json";
 import emojiMessagesData from "emojibase-data/en/messages.json";
-import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json";
 import emojiMeta from "emojibase-data/meta/groups.json";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import type { SelectItem } from "@/types";
 
 import emojiMap from "@/assets/emoji-map.json";
 import emojiSheet from "@/assets/emoji-sheet.png";
@@ -85,6 +86,39 @@ const groupNames: Record<number, string> = Object.fromEntries(
    Object.entries(emojiMeta.groups).map(([id, key]) => [Number(id), emojiMessagesData.groups[Number(id)].message ?? key]),
 );
 
+const toneOptions: SelectItem<number>[] = [
+   {
+      text: "",
+      icon: <Emoji emoji="👋" size={20} />,
+      value: 0,
+   },
+   {
+      text: "",
+      icon: <Emoji emoji="👋🏻" size={20} />,
+      value: 1,
+   },
+   {
+      text: "",
+      icon: <Emoji emoji="👋🏼" size={20} />,
+      value: 2,
+   },
+   {
+      text: "",
+      icon: <Emoji emoji="👋🏽" size={20} />,
+      value: 3,
+   },
+   {
+      text: "",
+      icon: <Emoji emoji="👋🏾" size={20} />,
+      value: 4,
+   },
+   {
+      text: "",
+      icon: <Emoji emoji="👋🏿" size={20} />,
+      value: 5,
+   },
+];
+
 function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: string) => void }) {
    const { register, values } = useHuginnForm<Input>();
    const parentRef = useRef<HTMLDivElement>(null);
@@ -92,37 +126,27 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
    const activeStickyIndexRef = useRef(0);
    const [activeGroupId, setActiveGroupId] = useState<number | null>(0);
    const [recentEmojiIds, setRecentEmojiIds] = useState(getRecentEmojis());
+   const [selectedTone, setSelectedTone] = useState<SelectItem<number>>(toneOptions[0]);
 
    const groupedEmojis = useMemo(() => {
       const groups: Record<number, NormalizedEmoji[]> = {};
       if (recentEmojiIds.length > 0) groups[RECENT_GROUP_ID] = [];
       if (groups[RECENT_GROUP_ID]) {
          for (const hexcode of recentEmojiIds) {
-            const emoji = emojiData.find((e) => e.hexcode === hexcode);
+            const emoji = getEmojiFromHexcode(hexcode);
             if (!emoji) continue;
-            groups[RECENT_GROUP_ID].push({
-               slugs: Array.isArray(emojiShortcodes[emoji.hexcode])
-                  ? (emojiShortcodes[emoji.hexcode] as string[]).map((s) => `:${s}:`)
-                  : [`:${emojiShortcodes[emoji.hexcode]}:` as string],
-               emoji: emoji.unicode,
-               hexcode: emoji.hexcode,
-            });
+            groups[RECENT_GROUP_ID].push(emoji);
          }
       }
 
-      for (const emoji of emojiData) {
-         if (emoji.group === undefined) emoji.group = Object.keys(groupNames).length;
-         const slugs: string[] = Array.isArray(emojiShortcodes[emoji.hexcode])
-            ? (emojiShortcodes[emoji.hexcode] as string[]).map((s) => `:${s}:`)
-            : [`:${emojiShortcodes[emoji.hexcode]}:` as string];
-         const normalized: NormalizedEmoji = { slugs, emoji: emoji.unicode, hexcode: emoji.hexcode };
+      for (const emoji of getEmojis().filter((x) => x.skinTone === selectedTone.value || x.skinTone === null)) {
          const group = groups[emoji.group];
-         if (group) group.push(normalized);
-         else groups[emoji.group] = [normalized];
+         if (group) group.push(emoji);
+         else groups[emoji.group] = [emoji];
       }
 
       return groups;
-   }, [recentEmojiIds]);
+   }, [recentEmojiIds, selectedTone]);
 
    const allRows = useMemo<VirtualRow[]>(() => {
       const result: VirtualRow[] = [];
@@ -141,9 +165,12 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
       const query = values.search?.trim().toLowerCase();
       if (!query) return allRows;
 
-      const matched = Object.values(groupedEmojis)
-         .flat()
+      const matched = Object.entries(groupedEmojis)
+         .filter((x) => Number(x[0]) !== RECENT_GROUP_ID)
+         .flatMap(([, emojis]) => emojis)
          .filter((e) => e.slugs.some((slug) => slug.includes(query)));
+
+      // ;
 
       if (matched.length === 0) return [];
 
@@ -171,7 +198,7 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
             .toSorted(([a], [b]) => Number(a) - Number(b))
             .map(([groupId, emojis]) => ({
                groupId: Number(groupId),
-               emoji: emojis[0].emoji,
+               emoji: emojis[0]?.emoji,
                name: getGroupName(Number(groupId)),
             })),
       [groupedEmojis],
@@ -240,13 +267,29 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
 
    return (
       <div className="flex flex-col overflow-hidden">
-         <div className="p-1">
-            <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")}>
+         <div className="flex w-full items-center gap-x-1 p-1">
+            {/* <div className=""> */}
+            <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
                <HuginnInput.Wrapper>
                   <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
                   <HuginnInput.Input />
                </HuginnInput.Wrapper>
             </HuginnInput>
+            <HuginnSelect selected={selectedTone} onChange={setSelectedTone} className="w-max">
+               <HuginnSelect.List
+                  hideArrow
+                  className="flex h-10 w-10! items-center justify-center rounded-md!"
+                  triggerClassName="h-full justify-center"
+               >
+                  <HuginnSelect.ItemsWrapper className="rounded-md!">
+                     {toneOptions.map((x) => (
+                        <HuginnSelect.Item key={x.value} item={x} hideSelected className="size-10 justify-center" />
+                     ))}
+                     {/* <HuginnSelect.Item value={{ text: "All Emojis", value: "all" }} /> */}
+                  </HuginnSelect.ItemsWrapper>
+               </HuginnSelect.List>
+            </HuginnSelect>
+            {/* </div> */}
          </div>
          <div className="bg-surface h-px shrink-0" />
          {/* {rows.length !== 0 ? ( */}

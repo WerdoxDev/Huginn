@@ -41,6 +41,7 @@ export const CONSTANTS = {
    AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
    BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
    BIO_MAX_LENGTH: 190,
+   MAX_BIG_EMOJI_COUNT: 20,
    // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
 };
 

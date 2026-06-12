@@ -19,7 +19,7 @@ export default function EditorLeaf(props: RenderLeafProps) {
       props.leaf.link ||
       props.leaf.codeToken ||
       props.leaf.codeLanguage ||
-      props.leaf.inlineCode ||
+      props.leaf.codespan ||
       props.leaf.strikethrough
    ) {
       return (
@@ -30,7 +30,7 @@ export default function EditorLeaf(props: RenderLeafProps) {
                props.leaf.underline && "underline",
                props.leaf.spoiler && "rounded-sm bg-white/20 px-0.5",
                props.leaf.strikethrough && "line-through",
-               props.leaf.inlineCode && "bg-surface font-ubuntu rounded-sm px-0.5 py-0.5",
+               props.leaf.codespan && "bg-surface font-ubuntu rounded-sm px-0.5 py-0.5",
                props.leaf.link && "text-primary-500",
                props.leaf.codeToken,
                props.leaf.codeToken && "font-ubuntu text-sm",
@@ -43,5 +43,6 @@ export default function EditorLeaf(props: RenderLeafProps) {
          </span>
       );
    }
+
    return <span {...props.attributes}>{props.children}</span>;
 }

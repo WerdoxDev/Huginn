@@ -3,6 +3,7 @@ import type { MediaKind } from "mediasoup/types";
 // import emojis from "unicode-emoji-json/data-by-emoji.json" with { type: "json" };
 import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
 import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };
+import emojiMeta from "emojibase-data/meta/groups.json" with { type: "json" };
 import { hash } from "ohash";
 
 import type { GatewayOperationTypes } from "./gateway-types";
@@ -470,18 +471,74 @@ export function getEmojiId(emoji: string): string {
    return codePoints.join("-");
 }
 
+export type NormalizedEmoji = { group: number; slugs: string[]; emoji: string; hexcode: string; skinTone: number | null };
+
+const slugToEmoji = new Map<string, string>();
+const emojiToSlugs = new Map<string, string[]>();
+const hexcodeToEmoji = new Map<string, string>();
+const normalizedEmojis = new Map<string, NormalizedEmoji>();
+
+const emojiGroupCount = Object.keys(emojiMeta.groups).length;
+
+const flatEmojiData = emojiData.reduce<typeof emojiData>((acc, emojiInfo) => {
+   if (emojiInfo.skins) {
+      acc.push(...emojiInfo.skins);
+   }
+   acc.push(emojiInfo);
+
+   return acc;
+}, []);
+
+for (const [hexcode, slugs] of Object.entries(emojiShortcodes)) {
+   const unicode = flatEmojiData.find((x) => x.hexcode === hexcode)?.unicode;
+   if (!unicode) continue;
+
+   const slugArray = Array.isArray(slugs) ? slugs.map((s) => `:${s}:`) : [`:${slugs}:`];
+   emojiToSlugs.set(unicode, slugArray);
+   for (const slug of slugArray) {
+      slugToEmoji.set(slug, unicode);
+   }
+   hexcodeToEmoji.set(hexcode, unicode);
+}
+
+for (const emojiInfo of emojiData) {
+   if (emojiInfo.skins) {
+      for (let i = 0; i < emojiInfo.skins.length; i++) {
+         const entry = emojiInfo.skins[i];
+         const emoji = entry.unicode;
+         const slugs = emojiToSlugs.get(emoji) || [];
+         normalizedEmojis.set(emoji, {
+            group: emojiInfo.group ?? emojiGroupCount,
+            slugs: slugs,
+            emoji: emoji,
+            hexcode: entry.hexcode,
+            skinTone: i + 1,
+         });
+      }
+   }
+
+   normalizedEmojis.set(emojiInfo.unicode, {
+      group: emojiInfo.group ?? emojiGroupCount,
+      slugs: emojiToSlugs.get(emojiInfo.unicode) || [],
+      emoji: emojiInfo.unicode,
+      hexcode: emojiInfo.hexcode,
+      skinTone: emojiInfo.skins ? 0 : null,
+   });
+}
+
 export function getEmojiFromSlug(slug: string): string | undefined {
-   const hexcode = Object.entries(emojiShortcodes).find(([, slugs]) =>
-      Array.isArray(slugs) ? slugs.some((s: string) => s.includes(slug)) : slugs.includes(slug),
-   )?.[0];
-   const emoji = emojiData.find((x) => x.hexcode === hexcode)?.unicode;
-   return emoji;
+   return slugToEmoji.get(slug);
 }
 
 export function getSlugsFromEmoji(emoji: string): string[] | undefined {
-   const hexcode = emojiData.find((x) => x.unicode === emoji)?.hexcode;
-   if (!hexcode) return undefined;
+   return emojiToSlugs.get(emoji);
+}
 
-   const slugs = emojiShortcodes[hexcode];
-   return slugs && Array.isArray(slugs) ? slugs : [slugs];
+export function getEmojiFromHexcode(hexcode: string): NormalizedEmoji | undefined {
+   const emoji = hexcodeToEmoji.get(hexcode);
+   return emoji ? normalizedEmojis.get(emoji) : undefined;
+}
+
+export function getEmojis(): NormalizedEmoji[] {
+   return Array.from(normalizedEmojis.values());
 }
