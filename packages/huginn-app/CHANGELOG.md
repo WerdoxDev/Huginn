@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.74.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.1...app@v0.74.0) (2026-06-12)
+
+
+### Features
+
+* **app:** way better emoji picker with better performance + better emoji list + local emoji assets ([5bb00fe](https://github.com/WerdoxDev/Huginn/commit/5bb00fe143d8ddfc7fb33624976c20a4f9241cb6))
+
+
+### Bug Fixes
+
+* **app:** lots emoji picker fixes and improvements ([19738c5](https://github.com/WerdoxDev/Huginn/commit/19738c5641369d4e2606e914210779bafa37b0b3))
+
 ## [0.73.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.0...app@v0.73.1) (2026-06-10)
 
 
