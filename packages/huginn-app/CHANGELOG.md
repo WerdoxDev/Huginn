@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.74.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.0...app@v0.74.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **app:** add vercel rewrites ([2142362](https://github.com/WerdoxDev/Huginn/commit/2142362082bddba7380a23bf357eb1799f1c0f9e))
+* **app:** much better emoji picker design ([b138505](https://github.com/WerdoxDev/Huginn/commit/b1385051a9c9d236bf0b74f8835676cc93508861))
+
 ## [0.74.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.1...app@v0.74.0) (2026-06-12)
 
 

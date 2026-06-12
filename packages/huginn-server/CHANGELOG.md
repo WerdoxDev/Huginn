@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.38.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.0...server@v0.38.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **cdn:** cache storage wrong time ([46f2ebb](https://github.com/WerdoxDev/Huginn/commit/46f2ebb7638bca3fcd424dbb7909c1f2d7037822))
+* **server:** cache storage wrong time ([368cff1](https://github.com/WerdoxDev/Huginn/commit/368cff17e6b0841f3b1d3fb5096881cb224d4b5a))
+
 ## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.37.0...server@v0.38.0) (2026-06-10)
 
 
