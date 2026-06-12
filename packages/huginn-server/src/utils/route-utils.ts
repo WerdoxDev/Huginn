@@ -34,7 +34,7 @@ export function getAppPackageVersion(tagName: string) {
    return tagName.replace("app@", "");
 }
 
-const allReleasesCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
+const allReleasesCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>(60 * 60); // Cache for 1 hour
 
 export async function getAllAppReleases() {
    const releases = await allReleasesCache.cacheOrGet("releases", async () => {
@@ -46,7 +46,7 @@ export async function getAllAppReleases() {
    return releases;
 }
 
-const tagsCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/tags"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
+const tagsCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/tags"]["response"]["data"]>(60 * 60); // Cache for 1 hour
 
 export async function getAllTags() {
    let page = 1;
@@ -75,7 +75,7 @@ export async function getAllTags() {
    return allTags;
 }
 
-const releaseCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases/tags/{tag}"]["response"]["data"]>(1000 * 60 * 60); // Cache for 1 hour
+const releaseCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{repo}/releases/tags/{tag}"]["response"]["data"]>(60 * 60); // Cache for 1 hour
 
 export async function getReleaseByTag(tag: string) {
    const release = await releaseCache.cacheOrGet(tag, async () => {
