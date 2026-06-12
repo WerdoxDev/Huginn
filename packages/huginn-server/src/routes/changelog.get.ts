@@ -1,9 +1,10 @@
 import type { PageObjectResponse } from "@notionhq/client";
 
-import { n2m, notion } from "#setup";
 import { CacheStorage, type APIGetChangelogResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 import * as semver from "semver";
+
+import { n2m, notion } from "#setup";
 
 function coerceVersion(value?: string | null) {
    return semver.coerce(value ?? "")?.version ?? null;
@@ -40,7 +41,7 @@ function getEntryDate(entry: PageObjectResponse) {
 
 const querySchema = t.Object({ since: t.Optional(t.String()), current: t.String() });
 
-const contentCache = new CacheStorage<string, string>(60 * 60 * 1000); // Cache for 1 hour
+const contentCache = new CacheStorage<string, string>(60 * 60); // Cache for 1 hour
 
 export const getChangelog = new Elysia().get(
    "/api/changelog",
