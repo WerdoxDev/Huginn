@@ -6,12 +6,12 @@ import HuginnInput from "@components/input/HuginnInput";
 import HuginnPopover from "@components/popover/HuginnPopover";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { getEmojiFromHexcode, getEmojiId, getEmojis } from "@huginn/shared";
+import { getEmojiFromHexcode, getEmojiId, getEmojis, type NormalizedEmoji } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
 import emojiMessagesData from "emojibase-data/en/messages.json";
 import emojiMeta from "emojibase-data/meta/groups.json";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { SelectItem } from "@/types";
 
@@ -19,50 +19,11 @@ import emojiMap from "@/assets/emoji-map.json";
 import emojiSheet from "@/assets/emoji-sheet.png";
 
 const PICKER_WIDTH = 340;
-const CATEGORIES_WIDTH = 52;
-const HORIZONTAL_GAP = 1;
+const VERTICAL_GAP = 1;
 const RECENT_MAX = 32;
 const RECENT_GROUP_ID = -1;
 
 const RECENT_EMOJIS_KEY = "recent-emojis";
-
-function getRecentEmojis(): string[] {
-   const recent = JSON.parse(localStorage.getItem(RECENT_EMOJIS_KEY) ?? "[]") as string[];
-   return recent;
-}
-
-function saveRecentEmoji(hexcode: string) {
-   const prev = getRecentEmojis();
-   const next = [hexcode, ...prev.filter((h) => h !== hexcode)].slice(0, RECENT_MAX);
-   localStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(next));
-}
-
-export default function EmojiPickerPopover(props: { onEmojiSelect?: (emoji: string) => void; onOpenChange?: (open: boolean) => void }) {
-   const [isOpen, setIsOpen] = useState(false);
-
-   function handleOpenChange(open: boolean) {
-      setIsOpen(open);
-      props.onOpenChange?.(open);
-   }
-
-   return (
-      <HuginnPopover onOpenChange={handleOpenChange} open={isOpen}>
-         <HuginnPopover.Trigger asChild>
-            <HuginnButton
-               color="primary"
-               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
-               type="button"
-               // onClick={() => sendMessage(MessageFlags.NONE)}
-            >
-               <IconMingcuteEmoji2Fill className="text-text size-5" />
-            </HuginnButton>
-         </HuginnPopover.Trigger>
-         <HuginnPopover.Panel sideGap={10} className="bg-surface flex max-h-100 flex-col overflow-hidden rounded-lg pr-0">
-            <EmojiPickerPanel isOpen={isOpen} onEmojiSelect={props.onEmojiSelect} />
-         </HuginnPopover.Panel>
-      </HuginnPopover>
-   );
-}
 
 type HeaderRow = {
    type: "header";
@@ -76,11 +37,29 @@ type EmojiRow = {
 };
 
 type VirtualRow = HeaderRow | EmojiRow;
-type NormalizedEmoji = { slugs: string[]; emoji: string; hexcode: string };
 
 type Input = {
    search: string;
 };
+
+function getRecentEmojis(): string[] {
+   const recent = JSON.parse(localStorage.getItem(RECENT_EMOJIS_KEY) ?? "[]") as string[];
+   return recent;
+}
+
+function saveRecentEmoji(hexcode: string) {
+   const prev = getRecentEmojis();
+   const next = [hexcode, ...prev.filter((h) => h !== hexcode)].slice(0, RECENT_MAX);
+   localStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(next));
+}
+
+function getGroupName(groupId: number) {
+   if (groupId === RECENT_GROUP_ID) return "Recently Used";
+   return (groupNames[groupId] ?? "misc")
+      .split(" ")
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(" ");
+}
 
 const groupNames: Record<number, string> = Object.fromEntries(
    Object.entries(emojiMeta.groups).map(([id, key]) => [Number(id), emojiMessagesData.groups[Number(id)].message ?? key]),
@@ -89,35 +68,70 @@ const groupNames: Record<number, string> = Object.fromEntries(
 const toneOptions: SelectItem<number>[] = [
    {
       text: "",
-      icon: <Emoji emoji="👋" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#F9DD72]" />,
       value: 0,
    },
    {
       text: "",
-      icon: <Emoji emoji="👋🏻" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#F3DFD0]" />,
       value: 1,
    },
    {
       text: "",
-      icon: <Emoji emoji="👋🏼" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#EED3A8]" />,
       value: 2,
    },
    {
       text: "",
-      icon: <Emoji emoji="👋🏽" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#CEAD8C]" />,
       value: 3,
    },
    {
       text: "",
-      icon: <Emoji emoji="👋🏾" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#A8805D]" />,
       value: 4,
    },
    {
       text: "",
-      icon: <Emoji emoji="👋🏿" size={20} />,
+      icon: <div className="size-6 rounded-md bg-[#765541]" />,
       value: 5,
    },
 ];
+
+const groupIcons: Record<number, ReactNode> = {
+   [RECENT_GROUP_ID]: <IconMingcuteHistoryAnticlockwiseFill className="size-6" />,
+   0: <IconMingcuteEmoji2Fill className="size-6" />,
+   1: <IconMingcuteWaveHandFill className="size-6" />,
+   3: <IconMingcuteCatFill className="size-6" />,
+   4: <IconMingcuteForkFill className="size-6" />,
+   5: <IconMingcuteAirplaneFill className="size-6" />,
+   6: <IconMingcuteBasketballFill className="size-6" />,
+   7: <IconMingcuteHat2Fill className="size-6" />,
+   8: <IconMingcuteDiamondSquareFill className="size-6" />,
+   9: <IconMingcuteFlag4Fill className="size-6" />,
+};
+
+export default function EmojiPickerPopover(props: { onEmojiSelect?: (emoji: string) => void; onOpenChange?: (open: boolean) => void }) {
+   const [isOpen, setIsOpen] = useState(false);
+
+   function handleOpenChange(open: boolean) {
+      setIsOpen(open);
+      props.onOpenChange?.(open);
+   }
+
+   return (
+      <HuginnPopover onOpenChange={handleOpenChange} open={isOpen}>
+         <HuginnPopover.Trigger asChild>
+            <HuginnButton color="primary" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!" type="button">
+               <IconMingcuteEmoji2Fill className="text-text size-5" />
+            </HuginnButton>
+         </HuginnPopover.Trigger>
+         <HuginnPopover.Panel sideGap={10} className="bg-surface flex max-h-120 flex-col overflow-hidden rounded-lg pr-0">
+            <EmojiPickerPanel isOpen={isOpen} onEmojiSelect={props.onEmojiSelect} />
+         </HuginnPopover.Panel>
+      </HuginnPopover>
+   );
+}
 
 function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: string) => void }) {
    const { register, values } = useHuginnForm<Input>();
@@ -130,19 +144,20 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
 
    const groupedEmojis = useMemo(() => {
       const groups: Record<number, NormalizedEmoji[]> = {};
-      if (recentEmojiIds.length > 0) groups[RECENT_GROUP_ID] = [];
-      if (groups[RECENT_GROUP_ID]) {
-         for (const hexcode of recentEmojiIds) {
+
+      if (recentEmojiIds.length > 0) {
+         groups[RECENT_GROUP_ID] = recentEmojiIds.flatMap((hexcode) => {
             const emoji = getEmojiFromHexcode(hexcode);
-            if (!emoji) continue;
-            groups[RECENT_GROUP_ID].push(emoji);
-         }
+            return emoji ? [{ ...emoji, group: RECENT_GROUP_ID }] : [];
+         });
       }
 
-      for (const emoji of getEmojis().filter((x) => x.skinTone === selectedTone.value || x.skinTone === null)) {
-         const group = groups[emoji.group];
-         if (group) group.push(emoji);
-         else groups[emoji.group] = [emoji];
+      for (const emoji of getEmojis()) {
+         if (emoji.skinTone !== selectedTone.value && emoji.skinTone !== null) continue;
+         // Put the indicators in "Symbols" and exclude "Components"
+         const group = emoji.group === undefined ? 8 : emoji.group === 2 ? undefined : emoji.group;
+         if (group === undefined) continue;
+         (groups[group] ??= []).push(emoji);
       }
 
       return groups;
@@ -150,61 +165,50 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
 
    const allRows = useMemo<VirtualRow[]>(() => {
       const result: VirtualRow[] = [];
-
       for (const [groupId, emojis] of Object.entries(groupedEmojis).toSorted(([a], [b]) => Number(a) - Number(b))) {
-         const groupName = getGroupName(Number(groupId));
-         result.push({ type: "header", name: groupName, groupId: Number(groupId) });
+         result.push({ type: "header", name: getGroupName(Number(groupId)), groupId: Number(groupId) });
          for (let i = 0; i < emojis.length; i += 8) {
             result.push({ type: "emojis", emojis: emojis.slice(i, i + 8) });
          }
       }
       return result;
-   }, [groupedEmojis, recentEmojiIds]);
+   }, [groupedEmojis]);
 
    const rows = useMemo<VirtualRow[]>(() => {
       const query = values.search?.trim().toLowerCase();
       if (!query) return allRows;
 
-      const matched = Object.entries(groupedEmojis)
-         .filter((x) => Number(x[0]) !== RECENT_GROUP_ID)
-         .flatMap(([, emojis]) => emojis)
-         .filter((e) => e.slugs.some((slug) => slug.includes(query)));
+      console.log(groupedEmojis);
 
-      // ;
-
-      if (matched.length === 0) return [];
+      const matched = Object.values(groupedEmojis)
+         .flat()
+         .filter((e) => e.group !== RECENT_GROUP_ID && e.slugs.some((slug) => slug.includes(query)));
 
       const result: VirtualRow[] = [];
       for (let i = 0; i < matched.length; i += 8) {
          result.push({ type: "emojis", emojis: matched.slice(i, i + 8) });
       }
-      return result;
+      return result.length > 0 ? result : [];
    }, [allRows, groupedEmojis, values.search]);
 
+   const stickyIndexes = useMemo(() => rows.flatMap((row, i) => (row.type === "header" ? [i] : [])), [rows]);
+   const stickyIndexSet = useMemo(() => new Set(stickyIndexes), [stickyIndexes]);
    const [lastHoveredEmoji, setLastHoveredEmoji] = useState<NormalizedEmoji | null>(rows.find((x) => x.type === "emojis")?.emojis[0] ?? null);
-   const stickyIndexes = useMemo(() => rows.reduce<number[]>((acc, row, i) => (row.type === "header" ? [...acc, i] : acc), []), [rows]);
 
-   const groupHeaderIndexMap = useMemo(() => {
-      const map: Record<number, number> = {};
-      rows.forEach((row, i) => {
-         if (row.type === "header") map[row.groupId] = i;
-      });
-      return map;
-   }, [rows]);
+   const groupHeaderIndexMap = useMemo(() => Object.fromEntries(rows.flatMap((row, i) => (row.type === "header" ? [[row.groupId, i]] : []))), [rows]);
 
    const groupRepresentatives = useMemo(
       () =>
-         Object.entries(groupedEmojis)
-            .toSorted(([a], [b]) => Number(a) - Number(b))
-            .map(([groupId, emojis]) => ({
+         Object.keys(groupedEmojis)
+            .toSorted((a, b) => Number(a) - Number(b))
+            .map((groupId) => ({
                groupId: Number(groupId),
-               emoji: emojis[0]?.emoji,
                name: getGroupName(Number(groupId)),
             })),
       [groupedEmojis],
    );
 
-   const isSticky = (index?: number) => index !== undefined && stickyIndexes.includes(index);
+   const isSticky = (index?: number) => index !== undefined && stickyIndexSet.has(index);
    const isActiveSticky = (index?: number) => activeStickyIndexRef.current === index;
 
    const virtualizer = useVirtualizer({
@@ -226,19 +230,11 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
       ),
    });
 
-   function getGroupName(groupId: number) {
-      if (groupId === RECENT_GROUP_ID) return "Recently Used";
-      return (groupNames[groupId] ?? "misc")
-         .split(" ")
-         .map((word) => word[0].toUpperCase() + word.slice(1))
-         .join(" ");
-   }
-
    function handleCategoryClick(groupId: number) {
       const headerIndex = groupHeaderIndexMap[groupId];
       if (headerIndex === undefined) return;
       setActiveGroupId(groupId);
-      virtualizer.scrollToIndex(headerIndex, { align: "start" });
+      virtualizer.scrollToIndex(headerIndex, { align: "start", behavior: "instant" });
    }
 
    function handleEmojiClick(emoji: NormalizedEmoji) {
@@ -261,14 +257,13 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
    useEffect(() => {
       if (!categoryScrollRef.current) return;
       const activeCategoryButton = categoryScrollRef.current.querySelector<HTMLButtonElement>(`[data-group-id="${activeGroupId}"]`);
-      activeCategoryButton?.scrollIntoView({ block: "center", behavior: "smooth" });
+      activeCategoryButton?.scrollIntoView({ inline: "center", behavior: "smooth" });
       if (!activeCategoryButton) return;
    }, [activeGroupId]);
 
    return (
       <div className="flex flex-col overflow-hidden">
-         <div className="flex w-full items-center gap-x-1 p-1">
-            {/* <div className=""> */}
+         <div className="flex w-full items-center gap-x-2 p-2">
             <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
                <HuginnInput.Wrapper>
                   <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
@@ -285,46 +280,45 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
                      {toneOptions.map((x) => (
                         <HuginnSelect.Item key={x.value} item={x} hideSelected className="size-10 justify-center" />
                      ))}
-                     {/* <HuginnSelect.Item value={{ text: "All Emojis", value: "all" }} /> */}
                   </HuginnSelect.ItemsWrapper>
                </HuginnSelect.List>
             </HuginnSelect>
-            {/* </div> */}
          </div>
          <div className="bg-surface h-px shrink-0" />
-         {/* {rows.length !== 0 ? ( */}
-         <div className="flex overflow-hidden">
+         <div className="flex flex-col overflow-hidden">
             <div
-               className="scroll-hidden flex shrink-0 flex-col gap-y-1 overflow-x-hidden overflow-y-auto px-2 py-2"
+               className="scroll-hidden flex h-13 w-full shrink-0 gap-x-1 overflow-x-auto overflow-y-hidden px-2 py-2"
                ref={categoryScrollRef}
-               style={{ width: CATEGORIES_WIDTH }}
+               style={{ width: PICKER_WIDTH }}
             >
-               {groupRepresentatives.map(({ groupId, emoji, name }) => (
+               {groupRepresentatives.map(({ groupId, name }) => (
                   <Tooltip key={groupId}>
                      <Tooltip.Trigger
                         onClick={() => handleCategoryClick(groupId)}
                         data-group-id={groupId}
                         className={clsx(
-                           "flex size-9 w-full shrink-0 cursor-pointer items-center justify-center rounded-md transition-[opacity_color]",
+                           "relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition-all",
                            activeGroupId === groupId
                               ? "bg-surface text-white opacity-100"
-                              : "text-text/60 hover:bg-surface/60 opacity-60 hover:text-white hover:opacity-100",
+                              : "text-text/60 hover:bg-surface/60 opacity-60 hover:-translate-y-0.5 hover:text-white hover:opacity-100",
                         )}
                      >
-                        {groupId === RECENT_GROUP_ID ? (
-                           <IconMingcuteHistoryAnticlockwiseLine className="size-6" />
-                        ) : (
-                           <Emoji emoji={emoji} size={26} />
-                        )}
+                        {groupIcons[groupId]}
+                        <div
+                           className={clsx(
+                              "absolute -bottom-1 h-0.5 w-3 rounded-full transition-colors",
+                              activeGroupId === groupId ? "bg-text" : "bg-transparent",
+                           )}
+                        />
                      </Tooltip.Trigger>
-                     <Tooltip.Content side="right">{name}</Tooltip.Content>
+                     <Tooltip.Content side="bottom">{name}</Tooltip.Content>
                   </Tooltip>
                ))}
             </div>
-            <div className="bg-surface shrink-0" style={{ width: HORIZONTAL_GAP }} />
+            <div className="bg-surface w-full shrink-0" style={{ height: VERTICAL_GAP }} />
             {rows.length > 0 ? (
-               <div className="flex w-full flex-col" style={{ width: PICKER_WIDTH }}>
-                  <div ref={parentRef} className="scroll-thin relative h-full w-full overflow-x-hidden overflow-y-scroll pb-2.5 pl-2.5 select-none">
+               <div className="flex flex-col overflow-hidden" style={{ width: PICKER_WIDTH }}>
+                  <div ref={parentRef} className="scroll-thin relative h-full overflow-x-hidden overflow-y-scroll pb-2.5 pl-2.5 select-none">
                      <div style={{ height: virtualizer.getTotalSize() }} className={clsx("relative w-full", values.search && "first:mt-2.5")}>
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                            if (!virtualItem) return null;
@@ -347,7 +341,11 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
                                  }}
                               >
                                  {row.type === "header" ? (
-                                    <div className="bg-surface-deep pt-2.5 pb-2.5 text-sm font-bold text-white">{row.name}</div>
+                                    <div className="bg-surface-deep flex items-center gap-x-2 pt-2.5 pb-2.5 text-white">
+                                       {groupIcons[row.groupId]}
+                                       <div className="text-sm font-bold">{row.name}</div>
+                                       <div className="bg-surface ml-auto rounded-sm p-1 text-xs">{groupedEmojis[row.groupId].length}</div>
+                                    </div>
                                  ) : (
                                     <div className="grid grid-cols-8 place-items-center">
                                        {row.emojis.map((entry) => (
@@ -355,7 +353,7 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
                                              key={entry.hexcode}
                                              type="button"
                                              className={clsx(
-                                                "flex size-10 cursor-pointer items-center justify-center rounded-md",
+                                                "z-10 flex size-10 cursor-pointer items-center justify-center rounded-md transition-transform",
                                                 lastHoveredEmoji?.hexcode === entry.hexcode ? "bg-surface" : "",
                                              )}
                                              onClick={() => handleEmojiClick(entry)}
@@ -386,9 +384,6 @@ function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelect?: (emoji: str
                </div>
             )}
          </div>
-         {/* ) : ( */}
-
-         {/* )} */}
       </div>
    );
 }
@@ -399,7 +394,7 @@ function Emoji(props: { emoji: string; size: number }) {
    return <div style={{ ...styles, width: props.size, height: props.size }} className="shrink-0" />;
 }
 
-export function getEmojiSprite(id: string) {
+function getEmojiSprite(id: string) {
    const entry = emojiMap.emojis[id.toLowerCase() as keyof typeof emojiMap.emojis];
    if (!entry) return null;
 

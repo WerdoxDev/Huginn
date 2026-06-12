@@ -99,10 +99,10 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       let currentTokens: Array<{ start: number; end: number; type: string }> = [];
       let currentPath: number[] = [];
 
-      const canRenderBigEmoji =
+      const isBigEmoji =
          inlineTokens.every((t) => t.type === "emoji" || (t.type === "text" && /^\s*$/.test(t.raw))) &&
          inlineTokens.filter((t) => t.type === "emoji").length <= CONSTANTS.MAX_BIG_EMOJI_COUNT;
-      console.log(root, inlineTokens, canRenderBigEmoji);
+      console.log(root, inlineTokens, isBigEmoji);
 
       for (const token of inlineTokens) {
          const prevTokens = currentTokens;
@@ -121,7 +121,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          } else if (token.type === "emoji" && token.emoji) {
-            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, big: canRenderBigEmoji, children: [] });
+            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, big: isBigEmoji, children: [] });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);
