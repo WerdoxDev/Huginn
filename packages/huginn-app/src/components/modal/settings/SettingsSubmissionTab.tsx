@@ -90,8 +90,6 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
 
       if (!application) return;
 
-      console.log(application.processId, huginnWindow.processId);
-
       if (application.processId === huginnWindow.processId) {
          updateModals({ info: { isOpen: true, title: "WHAT?!", text: <img src={huginnInHuginnUrl} />, status: "info" } });
          return;

@@ -58,7 +58,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
    const { user } = useThisUser();
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
    const posthog = usePostHog();
-   const shouldFocusEditor = useRef(true);
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -450,7 +449,6 @@ export function useMessageBoxActions({ editor, decorate, messages, attachments, 
       for (const line of lines) {
          if (lineIndex !== 0) editor.insertNode({ type: "paragraph", children: [{ text: "" }] });
          editor.insertText(line);
-         console.log(line);
          lineIndex++;
       }
 

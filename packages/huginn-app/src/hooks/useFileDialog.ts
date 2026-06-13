@@ -14,7 +14,6 @@ export function useFileDialog(accept: keyof typeof accepts) {
       return new Promise((resolve) => {
          const input = document.createElement("input");
          input.type = "file";
-         console.log(accepts[accept]);
          input.accept = accepts[accept];
 
          input.onchange = (e) => {

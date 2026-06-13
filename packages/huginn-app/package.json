@@ -38,6 +38,7 @@
       "@capacitor/android": "^8.3.4",
       "@capacitor/app": "^8.1.0",
       "@capacitor/core": "^8.3.4",
+      "@capacitor/keyboard": "^8.0.3",
       "@chenglou/pretext": "^0.0.7",
       "@headlessui/react": "^2.2.9",
       "@huginn/api": "workspace:*",

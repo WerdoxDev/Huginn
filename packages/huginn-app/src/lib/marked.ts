@@ -48,10 +48,10 @@ const underlineExtension: TokenizerExtension = {
 };
 
 const EMOJI_PICTOGRAPHIC_RE =
-   /(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+   /(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
 const EMOJI_SLUG_RE = /^:([+\-a-zA-Z0-9_]+):/;
 const EMOJI_PICTOGRAPHIC_ANCHORED_RE =
-   /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+   /^(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
 
 const anchorEmojiCache = new Map<string, RegExpExecArray | null>();
 const slugEmojiCache = new Map<string, RegExpExecArray | null>();

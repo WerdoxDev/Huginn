@@ -16,8 +16,10 @@ export class StorageController<A extends StorageAdapter> {
       if (value.created || !value.data.id) {
          const data = value.data;
 
-         if (typeof window !== "undefined" && window.isSecureContext) data.id = window.crypto.randomUUID();
-         else {
+         if (typeof window !== "undefined") {
+            if (window.isSecureContext) data.id = window.crypto.randomUUID();
+            else data.id = "insecure-" + Math.random().toString(16).slice(2);
+         } else {
             const crypto = await import("node:crypto");
             data.id = crypto.randomUUID();
          }

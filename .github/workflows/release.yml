@@ -9,7 +9,6 @@ on:
             description: "Force app release even if no changes detected"
             required: false
             type: boolean
-            default: true
 
          app_version:
             description: "Override app version"

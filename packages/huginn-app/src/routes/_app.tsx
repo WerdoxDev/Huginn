@@ -3,6 +3,7 @@ import ModalsRenderer from "@components/modal/ModalsRenderer";
 import StartBackground from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
 import KeybindsProvider from "@contexts/KeybindsProvider";
+import { KeyboardProvider } from "@contexts/KeyboardContext";
 import { NotificationProvider } from "@contexts/NotificationContext";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { useInitDeviceStore } from "@hooks/initializers/useInitDeviceStore";
@@ -41,21 +42,23 @@ function AppLayoutComponent() {
                <ContextMenuProvider>
                   <NotificationProvider>
                      <ThemeProvider>
-                        <div className={clsx("flex h-full flex-col overflow-hidden")}>
-                           {!huginnWindow.browserFullscreen && <TitleBar />}
-                           <div className="relative h-full w-full">
-                              <div
-                                 className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
-                                 style={{ viewTransitionName: "start" }}
-                              >
-                                 <StartBackground />
-                                 <Outlet />
+                        <KeyboardProvider>
+                           <div className={clsx("flex h-full flex-col overflow-hidden")}>
+                              {!huginnWindow.browserFullscreen && <TitleBar />}
+                              <div className="relative h-full w-full">
+                                 <div
+                                    className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
+                                    style={{ viewTransitionName: "start" }}
+                                 >
+                                    <StartBackground />
+                                    <Outlet />
+                                 </div>
+                                 {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
+                                 <ModalsRenderer />
+                                 <ContextMenusRenderer />
                               </div>
-                              {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}
-                              <ModalsRenderer />
-                              <ContextMenusRenderer />
                            </div>
-                        </div>
+                        </KeyboardProvider>
                      </ThemeProvider>
                   </NotificationProvider>
                </ContextMenuProvider>
