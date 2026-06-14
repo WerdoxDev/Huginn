@@ -29,7 +29,7 @@
       "cap:release-build": "bun run vite:build-cap && cd android && ./gradlew assembleRelease",
       "cap:debug-build": "bun run vite:build-cap && cd android && ./gradlew assembleDebug",
       "cap:run": "cap run android",
-      "cap:live": "cap run android --live-reload --port 5174 --host 192.168.178.21",
+      "cap:live": "cap run android --live-reload --port 5174",
       "cap:open": "cap open android",
       "cap:dev": "bun run --parallel vite:cap cap:live"
    },
@@ -38,7 +38,7 @@
       "@capacitor/android": "^8.3.4",
       "@capacitor/app": "^8.1.0",
       "@capacitor/core": "^8.3.4",
-      "@capacitor/keyboard": "^8.0.3",
+      "@capacitor/filesystem": "^8.1.2",
       "@chenglou/pretext": "^0.0.7",
       "@headlessui/react": "^2.2.9",
       "@huginn/api": "workspace:*",

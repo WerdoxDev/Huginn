@@ -260,8 +260,9 @@ export type AppDirectChannel = AppChannelBuilder<APIDMChannel> | AppChannelBuild
 export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { userId: Snowflake };
 
 export type AppAttachment = {
-   id: number;
+   key: string;
    data: ArrayBuffer;
+   previewDataUrl?: string;
    filename: string;
    contentType: string;
    description?: string;
@@ -283,14 +284,16 @@ export type MarkedToken = {
 
 export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
 
-export type AttachmentType = {
-   id: number;
-   dataUrl?: string;
-   arrayBuffer: ArrayBuffer;
-   filename: string;
-   description?: string;
-   contentType: string;
-};
+// export type AppAttachment = {
+//    id: number;
+//    dataUrl?: string;
+//    arrayBuffer: ArrayBuffer;
+//    filename: string;
+//    description?: string;
+//    contentType: string;
+// };
+
+export type AttachmentInput = { key?: string; name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer>; previewDataUrl?: string };
 
 export type SliderProps = {
    currentPercent: number;

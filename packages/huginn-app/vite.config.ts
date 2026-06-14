@@ -96,11 +96,23 @@ export default defineConfig(({ mode }) => {
             },
          }),
       ],
+
       server: {
          https: isHttps
             ? {
                  key: keyFile,
                  cert: certFile,
+              }
+            : undefined,
+         hmr: isCapacitor
+            ? {
+                 host: "192.168.178.21",
+                 port: 5174,
+              }
+            : undefined,
+         watch: isCapacitor
+            ? {
+                 usePolling: false,
               }
             : undefined,
       },

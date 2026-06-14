@@ -60,6 +60,9 @@ function HomeLayoutComponent() {
    function handleTouchMove(e: TouchEvent) {
       if (!isDragging || !isMobile) return;
 
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-ignore-swipe]")) return;
+
       const currentX = e.touches[0].clientX;
       const currentY = e.touches[0].clientY;
       const diffX = currentX - startX;

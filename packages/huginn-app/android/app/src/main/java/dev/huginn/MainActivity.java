@@ -14,6 +14,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(KeyboardInsetPlugin.class);
+        registerPlugin(GalleryPlugin.class);
         super.onCreate(savedInstanceState);
 
         keyboardInsetPlugin = (KeyboardInsetPlugin) getBridge().getPlugin("KeyboardInset").getInstance();
