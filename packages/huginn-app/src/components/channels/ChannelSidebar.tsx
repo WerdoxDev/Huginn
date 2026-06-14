@@ -57,21 +57,20 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
          });
       } else {
          containerRef.current.style.transform = `translateX(${rightMenuWidth}px)`;
-         containerRef.current.addEventListener(
-            "transitionend",
-            () => {
-               if (containerRef.current) containerRef.current.style.display = "none";
-            },
-            { once: true },
-         );
       }
    }, [isRightOpen, isMobile, channel]);
+
+   function handleTransitionEnd() {
+      if (!isMobile || isRightOpen || !containerRef.current) return;
+      containerRef.current.style.display = "none";
+   }
 
    if (channel.type !== ChannelType.GROUP_DM) return;
 
    return (
       <div
          ref={containerRef}
+         onTransitionEnd={handleTransitionEnd}
          className={clsx(
             "top-topbar-separator fixed inset-y-0 right-0 bottom-0 z-20 shrink-0 lg:relative lg:top-0 lg:bottom-0 lg:h-full",
             isMobile && !isDragging && "transition-transform",
