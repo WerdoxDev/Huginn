@@ -18,6 +18,8 @@ import { ReactEditor } from "slate-react";
 
 import type { AppMessage, AppAttachment } from "@/types";
 
+import { useIsMobile } from "./useIsMobile";
+
 function serialize(nodes: Descendant[]) {
    let text = "";
    for (const node of nodes) {
@@ -55,6 +57,7 @@ export function useMessageBoxActions(options: {
    const { user } = useThisUser();
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
    const posthog = usePostHog();
+   const isMobile = useIsMobile();
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -380,7 +383,7 @@ export function useMessageBoxActions(options: {
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }
-      if (!event.shiftKey && event.code === "Enter") {
+      if (!event.shiftKey && event.code === "Enter" && !isMobile) {
          if (currentEditingMessageId) {
             editMessage();
          } else {

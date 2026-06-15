@@ -110,7 +110,6 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                      </div>
                   )}
                </div>
-               <div className="bg-surface mt-auto h-16 shrink-0"></div>
             </div>
          </div>
       </div>

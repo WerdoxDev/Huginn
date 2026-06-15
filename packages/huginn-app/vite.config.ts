@@ -106,7 +106,7 @@ export default defineConfig(({ mode }) => {
             : undefined,
          hmr: isCapacitor
             ? {
-                 host: "192.168.178.21",
+                 host: "localhost",
                  port: 5174,
               }
             : undefined,

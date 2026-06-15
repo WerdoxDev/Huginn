@@ -1,9 +1,11 @@
+import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import LoadingIcon from "@components/LoadingIcon";
+import { useCapacitorListener } from "@hooks/useCapacitorEvent";
 import { useLookup } from "@hooks/useLookup";
 import { Gallery, MediaType, type GalleryMediaItem, type ThumbnailResult } from "@lib/capacitor/gallery-plugin";
 import { getMobileFilesOptions } from "@lib/queries";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import moment from "moment";
 import { useCallback, useEffect, useState } from "react";
@@ -15,8 +17,8 @@ export default function FilePickerPanel(props: {
    onAdd: (input: AttachmentInput[]) => void;
    onRemove: (key: string) => void;
 }) {
+   const queryClient = useQueryClient();
    const [thumbnails, setThumbnails] = useState<Record<string, ThumbnailResult>>({});
-   // const [selectedFiles, setSelectedFiles] = useState<Record<string, string>>({});
 
    const attachmentsLookup = useLookup(props.attachments, (attachment) => attachment.key);
 
@@ -25,14 +27,18 @@ export default function FilePickerPanel(props: {
       fetchNextPage,
       isFetchingNextPage,
       hasNextPage,
-   } = useInfiniteQuery({ ...getMobileFilesOptions(40), retryOnMount: true });
+   } = useInfiniteQuery({ ...getMobileFilesOptions(40), refetchOnMount: "always" });
+
+   useCapacitorListener(() =>
+      App.addListener("resume", () => {
+         queryClient.invalidateQueries({ queryKey: ["mobile-files"] });
+      }),
+   );
 
    useEffect(() => {
       if (!mediaResult) return;
 
       let cancelled = false;
-
-      console.log(mediaResult);
 
       for (const media of mediaResult.pages.flatMap((x) => x.media)) {
          if (thumbnails[media.id]) continue;
@@ -46,6 +52,12 @@ export default function FilePickerPanel(props: {
          cancelled = true;
       };
    }, [mediaResult]);
+
+   useEffect(() => {
+      return () => {
+         queryClient.removeQueries({ queryKey: ["mobile-files"] });
+      };
+   }, [queryClient]);
 
    const handleScroll = useCallback(
       async (event: React.UIEvent<HTMLDivElement>) => {

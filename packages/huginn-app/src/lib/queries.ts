@@ -188,6 +188,7 @@ export function getMobileFilesOptions(limit: number) {
    return infiniteQueryOptions({
       queryKey: ["mobile-files"],
       queryFn: async ({ pageParam }) => {
+         console.log("Fetching media with cursor", pageParam);
          const result = await Gallery.getMedia({ types: "all", after: pageParam, limit });
          return result;
       },

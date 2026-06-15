@@ -21,7 +21,7 @@ export default function AttachmentsPreview(props: { attachments: AppAttachment[]
    return (
       <Transition show={props.attachments.length !== 0}>
          <div
-            className="data border-surface overflow-hidden border-b px-2 pb-0 duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0"
+            className="data border-surface h-27.25 overflow-hidden border-b px-2 pb-0 duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0 lg:h-55.25"
             data-ignore-swipe
          >
             <div className="relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-1.5 py-3.5 pb-0">

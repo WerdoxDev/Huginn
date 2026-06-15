@@ -1,6 +1,7 @@
+import { useCapacitorListener } from "@hooks/useCapacitorEvent";
 import KeyboardInset from "@lib/capacitor/keyboard-inset-plugin";
 import { useHuginnWindow } from "@stores/windowStore";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 
 const KeyboardContext = createContext<{
    isKeyboardOpen: boolean;
@@ -18,9 +19,17 @@ export function KeyboardProvider(props: { children: ReactNode }) {
    const huginnWindow = useHuginnWindow();
 
    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-   const [lastKeyboardHeight, setLastKeyboardHeight] = useState(0);
+   const [lastKeyboardHeight, setLastKeyboardHeight] = useState(Number(localStorage.getItem("cached-keyboard-height")) || 0);
    const [shouldResizeWindow, setShouldResizeWindow] = useState(true);
    const focusedElementRef = useRef<Element | null>(null);
+
+   useEffect(() => {
+      if (huginnWindow.environment !== "android") return;
+
+      if (lastKeyboardHeight === 0) {
+         KeyboardInset.show();
+      }
+   }, []);
 
    useEffect(() => {
       if (huginnWindow.environment !== "android") return;
@@ -47,25 +56,20 @@ export function KeyboardProvider(props: { children: ReactNode }) {
       return () => abortController.abort();
    }, [isKeyboardOpen]);
 
-   useEffect(() => {
-      if (huginnWindow.environment !== "android") return;
+   const handleKeyboardChange = useEffectEvent((data: { height: number; isShowing: boolean }) => {
+      if (data.height !== 0) {
+         setLastKeyboardHeight(data.height);
+         localStorage.setItem("cached-keyboard-height", data.height.toString());
+      }
+      // if we never had a keyboard height, this open call is from the initial show so hide it again
+      if (lastKeyboardHeight === 0 && data.height !== 0) {
+         KeyboardInset.hide();
+         return;
+      }
+      setIsKeyboardOpen(data.isShowing);
+   });
 
-      let cancelled = false;
-      let unlisteners: Array<() => void> | undefined;
-
-      KeyboardInset.addListener("keyboardInsetChange", (data) => {
-         if (data.height !== 0) setLastKeyboardHeight(data.height);
-         setIsKeyboardOpen(data.isShowing);
-      }).then((listener) => {
-         if (cancelled) listener.remove();
-         else unlisteners = [...(unlisteners || []), () => listener.remove()];
-      });
-
-      return () => {
-         cancelled = true;
-         unlisteners?.forEach((unlisten) => unlisten());
-      };
-   }, []);
+   useCapacitorListener(() => KeyboardInset.addListener("keyboardInsetChange", handleKeyboardChange));
 
    return (
       <KeyboardContext.Provider value={{ isKeyboardOpen, lastKeyboardHeight, shouldResizeWindow }}>
