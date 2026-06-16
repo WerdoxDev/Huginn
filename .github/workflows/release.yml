@@ -111,7 +111,7 @@ jobs:
          RELEASE_STORE_PASSWORD: ${{secrets.RELEASE_STORE_PASSWORD}}
          RELEASE_KEY_ALIAS: ${{secrets.RELEASE_KEY_ALIAS}}
          RELEASE_KEY_PASSWORD: ${{secrets.RELEASE_KEY_PASSWORD}}
-         RELEASE_KEY_FILE: ${{github.workspace}}/packages/huginn-app/android/app/certs/huginn-release.keystore
+         RELEASE_STORE_FILE: ${{github.workspace}}/packages/huginn-app/android/app/certs/huginn-release.keystore
          CI: ${{github.env.CI}}
       steps:
          - uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
            run: cd packages/huginn-app && pnpm install --ignore-scripts --filter huginn-app-react --filter @huginn/api --filter @huginn/shared
 
          - name: Decode keystore
-           run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d -i > $RELEASE_KEY_FILE
+           run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d -i > $RELEASE_STORE_FILE
 
          - name: Build App
            run: cd packages/huginn-app && pnpm run cap:release-build
