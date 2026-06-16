@@ -134,7 +134,7 @@ jobs:
            run: cd packages/huginn-app && pnpm install --ignore-scripts --filter huginn-app-react --filter @huginn/api --filter @huginn/shared
 
          - name: Decode keystore
-           run: mkdir -p packages/huginn-app/android/certs && echo $RELEASE_STORE_BASE64 | base64 -d > $RELEASE_KEY_FILE
+           run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d > $RELEASE_KEY_FILE
 
          - name: Build App
            run: cd packages/huginn-app && pnpm run cap:release-build
