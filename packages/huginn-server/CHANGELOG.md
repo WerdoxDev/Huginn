@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.1...server@v0.39.0) (2026-06-16)
+
+
+### Features
+
+* **server:** add android update endpoint ([7b534fc](https://github.com/WerdoxDev/Huginn/commit/7b534fc56afc827f45a21ef8848663ff40352409))
+
 ## [0.38.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.0...server@v0.38.1) (2026-06-12)
 
 

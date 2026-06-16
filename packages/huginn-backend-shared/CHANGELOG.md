@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.0...backend-shared@v0.27.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* **server:** messageId is not always on message pin ([2381248](https://github.com/WerdoxDev/Huginn/commit/238124863dc75b2b125baf72662c691537399baf))
+
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.26.0...backend-shared@v0.27.0) (2026-06-05)
 
 
