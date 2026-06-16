@@ -91,7 +91,7 @@ export default defineConfig(({ mode }) => {
             host: "https://eu.posthog.com",
             sourcemaps: {
                enabled: shouldUploadSourcemaps,
-               releaseName: "huginn-app",
+               releaseName: `huginn-app-${isCapacitor ? "android" : "desktop"}`,
                releaseVersion: isVercelPreview ? process.env.VERCEL_GITHUB_COMMIT_SHA : version.toString(),
             },
          }),

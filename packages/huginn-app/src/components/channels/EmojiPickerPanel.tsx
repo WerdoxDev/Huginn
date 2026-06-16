@@ -8,7 +8,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { getEmojiFromHexcode, getEmojiId, getEmojis, type NormalizedEmoji } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
-import emojiMessagesData from "emojibase-data/en/messages.json";
+import emojiMessages from "emojibase-data/en/messages.json";
 import emojiMeta from "emojibase-data/meta/groups.json";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
@@ -59,7 +59,7 @@ function getGroupName(groupId: number) {
 }
 
 const groupNames: Record<number, string> = Object.fromEntries(
-   Object.entries(emojiMeta.groups).map(([id, key]) => [Number(id), emojiMessagesData.groups[Number(id)].message ?? key]),
+   Object.entries(emojiMeta.groups).map(([id, key]) => [Number(id), emojiMessages.groups[Number(id)].message ?? key]),
 );
 
 const toneOptions: SelectItem<number>[] = [
