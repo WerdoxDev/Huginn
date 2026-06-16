@@ -1,11 +1,12 @@
 import { Transition } from "@headlessui/react";
-import { AnimatePresence, type Variants, motion } from "motion/react";
+import { useIsMobile } from "@hooks/useIsMobile";
+import { type Variants } from "motion/react";
 
-import type { AttachmentType } from "@/types";
+import type { AppAttachment } from "@/types";
 
 import Tooltip from "./tooltip/Tooltip";
 
-export default function AttachmentsPreview(props: { attachments: AttachmentType[]; onRemove: (id: number) => void }) {
+export default function AttachmentsPreview(props: { attachments: AppAttachment[]; onRemove: (key: string) => void }) {
    const variants: Variants = {
       visible: (i) => ({
          scale: 1,
@@ -15,48 +16,41 @@ export default function AttachmentsPreview(props: { attachments: AttachmentType[
       hidden: { scale: 0, opacity: 0 },
       exit: { opacity: 0, transition: { duration: 0.2 } },
    };
+   const isMobile = useIsMobile();
 
    return (
       <Transition show={props.attachments.length !== 0}>
-         <div className="data h-59.5 overflow-hidden border-b border-white/10 px-2.5 py-2.5 pb-0 duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0">
-            <div className="scroll-alternative-x relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-2.5 py-2.5 pb-0">
-               <AnimatePresence mode="popLayout">
-                  {props.attachments.map((x) => (
-                     <motion.div
-                        layout
-                        key={x.id}
-                        custom={x.id}
-                        variants={variants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="bg-surface relative flex h-48 w-48 shrink-0 flex-col rounded-lg p-2"
-                     >
-                        <div className="bg-surface absolute -top-2 -right-2 overflow-hidden rounded-md shadow-xl">
-                           <Tooltip>
-                              <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1.5">
-                                 <IconMingcuteEdit2Fill className="text-text size-5" />
-                              </Tooltip.Trigger>
-                              <Tooltip.Content>Edit</Tooltip.Content>
-                           </Tooltip>
-                           <Tooltip>
-                              <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1.5" onClick={() => props.onRemove(x.id)}>
-                                 <IconMingcuteDelete3Fill className="text-negative-100 size-5" />
-                              </Tooltip.Trigger>
-                              <Tooltip.Content>Delete</Tooltip.Content>
-                           </Tooltip>
-                        </div>
-                        <div className="bg-surface-alt flex h-full min-h-0 items-center justify-center rounded-md">
-                           {x.dataUrl ? (
-                              <img className="max-h-full max-w-full" loading="lazy" src={x.dataUrl} alt={x.filename} />
-                           ) : (
-                              <IconMingcuteFileFill className="text-text size-20" />
-                           )}
-                        </div>
-                        <div className="mt-2 w-full shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-white">{x.filename}</div>
-                     </motion.div>
-                  ))}
-               </AnimatePresence>
+         <div
+            className="data border-surface h-27.25 overflow-hidden border-b px-2 pb-0 duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0 lg:h-55.25"
+            data-ignore-swipe
+         >
+            <div className="relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-1.5 py-3.5 pb-0">
+               {props.attachments.map((x) => (
+                  <div key={x.key} className="bg-surface relative flex aspect-square w-20 shrink-0 flex-col gap-y-2 rounded-lg p-1 lg:w-40 lg:p-2">
+                     <div className="bg-surface absolute -top-2.5 -right-2.5 h-7 overflow-hidden rounded-md shadow-md">
+                        {/* <Tooltip>
+                           <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1.5">
+                              <IconMingcuteEdit2Fill className="text-text size-5" />
+                           </Tooltip.Trigger>
+                           <Tooltip.Content>Edit</Tooltip.Content>
+                        </Tooltip> */}
+                        <Tooltip>
+                           <Tooltip.Trigger className="hover:bg-surface-alt/50 p-1" onClick={() => props.onRemove(x.key)}>
+                              <IconMingcuteCloseFill className="text-negative-100 size-5" />
+                           </Tooltip.Trigger>
+                           <Tooltip.Content>Delete</Tooltip.Content>
+                        </Tooltip>
+                     </div>
+                     <div className="bg-surface-alt flex h-full min-h-0 items-center justify-center overflow-hidden rounded-sm">
+                        {x.previewDataUrl ? (
+                           <img className="h-full w-full object-cover lg:object-contain" loading="lazy" src={x.previewDataUrl} alt={x.filename} />
+                        ) : (
+                           <IconMingcuteFileFill className="text-text size-20" />
+                        )}
+                     </div>
+                     {!isMobile && <div className="shrink-0 truncate text-white">{x.filename}</div>}
+                  </div>
+               ))}
             </div>
          </div>
       </Transition>

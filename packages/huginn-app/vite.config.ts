@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
    const shouldUploadSourcemaps = process.env.VERCEL === "1" || process.env.CI === "true";
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
    // const isVercelPreview = process.env.VERCEL === "1";
-   const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app";
+   const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app/";
    return {
       base,
 
@@ -91,16 +91,28 @@ export default defineConfig(({ mode }) => {
             host: "https://eu.posthog.com",
             sourcemaps: {
                enabled: shouldUploadSourcemaps,
-               releaseName: "huginn-app",
+               releaseName: `huginn-app-${isCapacitor ? "android" : "desktop"}`,
                releaseVersion: isVercelPreview ? process.env.VERCEL_GITHUB_COMMIT_SHA : version.toString(),
             },
          }),
       ],
+
       server: {
          https: isHttps
             ? {
                  key: keyFile,
                  cert: certFile,
+              }
+            : undefined,
+         hmr: isCapacitor
+            ? {
+                 host: "localhost",
+                 port: 5174,
+              }
+            : undefined,
+         watch: isCapacitor
+            ? {
+                 usePolling: false,
               }
             : undefined,
       },

@@ -96,8 +96,9 @@ export const messagePinExtension = Prisma.defineExtension({
                      }),
                   ]);
 
-                  span.setAttribute("pin.message.id", pin.messageId.toString());
-                  span.setAttribute("pin.channel.id", pin.channelId.toString());
+                  if (pin.messageId) span.setAttribute("pin.message.id", pin.messageId.toString());
+                  if (pin.channelId) span.setAttribute("pin.channel.id", pin.channelId.toString());
+                  if (pin.pinnedAt) span.setAttribute("pin.pinned.at", pin.pinnedAt.toISOString());
 
                   assertObj(methodName, pin, DBErrorType.NULL_MESSAGE, options.messageId);
                   return idFix(pin) as MessagePinPayload<Args>;

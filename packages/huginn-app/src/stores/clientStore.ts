@@ -1,3 +1,4 @@
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import {
    analytics,
@@ -15,6 +16,7 @@ import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { createStore, useStore } from "zustand";
 
 import { storageStore } from "./storageStore";
+import { windowStore } from "./windowStore";
 
 const initialStore = () => ({
    hostnames: {
@@ -103,10 +105,12 @@ function updateUsersFromReadyData(d: GatewayReadyData) {
    }
 }
 
-export function initializeClient() {
+export async function initializeClient() {
    log("app:client-store", "default", "initialize client");
 
+   const huginnWindowStore = windowStore.getState();
    let thisStore = store.getState();
+
    if (thisStore.client === undefined) {
       const client = new HuginnClient({
          rest: { api: `${thisStore.hostnames.api}/api` },
@@ -136,6 +140,10 @@ export function initializeClient() {
    if (window.electronAPI && thisStore.hostnames.api) {
       const url = `${thisStore.hostnames.api}/api/update/win`;
       window.electronAPI.setUpdateUrl(url);
+   }
+
+   if (huginnWindowStore.environment === "android") {
+      await CapacitorUpdater.setUpdateUrl({ url: `${thisStore.hostnames.api}/api/update/android` });
    }
 
    const unlisteners: Array<(() => void) | undefined> = [];

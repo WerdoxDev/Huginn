@@ -1,7 +1,8 @@
-import ErrorComponent from "@components/ErrorComponent";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
+import ErrorComponent from "@components/ErrorComponent";
 import { analytics } from "@huginn/shared";
 import { runPendingActions } from "@lib/actions";
 import { initAnalytics } from "@lib/web-analytics";
@@ -14,6 +15,8 @@ import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
 import { routeTree } from "./routeTree.gen";
+
+CapacitorUpdater.notifyAppReady();
 
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {

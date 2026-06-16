@@ -4,6 +4,7 @@ import UserAvatar from "@components/UserAvatar";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginn/shared";
+import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresences } from "@stores/presenceStore";
 import { useThisUser } from "@stores/userStore";
@@ -15,12 +16,16 @@ export default function ChannelName() {
    const recipients = useUsers(channel?.recipientIds);
    const { presences } = usePresences([...(channel?.recipientIds ?? []), user!.id]);
    const { updateModals } = useModals();
+   const { toggleRight } = useMobileMenuStore();
 
    const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
    function handleClick() {
+      console.log(channel?.type === ChannelType.DM && otherUsers[0]);
       if (channel?.type === ChannelType.DM && otherUsers[0]) {
          updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } });
+      } else {
+         toggleRight();
       }
    }
 
@@ -29,9 +34,9 @@ export default function ChannelName() {
    const isDM = channel.type === ChannelType.DM;
 
    return (
-      <div className="flex items-center overflow-hidden">
+      <div className="flex items-center overflow-hidden" onClick={handleClick}>
          {isDM ? (
-            <button type="button" className="cursor-pointer rounded-full" onClick={handleClick}>
+            <button type="button" className="cursor-pointer rounded-full">
                <UserAvatar userId={otherUsers[0]?.id} avatarHash={otherUsers[0]?.avatar} className="mr-3" />
             </button>
          ) : channel.type === ChannelType.GROUP_DM ? (
@@ -40,7 +45,7 @@ export default function ChannelName() {
          <Tooltip>
             <div className="mr-2 flex flex-col justify-center overflow-hidden">
                {isDM ? (
-                  <button type="button" className="text-text cursor-pointer truncate text-left hover:underline" onClick={handleClick}>
+                  <button type="button" className="text-text cursor-pointer truncate text-left hover:underline">
                      {channel.name}
                   </button>
                ) : (

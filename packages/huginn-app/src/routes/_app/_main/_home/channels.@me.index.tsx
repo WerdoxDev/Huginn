@@ -23,7 +23,7 @@ function ChannelMeComponent() {
                <div className="bg-surface rounded-xl p-5 shadow-lg">
                   <HuginnIcon outlined className="text-primary-500 size-20 transition-transform hover:scale-105 hover:-rotate-12 active:rotate-6" />
                </div>
-               <div className="mt-5 text-2xl font-bold text-white">Welcome to Huginn</div>
+               <div className="mt-5 text-2xl font-bold text-white">Welcome to Huginn3</div>
                <div className="text-text mt-2">
                   Start by adding your friends in the{" "}
                   <Link to="/friends" className="text-primary-500 font-bold">

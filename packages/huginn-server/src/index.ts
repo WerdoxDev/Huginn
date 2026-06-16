@@ -4,7 +4,6 @@ import { staticPlugin } from "@elysiajs/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import consola from "consola";
 import Elysia from "elysia";
 
 import { getAllReleases } from "#routes/all-releases.get";
@@ -40,7 +39,8 @@ import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
-import { getUpdate } from "#routes/update.get";
+import { postAndroidUpdate } from "#routes/update/android.post";
+import { getWinUpdate } from "#routes/update/win.get";
 import { getMe } from "#routes/users/@me.get";
 import { patchMe } from "#routes/users/@me.patch";
 import { getUserChannels } from "#routes/users/@me/channels.get";
@@ -86,7 +86,8 @@ export const app = new Elysia({
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {
-      consola.box(path, request.method, code, error);
+      console.log(path, request.method, code, error);
+      // consola.box(path, request.method, code, error);
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
          if (returnedError) {
@@ -169,7 +170,8 @@ export const app = new Elysia({
    .use(getLatestRelease)
    .use(getOnlineUsers)
    .use(postUniqueUsername)
-   .use(getUpdate)
+   .use(getWinUpdate)
+   .use(postAndroidUpdate)
    .use(postLog)
    .use(getIndex)
    .use(getChangelog)
@@ -185,7 +187,7 @@ export const app = new Elysia({
          if (process.env.TEST) {
             console.log(`Listening on ${server.hostname}:${server.port}`);
          } else {
-            consola.box(`Listening on ${server.hostname}:${server.port}`);
+            // consola.box(`Listening on ${server.hostname}:${server.port}`);
          }
       },
    );

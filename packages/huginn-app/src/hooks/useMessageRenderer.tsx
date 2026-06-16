@@ -102,7 +102,6 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       const isBigEmoji =
          inlineTokens.every((t) => t.type === "emoji" || (t.type === "text" && /^\s*$/.test(t.raw))) &&
          inlineTokens.filter((t) => t.type === "emoji").length <= CONSTANTS.MAX_BIG_EMOJI_COUNT;
-      console.log(root, inlineTokens, isBigEmoji);
 
       for (const token of inlineTokens) {
          const prevTokens = currentTokens;

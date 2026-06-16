@@ -9,7 +9,7 @@ import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
@@ -18,6 +18,8 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
    const addState = useMutationLatestState("add-channel-recipient");
    const removeState = useMutationLatestState("remove-channel-recipient");
    const { updateModals } = useModals();
+   const containerRef = useRef<HTMLDivElement>(null);
+   const { channel } = props;
 
    const { isRightOpen, isDragging, rightMenuWidth } = useMobileMenuStore();
    const isMobile = useIsMobile();
@@ -40,23 +42,49 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
       updateModals({ addRecipient: { isOpen: true, channelId: props.channel.id } });
    }
 
-   const { channel } = props;
+   useEffect(() => {
+      if (!containerRef.current) return;
+      if (!isMobile) {
+         containerRef.current.style.display = "block";
+         containerRef.current.style.transform = "none";
+         return;
+      }
+
+      if (isRightOpen) {
+         containerRef.current.style.display = "block";
+         requestAnimationFrame(() => {
+            if (containerRef.current) containerRef.current.style.transform = `translateX(0px)`;
+         });
+      } else {
+         containerRef.current.style.transform = `translateX(${rightMenuWidth}px)`;
+      }
+   }, [isRightOpen, isMobile, channel]);
+
+   function handleTransitionEnd() {
+      if (!isMobile || isRightOpen || !containerRef.current) return;
+      containerRef.current.style.display = "none";
+   }
+
    if (channel.type !== ChannelType.GROUP_DM) return;
 
    return (
       <div
+         ref={containerRef}
+         onTransitionEnd={handleTransitionEnd}
          className={clsx(
             "top-topbar-separator fixed inset-y-0 right-0 bottom-0 z-20 shrink-0 lg:relative lg:top-0 lg:bottom-0 lg:h-full",
             isMobile && !isDragging && "transition-transform",
             !isMobile && "transition-[width]",
+            // isRightOpen ? "block" : "hidden",
          )}
          style={{
+            // visibility: !isRightOpen ? "hidden" : "visible",
             width: isMobile ? rightMenuWidth : isRightOpen ? rightMenuWidth : "0",
-            transform: isMobile ? `translateX(${rightMenuWidth - (isRightOpen ? rightMenuWidth : 0)}px)` : "none",
+            // transform: isMobile ? `translateX(${rightMenuWidth - (isRightOpen ? rightMenuWidth : 0)}px)` : "none",
          }}
       >
          <div className="absolute inset-0 flex" style={{ width: rightMenuWidth }}>
-            <div className="bg-surface h-full w-0 shrink-0 overflow-hidden lg:w-0.5" />
+            <div className="bg-surface h-full w-0.5 shrink-0 overflow-hidden" />
             <div className="group bg-surface-alt relative flex h-full w-full flex-col overflow-hidden">
                <div className="scroll-super-thin flex flex-col overflow-y-scroll pb-2">
                   <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Members - {sortedRecipients.length}</div>
@@ -82,7 +110,6 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                      </div>
                   )}
                </div>
-               <div className="bg-surface mt-auto h-16 shrink-0"></div>
             </div>
          </div>
       </div>

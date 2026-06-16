@@ -112,7 +112,7 @@ function ChannelWithIdComponent() {
 
                   <ChannelSidebar channel={channel} />
                </div>
-               <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" />
+               {/* <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" /> */}
             </>
          ) : (
             <ErrorComponent error="Channel not found" />

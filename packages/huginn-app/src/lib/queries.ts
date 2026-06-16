@@ -4,6 +4,7 @@ import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowf
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
+import { Gallery } from "./capacitor/gallery-plugin";
 import { updateUser } from "./query-utils";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
 
@@ -180,5 +181,22 @@ export function getChangelogOptions(client: HuginnClient, version: string, since
    return queryOptions({
       queryKey: ["changelog", version, since],
       queryFn: async () => await client.common.changelog(version, since),
+   });
+}
+
+export function getMobileFilesOptions(limit: number) {
+   return infiniteQueryOptions({
+      queryKey: ["mobile-files"],
+      queryFn: async ({ pageParam }) => {
+         console.log("Fetching media with cursor", pageParam);
+         const result = await Gallery.getMedia({ types: "all", after: pageParam, limit });
+         return result;
+      },
+
+      initialPageParam: "0",
+      getNextPageParam: (lastPage) => {
+         if (lastPage.media.length < limit) return undefined;
+         return lastPage.cursor.toString();
+      },
    });
 }

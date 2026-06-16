@@ -426,8 +426,6 @@ const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#
 
 function ColorSelector(props: { onChange?: (color: string) => void; color: string; disabled?: boolean; label: string; disabledReason?: string }) {
    function handleHexInputChange(value: string) {
-      // const cleaned = value.startsWith("#") ? value : `#${value}`;
-      // console.log(cleaned);
       props.onChange?.(value);
    }
 

@@ -1,0 +1,7 @@
+│
+●  Zipping file windows mode
+{
+  "bundle": "0.74.1",
+  "filename": "dev.huginn_0.74.1.zip",
+  "checksum": "d5585bc8a4330583aa6c51a8d611f94bb4e14bfec6511a65adf706ff8a1b72c7"
+}

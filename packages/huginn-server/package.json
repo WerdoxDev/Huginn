@@ -26,7 +26,6 @@
       "@std/text": "npm:@jsr/std__text",
       "@types/jsdom": "^28.0.3",
       "@types/markdown-it": "^14.1.2",
-      "consola": "^3.4.2",
       "crossws": "^0.4.4",
       "elysia": "^1.4.27",
       "jsdom": "^29.1.1",
@@ -34,6 +33,7 @@
       "notion-to-md": "^4.0.0-alpha.7",
       "octokit": "^5.0.5",
       "pathe": "^2.0.3",
+      "pino": "^10.3.1",
       "resend": "^6.9.3",
       "semver": "^7.7.4"
    },

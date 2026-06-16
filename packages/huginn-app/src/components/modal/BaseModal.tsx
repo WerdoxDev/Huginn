@@ -1,5 +1,6 @@
 import { Dialog } from "@base-ui/react";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
+import { useKeyboard } from "@contexts/KeyboardContext";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ export default function BaseModal(props: {
    headless?: boolean;
 }) {
    const { updateModals } = useModals();
+   const { shouldResizeWindow, lastKeyboardHeight, isKeyboardOpen } = useKeyboard();
    const [key, setKey] = useState(0);
 
    const queryErrorResetBoundary = useQueryErrorResetBoundary();
@@ -41,7 +43,10 @@ export default function BaseModal(props: {
             <Dialog.Root open={props.modal.isOpen} modal onOpenChange={(open) => !open && props.onClose()}>
                <Dialog.Portal>
                   <ModalBackground className={props.backgroundClassName} />
-                  <div className={clsx("fixed inset-0 top-6 z-10")}>
+                  <div
+                     className={clsx("fixed inset-0 top-6 z-10")}
+                     style={{ bottom: shouldResizeWindow && isKeyboardOpen ? `${lastKeyboardHeight}px` : undefined }}
+                  >
                      <div className={clsx("flex h-full w-full justify-center", !props.headless && "items-end pt-20 lg:items-center lg:py-10")}>
                         {props.renderChildren}
                      </div>

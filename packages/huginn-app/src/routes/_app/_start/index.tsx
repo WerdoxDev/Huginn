@@ -81,7 +81,9 @@ function IndexComponent() {
    const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
    const updateProgressText = useMemo(() => {
-      return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+      if (huginnWindow.environment === "desktop")
+         return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+      if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
    }, [progress]);
 
    const { errorTitle, errorDescription } = useMemo(() => {
@@ -190,11 +192,11 @@ function IndexComponent() {
                const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
                if (activePreset?.hostnameSource === "external") {
                   setFetchHostnames();
-               } else if (huginnWindow.environment === "desktop") {
+               } else if (huginnWindow.environment === "desktop" || huginnWindow.environment === "android") {
                   setCheckUpdate();
                } else {
                   setHostnamesFromSettings();
-                  initializeClient();
+                  await initializeClient();
                   await setInitialize();
                }
                break;
@@ -205,9 +207,9 @@ function IndexComponent() {
                if (!result.success) {
                   dispatch({ type: "FAIL", error: result.status });
                } else {
-                  initializeClient();
+                  await initializeClient();
 
-                  if (huginnWindow.environment !== "desktop") {
+                  if (huginnWindow.environment !== "desktop" && huginnWindow.environment !== "android") {
                      await setInitialize();
                   } else {
                      setCheckUpdate();
@@ -218,7 +220,7 @@ function IndexComponent() {
             case "check_update":
                if (!client) {
                   setHostnamesFromSettings();
-                  initializeClient();
+                  await initializeClient();
                }
                await checkAndDownload();
                break;

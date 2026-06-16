@@ -1,9 +1,7 @@
 import type { MediaKind } from "mediasoup/types";
 
-// import emojis from "unicode-emoji-json/data-by-emoji.json" with { type: "json" };
 import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
 import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };
-import emojiMeta from "emojibase-data/meta/groups.json" with { type: "json" };
 import { hash } from "ohash";
 
 import type { GatewayOperationTypes } from "./gateway-types";
@@ -477,8 +475,6 @@ const slugToEmoji = new Map<string, string>();
 const emojiToSlugs = new Map<string, string[]>();
 const hexcodeToEmoji = new Map<string, string>();
 const normalizedEmojis = new Map<string, NormalizedEmoji>();
-
-const emojiGroupCount = Object.keys(emojiMeta.groups).length;
 
 // Pre-build slug maps from shortcodes, keyed by hexcode for O(1) lookup below
 const slugsByHexcode = new Map<string, string[]>();

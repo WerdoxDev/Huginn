@@ -1,11 +1,11 @@
-import { envs } from "#setup";
-import { cdnUpload, serverFetch } from "#utils/server-request";
 import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginn/shared";
 import { toSnakeCase } from "@std/text";
-import consola from "consola";
 import Elysia, { t } from "elysia";
+
+import { envs } from "#setup";
+import { cdnUpload, serverFetch } from "#utils/server-request";
 
 const querySchema = t.Object({
    code: t.Optional(t.String()),
@@ -53,7 +53,7 @@ export const getGoogleCallback = new Elysia().get(
       const { flow, state: cookie_state, redirect_url, origin } = cookieValue;
 
       if (cookie_state !== state || !state) {
-         consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
+         // consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
          return forbidden(status);
       }
 
@@ -75,7 +75,7 @@ export const getGoogleCallback = new Elysia().get(
 
          // Return 'Forbidden' if can't get the token
          if ("error" in response) {
-            consola.info("Error in response", response);
+            // consola.info("Error in response", response);
             return forbidden(status);
          }
 
@@ -165,7 +165,7 @@ export const getGoogleCallback = new Elysia().get(
          return redirect(redirectUrl.toString(), 302);
       }
       if (error || !state) {
-         consola.info("Error or no state");
+         // consola.info("Error or no state");
          return forbidden(status);
       }
    },

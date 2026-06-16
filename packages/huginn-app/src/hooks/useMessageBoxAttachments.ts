@@ -3,9 +3,7 @@ import type { ClipboardEvent } from "react";
 import { isImageMediaType } from "@huginn/shared";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import type { AppMessage, AttachmentType } from "@/types";
-
-type AttachmentInputType = { name: string; type: string; arrayBuffer: () => Promise<ArrayBuffer> };
+import type { AppMessage, AppAttachment, AttachmentInput } from "@/types";
 
 function getUniqueFilename(name: string, used: Set<string>) {
    if (!used.has(name)) {
@@ -28,80 +26,81 @@ function getUniqueFilename(name: string, used: Set<string>) {
    return candidate;
 }
 
-export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivElement | null>, _messages: AppMessage[]) {
-   const [attachments, setAttachments] = useState<AttachmentType[]>([]);
+export function useMessageBoxAttachments() {
+   const [attachments, setAttachments] = useState<AppAttachment[]>([]);
    const [dragging, setDragging] = useState(false);
-   const nextAttachmentIdRef = useRef(0);
+   const nextAttachmentKeyRef = useRef(0);
    const [_isPending, startTransition] = useTransition();
 
-   async function addAttachments(input: AttachmentInputType[]) {
+   async function addAttachments(input: AttachmentInput[]) {
       startTransition(async () => {
-         const pendingAttachments: Array<{
-            name: string;
-            arrayBuffer: ArrayBuffer;
-            dataUrl: string | undefined;
-            contentType: string;
-         }> = [];
+         const pendingAttachments: Array<Omit<AppAttachment, "key"> & { key?: string }> = [];
 
          for (const file of input) {
             const arrayBuffer = await file.arrayBuffer();
             if (!isImageMediaType(file.type)) {
                pendingAttachments.push({
-                  name: file.name,
-                  arrayBuffer,
-                  dataUrl: undefined,
+                  key: file.key,
+                  filename: file.name,
+                  data: arrayBuffer,
                   contentType: file.type,
+                  previewDataUrl: file.previewDataUrl,
                });
                continue;
             }
 
-            const reader = new FileReader();
-            reader.readAsDataURL(new Blob([arrayBuffer]));
+            let dataUrl: string | undefined = file.previewDataUrl;
 
-            const dataUrl = await new Promise<string>((res, rej) => {
-               reader.onload = (readerEvent) => {
-                  const content = readerEvent.target?.result;
-                  if (typeof content === "string") {
-                     res(content);
-                  }
-               };
+            if (!dataUrl) {
+               const reader = new FileReader();
+               reader.readAsDataURL(new Blob([arrayBuffer]));
 
-               reader.onerror = () => {
-                  rej();
-               };
-            });
+               dataUrl = await new Promise<string>((res, rej) => {
+                  reader.onload = (readerEvent) => {
+                     const content = readerEvent.target?.result;
+                     if (typeof content === "string") {
+                        res(content);
+                     }
+                  };
+
+                  reader.onerror = () => {
+                     rej();
+                  };
+               });
+            }
 
             pendingAttachments.push({
-               name: file.name,
-               arrayBuffer,
-               dataUrl,
+               key: file.key,
+               filename: file.name,
+               data: arrayBuffer,
+               previewDataUrl: dataUrl,
                contentType: file.type,
             });
          }
 
          setAttachments((currentAttachments) => {
             const usedNames = new Set(currentAttachments.map((attachment) => attachment.filename));
-            const newAttachments: AttachmentType[] = [...currentAttachments];
+            const newAttachments: AppAttachment[] = [...currentAttachments];
 
             for (const pendingAttachment of pendingAttachments) {
-               const filename = getUniqueFilename(pendingAttachment.name, usedNames);
+               const filename = getUniqueFilename(pendingAttachment.filename, usedNames);
+               const key = pendingAttachment.key ?? (nextAttachmentKeyRef.current++).toString();
                newAttachments.push({
-                  id: nextAttachmentIdRef.current++,
-                  arrayBuffer: pendingAttachment.arrayBuffer,
-                  dataUrl: pendingAttachment.dataUrl,
+                  key,
                   filename,
+                  data: pendingAttachment.data,
+                  previewDataUrl: pendingAttachment.previewDataUrl,
                   contentType: pendingAttachment.contentType,
                });
             }
+            console.log(newAttachments);
 
             return newAttachments;
          });
-
-         editorRef.current?.focus();
       });
    }
 
-   function addFiles() {
+   function openFileSelector() {
       const input = document.createElement("input");
       input.type = "file";
       input.multiple = true;
@@ -116,25 +115,19 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
       input.click();
    }
 
-   function removeAttachment(id: number) {
-      setAttachments((old) => old.filter((x) => x.id !== id));
+   function removeAttachment(key: string) {
+      setAttachments((old) => old.filter((x) => x.key !== key));
    }
 
    function clearAttachments() {
       setAttachments([]);
-      nextAttachmentIdRef.current = 0;
+      nextAttachmentKeyRef.current = 0;
    }
 
    function onPaste(e: ClipboardEvent) {
       addAttachments(Array.from(e.clipboardData.files));
    }
 
-   // // Sync attachment clearing with new preview message rendering
-   // useEffect(() => {
-   //    setAttachments([]);
-   // }, [messages]);
-
-   // Drag-and-drop event listeners
    useEffect(() => {
       const controller = new AbortController();
       let dragCounter = 0;
@@ -172,7 +165,7 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
 
             if (!e.dataTransfer?.files) return;
 
-            const files: AttachmentInputType[] = Array.from(e.dataTransfer.files).map((file) => ({
+            const files: AttachmentInput[] = Array.from(e.dataTransfer.files).map((file) => ({
                name: file.name,
                type: file.type,
                arrayBuffer: async () => await file.arrayBuffer(),
@@ -186,5 +179,5 @@ export function useMessageBoxAttachments(editorRef: React.RefObject<HTMLDivEleme
       return () => controller.abort();
    }, []);
 
-   return { attachments, dragging, addFiles, removeAttachment, clearAttachments, onPaste };
+   return { attachments, dragging, openFileSelector, removeAttachment, addAttachments, clearAttachments, onPaste };
 }

@@ -3,7 +3,7 @@ import { Transition } from "@headlessui/react";
 export default function EditingPreview(props: { onCancel: () => void; show: boolean }) {
    return (
       <Transition show={props.show}>
-         <div className="border-surface flex items-center gap-x-2 border-b py-2 pr-2 pl-4 text-sm duration-150 data-closed:h-0 data-closed:py-0 data-closed:opacity-0">
+         <div className="border-surface flex items-center gap-x-2 border-b py-2 pr-2 pl-4 text-sm duration-150 data-closed:h-0 data-closed:border-b-0 data-closed:py-0 data-closed:opacity-0">
             <IconMingcuteEdit2Fill className="text-positive-100 size-4 shrink-0" />
             <span className="text-white/80">Editing message</span>
             <span className="text-xs text-white/30 italic">escape to cancel</span>

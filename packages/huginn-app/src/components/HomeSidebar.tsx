@@ -70,7 +70,6 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
          const height = element.offsetHeight;
 
          if (!showIndicator) {
-            console.log(animatable.current.scaleY());
             animatable.current.y(offsetTop, 0);
          } else {
             animatable.current.y(offsetTop, INDICATOR_DURATION);
@@ -101,34 +100,37 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                )}
             </div>
          </div>
-         <div className="h-0.5 shrink-0 bg-white/10" />
-         <ul className="scroll-super-thin relative flex h-full flex-col overflow-x-hidden overflow-y-scroll">
-            <div ref={indicator} className={clsx("bg-primary-600 pointer-events-none absolute left-0 w-1 origin-center rounded-r")} />
-            <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
-            <HuginnButton
-               onClick={handleCreateChannel}
-               className="group/button border-primary-800 hover:bg-primary-800 active:bg-primary-800 mb-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
-            >
-               <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
-                  <IconMingcuteAddFill />
+         <div className="bg-surface h-0.5 shrink-0" />
+         <div className="relative flex h-full">
+            <ul className="scroll-super-thin relative flex h-full flex-col overflow-x-hidden overflow-y-scroll">
+               <div ref={indicator} className={clsx("bg-primary-600 pointer-events-none absolute left-0 w-1 origin-center rounded-r")} />
+               <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
+               <HuginnButton
+                  onClick={handleCreateChannel}
+                  className="group/button border-primary-800 hover:bg-primary-800 active:bg-primary-800 mb-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
+               >
+                  <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
+                     <IconMingcuteAddFill />
+                  </div>
+                  <div>Create Channel</div>
+               </HuginnButton>
+               <div className="flex flex-col gap-y-0.5 rounded-lg pb-2 pl-2">
+                  {sortedChannels.map((channel) => (
+                     <DirectMessageChannel
+                        key={channel.id}
+                        ref={(el) => {
+                           if (el) {
+                              channelRefs.current[channel.id] = el;
+                           }
+                        }}
+                        channel={channel}
+                        pinned={isPinned(channel.id)}
+                     />
+                  ))}
                </div>
-               <div>Create Channel</div>
-            </HuginnButton>
-            <div className="flex flex-col gap-y-0.5 rounded-lg pb-2 pl-2">
-               {sortedChannels.map((channel) => (
-                  <DirectMessageChannel
-                     key={channel.id}
-                     ref={(el) => {
-                        if (el) {
-                           channelRefs.current[channel.id] = el;
-                        }
-                     }}
-                     channel={channel}
-                     pinned={isPinned(channel.id)}
-                  />
-               ))}
-            </div>
-         </ul>
+            </ul>
+            <div className="bg-surface h-full w-0.5 shrink-0 overflow-hidden" />
+         </div>
          <VoiceStatus />
       </nav>
    );
