@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.75.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.1...app@v0.75.0) (2026-06-16)
+
+
+### Features
+
+* **app:** add android keyboard handling for in-place emoji picker behind keyboard ([f8d6dcb](https://github.com/WerdoxDev/Huginn/commit/f8d6dcb698d8974111d9c8c3493115a1770653d3))
+* **app:** add android OTA update support ([abeb695](https://github.com/WerdoxDev/Huginn/commit/abeb69579cf2032feb6965f42f5065c6454a761e))
+* **app:** add native image & video viewer for attachment sending ([d0687e8](https://github.com/WerdoxDev/Huginn/commit/d0687e889a68978432944b11067e1e6b85182116))
+
+
+### Bug Fixes
+
+* **app:** channel sidebar problem on mobile ([96c5b7c](https://github.com/WerdoxDev/Huginn/commit/96c5b7c244b1df1ffd33f0ad61490a4ab071f3c3))
+
 ## [0.74.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.0...app@v0.74.1) (2026-06-12)
 
 
