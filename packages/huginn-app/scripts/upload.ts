@@ -34,7 +34,7 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
    ],
    android: [
       {
-         path: `./android/app/outputs/apk/release/app-release.apk`,
+         path: `./android/app/build/outputs/apk/release/app-release.apk`,
          name: `Huginn_${version}.apk`,
          type: "application/octet-stream",
       },
