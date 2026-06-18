@@ -1,6 +1,7 @@
 import type {
    APIPostLoginJSONBody,
    APIPostLoginResult,
+   APIPostNotificationTokenJSONBody,
    APIPostRefreshTokenJSONBody,
    APIPostRefreshTokenResult,
    APIPostRegisterJSONBody,
@@ -32,5 +33,9 @@ export class AuthAPI {
 
    public async refreshToken(body: APIPostRefreshTokenJSONBody): Promise<APIPostRefreshTokenResult> {
       return this.rest.post(Routes.refreshToken(), { body }) as Promise<APIPostRefreshTokenResult>;
+   }
+
+   public async sendNotificationToken(body: APIPostNotificationTokenJSONBody): Promise<unknown> {
+      return this.rest.post(Routes.notificationToken(), { body, auth: true });
    }
 }

@@ -10,7 +10,6 @@ import type {
 } from "@huginn/shared";
 
 import {
-   error,
    GatewayCode,
    type GatewayWebsocketEvents,
    type GatewayHello,
