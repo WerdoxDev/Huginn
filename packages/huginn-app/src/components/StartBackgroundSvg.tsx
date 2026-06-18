@@ -17,7 +17,6 @@ export default function StartBackground() {
    const rafIdRef = useRef<number>(0);
    const animationStartRef = useRef<number>(Date.now());
    const canvasSizeRef = useRef({ width: window.innerWidth, height: window.innerHeight });
-   const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
    const themeRef = useRef(theme);
    themeRef.current = theme;
 
@@ -90,39 +89,6 @@ export default function StartBackground() {
 
       return () => {
          cancelAnimationFrame(rafIdRef.current);
-      };
-   }, [loopAnimation, renderFrame, isActive]);
-
-   // Handle resize without triggering React re-renders
-   useEffect(() => {
-      if (!isActive) return;
-
-      function handleResize() {
-         if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-         cancelAnimationFrame(rafIdRef.current);
-
-         const width = window.innerWidth;
-         const height = window.innerHeight;
-         canvasSizeRef.current = { width, height };
-
-         const cvs = canvasRef.current;
-         if (cvs) {
-            cvs.width = width;
-            cvs.height = height;
-         }
-
-         ctxRef.current?.clearRect(0, 0, width, height);
-
-         resizeTimerRef.current = setTimeout(() => {
-            loopAnimation(0);
-            rafIdRef.current = requestAnimationFrame(renderFrame);
-         }, 100);
-      }
-
-      window.addEventListener("resize", handleResize);
-      return () => {
-         window.removeEventListener("resize", handleResize);
-         if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
       };
    }, [loopAnimation, renderFrame, isActive]);
 

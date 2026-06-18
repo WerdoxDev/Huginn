@@ -50,7 +50,7 @@ export default function UserInfo(props: { user: AppUser }) {
    }
 
    return (
-      <div className="flex h-16 w-62 shrink-0 items-center lg:w-64">
+      <div className="flex h-16 w-full shrink-0 items-center pr-2">
          <HuginnMenu>
             <HuginnMenu.Trigger asChild>
                <div

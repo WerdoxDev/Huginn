@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { UpdateInfo } from "@/types";
 
-import { useCapacitorListener } from "./useCapacitorEvent";
+import { useCapacitorListener } from "./useCapacitorListener";
 
 export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>; onError?: (message: string) => void; onUpdating?: () => void }) {
    const huginnWindow = useHuginnWindow();

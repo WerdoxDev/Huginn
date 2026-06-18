@@ -190,6 +190,10 @@ export function getMobileFilesOptions(limit: number) {
       queryFn: async ({ pageParam }) => {
          console.log("Fetching media with cursor", pageParam);
          const result = await Gallery.getMedia({ types: "all", after: pageParam, limit });
+         if ("error" in result) {
+            throw new Error(result.error);
+         }
+
          return result;
       },
 

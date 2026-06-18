@@ -11,6 +11,7 @@ export const Route = createFileRoute("/_app/_main")({
    beforeLoad: ({ location }) => {
       const client = clientStore.getState().client;
       if (!client || client?.gateway.status !== "authenticated") {
+         console.log("NOT AUTHENTICATED");
          sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: true }));
          throw redirect({ to: "/" });
       }

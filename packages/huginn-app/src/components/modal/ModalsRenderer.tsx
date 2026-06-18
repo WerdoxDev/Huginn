@@ -49,7 +49,7 @@ export default function ModalsRenderer() {
          <BaseModal
             renderChildren={<SettingsModal />}
             modal={settings}
-            onClose={() => settings.isClosable && updateModals({ settings: { isOpen: false } })}
+            onClose={() => (settings.isClosable || settings.isClosable === undefined) && updateModals({ settings: { isOpen: false } })}
          />
          <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
@@ -105,7 +105,11 @@ export default function ModalsRenderer() {
          )}
          <BaseModal
             modal={info}
-            onClose={() => (!info.action?.cancel ? info.isClosable && updateModals({ info: { isOpen: false } }) : info.action.cancel.callback())}
+            onClose={() =>
+               !info.action?.cancel
+                  ? (info.isClosable || info.isClosable === undefined) && updateModals({ info: { isOpen: false } })
+                  : info.action.cancel.callback()
+            }
             renderChildren={<InfoModal />}
          />
       </>

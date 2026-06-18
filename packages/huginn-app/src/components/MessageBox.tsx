@@ -144,7 +144,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
          <div
             className={clsx("bottom-0 z-10 flex flex-col select-text")}
-            style={{ height: shouldShowMobilePanel ? lastKeyboardHeight + (containerRef.current?.clientHeight ?? 0) + 6 : undefined }}
+            // style={{ height: shouldShowMobilePanel ? lastKeyboardHeight + (containerRef.current?.clientHeight ?? 0) + 6 : undefined }}
          >
             <DraggingIndicator isDragging={dragging} />
             <div
@@ -210,8 +210,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                </div>
             </div>
-            {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
-            {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
+            <div className="" style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
+               {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
+               {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
+            </div>
          </div>
       </div>
    );

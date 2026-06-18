@@ -5,7 +5,7 @@ import { useEffect, type DependencyList } from "react";
 
 export function useCapacitorListener(factory: () => Promise<PluginListenerHandle>, deps?: DependencyList) {
    const huginnWindow = useHuginnWindow();
-   const effectDeps = deps ?? [factory];
+   const effectDeps = deps ?? [];
 
    useEffect(() => {
       if (huginnWindow.environment !== "android") return;
@@ -13,11 +13,11 @@ export function useCapacitorListener(factory: () => Promise<PluginListenerHandle
       let handle: PluginListenerHandle | null = null;
       let removed = false;
 
-      const register = async () => {
+      async function register() {
          handle = await factory();
 
          if (removed) handle.remove();
-      };
+      }
 
       register();
 

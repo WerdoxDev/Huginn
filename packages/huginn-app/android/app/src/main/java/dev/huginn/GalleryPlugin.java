@@ -1,8 +1,12 @@
 package dev.huginn;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -13,6 +17,9 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -30,28 +37,58 @@ import java.io.IOException;
 @CapacitorPlugin(
         name = "Gallery",
         permissions = {
-                // Android <= 12
                 @Permission(
-                        strings = {Manifest.permission.READ_EXTERNAL_STORAGE},
-                        alias = "storageOld"
+                        alias = "readMediaLegacy",
+                        strings = {Manifest.permission.READ_EXTERNAL_STORAGE}
                 ),
-                // Android 13+
                 @Permission(
-                        alias = "storageNew",
-                        strings = {Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO}
+                        alias = "readMediaImages",
+                        strings = {"android.permission.READ_MEDIA_IMAGES"}
                 ),
+                @Permission(
+                        alias = "readMediaVideo",
+                        strings = {"android.permission.READ_MEDIA_VIDEO"}
+                ),
+                @Permission(
+                        alias = "readMediaVisualUserSelected",
+                        strings = {"android.permission.READ_MEDIA_VISUAL_USER_SELECTED"}
+                )
         }
 )
+
+
 public class GalleryPlugin extends Plugin {
+    private final String TAG = GalleryPlugin.class.getSimpleName();
+
+    public enum MediaPermissionState {
+        GRANTED,   // Full access to all media
+        PARTIAL,   // Android 14+ user selected subset
+        DENIED_ONCE,
+        DENIED     // No access
+    }
 
     private static final int THUMBNAIL_SIZE = 200;
     private static final int THUMBNAIL_QUALITY = 80; // JPEG quality
 
     @PluginMethod
+    public void checkOrRequestPermission(PluginCall call) {
+        Boolean skipPartial = call.getBoolean("skipPartial");
+        if (skipPartial == null) skipPartial = false;
+
+        Log.d(TAG, String.format("check or request permission: skipPartial=%b", skipPartial));
+
+        MediaPermissionState current = getMediaPermissionState();
+        if (current != MediaPermissionState.DENIED && current != MediaPermissionState.DENIED_ONCE && !skipPartial) {
+            resolvePermissionCall(call, current);
+        } else {
+            requestMediaPermissions(call);
+        }
+    }
+
+    @PluginMethod
     public void getMedia(PluginCall call) {
-        String ungrantedAlias = this.getUngrantedPermissionAlias();
-        if (ungrantedAlias != null) {
-            requestPermissionForAlias(ungrantedAlias, call, "permissionCallback");
+        boolean hasPermission = checkMediaPermissionState(call);
+        if (!hasPermission) {
             return;
         }
 
@@ -60,9 +97,8 @@ public class GalleryPlugin extends Plugin {
 
     @PluginMethod
     public void getMediaThumbnail(PluginCall call) {
-        String ungrantedAlias = this.getUngrantedPermissionAlias();
-        if (ungrantedAlias != null) {
-            requestPermissionForAlias(ungrantedAlias, call, "permissionCallback");
+        boolean hasPermission = checkMediaPermissionState(call);
+        if (!hasPermission) {
             return;
         }
 
@@ -80,19 +116,9 @@ public class GalleryPlugin extends Plugin {
         ContentResolver cr = getContext().getContentResolver();
 
         String base64 = generateThumbnail(cr, Uri.parse(uri), id, size, quality);
-        JSObject result = new JSObject();
-        result.put("base64", base64);
-        call.resolve(result);
-    }
-
-    @PermissionCallback
-    private void permissionCallback(PluginCall call) {
-        String ungrantedAlias = this.getUngrantedPermissionAlias();
-        if (ungrantedAlias == null) {
-            executeGetMedia(call);
-        } else {
-            call.reject("Permission is required to get medias");
-        }
+        JSObject data = new JSObject();
+        data.put("base64", base64);
+        call.resolve(data);
     }
 
     private void executeGetMedia(PluginCall call) {
@@ -101,14 +127,13 @@ public class GalleryPlugin extends Plugin {
         String afterString = call.getString("after", "0"); // timestamp cursor
         String type = call.getString("types", "all"); // "photos" | "videos" | "all"
 
-
         if (limit == null || type == null || afterString == null) {
             call.reject("Incorrect parameters");
             return;
         }
 
         long after = Long.parseLong(afterString);
-        Log.d("HuginnLog", "executeGetMedia: limit=" + limit + ", after=" + after + ", type=" + type);
+        Log.d(TAG, String.format("executeGetMedia called with: type=%s, after=%d, limit=%d", type, after, limit));
 
         new Thread(() -> {
             try {
@@ -127,16 +152,6 @@ public class GalleryPlugin extends Plugin {
                 call.reject("Failed to query media: " + e.getMessage());
             }
         }).start();
-    }
-
-    private String getUngrantedPermissionAlias() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && getPermissionState("storageNew") != PermissionState.GRANTED) {
-            return "storageNew";
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && getPermissionState("storageOld") != PermissionState.GRANTED) {
-            return "storageOld";
-        }
-
-        return null;
     }
 
     private JSArray queryMediaStore(int limit, long afterTimestamp, String type) throws Exception {
@@ -270,4 +285,169 @@ public class GalleryPlugin extends Plugin {
             return "";
         }
     }
+
+    private boolean checkMediaPermissionState(PluginCall call) {
+        MediaPermissionState current = getMediaPermissionState();
+        Log.d(TAG, String.format("media permission state=%s", current));
+
+        if (current == MediaPermissionState.DENIED_ONCE) {
+            JSObject result = new JSObject();
+            result.put("error", "permission_denied_once");
+            call.resolve(result);
+            return false;
+        } else if (current == MediaPermissionState.DENIED) {
+            JSObject result = new JSObject();
+            result.put("error", "permission_denied");
+            call.resolve(result);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void resolvePermissionCall(PluginCall call, MediaPermissionState state) {
+        Log.d(TAG, String.format("resolve permission call: state=%s", state));
+
+        JSObject result = new JSObject();
+        result.put("status", state.name().toLowerCase()); // "granted" | "partial" | "denied"
+        result.put("isPartial", state == MediaPermissionState.PARTIAL);
+        call.resolve(result);
+    }
+
+    private void resolveWithSettingsRequired(PluginCall call, MediaPermissionState state) {
+        Log.d(TAG, "resolve with settings required call");
+
+        JSObject result = new JSObject();
+        result.put("status", state.name().toLowerCase()); // "granted" | "partial" | "denied"
+        result.put("isPartial", false);
+        result.put("settingsRequired", true);
+        call.resolve(result);
+    }
+
+    public void requestMediaPermissions(PluginCall call) {
+        Log.d(TAG, "request media permissions");
+        // Already have sufficient access — resolve immediately
+        MediaPermissionState current = getMediaPermissionState();
+        if (current == MediaPermissionState.GRANTED) {
+            resolvePermissionCall(call, current);
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            boolean imagesPermanentlyDenied = isPermissionPermanentlyDenied(Manifest.permission.READ_MEDIA_IMAGES);
+            boolean videoPermanentlyDenied = isPermissionPermanentlyDenied(Manifest.permission.READ_MEDIA_VIDEO);
+
+            if (imagesPermanentlyDenied || videoPermanentlyDenied) {
+                resolveWithSettingsRequired(call, current);
+                return;
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            markAskedBefore(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+            requestPermissionForAliases(new String[]{"readMediaImages", "readMediaVideo", "readMediaVisualUserSelected"}, call, "onMediaPermissionResult");
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+            markAskedBefore(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO);
+            requestPermissionForAliases(
+                    new String[]{"readMediaImages", "readMediaVideo"},
+                    call,
+                    "onMediaPermissionResult"
+            );
+        } else {
+            markAskedBefore(Manifest.permission.READ_EXTERNAL_STORAGE);
+            requestPermissionForAlias("readMediaLegacy", call, "onMediaPermissionResult");
+        }
+    }
+
+    @PermissionCallback
+    private void onMediaPermissionResult(PluginCall call) {
+        MediaPermissionState state = getMediaPermissionState();
+        resolvePermissionCall(call, state);
+    }
+
+    public MediaPermissionState getMediaPermissionState() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34 = Android 14
+            return getPermissionStateApi34();
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) { // API 33 = Android 13
+            return getPermissionStateApi33();
+        } else {
+            return getPermissionStateLegacy();
+        }
+    }
+
+    private MediaPermissionState getPermissionStateApi34() {
+        PermissionState imagesState = getPermissionState("readMediaImages");
+        PermissionState videoState = getPermissionState("readMediaVideo");
+        PermissionState partialState = getPermissionState("readMediaVisualUserSelected");
+
+        if (imagesState == PermissionState.GRANTED && videoState == PermissionState.GRANTED) {
+            return MediaPermissionState.GRANTED;
+        } else if (partialState == PermissionState.GRANTED) {
+            // User granted access to a subset of their media
+            return MediaPermissionState.PARTIAL;
+        } else if (imagesState == PermissionState.PROMPT_WITH_RATIONALE || videoState == PermissionState.PROMPT_WITH_RATIONALE) {
+            return MediaPermissionState.DENIED_ONCE;
+        } else {
+            return MediaPermissionState.DENIED;
+        }
+    }
+
+    private MediaPermissionState getPermissionStateApi33() {
+        PermissionState imagesState = getPermissionState("readMediaImages");
+        PermissionState videoState = getPermissionState("readMediaVideo");
+
+        if (imagesState == PermissionState.GRANTED && videoState == PermissionState.GRANTED) {
+            return MediaPermissionState.GRANTED;
+        } else if (imagesState == PermissionState.PROMPT_WITH_RATIONALE || videoState == PermissionState.PROMPT_WITH_RATIONALE) {
+            return MediaPermissionState.DENIED_ONCE;
+        } else {
+            return MediaPermissionState.DENIED;
+        }
+    }
+
+    private MediaPermissionState getPermissionStateLegacy() {
+        PermissionState legacyState = getPermissionState("readMediaLegacy");
+        if (legacyState == PermissionState.GRANTED) {
+            return MediaPermissionState.GRANTED;
+        } else if (legacyState == PermissionState.PROMPT_WITH_RATIONALE) {
+            return MediaPermissionState.DENIED_ONCE;
+        } else {
+            return MediaPermissionState.DENIED;
+        }
+    }
+
+    private boolean isPermissionPermanentlyDenied(String permission) {
+        boolean denied = ContextCompat.checkSelfPermission(getContext(), permission)
+                != PackageManager.PERMISSION_GRANTED;
+        // shouldShowRequestPermissionRationale returns false in two cases:
+        //   1. Never asked yet (first time)
+        //   2. User checked "Don't ask again" / exhausted prompt slots
+        // So we need to track whether we've asked before to distinguish them.
+        boolean shouldShow = ActivityCompat.shouldShowRequestPermissionRationale(
+                getActivity(), permission
+        );
+
+        boolean hasAsked = hasAskedBefore(permission);
+
+        Log.d(TAG, String.format("is permission permanently denied: denied=%b, shouldShow=%b, hasAskedBefore=%b", denied, shouldShow, hasAsked));
+
+        return denied && !shouldShow && hasAsked;
+    }
+
+    private boolean hasAskedBefore(String permission) {
+        SharedPreferences prefs = getContext()
+                .getSharedPreferences("media_permission_prefs", Context.MODE_PRIVATE);
+        return prefs.getBoolean("asked_" + permission, false);
+    }
+
+    private void markAskedBefore(String... permissions) {
+        SharedPreferences.Editor editor = getContext()
+                .getSharedPreferences("media_permission_prefs", Context.MODE_PRIVATE)
+                .edit();
+        for (String p : permissions) {
+            editor.putBoolean("asked_" + p, true);
+        }
+        editor.apply();
+    }
+
 }

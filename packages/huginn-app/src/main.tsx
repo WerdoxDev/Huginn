@@ -1,10 +1,10 @@
-import { CapacitorUpdater } from "@capgo/capacitor-updater";
-
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import ErrorComponent from "@components/ErrorComponent";
 import { analytics } from "@huginn/shared";
 import { runPendingActions } from "@lib/actions";
+import { SplashScreen } from "@lib/capacitor/splash-screen";
 import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
 import { initStorageStoreEarly } from "@stores/storageStore";
@@ -45,6 +45,22 @@ await initStorageStoreEarly();
 await runPendingActions();
 await initWindowStore();
 initAnalytics();
+
+if (__IS_CAPACITOR__) {
+   await SplashScreen.hide();
+}
+// if (__IS_CAPACITOR__) {
+//    await SplashScreen.hide();
+//    await SplashScreen.show();
+// }
+
+// setTimeout(() => {
+//    void SplashScreen.show();
+// }, 2000);
+
+// setTimeout(() => {
+//    void SplashScreen.hide();
+// }, 5000);
 
 // if (window.electronAPI) {
 //    logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
