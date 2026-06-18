@@ -51,7 +51,6 @@ export async function serverFetch<T>(url: string, method: RequestMethod, options
 
 export async function request(options: InternalRequest & { throw?: boolean }): Promise<unknown> {
    const { url, fetchOptions } = await resolveRequest(options);
-   console.log(fetchOptions);
    const response = await fetch(url, fetchOptions);
 
    if (response.ok || !options.throw) return parseResponse(response);

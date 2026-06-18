@@ -35,7 +35,5 @@ for (const route of routes) {
       finalContent += `${line}\n`;
    }
 
-   console.log(finalContent);
-
    await Bun.write(fixedRoute, finalContent);
 }

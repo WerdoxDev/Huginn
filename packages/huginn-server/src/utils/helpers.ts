@@ -1,3 +1,4 @@
+import { logger } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
@@ -8,8 +9,11 @@ import {
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
 import {
+   analytics,
    type APIMessageCall,
    type APIMessageReference,
+   type APIPublicUser,
+   changeUrlBase,
    ChannelType,
    CONSTANTS,
    type DirectChannel,
@@ -19,12 +23,14 @@ import {
    nullToUndefined,
    omit,
    pick,
+   recordSpanError,
    type Snowflake,
 } from "@huginn/shared";
 
 import { envs } from "#setup";
 
 import { dispatchToTopic } from "./gateway-utils";
+import { sendPushNotification } from "./route-utils";
 
 export async function dispatchMessage(options: {
    authorId: Snowflake;
@@ -51,6 +57,9 @@ export async function dispatchMessage(options: {
    );
 
    dispatchToTopic(options.channelId, "message_create", filterMessage(message));
+
+   await sendMessagePushNotification(options.channelId, message);
+   // await sendPushNotification()
 
    return message;
 }
@@ -84,16 +93,7 @@ export function dispatchChannel(
 }
 
 export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T) {
-   const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
-   const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
-
-   const signedAttachments = message.attachments.map((x) => {
-      const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
-      hasher.update(`${x.url}:${expiry}`);
-      const signature = hasher.digest("hex");
-
-      return { ...x, url: `${x.url}?ex=${expiry}&hm=${signature}` };
-   });
+   const signedAttachments = message.attachments.map(signAttachment);
 
    return {
       ...omit(message, ["call", "messageReference"]),
@@ -134,4 +134,67 @@ export function filterKnownApplication<T extends KnownApplicationPayload<{ selec
       }),
       ...(knownApplication.igdbId !== null && { igdbId: knownApplication.igdbId }),
    };
+}
+
+export function signAttachment<A extends { url: string }>(attachment: A): A {
+   const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
+   const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
+
+   const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+   hasher.update(`${attachment.url}:${expiry}`);
+   const signature = hasher.digest("hex");
+
+   return { ...attachment, url: `${attachment.url}?ex=${expiry}&hm=${signature}` };
+}
+
+export async function sendMessagePushNotification(channelId: Snowflake, message: MessagePayload<{ select: typeof selectAllMessage }>) {
+   analytics.startActiveSpan("sendMessagePushNotification", async (span) => {
+      try {
+         span.setAttributes({
+            "params.channel_id": channelId,
+            "params.message_id": message.id,
+            "message.author.id": message.author.id,
+            "message.content_length": message.content.length,
+         });
+
+         const channel = await prisma.channel.getById(channelId, { select: { name: true, type: true } });
+         const recipients = (await prisma.channel.getRecipients(channelId)).filter((r) => r.id !== message.author.id);
+
+         span.setAttributes({
+            "channel.type": channel.type,
+            "recipients.count": recipients.length,
+         });
+
+         const channelName = channel.name ?? recipients.map((r) => r.displayName ?? r.username).join(", ");
+
+         const username = message.author.displayName ?? message.author.username;
+         const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channelName})` : "");
+         const firstAttachment = message.attachments[0] ? signAttachment(message.attachments[0]) : undefined;
+         const imageUrl = envs.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, envs.CDN_PUBLIC_URL) : undefined;
+
+         span.setAttributes({
+            "notification.title": title,
+            "notification.body": message.content,
+            "notification.image_url": imageUrl ?? "none",
+         });
+
+         logger.debug(`sending push notification for message in channel ${channelId} for ${recipients.map((r) => r.id).join(", ")}`);
+
+         await Promise.allSettled(
+            recipients.map((user) =>
+               sendPushNotification(user.id, {
+                  title: title,
+                  body: message.content,
+                  imageUrl: imageUrl,
+                  data: { channelId, messageId: message.id },
+                  notificationChannelId: "messages",
+               }),
+            ),
+         );
+      } catch (e) {
+         recordSpanError(e as Error);
+      } finally {
+         span.end();
+      }
+   });
 }
