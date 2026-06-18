@@ -61,11 +61,11 @@ const sectionStyles: Partial<Record<LogKeys | "default" | "error", string>> = {
 };
 
 export function log<K extends LogKeys>(section: K, level: LogValuesFor<K>, ...args: LogArgs[]): void {
-   logger.log(section, level, ...args);
+   loggerOld.log(section, level, ...args);
 }
 
 export function error(section: LogKeys, ...args: LogArgs[]): void {
-   logger.error(section, ...args);
+   loggerOld.error(section, ...args);
 }
 
 type Events = {
@@ -168,4 +168,4 @@ export class Logger extends EventEmitter<Events> {
    }
 }
 
-export const logger: Logger = new Logger();
+export const loggerOld: Logger = new Logger();
