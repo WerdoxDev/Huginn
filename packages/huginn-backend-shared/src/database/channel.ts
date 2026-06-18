@@ -278,6 +278,28 @@ export const channelExtension = Prisma.defineExtension({
                }
             });
          },
+         async getRecipients(channelId: Snowflake) {
+            return analytics.startActiveSpan("db.channel.getRecipients", async (span) => {
+               const methodName = "channel.getRecipients";
+               span.setAttribute("query.channel.id", channelId);
+               assertId(methodName, channelId);
+               try {
+                  const recipients = await prisma.channel
+                     .findUnique({
+                        where: { id: BigInt(channelId) },
+                        select: { recipients: { select: { id: true, username: true, displayName: true } } },
+                     })
+                     .then((x) => x?.recipients ?? []);
+                  return idFix(recipients);
+               } catch (e) {
+                  recordSpanError(e as Error);
+                  await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
+                  throw e;
+               } finally {
+                  span.end();
+               }
+            });
+         },
       },
    },
 });

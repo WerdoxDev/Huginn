@@ -69,9 +69,7 @@ export const readStateExtension = Prisma.defineExtension({
 
                   span.setAttribute("read_state.existing", !!existing);
 
-                  if (existing) {
-                     return existing;
-                  }
+                  if (existing) return existing;
 
                   const readState = await prisma.readState.create({
                      data: { userId: BigInt(userId), channelId: BigInt(channelId) },

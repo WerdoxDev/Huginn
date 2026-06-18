@@ -38,6 +38,7 @@ model User {
    contributedApplications KnownApplication[]
    emailVerifications      EmailVerification[]
    pinnedMessages          MessagePin[]
+   notificationTokens      NotificationToken[]
 }
 
 model EmailVerification {
@@ -248,4 +249,13 @@ model MessageReference {
    channel         Channel  @relation(fields: [channelId], references: [id])
 
    @@index([referrerMessageId])
+}
+
+model NotificationToken {
+   deviceId  String   @id
+   token     String
+   userId    BigInt
+   createdAt DateTime @default(now())
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
