@@ -3,7 +3,7 @@ import { analytics } from "@huginn/shared";
 import { presenceStore } from "@stores/presenceStore";
 import { windowStore } from "@stores/windowStore";
 
-import { router } from "@/main";
+import { router } from "@/router";
 
 export async function initNotifications() {
    const store = windowStore.getState();
@@ -14,10 +14,6 @@ export async function initNotifications() {
       return initElectronNotifications();
    }
 }
-
-router.subscribe("onBeforeNavigate", ({ toLocation }) => {
-   console.log("TO LOCATION:", toLocation);
-});
 
 async function initMobileNotifications() {
    const registration = new Promise<string>((res, rej) => {

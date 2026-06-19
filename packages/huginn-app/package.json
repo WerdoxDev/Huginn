@@ -17,6 +17,7 @@
       "preview": "vite preview",
       "build": "bun run vite:build --mode electron && bun run electron:build",
       "vite:dev": "vite --host --port 5174",
+      "vite:electron": "vite --host --port 5174 --mode electron",
       "vite:build": "vite build",
       "vite:build-cap": "vite build --mode capacitor && cap sync",
       "electron:build": "bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts",

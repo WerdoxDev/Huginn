@@ -1,4 +1,4 @@
-import { CacheStorage, error, findClosestString, log } from "@huginn/shared";
+import { analytics, CacheStorage, error, findClosestString, log } from "@huginn/shared";
 import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, desktopCapturer, ipcMain, nativeImage, session, shell, type BrowserWindow } from "electron";
 import electronUpdater, { CancellationToken } from "electron-updater";
@@ -368,7 +368,7 @@ export class MainWindow extends BaseWindow {
 
    private voiceDebugCategoryEvents() {
       ipcMain.on("voice-debug:open", () => {
-         log("app:electron", "recv", "open voice debug");
+         console.log("open voice debug");
 
          if (this.voiceDebugWindow) {
             this.voiceDebugWindow.window.destroy();

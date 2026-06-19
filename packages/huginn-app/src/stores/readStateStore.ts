@@ -100,7 +100,6 @@ export function initReadStateStore() {
    });
 
    const unlisten2 = listenEvent("message_added", async (data) => {
-      console.log(store.getState().readStates);
       if (!data.self && !data.visible && !data.message.isPreview) {
          const author = getUser(data.message.authorId);
          const mentions = getUsers(data.message.mentions);

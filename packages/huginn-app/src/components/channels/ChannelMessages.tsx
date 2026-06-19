@@ -210,7 +210,6 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
 
    return (
       <div className="relative h-full overflow-y-hidden">
-         <ChannelTypingIndicator channelId={props.channel.id} />
          <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
                {hasPreviousPage && (

@@ -1,7 +1,7 @@
 import { spawn } from "bun";
 
 try {
-   const frontend = spawn(["bun", "run", "vite:dev", "--mode", "electron-dev"], {
+   const frontend = spawn(["bun", "run", "vite:dev", "--mode", "electron"], {
       stdin: "inherit",
       stdout: "inherit",
       cwd: process.cwd(),
