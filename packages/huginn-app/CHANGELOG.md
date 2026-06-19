@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.76.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.75.0...app@v0.76.0) (2026-06-19)
+
+
+### Features
+
+* **app:** add actual icons + push notification implementation ([50745f4](https://github.com/WerdoxDev/Huginn/commit/50745f4a7e49feb7571c649a5c0443049efad3a5))
+
+
+### Bug Fixes
+
+* **app:** few visual bugs + voice-debug route bug ([6518e49](https://github.com/WerdoxDev/Huginn/commit/6518e496bedd461a5d0101aecea51f6cced5d399))
+* potential android workflow fix [#4](https://github.com/WerdoxDev/Huginn/issues/4) ([0bae2d1](https://github.com/WerdoxDev/Huginn/commit/0bae2d1220debb21947724cc24e0b28b3f9473b3))
+* potential android workflow fix [#5](https://github.com/WerdoxDev/Huginn/issues/5) ([c70d8a1](https://github.com/WerdoxDev/Huginn/commit/c70d8a1d1cf9ce8a5ec614b26e91e80375b69e8a))
+* potential android workflow fix [#8](https://github.com/WerdoxDev/Huginn/issues/8) ([a5cff1b](https://github.com/WerdoxDev/Huginn/commit/a5cff1bca12548d24552585b779b0349fe370101))
+
 ## [0.75.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.1...app@v0.75.0) (2026-06-16)
 
 

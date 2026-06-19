@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.39.0...server@v0.40.0) (2026-06-19)
+
+
+### Features
+
+* **server:** add push notification handling with firebase-admin ([828c8da](https://github.com/WerdoxDev/Huginn/commit/828c8da7df6a581384ba310f8cb3babef97b085c))
+
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.1...server@v0.39.0) (2026-06-16)
 
 
