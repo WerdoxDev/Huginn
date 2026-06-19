@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.37.0...api@v0.38.0) (2026-06-19)
+
+
+### Features
+
+* **api:** add route to send push notification token ([570769e](https://github.com/WerdoxDev/Huginn/commit/570769ee38f08a36d1b5fa206b636a443b671b4a))
+
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.36.0...api@v0.37.0) (2026-06-10)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.1...backend-shared@v0.28.0) (2026-06-19)
+
+
+### Features
+
+* **backend-shared:** add push notification db handlers ([e90f104](https://github.com/WerdoxDev/Huginn/commit/e90f1044e284c31a118c2a4f45b38b159588c124))
+
 ## [0.27.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.0...backend-shared@v0.27.1) (2026-06-16)
 
 

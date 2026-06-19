@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.37.0...shared@v0.38.0) (2026-06-19)
+
+
+### Features
+
+* **shared:** add types for push notification token ([760c97e](https://github.com/WerdoxDev/Huginn/commit/760c97e7c8c86a7fbe5d304bbab77071ccf0b9d5))
+
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.36.0...shared@v0.37.0) (2026-06-10)
 
 
