@@ -1,7 +1,7 @@
 import { cors } from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { staticPlugin } from "@elysiajs/static";
-import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, logger, notFound, serverError, serverOnError } from "@huginn/backend-shared";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
@@ -14,6 +14,7 @@ import { getGoogleCallback } from "#routes/auth/callback/google.get";
 import { getGoogle } from "#routes/auth/google.get";
 import { postLogin } from "#routes/auth/login.post";
 import { postLogout } from "#routes/auth/logout.post";
+import { postNotificationToken } from "#routes/auth/notification-token.post";
 import { postOauthConfirm } from "#routes/auth/oauth-confirm.post";
 import { postRefreshToken } from "#routes/auth/refresh-token.post";
 import { postRegister } from "#routes/auth/register.post";
@@ -68,6 +69,7 @@ export const app = new Elysia({
       path: "/",
       maxAge: 60 * 5,
    },
+   normalize: "typebox",
 })
    .use(cors())
    .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
@@ -86,7 +88,7 @@ export const app = new Elysia({
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {
-      console.log(path, request.method, code, error);
+      logger.error({ error, code, path, method: request.method }, "Request error");
       // consola.box(path, request.method, code, error);
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
@@ -159,6 +161,7 @@ export const app = new Elysia({
    .use(postRefreshToken)
    .use(getGoogle)
    .use(getGoogleCallback)
+   .use(postNotificationToken)
 
    // applications
    .use(postApplicationIcon)
@@ -185,8 +188,8 @@ export const app = new Elysia({
       },
       (server) => {
          if (process.env.TEST) {
-            console.log(`Listening on ${server.hostname}:${server.port}`);
          } else {
+            logger.info(`listening on ${server.hostname}:${server.port}`);
             // consola.box(`Listening on ${server.hostname}:${server.port}`);
          }
       },

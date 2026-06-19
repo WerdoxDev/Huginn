@@ -72,7 +72,7 @@ export class WebAnalytics extends Analytics {
       this.logger = logs.getLogger(options.serviceName, options.serviceVersion);
    }
 
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception: unknown }): void {
+   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void {
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
       posthog.captureLog({ body: options.body, level: options.level, attributes: mergedAttributes, trace_id: options.traceId });
       this.logger.emit({
@@ -85,6 +85,14 @@ export class WebAnalytics extends Analytics {
          },
          exception: options.exception,
       });
+
+      if (options.level === "error" || options.level === "fatal") {
+         console.error(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+      } else if (options.level === "warn") {
+         console.warn(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+      } else {
+         console.log(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+      }
    }
 
    public identify(id: string, properties?: Record<string, any>): void {

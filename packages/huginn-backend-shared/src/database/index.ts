@@ -10,6 +10,7 @@ import { embedExtension } from "./embed";
 import { knownApplicationExtension } from "./knownApplication";
 import { messagesExtension } from "./message";
 import { messagePinExtension } from "./messagePin";
+import { notificationTokenExtension } from "./notificationToken";
 import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { settingsExtension } from "./settings";
@@ -44,7 +45,8 @@ export const prisma = prismaBase
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
    .$extends(knownApplicationExtension)
-   .$extends(emailVerificationExtension);
+   .$extends(emailVerificationExtension)
+   .$extends(notificationTokenExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {

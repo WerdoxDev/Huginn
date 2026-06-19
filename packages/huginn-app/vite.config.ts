@@ -23,7 +23,6 @@ const certFile = isHttps ? fs.readFileSync("./certs/cert.pem") : undefined;
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
-   const isElectronDev = mode === "electron-dev";
    const isCapacitor = mode === "capacitor";
    const shouldUploadSourcemaps = process.env.VERCEL === "1" || process.env.CI === "true";
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
@@ -119,7 +118,8 @@ export default defineConfig(({ mode }) => {
 
       define: {
          __APP_VERSION__: JSON.stringify(version.toString()),
-         __IS_ELECTRON__: JSON.stringify(isElectron || isElectronDev),
+         __IS_ELECTRON__: JSON.stringify(isElectron),
+         __IS_CAPACITOR__: JSON.stringify(isCapacitor),
       },
 
       resolve: {

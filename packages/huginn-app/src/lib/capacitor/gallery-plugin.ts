@@ -53,9 +53,23 @@ export type ThumbnailResult = {
    base64: string;
 };
 
+export enum GalleryErrorCode {
+   DENIED_ONCE = "permission_denied_once",
+   DENIED = "permission_denied",
+}
+
+export type MediaPermissionState = "granted" | "partial" | "denied_once" | "denied";
+
+export type GalleryError = {
+   error: GalleryErrorCode;
+};
+
 export type GalleryPlugin = {
-   getMedia(options?: MediaOptions): Promise<MediaResult>;
-   getMediaThumbnail: (options: ThumbnailOptions) => Promise<ThumbnailResult>;
+   getMedia(options?: MediaOptions): Promise<MediaResult | GalleryError>;
+   getMediaThumbnail: (options: ThumbnailOptions) => Promise<ThumbnailResult | GalleryError>;
+   checkOrRequestPermission: (options?: {
+      skipPartial: boolean;
+   }) => Promise<{ status: MediaPermissionState; isPartial: boolean; settingsRequired?: boolean }>;
 };
 
 // ─── Registration ─────────────────────────────────────────────────────────────

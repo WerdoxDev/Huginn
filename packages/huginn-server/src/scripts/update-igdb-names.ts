@@ -1,8 +1,9 @@
+import { prisma } from "@huginn/backend-shared/database/index";
+
 import type { TwitchOAuthResult } from "#utils/types";
 
 import { envs } from "#setup";
 import { serverFetch } from "#utils/server-request";
-import { prisma } from "@huginn/backend-shared/database/index";
 
 const knownApplications = await prisma.knownApplication.findMany({
    where: { igdbId: { not: null } },
@@ -48,8 +49,6 @@ for (const application of knownApplications) {
    const foundNames = names.filter((x) => x.id === application.igdbId);
    application.names = foundNames.map((x) => x.name);
 }
-
-console.log(knownApplications);
 
 for (const application of knownApplications) {
    await prisma.knownApplication.update({ where: { id: application.id }, data: application });

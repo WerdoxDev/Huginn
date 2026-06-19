@@ -44,6 +44,14 @@ export const Routes = {
    },
 
    /**
+    * Route for:
+    * - POST '/auth/notification-token'
+    */
+   notificationToken() {
+      return "/auth/notification-token" as const;
+   },
+
+   /**
     * ROute for:
     * - POST '/unique-username'
     */

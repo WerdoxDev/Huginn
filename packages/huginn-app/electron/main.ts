@@ -2,6 +2,7 @@ import { error, log } from "@huginn/shared";
 import * as loopback from "application-loopback";
 import { app, dialog } from "electron";
 import path from "node:path";
+import "dotenv/config";
 
 let allowedToRun: boolean = false;
 try {

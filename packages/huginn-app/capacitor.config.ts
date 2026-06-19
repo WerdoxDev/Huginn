@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
          version: version,
       },
    },
-   // server: { cleartext: true, url: "http://localhost:5174" },
+   server: { cleartext: true, url: "http://localhost:5174" },
 };
 
 export default config;

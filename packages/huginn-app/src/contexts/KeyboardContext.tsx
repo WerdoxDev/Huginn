@@ -1,4 +1,4 @@
-import { useCapacitorListener } from "@hooks/useCapacitorEvent";
+import { useCapacitorListener } from "@hooks/useCapacitorListener";
 import KeyboardInset from "@lib/capacitor/keyboard-inset-plugin";
 import { useHuginnWindow } from "@stores/windowStore";
 import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";

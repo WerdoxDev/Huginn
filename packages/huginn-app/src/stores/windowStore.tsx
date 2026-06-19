@@ -1,5 +1,6 @@
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 import { dispatchEvent } from "@lib/event-handler";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
@@ -17,6 +18,7 @@ const store = createStore(
          args: [] as string[],
          version: "",
          processId: 0,
+         deviceId: undefined as string | undefined,
       },
       (set) => ({
          setMaximized: (isMaximized: boolean) => set({ maximized: isMaximized }),
@@ -35,6 +37,7 @@ export async function initWindowStore() {
       args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
       version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
       processId: window.electronAPI ? await window.electronAPI.processId() : 0,
+      deviceId: Capacitor.getPlatform() === "android" ? (await Device.getId()).identifier : undefined,
    });
 
    const controller = new AbortController();

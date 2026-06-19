@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { analytics, ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
 import { playAudio } from "@lib/audio-player";
 import { listenEvent } from "@lib/event-handler";
+import { sendNotification } from "@lib/notification";
 import { findChannel, getChannels, getCurrentPageMessages, getUser, getUsers } from "@lib/query-utils";
 import { getDataURLFromSrc, getSolidColorDataURL } from "@lib/utils";
 import { windowStore } from "@stores/windowStore";
@@ -11,7 +12,6 @@ import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import { sendNotification } from "../contexts/NotificationContext";
 import { clientStore } from "./clientStore";
 import { themeStore } from "./themeStore";
 
@@ -108,7 +108,7 @@ export function initReadStateStore() {
          if (windowStore.getState().environment === "desktop") {
             let content;
             const username = author?.displayName ?? "Unknown User";
-            const title = username + (channel?.type === ChannelType.GROUP_DM ? `- (${channel.name})` : "");
+            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channel.name})` : "");
 
             switch (data.message.type) {
                case MessageType.DEFAULT:

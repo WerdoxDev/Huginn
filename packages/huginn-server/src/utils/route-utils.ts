@@ -1,6 +1,6 @@
 import type { Endpoints } from "@octokit/types";
 
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData, logger } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import {
    type APIBadge,
@@ -13,10 +13,13 @@ import {
    type Snowflake,
    type Unpacked,
    UserFlags,
+   analytics,
    hasFlag,
    isImageMediaType,
    isVideoMediaType,
+   recordSpanError,
 } from "@huginn/shared";
+import { getMessaging } from "firebase-admin/messaging";
 import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
@@ -353,4 +356,47 @@ export async function getUserBadges(userId: Snowflake): Promise<APIBadge[]> {
    }
 
    return badges;
+}
+
+export async function sendPushNotification(
+   userId: Snowflake,
+   options: { title: string; body: string; imageUrl?: string; data?: Record<string, unknown>; notificationChannelId?: string },
+) {
+   analytics.startActiveSpan("sendPushNotification", async (span) => {
+      try {
+         span.setAttributes({
+            "params.user.id": userId,
+            "params.title": options.title,
+            "params.body": options.body,
+            "params.image_url": options.imageUrl ?? "none",
+         });
+
+         const tokens = (await prisma.notificationToken.getByUserId(userId)).map((x) => x.token);
+         span.setAttribute("tokens.count", tokens.length);
+
+         logger.debug(`sending push notification to user ${userId} with tokens ${tokens.join(", ")}`);
+
+         if (tokens.length === 0) {
+            logger.debug(`no tokens found for user ${userId}, skipping push notification`);
+            span.setAttribute("skipped", true);
+            return;
+         }
+
+         const response = await getMessaging().sendEachForMulticast({
+            tokens,
+            notification: { title: options.title, body: options.body, imageUrl: options.imageUrl },
+            android: {
+               notification: { channelId: options.notificationChannelId, body: options.body, title: options.title, imageUrl: options.imageUrl },
+            },
+            data: { ...options.data, userId },
+         });
+
+         span.setAttribute("success_count", response.successCount);
+         span.setAttribute("failure_count", response.failureCount);
+      } catch (e) {
+         recordSpanError(e as Error);
+      } finally {
+         span.end();
+      }
+   });
 }

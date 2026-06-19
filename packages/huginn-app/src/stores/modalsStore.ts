@@ -86,8 +86,12 @@ const store = createStore(
             produce((draft: StoreType) => {
                for (const [key, value] of Object.entries(action)) {
                   const actualKey = key as keyof typeof draft;
-                  Object.assign(draft[actualKey], value);
+                  if (value.isOpen) (draft[actualKey] as StoreType[keyof typeof draft]) = value as StoreType[keyof typeof draft];
+                  else draft[actualKey].isOpen = false;
+                  // if (draft[actualKey].isOpen) draft[actualKey] = value ;
+                  // Object.assign(draft[actualKey], value);
                }
+               // draft[action.]
             }),
          ),
       showError: (text: string, errorCode?: string) => {

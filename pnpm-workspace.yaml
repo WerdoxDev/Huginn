@@ -1,6 +1,7 @@
 packages:
   - "packages/*"
 allowBuilds:
+  '@firebase/util': true
   '@posthog/cli': set this to true or false
   '@prisma/engines': false
   core-js: false

@@ -20,6 +20,7 @@ import AttachmentsPreview from "./AttachmentsPreview";
 import EmojiPickerButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
 import HuginnButton from "./button/HuginnButton";
+import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import EmojiPickerPanel from "./channels/EmojiPickerPanel";
 import EmojiPickerPopover from "./channels/EmojiPickerPopover";
 import FilePickerPanel from "./channels/FilePickerPanel";
@@ -135,21 +136,17 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    return (
       <div className="relative shrink-0">
-         <div
-            className="pointer-events-none absolute inset-x-0 -top-7 right-2.5 z-10 h-7"
-            style={{
-               background: "linear-gradient(to bottom, transparent, var(--color-surface-deep))",
-            }}
-         />
+         <div className="to-surface-deep pointer-events-none absolute inset-x-0 -top-7 right-2.5 z-10 h-7 bg-linear-to-b from-transparent" />
 
+         <ChannelTypingIndicator channelId={channelId!} />
          <div
             className={clsx("bottom-0 z-10 flex flex-col select-text")}
-            style={{ height: shouldShowMobilePanel ? lastKeyboardHeight + (containerRef.current?.clientHeight ?? 0) + 6 : undefined }}
+            // style={{ height: shouldShowMobilePanel ? lastKeyboardHeight + (containerRef.current?.clientHeight ?? 0) + 6 : undefined }}
          >
             <DraggingIndicator isDragging={dragging} />
             <div
                className={clsx(
-                  "bg-surface-alt border-surface mx-1.5 mb-1.5 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius] lg:mx-2",
+                  "bg-surface-alt border-surface mx-1.5 mb-1.5 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
                   hasAddon && "rounded-t-xl",
                )}
                ref={containerRef}
@@ -210,8 +207,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                </div>
             </div>
-            {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
-            {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
+            <div className="" style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
+               {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
+               {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
+            </div>
          </div>
       </div>
    );

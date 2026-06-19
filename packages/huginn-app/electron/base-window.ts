@@ -13,7 +13,7 @@ export abstract class BaseWindow {
 
       const baseUrl = process.env.VITE_DEV_SERVER_URL;
       if (baseUrl) {
-         const url = `${baseUrl}/app/${startPath}`;
+         const url = `${baseUrl}/app/#/${startPath}`;
 
          log("app:electron", "default", `${this.name}`, "url:", url);
          this._window.loadURL(url);

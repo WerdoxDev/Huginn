@@ -25,6 +25,11 @@ type State = {
 
 type Action = { type: "SET"; step: Step; text: string } | { type: "FAIL"; error?: string };
 
+function getSessionRedirect() {
+   const redirect = sessionStorage.getItem("redirect");
+   return redirect ? (JSON.parse(redirect) as { pathname: string; requiresAuth: boolean }) : null;
+}
+
 function reducer(state: State, action: Action): State {
    switch (action.type) {
       case "SET":
@@ -113,19 +118,17 @@ function IndexComponent() {
    }, [state.status, state.current]);
 
    async function initialize() {
-      // await new Promise((r) => setTimeout(r, 1000));
-      // const redirect = search.redirect;
-      // const requiresAuth = search.requireAuth === "1" ? true : false;
-      const redirect = sessionStorage.getItem("redirect");
-      const redirectObj = redirect ? (JSON.parse(redirect) as { pathname: string; requiresAuth: boolean }) : null;
+      let redirect = getSessionRedirect();
 
-      if (!redirectObj?.requiresAuth && redirectObj?.pathname) {
+      if (!redirect?.requiresAuth && redirect?.pathname) {
          sessionStorage.removeItem("redirect");
-         await navigate({ to: redirectObj.pathname, replace: true, viewTransition: true });
+         await navigate({ to: redirect.pathname, replace: true, viewTransition: true });
          return;
       }
 
       const result = await connect();
+      // redirect could have been set again by push notification after we authenticate
+      redirect = getSessionRedirect();
 
       if (result.success) {
          dispatch({
@@ -135,7 +138,7 @@ function IndexComponent() {
          });
          sessionStorage.removeItem("redirect");
          await navigate({
-            to: redirectObj?.pathname ?? "/channels/@me",
+            to: redirect?.pathname ?? "/channels/@me",
             replace: true,
             viewTransition: { types: ["forwards"] },
          });

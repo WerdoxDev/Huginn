@@ -10,7 +10,7 @@ export abstract class Analytics {
       this.defaultAttributes = attributes;
    }
 
-   abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string }): void;
+   abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void;
    abstract identify(id: string, properties?: Record<string, any>): void;
    abstract reset(): void;
    abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F>;
@@ -54,7 +54,7 @@ export function initAnalytics(instance: Analytics): void {
 
 export const analytics: Analytics = new Proxy({} as Analytics, {
    get(_, prop) {
-      if (!impl) throw new Error("Analytics not initialized");
+      if (!impl) return analyticsShim[prop as keyof Analytics];
       const value = impl[prop as keyof Analytics];
       return typeof value === "function" ? value.bind(impl) : value;
    },

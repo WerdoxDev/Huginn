@@ -491,3 +491,8 @@ export type APIUserProfile = {
 export type APIGetProfileResult = APIUserProfile;
 
 export type APIGetChangelogResult = Array<{ title: string; version: string; content: string; date: string }>;
+
+export type APIPostNotificationTokenJSONBody = {
+   token: string;
+   deviceId: string;
+};

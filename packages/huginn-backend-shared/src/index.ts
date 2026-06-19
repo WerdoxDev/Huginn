@@ -13,3 +13,4 @@ export * from "./websocket/common-client-session";
 export * from "./websocket/common-websocket";
 export * from "./token-factory";
 export * from "./elysia-errors";
+export * from "./logger";

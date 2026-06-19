@@ -18,12 +18,11 @@ const schema = t.Object({
    is_emulator: t.Optional(t.Boolean()),
 });
 
-const releasePrefix = "android-test@v";
+const releasePrefix = "app@v";
 
 export const postAndroidUpdate = new Elysia().post(
    "/api/update/android",
    async ({ body, status }) => {
-      console.log(body);
       const { version_name } = body;
 
       const tags = await getAllTags();

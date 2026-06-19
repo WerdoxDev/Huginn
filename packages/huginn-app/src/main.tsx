@@ -1,20 +1,20 @@
-import { CapacitorUpdater } from "@capgo/capacitor-updater";
-
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import ErrorComponent from "@components/ErrorComponent";
+import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { analytics } from "@huginn/shared";
 import { runPendingActions } from "@lib/actions";
+import { SplashScreen } from "@lib/capacitor/splash-screen";
 import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
 import { initStorageStoreEarly } from "@stores/storageStore";
+import { ThemeProvider } from "@stores/themeStore";
 import { initWindowStore } from "@stores/windowStore";
-import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { RouterProvider } from "@tanstack/react-router";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
-import { routeTree } from "./routeTree.gen";
+import { router } from "./router";
 
 CapacitorUpdater.notifyAppReady();
 
@@ -46,30 +46,9 @@ await runPendingActions();
 await initWindowStore();
 initAnalytics();
 
-// if (window.electronAPI) {
-//    logger.on("log", ({ section, level, args }) => window.electronAPI.addToLogBuffer("log", section, level, ...args));
-//    logger.on("error", ({ section, args }) => window.electronAPI.addToLogBuffer("error", section, undefined, ...args));
-// } else {
-//    const thisStore = storageStore.getState();
-//    const settings = thisStore.getCachedValue("settings");
-//    const clientInfo = thisStore.getCachedValue("client-info");
-//    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-//    if (activePreset?.apiHostname) {
-//       const endpoint = new URL("/api/log", activePreset.apiHostname).toString();
-//       _remoteLogger = new RemoteLogger(logger, endpoint, clientInfo.id);
-//    }
-// }
-
-const history = __IS_ELECTRON__ ? createHashHistory() : createBrowserHistory();
-
-export const router = createRouter({
-   routeTree: routeTree,
-   history: history,
-   basepath: !__IS_ELECTRON__ ? "app" : undefined,
-   defaultErrorComponent: ErrorComponent,
-   defaultPendingMinMs: 0,
-   defaultPendingMs: 0,
-});
+if (__IS_CAPACITOR__) {
+   await SplashScreen.hide();
+}
 
 declare module "@tanstack/react-router" {
    interface Register {
@@ -77,13 +56,10 @@ declare module "@tanstack/react-router" {
    }
 }
 
-const rootElement = document.getElementById("root")!;
-
-if (!rootElement.innerHTML) {
-   const root = createRoot(rootElement);
-   root.render(
-      <PostHogProvider client={posthog}>
+createRoot(document.getElementById("root")!).render(
+   <PostHogProvider client={posthog}>
+      <ThemeProvider>
          <RouterProvider router={router} />
-      </PostHogProvider>,
-   );
-}
+      </ThemeProvider>
+   </PostHogProvider>,
+);
