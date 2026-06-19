@@ -137,7 +137,7 @@ jobs:
            run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d -i > $RELEASE_STORE_FILE
 
          - name: Build App
-           run: cd packages/huginn-app && pnpm run cap:debug-build
+           run: cd packages/huginn-app && pnpm run cap:release-build
 
          - name: Bundle App
            run: cd packages/huginn-app && bun run scripts/bundle-android.ts
