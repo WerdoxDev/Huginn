@@ -92,7 +92,7 @@ function Content(
    if (context.isMobile) {
       return (
          <Drawer.Portal keepMounted={false}>
-            <DrawerBackdrop />
+            <DrawerBackdrop forceRender />
             <DrawerPopup className={typeof props.className === "string" ? props.className : undefined}>{props.children}</DrawerPopup>
          </Drawer.Portal>
       );

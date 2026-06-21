@@ -1,4 +1,3 @@
-import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
@@ -7,11 +6,7 @@ import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { useOAuth } from "@hooks/useOAuth";
-import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
-import { useThisUser } from "@stores/userStore";
 import { useEffect } from "react";
 
 import HuginnDialogPanel from "../HuginnDialogPanel";
@@ -46,7 +41,7 @@ export default function ChangePasswordModal() {
    // }
 
    return (
-      <HuginnDialogPanel className="w-full max-w-xs">
+      <HuginnDialogPanel className="lg:max-w-xs">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
                <HuginnDialogTitle title="Change Password" />

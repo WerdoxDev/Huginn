@@ -21,15 +21,18 @@ export const drawerPopupClass = clsx(
    "data-nested-drawer-swiping:duration-0",
 );
 
-export function DrawerBackdrop() {
+export function DrawerBackdrop(props: { forceRender?: boolean }) {
    return (
-      <Drawer.Backdrop className="fixed inset-0 top-6 bg-black opacity-[calc(var(--backdrop-opacity)*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 [--backdrop-opacity:0.5] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0" />
+      <Drawer.Backdrop
+         forceRender={props.forceRender}
+         className="fixed inset-0 top-6 z-10 bg-black opacity-[calc(var(--backdrop-opacity)*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 [--backdrop-opacity:0.5] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0"
+      />
    );
 }
 
 export function DrawerPopup({ children, className }: { children: ReactNode; className?: string }) {
    return (
-      <Drawer.Viewport className="fixed inset-0 flex items-end justify-center">
+      <Drawer.Viewport className="fixed inset-0 z-20 flex items-end justify-center">
          <Drawer.Popup className={clsx(drawerPopupClass, className)}>
             <div className="bg-surface mx-auto mb-2 h-1.5 w-16 shrink-0 rounded-full" />
             {children}

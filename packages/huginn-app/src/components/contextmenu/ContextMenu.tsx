@@ -79,7 +79,7 @@ export default function ContextMenu(props: ContextMenuProps) {
                }}
             >
                <Drawer.Portal container={props.parent ?? undefined}>
-                  <DrawerBackdrop />
+                  <DrawerBackdrop forceRender />
                   <DrawerPopup>{children}</DrawerPopup>
                </Drawer.Portal>
             </Drawer.Root>

@@ -372,7 +372,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                <HuginnSelect onChange={handleHostnameModeChanged} selected={hostnameSources.find((x) => x.value === hostnameSource)}>
                   <HuginnSelect.Label>Hostname Source</HuginnSelect.Label>
                   <HuginnSelect.List>
-                     <HuginnSelect.ItemsWrapper className="w-52">
+                     <HuginnSelect.ItemsWrapper>
                         {hostnameSources.map((x) => (
                            <HuginnSelect.Item key={x.value} item={x} />
                         ))}

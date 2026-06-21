@@ -7,6 +7,7 @@ export default function ModalBackground(props: { className?: string }) {
 
    return (
       <Dialog.Backdrop
+         forceRender
          className={clsx(
             "fixed inset-0 top-6 z-10 bg-black/50 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0",
             !huginnWindow.maximized && "rounded-b-lg",

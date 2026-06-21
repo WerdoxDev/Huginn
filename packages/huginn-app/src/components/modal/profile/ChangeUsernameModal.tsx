@@ -56,7 +56,7 @@ export default function ChangeUsernameModal() {
    }
 
    return (
-      <HuginnDialogPanel className="w-full max-w-xs">
+      <HuginnDialogPanel className="lg:max-w-xs">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
                <HuginnDialogTitle title="Change Username" />
