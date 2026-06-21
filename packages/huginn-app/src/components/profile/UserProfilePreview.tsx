@@ -30,10 +30,7 @@ export default function UserProfilePreview(props: { userId: Snowflake; className
 
    return (
       <div
-         className={clsx(
-            "bg-surface-alt relative flex shrink-0 items-center gap-x-2.5 overflow-hidden rounded-md border-2 px-2.5 py-2.5",
-            props.className,
-         )}
+         className={clsx("bg-surface-alt relative flex shrink-0 items-center gap-x-2.5 overflow-hidden rounded-md border-2 p-2.5", props.className)}
          style={{ borderColor: user.accentColor || "transparent" }}
       >
          {originalBanner ? (

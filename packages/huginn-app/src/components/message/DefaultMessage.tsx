@@ -74,7 +74,11 @@ export default function DefaultMessage() {
             "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors duration-150",
             !context.options?.hideBackground && "data-context:bg-surface-alt",
             !context.options?.hideBackground &&
-               (isEditing || isReplying || isJumpHighlighted ? (isEditing ? "bg-positive-800/30" : "bg-primary-800/30") : "hover:bg-surface-alt"),
+               (isEditing || isReplying || isJumpHighlighted
+                  ? isEditing
+                     ? "bg-positive-800/30"
+                     : "bg-primary-800/30"
+                  : "hover:bg-surface-alt active:bg-surface-alt"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",

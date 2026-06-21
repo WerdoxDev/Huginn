@@ -1,11 +1,12 @@
 import { Dialog } from "@base-ui/react";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import { useKeyboard } from "@contexts/KeyboardContext";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ReactNode, Suspense, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useState } from "react";
 
 import ModalBackground from "./ModalBackground";
 
@@ -31,6 +32,18 @@ export default function BaseModal(props: {
          },
       },
    });
+
+   useBackHandler("modal", 70, () => {
+      if (props.modal.isOpen) {
+         console.log(props.modal);
+         props.onClose?.();
+         return true;
+      }
+   });
+
+   useEffect(() => {
+      console.log(props.modal);
+   }, [props.modal]);
 
    function onError(e: unknown) {
       props.onClose();

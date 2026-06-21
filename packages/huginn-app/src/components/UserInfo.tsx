@@ -105,21 +105,22 @@ export default function UserInfo(props: { user: AppUser }) {
             <HuginnMenu.Content className="w-64" sideOffset={8}>
                <UserProfilePreview userId={props.user.id} maxWidth={134} />
                <HuginnMenu.Separator />
-               <HuginnMenu.Item onClick={handleViewProfile}>View Profile</HuginnMenu.Item>
+               <HuginnMenu.Item label="View Profile" onClick={handleViewProfile} />
                <HuginnMenu.Separator />
                <HuginnMenu.Item
+                  label="Logout"
                   color="negative"
                   endSlot={<IconMingcuteExitFill className="size-5" />}
                   onClick={() => {
                      logoutMutation.mutate();
                   }}
-               >
-                  Logout
-               </HuginnMenu.Item>
+               />
                <HuginnMenu.Separator />
-               <HuginnMenu.Item onClick={() => navigator.clipboard.writeText(props.user.id)} endSlot={<IconMingcuteIdcardFill className="size-5" />}>
-                  Copy User ID
-               </HuginnMenu.Item>
+               <HuginnMenu.Item
+                  label="Copy User ID"
+                  onClick={() => navigator.clipboard.writeText(props.user.id)}
+                  endSlot={<IconMingcuteIdcardFill className="size-5" />}
+               />
                <HuginnMenu.Submenu
                   label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text}
                   endSlot={<div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />}
@@ -127,11 +128,10 @@ export default function UserInfo(props: { user: AppUser }) {
                   {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
                      <HuginnMenu.Item
                         key={key}
+                        label={value.text}
                         onClick={() => setStatus(key as PresenceStatus)}
                         endSlot={<div className={clsx("size-3 rounded-full", value.color)} />}
-                     >
-                        {value.text}
-                     </HuginnMenu.Item>
+                     />
                   ))}
                </HuginnMenu.Submenu>
             </HuginnMenu.Content>

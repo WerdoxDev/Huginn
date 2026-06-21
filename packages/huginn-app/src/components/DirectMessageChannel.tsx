@@ -43,6 +43,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
          data-context={context?.isOpen && data?.id === props.channel.id ? true : undefined}
       >
          <Link
+            draggable={false}
             preload="intent"
             className={clsx(
                "group-data-context:bg-surface hover:bg-surface active:bg-surface flex w-full min-w-0 shrink items-center p-1.5",

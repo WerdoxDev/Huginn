@@ -2,6 +2,7 @@ import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useThrottler } from "@hooks/useThrottler";
 import { useClient } from "@stores/clientStore";
@@ -135,6 +136,15 @@ export default function SettingsModal() {
    const { throttledFunction } = useThrottler(async (value: Partial<AppSettings>) => {
       await setStorageValue("settings", { ...settings, ...value });
    }, 1000);
+
+   useBackHandler("settings-modal", 80, () => {
+      if (selectedIndex !== null) {
+         setSelectedIndex(null);
+         setDisplayIndex(selectedIndex);
+         setShowContent(false);
+         return true;
+      }
+   });
 
    function handleSettingsChanged(value: Partial<AppSettings>) {
       setCachedValue("settings", { ...settings, ...value });

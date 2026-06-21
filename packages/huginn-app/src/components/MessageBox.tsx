@@ -3,6 +3,7 @@ import type { Descendant } from "slate";
 import { App } from "@capacitor/app";
 import { useKeyboard } from "@contexts/KeyboardContext";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
@@ -105,24 +106,31 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => resizeObserver.disconnect();
    }, []);
 
-   useEffect(() => {
-      let unlisten: () => void;
-      let cancelled = false;
+   useBackHandler("message-box", 100, () => {
+      if (activeMobilePanel) {
+         setActiveMobilePanel(null);
+         return true;
+      }
+   });
 
-      App.addListener("backButton", () => {
-         if (activeMobilePanel) {
-            setActiveMobilePanel(null);
-         }
-      }).then((listener) => {
-         if (cancelled) listener.remove();
-         unlisten = () => listener.remove();
-      });
+   // useEffect(() => {
+   //    let unlisten: () => void;
+   //    let cancelled = false;
 
-      return () => {
-         cancelled = true;
-         unlisten?.();
-      };
-   }, [activeMobilePanel]);
+   //    App.addListener("backButton", () => {
+   //       if (activeMobilePanel) {
+   //          setActiveMobilePanel(null);
+   //       }
+   //    }).then((listener) => {
+   //       if (cancelled) listener.remove();
+   //       unlisten = () => listener.remove();
+   //    });
+
+   //    return () => {
+   //       cancelled = true;
+   //       unlisten?.();
+   //    };
+   // }, [activeMobilePanel]);
 
    function handleMobileEmojiPickerClick() {
       setActiveMobilePanel((prev) => (prev === "emoji" && !isKeyboardOpen ? null : "emoji"));

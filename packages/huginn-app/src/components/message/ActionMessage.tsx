@@ -65,94 +65,93 @@ export default function ActionMessage() {
    return (
       <div
          className={clsx(
-            "text-text hover:bg-surface-alt flex items-center rounded-r-md py-0.5 pl-4",
+            "text-text hover:bg-surface-alt rounded-r-md py-0.5 pl-4",
             !isLastAction && !context.message.hasNewDate && !isUnread && "mt-1.5",
             !isNextAction && !isUnread && "mb-1.5",
          )}
       >
-         {type === MessageType.RECIPIENT_REMOVE && <IconMingcuteArrowLeftFill className="text-negative-100 mr-4 size-5 shrink-0" />}
-         {type === MessageType.RECIPIENT_ADD && <IconMingcuteArrowRightFill className="text-positive-100 mr-4 size-5 shrink-0" />}
-         {type === MessageType.CHANNEL_NAME_CHANGED && <IconMingcuteEdit2Fill className="text-text/80 mr-4 size-5 shrink-0" />}
-         {type === MessageType.CHANNEL_ICON_CHANGED && <IconMingcutePic2Fill className="text-text/80 mr-4 size-5 shrink-0" />}
-         {type === MessageType.CHANNEL_OWNER_CHANGED && <IconMingcuteTransfer3Fill className="text-primary-500 mr-4 size-5 shrink-0" />}
-         {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-4 size-5 shrink-0" />}
-         {type === MessageType.CHANNEL_PINNED_MESSAGE && <IconMingcutePinFill className="text-primary-500 mr-4 size-5 shrink-0" />}
-         <div className="flex gap-x-1">
-            <button type="button" className="cursor-pointer text-left font-bold hover:underline" onClick={() => openUserProfile(author.id)}>
-               {authorName}
-            </button>
-            {type === MessageType.CALL && (
-               <Tooltip>
-                  <Tooltip.Trigger className="cursor-default! text-left">
-                     <span className="text-text/50">
-                        started a call
-                        {call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.
-                     </span>
-                  </Tooltip.Trigger>
-                  {call?.endedTimestamp && call.participants.length !== 0 && (
-                     <Tooltip.Content className="px-1.5! py-1.5!">
-                        <div className="flex gap-x-1.5">
-                           {callParticipants.map((x) => (
-                              <button
-                                 key={x.id}
-                                 type="button"
-                                 className="bg-surface hover:bg-surface-alt rounded-sm px-1 text-left"
-                                 onClick={() => openUserProfile(x.id)}
-                              >
-                                 {x.displayName}
-                              </button>
-                           ))}
-                        </div>
-                     </Tooltip.Content>
-                  )}
-               </Tooltip>
-            )}
-            {type === MessageType.CHANNEL_PINNED_MESSAGE && (
-               <>
-                  <span className="text-text/50"> pinned a </span>
-                  <button
-                     type="button"
-                     className="cursor-pointer text-left font-bold hover:underline"
-                     onClick={() => highlightMessage(reference?.messageId)}
-                  >
-                     message
-                  </button>
-               </>
-            )}
-            {type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text/50"> changed the channel icon.</span>}
-            {type === MessageType.CHANNEL_NAME_CHANGED &&
-               (!context.message.content ? (
-                  <span className="text-text/50"> removed the channel name</span>
-               ) : (
-                  <>
-                     <span className="text-text/50"> changed the chanel name: </span>
-                     <span className="text-text font-bold">{message.content}</span>
-                  </>
-               ))}
-            {mentionUsers[0] ? (
-               <>
-                  {type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
-                  {type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
-                  {type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
-                  <button
-                     type="button"
-                     className="cursor-pointer text-left font-bold hover:underline"
-                     onClick={() => openUserProfile(mentionUsers[0].id)}
-                  >
-                     {mentionUsers[0].displayName}
-                  </button>
-                  {type === MessageType.CHANNEL_OWNER_CHANGED && (
-                     <span className="text-text/50">
-                        {" "}
-                        to <span className="text-primary-500">Channel Owner</span>
-                     </span>
-                  )}
-               </>
+         {type === MessageType.RECIPIENT_REMOVE && (
+            <IconMingcuteArrowLeftFill className="text-negative-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         {type === MessageType.RECIPIENT_ADD && (
+            <IconMingcuteArrowRightFill className="text-positive-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         {type === MessageType.CHANNEL_NAME_CHANGED && (
+            <IconMingcuteEdit2Fill className="text-text/80 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         {type === MessageType.CHANNEL_ICON_CHANGED && (
+            <IconMingcutePic2Fill className="text-text/80 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         {type === MessageType.CHANNEL_OWNER_CHANGED && (
+            <IconMingcuteTransfer3Fill className="text-primary-500 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         {type === MessageType.CALL && <IconMingcutePhoneFill className="text-positive-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />}
+         {type === MessageType.CHANNEL_PINNED_MESSAGE && (
+            <IconMingcutePinFill className="text-primary-500 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+         )}
+         <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => openUserProfile(author.id)}>
+            {authorName}{" "}
+         </button>
+         {type === MessageType.CALL && (
+            <Tooltip>
+               <Tooltip.Trigger className="cursor-default!" asChild>
+                  <span className="text-text/50"> started a call{call?.endedTimestamp ? ` that lasted ${formatCallDuration()}` : ""}.</span>
+               </Tooltip.Trigger>
+               {call?.endedTimestamp && call.participants.length !== 0 && (
+                  <Tooltip.Content className="px-1.5! py-1.5!">
+                     <div className="flex gap-x-1.5">
+                        {callParticipants.map((x) => (
+                           <button
+                              key={x.id}
+                              type="button"
+                              className="bg-surface hover:bg-surface-alt rounded-sm px-1 text-left"
+                              onClick={() => openUserProfile(x.id)}
+                           >
+                              {x.displayName}
+                           </button>
+                        ))}
+                     </div>
+                  </Tooltip.Content>
+               )}
+            </Tooltip>
+         )}
+         {type === MessageType.CHANNEL_PINNED_MESSAGE && (
+            <>
+               <span className="text-text/50"> pinned a </span>
+               <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => highlightMessage(reference?.messageId)}>
+                  message
+               </button>
+            </>
+         )}
+         {type === MessageType.CHANNEL_ICON_CHANGED && <span className="text-text/50"> changed the channel icon.</span>}
+         {type === MessageType.CHANNEL_NAME_CHANGED &&
+            (!context.message.content ? (
+               <span className="text-text/50"> removed the channel name</span>
             ) : (
-               type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> left the group</span>
-            )}
-         </div>
-         <div className="text-text/50 ml-2 text-xs">{formattedFullTime}</div>
+               <>
+                  <span className="text-text/50"> changed the channel name: </span>
+                  <span className="text-text font-bold">{message.content}</span>
+               </>
+            ))}
+         {mentionUsers[0] ? (
+            <>
+               {type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
+               {type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
+               {type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
+               <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => openUserProfile(mentionUsers[0].id)}>
+                  {mentionUsers[0].displayName}
+               </button>
+               {type === MessageType.CHANNEL_OWNER_CHANGED && (
+                  <span className="text-text/50">
+                     {" "}
+                     to <span className="text-primary-500">Channel Owner</span>
+                  </span>
+               )}
+            </>
+         ) : (
+            type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> left the group</span>
+         )}
+         <span className="text-text/50 ml-2 text-xs whitespace-nowrap">{formattedFullTime}</span>
       </div>
    );
 }

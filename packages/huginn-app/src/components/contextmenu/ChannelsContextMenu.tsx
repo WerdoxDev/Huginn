@@ -51,6 +51,40 @@ export default function ChannelsContextMenu() {
          <ContextMenu.Item label="Copy Channel ID" onClick={() => navigator.clipboard.writeText(data.id)}>
             <IconMingcuteIdcardFill />
          </ContextMenu.Item>
+         <ContextMenu.Submenu label="Copy Channel Link">
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+            <ContextMenu.Item
+               label="Copy Link"
+               onClick={() => navigator.clipboard.writeText(`https://huginn.dev/channels/@me/${data.id}`)}
+            ></ContextMenu.Item>
+         </ContextMenu.Submenu>
       </>
    );
 }

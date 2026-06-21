@@ -12,8 +12,8 @@ import { useInitStorageStore } from "@hooks/initializers/useInitStorageStore";
 import { useInitTypingStore } from "@hooks/initializers/useInitTypingStore";
 import { useInitUserStore } from "@hooks/initializers/useInitUserStore";
 import { useInitVoiceStore } from "@hooks/initializers/useInitVoiceStore";
+import { useBackButtonManager } from "@hooks/useBackButtonManager";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
-import { ThemeProvider } from "@stores/themeStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
@@ -25,6 +25,8 @@ export const Route = createFileRoute("/_app")({ component: AppLayoutComponent })
 
 function AppLayoutComponent() {
    const huginnWindow = useHuginnWindow();
+
+   useBackButtonManager();
 
    useInitStorageStore();
    useInitUserStore();

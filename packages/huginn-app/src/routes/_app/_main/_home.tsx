@@ -1,6 +1,7 @@
 import GuildsBar from "@components/GuildsBar";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
@@ -115,6 +116,20 @@ function HomeLayoutComponent() {
          closeRight();
       }
    }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
+
+   useBackHandler("left-sidebar", 20, () => {
+      if (!isLeftOpen) {
+         openLeft();
+         return true;
+      }
+   });
+
+   useBackHandler("right-sidebar", 30, () => {
+      if (isRightOpen) {
+         closeRight();
+         return true;
+      }
+   });
 
    return (
       <div

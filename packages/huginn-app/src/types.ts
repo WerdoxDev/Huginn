@@ -150,7 +150,6 @@ export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "cha
 export type ContextMenuProps = {
    label?: string;
    renderChildren?: ReactNode;
-   children?: ReactNode;
    onClose?: () => void;
 } & ContextMenuStateProps;
 

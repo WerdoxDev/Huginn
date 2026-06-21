@@ -1,12 +1,10 @@
-import type { Snowflake } from "@huginn/shared";
-
 import { usePinnedChannels } from "@hooks/usePinnedChannels";
 import { useModals } from "@stores/modalsStore";
 import { useReadStates } from "@stores/readStateStore";
 import { useParams } from "@tanstack/react-router";
-import { animate, createAnimatable, createScope, Scope, spring, type AnimatableObject } from "animejs";
+import { createAnimatable, type AnimatableObject } from "animejs";
 import clsx from "clsx";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
