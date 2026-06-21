@@ -191,6 +191,13 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
          : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
    );
 
+   useBackHandler("context-menu-submenu", 60, () => {
+      if (isOpen) {
+         setIsOpen(false);
+         return true;
+      }
+   });
+
    function handleClose() {
       setIsOpen(false);
       context?.onClose?.();

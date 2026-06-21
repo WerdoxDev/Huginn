@@ -35,15 +35,10 @@ export default function BaseModal(props: {
 
    useBackHandler("modal", 70, () => {
       if (props.modal.isOpen) {
-         console.log(props.modal);
          props.onClose?.();
          return true;
       }
    });
-
-   useEffect(() => {
-      console.log(props.modal);
-   }, [props.modal]);
 
    function onError(e: unknown) {
       props.onClose();

@@ -1,5 +1,6 @@
 import { Drawer, Menu } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer"; // 👈 shared
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import clsx from "clsx";
 import { createContext, isValidElement, type ReactNode, useContext, useState } from "react";
@@ -18,6 +19,13 @@ const popupClass = clsx(
 export function HuginnMenu(props: Menu.Root.Props) {
    const [isOpen, setIsOpen] = useState(false);
    const isMobile = useIsMobile();
+
+   useBackHandler("menu", 50, () => {
+      if (isOpen) {
+         setIsOpen(false);
+         return true;
+      }
+   });
 
    const children = (
       <MenuContext.Provider value={{ onClose: () => setIsOpen(false), isMobile: isMobile }}>{props.children as ReactNode}</MenuContext.Provider>
@@ -206,6 +214,13 @@ function SubmenuTrigger(props: {
 function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; disabled?: boolean; endSlot?: ReactNode }) {
    const context = useContext(MenuContext)!;
    const [isOpen, setIsOpen] = useState(false);
+
+   useBackHandler("menu-submenu", 60, () => {
+      if (isOpen) {
+         setIsOpen(false);
+         return true;
+      }
+   });
 
    function handleClose() {
       setIsOpen(false);
