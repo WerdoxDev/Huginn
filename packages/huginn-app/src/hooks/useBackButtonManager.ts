@@ -5,39 +5,58 @@ import { useEffect } from "react";
 type BackHandler = {
    id: string;
    priority: number;
-   handler: () => boolean | void; // return true to consume the event
+   placement: "after-stack" | "before-stack" | "stack";
+   handler: () => boolean | void;
 };
 
-const handlers: BackHandler[] = [];
+const afterStackHandlers: BackHandler[] = [];
+const beforeStackHandlers: BackHandler[] = [];
+const stackHandlers: BackHandler[] = [];
 let listenerRegistered = false;
 
-function sortHandlers() {
-   handlers.sort((a, b) => b.priority - a.priority);
-}
-
 function runHandlers() {
-   let consumed = false;
-   for (const { handler } of handlers) {
-      const result = handler();
-      if (result === true) {
-         consumed = true;
-         break;
-      }
+   for (const { handler } of beforeStackHandlers) {
+      const consumed = handler();
+      if (consumed) return;
    }
 
-   if (!consumed) {
-      App.exitApp();
+   if (stackHandlers.length > 0) {
+      const top = stackHandlers[stackHandlers.length - 1];
+      top.handler();
+      return;
+   }
+
+   for (const { handler } of afterStackHandlers) {
+      const consumed = handler();
+      if (consumed) return;
    }
 }
 
-export function registerBackHandler(id: string, priority: number, handler: () => boolean | void) {
-   handlers.push({ id, priority, handler });
-   sortHandlers();
+export function registerBackHandler(id: string, priority: number, placement: "after-stack" | "before-stack", handler: () => boolean | void) {
+   if (placement === "after-stack") {
+      afterStackHandlers.push({ id, priority, handler, placement });
+      afterStackHandlers.sort((a, b) => b.priority - a.priority);
+   } else if (placement === "before-stack") {
+      beforeStackHandlers.push({ id, priority, handler, placement });
+      beforeStackHandlers.sort((a, b) => b.priority - a.priority);
+   }
 }
 
 export function unregisterBackHandler(id: string) {
-   const idx = handlers.findIndex((h) => h.id === id);
-   if (idx !== -1) handlers.splice(idx, 1);
+   const beforeIdx = beforeStackHandlers.findIndex((h) => h.id === id);
+   if (beforeIdx !== -1) beforeStackHandlers.splice(beforeIdx, 1);
+
+   const afterIdx = afterStackHandlers.findIndex((h) => h.id === id);
+   if (afterIdx !== -1) afterStackHandlers.splice(afterIdx, 1);
+}
+
+export function pushStackHandler(id: string, handler: () => void) {
+   stackHandlers.push({ id, priority: 0, handler, placement: "stack" });
+}
+
+export function popStackHandler(id: string) {
+   const idx = stackHandlers.findLastIndex((h) => h.id === id);
+   if (idx !== -1) stackHandlers.splice(idx, 1);
 }
 
 export function useBackButtonManager() {

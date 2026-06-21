@@ -1,7 +1,8 @@
 import { Drawer, Menu } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer"; // 👈 shared
-import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
+import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, isValidElement, type ReactNode, useContext, useState } from "react";
 
@@ -17,15 +18,11 @@ const popupClass = clsx(
 );
 
 export function HuginnMenu(props: Menu.Root.Props) {
+   const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const [isOpen, setIsOpen] = useState(false);
    const isMobile = useIsMobile();
 
-   useBackHandler("menu", 50, () => {
-      if (isOpen) {
-         setIsOpen(false);
-         return true;
-      }
-   });
+   useStackBackHandler(`menu-${id}`, () => setIsOpen(false), isOpen);
 
    const children = (
       <MenuContext.Provider value={{ onClose: () => setIsOpen(false), isMobile: isMobile }}>{props.children as ReactNode}</MenuContext.Provider>
@@ -212,15 +209,11 @@ function SubmenuTrigger(props: {
 }
 
 function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; disabled?: boolean; endSlot?: ReactNode }) {
+   const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const context = useContext(MenuContext)!;
    const [isOpen, setIsOpen] = useState(false);
 
-   useBackHandler("menu-submenu", 60, () => {
-      if (isOpen) {
-         setIsOpen(false);
-         return true;
-      }
-   });
+   useStackBackHandler(`menu-${id}`, () => setIsOpen(false), isOpen);
 
    function handleClose() {
       setIsOpen(false);

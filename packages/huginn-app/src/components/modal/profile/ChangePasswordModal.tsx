@@ -17,7 +17,7 @@ type Inputs = {
 };
 
 export default function ChangePasswordModal() {
-   const { register, handleSubmit, formState, handleErrors, control, setFocus } = useHuginnForm<Inputs>();
+   const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>();
    const { updateModals, changePassword: modal } = useModals();
    const mutation = usePatchUser(() => {
       updateModals({ changePassword: { isOpen: false } });

@@ -1,10 +1,11 @@
 import { ContextMenu as BaseContextMenu, Drawer, Menu } from "@base-ui/react";
-import { DrawerBackdrop, DrawerPopup } from "@components/Drawer"; // 👈 shared
+import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
-import { useBackHandler } from "@hooks/useBackHandler";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
+import { snowflake, WorkerID } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -23,20 +24,21 @@ const popupClass = clsx(
    "data-ending-style:opacity-0",
 );
 
-export default function ContextMenu(props: ContextMenuProps) {
+export default function ContextMenu<T>(props: ContextMenuProps<T>) {
+   const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const isMobile = useIsMobile();
 
    const anchor = useMemo(
       () => ({
          getBoundingClientRect: () =>
             DOMRect.fromRect({
-               x: props.position?.[0] ?? 0,
-               y: props.position?.[1] ?? 0,
+               x: props.contextMenu?.position?.[0] ?? 0,
+               y: props.contextMenu?.position?.[1] ?? 0,
                width: 0,
                height: 0,
             }),
       }),
-      [props.position],
+      [props.contextMenu?.position],
    );
 
    const { updateModals } = useModals();
@@ -53,12 +55,7 @@ export default function ContextMenu(props: ContextMenuProps) {
       },
    });
 
-   useBackHandler("context-menu", 50, () => {
-      if (props.isOpen) {
-         props.onClose?.();
-         return true;
-      }
-   });
+   useStackBackHandler(`context-menu-${id}`, () => props.onClose?.(), props.contextMenu?.isOpen ?? false);
 
    function onError(e: unknown) {
       props.onClose?.();
@@ -73,24 +70,24 @@ export default function ContextMenu(props: ContextMenuProps) {
       <HuginnErrorBoundary onError={onError} resetKey={key}>
          {isMobile ? (
             <Drawer.Root
-               open={props.isOpen ?? false}
+               open={props.contextMenu?.isOpen ?? false}
                onOpenChange={(open) => {
                   if (!open) props.onClose?.();
                }}
             >
-               <Drawer.Portal container={props.parent ?? undefined}>
+               <Drawer.Portal container={props.contextMenu?.parent ?? undefined}>
                   <DrawerBackdrop forceRender />
                   <DrawerPopup>{children}</DrawerPopup>
                </Drawer.Portal>
             </Drawer.Root>
          ) : (
             <BaseContextMenu.Root
-               open={props.isOpen ?? false}
+               open={props.contextMenu?.isOpen ?? false}
                onOpenChange={(open) => {
                   if (!open) props.onClose?.();
                }}
             >
-               <BaseContextMenu.Portal container={props.parent ?? undefined}>
+               <BaseContextMenu.Portal container={props.contextMenu?.parent ?? undefined}>
                   <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
                      <BaseContextMenu.Popup className={popupClass}>{children}</BaseContextMenu.Popup>
                   </BaseContextMenu.Positioner>
@@ -179,6 +176,7 @@ function SubmenuContent(
 }
 
 function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; disabled?: boolean; endSlot?: ReactNode }) {
+   const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const context = useContext(ContextMenuContext)!;
    const [isOpen, setIsOpen] = useState(false);
 
@@ -191,12 +189,7 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
          : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
    );
 
-   useBackHandler("context-menu-submenu", 60, () => {
-      if (isOpen) {
-         setIsOpen(false);
-         return true;
-      }
-   });
+   useStackBackHandler(`context-menu-${id}`, () => setIsOpen(false), isOpen);
 
    function handleClose() {
       setIsOpen(false);

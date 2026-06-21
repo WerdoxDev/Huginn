@@ -147,11 +147,12 @@ export type ColorTheme = {
 
 export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
-export type ContextMenuProps = {
-   label?: string;
+export type ContextMenuProps<T> = {
+   // label?: string;
    renderChildren?: ReactNode;
+   contextMenu?: ContextMenuStateProps<T>;
    onClose?: () => void;
-} & ContextMenuStateProps;
+};
 
 export type ContextMenuStateProps<T = unknown> = {
    contextData?: T;
@@ -260,7 +261,7 @@ export type AppRelationship = Omit<APIRelationshipWithoutOwner, "user"> & { user
 
 export type AppAttachment = {
    key: string;
-   data: ArrayBuffer;
+   data: (() => Promise<ArrayBuffer>) | ArrayBuffer;
    previewDataUrl?: string;
    filename: string;
    contentType: string;

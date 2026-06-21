@@ -81,11 +81,13 @@ export function useSendMessage() {
                nonce: previewMessage.nonce,
                messageReference,
             },
-            attachments?.map((x) => ({
-               data: x.data,
-               name: x.filename,
-               contentType: x.contentType,
-            })) ?? [],
+            await Promise.all(
+               attachments?.map(async (x) => ({
+                  data: x.data instanceof Function ? await x.data() : x.data,
+                  name: x.filename,
+                  contentType: x.contentType,
+               })) ?? [],
+            ),
             data.previewMessage.attachments?.length
                ? (event) =>
                     updateMessageUploadProgress({

@@ -241,7 +241,7 @@ export default function EmojiPickerPanel(props: {
    }, [activeGroupId]);
 
    return (
-      <div className="flex h-full flex-col overflow-hidden" style={{ maxHeight: props.maxHeight }}>
+      <div className="flex h-full flex-col overflow-hidden" data-ignore-swipe style={{ maxHeight: props.maxHeight }}>
          <div className={clsx("flex w-full items-center gap-x-2 p-2", isMobile && "pt-0.5")}>
             <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
                <HuginnInput.Wrapper>
@@ -320,7 +320,7 @@ export default function EmojiPickerPanel(props: {
                                  }}
                               >
                                  {row.type === "header" ? (
-                                    <div className="bg-surface-deep flex items-center gap-x-2 pt-2.5 pb-2.5 text-white">
+                                    <div className="bg-surface-deep flex items-center gap-x-2 pt-2.5 pb-2.5 text-white lg:bg-zinc-900">
                                        {groupIcons[row.groupId]}
                                        <div className="text-sm font-bold">{row.name}</div>
                                        <div className="bg-surface ml-auto rounded-sm p-1 text-xs">{groupedEmojis[row.groupId].length}</div>

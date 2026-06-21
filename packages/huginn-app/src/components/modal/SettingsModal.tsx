@@ -4,6 +4,7 @@ import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
 import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { useThrottler } from "@hooks/useThrottler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -137,14 +138,15 @@ export default function SettingsModal() {
       await setStorageValue("settings", { ...settings, ...value });
    }, 1000);
 
-   useBackHandler("settings-modal", 80, () => {
-      if (selectedIndex !== null) {
+   useStackBackHandler(
+      "settings-modal",
+      () => {
          setSelectedIndex(null);
          setDisplayIndex(selectedIndex);
          setShowContent(false);
-         return true;
-      }
-   });
+      },
+      selectedIndex !== null,
+   );
 
    function handleSettingsChanged(value: Partial<AppSettings>) {
       setCachedValue("settings", { ...settings, ...value });
@@ -162,7 +164,6 @@ export default function SettingsModal() {
    }
 
    return (
-      // <div className="flex h-full w-full items-center justify-center pt-20 lg:px-10 lg:pt-0">
       <HuginnDialogPanel className="h-full w-full max-w-6xl lg:mx-10">
          <SettingsTab
             className="flex h-full w-full"
@@ -204,7 +205,6 @@ export default function SettingsModal() {
             }}
          />
       </HuginnDialogPanel>
-      // </div>
    );
 }
 
@@ -229,7 +229,7 @@ function SettingsTabs() {
                                  <button
                                     type="button"
                                     className={clsx(
-                                       "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md px-2 py-2 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:active:bg-white/3",
+                                       "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:p-2 lg:active:bg-white/3",
                                        selected
                                           ? "bg-white/10 text-white transition-colors duration-300"
                                           : "text-white/70 hover:bg-white/3 hover:text-white",

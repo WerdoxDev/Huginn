@@ -1,6 +1,5 @@
 import type { Descendant } from "slate";
 
-import { App } from "@capacitor/app";
 import { useKeyboard } from "@contexts/KeyboardContext";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useBackHandler } from "@hooks/useBackHandler";

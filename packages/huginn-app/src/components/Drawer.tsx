@@ -4,7 +4,7 @@ import { Drawer } from "@base-ui/react";
 import clsx from "clsx";
 
 export const drawerPopupClass = clsx(
-   "z-998 flex w-full flex-col rounded-t-xl bg-zinc-900 p-2 shadow-lg outline-hidden select-none",
+   "flex w-full flex-col rounded-t-xl bg-zinc-900 p-2 shadow-lg outline-hidden select-none",
    "transition-[transform_height_opacity] duration-200",
    "data-starting-style:translate-y-full",
    "data-ending-style:translate-y-full",
@@ -30,12 +30,12 @@ export function DrawerBackdrop(props: { forceRender?: boolean }) {
    );
 }
 
-export function DrawerPopup({ children, className }: { children: ReactNode; className?: string }) {
+export function DrawerPopup(props: { children: ReactNode; className?: string; behindModal?: boolean }) {
    return (
-      <Drawer.Viewport className="fixed inset-0 z-20 flex items-end justify-center">
-         <Drawer.Popup className={clsx(drawerPopupClass, className)}>
+      <Drawer.Viewport className={clsx("fixed inset-0 flex items-end justify-center", props.behindModal ? "z-10" : "z-20")}>
+         <Drawer.Popup className={clsx(drawerPopupClass, props.className)}>
             <div className="bg-surface mx-auto mb-2 h-1.5 w-16 shrink-0 rounded-full" />
-            {children}
+            {props.children}
          </Drawer.Popup>
       </Drawer.Viewport>
    );

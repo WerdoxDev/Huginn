@@ -1,12 +1,13 @@
 import { Dialog } from "@base-ui/react";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import { useKeyboard } from "@contexts/KeyboardContext";
-import { useBackHandler } from "@hooks/useBackHandler";
 import { useErrorHandler } from "@hooks/useErrorHandler";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
+import { snowflake, WorkerID } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
-import { type ReactNode, Suspense, useEffect, useState } from "react";
+import { type ReactNode, Suspense, useState } from "react";
 
 import ModalBackground from "./ModalBackground";
 
@@ -18,6 +19,7 @@ export default function BaseModal(props: {
    backgroundClassName?: string;
    headless?: boolean;
 }) {
+   const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const { updateModals } = useModals();
    const { shouldResizeWindow, lastKeyboardHeight, isKeyboardOpen } = useKeyboard();
    const [key, setKey] = useState(0);
@@ -33,12 +35,7 @@ export default function BaseModal(props: {
       },
    });
 
-   useBackHandler("modal", 70, () => {
-      if (props.modal.isOpen) {
-         props.onClose?.();
-         return true;
-      }
-   });
+   useStackBackHandler(`modal-${id}`, () => props.onClose?.(), props.modal.isOpen);
 
    function onError(e: unknown) {
       props.onClose();

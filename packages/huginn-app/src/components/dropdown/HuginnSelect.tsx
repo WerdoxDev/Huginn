@@ -3,6 +3,7 @@ import { Drawer } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import HuginnLabel from "@components/HuginnLabel";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
@@ -12,8 +13,8 @@ import type { SelectItem } from "@/types";
 const SelectContext = createContext<{
    id: string;
    isMobile: boolean;
-   drawerOpen: boolean;
-   setDrawerOpen: (open: boolean) => void;
+   isDrawerOpen: boolean;
+   setIsDrawerOpen: (open: boolean) => void;
 }>(undefined!);
 
 export default function HuginnSelect<T = string>(props: {
@@ -24,16 +25,18 @@ export default function HuginnSelect<T = string>(props: {
 }) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const isMobile = useIsMobile();
-   const [drawerOpen, setDrawerOpen] = useState(false);
+   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
    function handleValueChange(value: SelectItem<T> | null) {
       if (!value) return;
       props.onChange?.(value);
-      if (isMobile) setDrawerOpen(false);
+      if (isMobile) setIsDrawerOpen(false);
    }
 
+   useStackBackHandler(`select-drawer-${id}`, () => setIsDrawerOpen(false), isDrawerOpen);
+
    return (
-      <SelectContext.Provider value={{ id, isMobile, drawerOpen, setDrawerOpen }}>
+      <SelectContext.Provider value={{ id, isMobile, isDrawerOpen, setIsDrawerOpen }}>
          <Select.Root
             id={id}
             modal={false}
@@ -62,7 +65,7 @@ function List(props: {
    return (
       <div className={clsx("bg-surface-alt w-full overflow-hidden rounded-lg lg:w-52", props.className)}>
          <Select.Trigger
-            onClick={context.isMobile ? () => context.setDrawerOpen(true) : props.onClick}
+            onClick={context.isMobile ? () => context.setIsDrawerOpen(true) : props.onClick}
             className={clsx(
                "relative flex w-full cursor-pointer items-center gap-x-1.5 p-2 text-white outline-hidden select-none",
                props.triggerClassName,
@@ -109,7 +112,7 @@ function ItemsWrapper(props: {
 
    if (context.isMobile) {
       return (
-         <Drawer.Root open={context.drawerOpen} onOpenChange={context.setDrawerOpen}>
+         <Drawer.Root open={context.isDrawerOpen} onOpenChange={context.setIsDrawerOpen}>
             <Drawer.Portal>
                <DrawerBackdrop forceRender />
                <DrawerPopup>
@@ -162,7 +165,7 @@ function Item<T = string>(props: { item: SelectItem<T>; children?: ReactNode; hi
             className={itemClass}
             // close drawer on selection — onValueChange in root also handles this,
             // but onClick gives instant feedback
-            onClick={() => context.setDrawerOpen(false)}
+            onClick={() => context.setIsDrawerOpen(false)}
          >
             {props.item.icon}
             {props.item.text && <Select.ItemText className="wrap-anywhere">{props.item.text}</Select.ItemText>}

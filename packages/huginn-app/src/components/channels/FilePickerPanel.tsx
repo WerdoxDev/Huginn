@@ -1,14 +1,12 @@
-import { App } from "@capacitor/app";
-import { Capacitor, CapacitorException } from "@capacitor/core";
+import { Capacitor } from "@capacitor/core";
 import HuginnButton from "@components/button/HuginnButton";
+import LoadingBackground from "@components/LoadingBackground";
 import LoadingIcon from "@components/LoadingIcon";
-import { useCapacitorListener } from "@hooks/useCapacitorListener";
 import { useLookup } from "@hooks/useLookup";
 import {
    Gallery,
    GalleryErrorCode,
    MediaType,
-   type GalleryError,
    type GalleryMediaItem,
    type MediaPermissionState,
    type ThumbnailResult,
@@ -19,7 +17,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AndroidSettings, IOSSettings, NativeSettings } from "capacitor-native-settings";
 import { clsx } from "clsx";
 import moment from "moment";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { AppAttachment, AttachmentInput } from "@/types";
 
@@ -50,14 +48,6 @@ export default function FilePickerPanel(props: {
       enabled: !!permissionState,
    });
 
-   // useCapacitorListener(() =>
-   //    App.addListener("resume", () => {
-   //       console.log("RESUME");
-   //       // refetch();
-   //       // queryClient.invalidateQueries({ queryKey: ["mobile-files"] });
-   //    }),
-   // );
-
    useEffect(() => {
       if (!mediaResult) return;
 
@@ -78,7 +68,6 @@ export default function FilePickerPanel(props: {
    }, [mediaResult]);
 
    useEffect(() => {
-      console.log("REMOVE");
       return () => {
          queryClient.removeQueries({ queryKey: ["mobile-files"] });
       };
@@ -174,7 +163,7 @@ export default function FilePickerPanel(props: {
          ) : (
             <>
                <div className="scroll-super-thin flex h-full w-full flex-col overflow-y-auto pr-0" onScroll={handleScroll}>
-                  <div className="grid w-full grid-cols-3 content-start items-start gap-2">
+                  <div className="relative grid w-full grid-cols-3 content-start items-start gap-2">
                      {mediaResult?.pages
                         .flatMap((x) => x.media)
                         .map((media) => (
@@ -182,38 +171,38 @@ export default function FilePickerPanel(props: {
                               className={clsx("aspect-square h-full w-full transition-transform", attachmentsLookup[media.id] && "scale-95")}
                               key={media.id}
                            >
-                              <div className="bg-surface flex h-full w-full items-center justify-center overflow-hidden rounded-lg">
-                                 {thumbnails[media.id] ? (
-                                    <div className="relative h-full w-full" onClick={() => handleSelectFile(media)}>
+                              <div className="bg-surface relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg">
+                                 <div className="relative h-full w-full" onClick={() => handleSelectFile(media)}>
+                                    {thumbnails[media.id] && (
                                        <img src={thumbnails[media.id].base64} alt={media.name} className="h-full w-full object-cover" />
-                                       <div className="absolute top-1.5 right-1.5">
-                                          <div
+                                    )}
+                                    <LoadingBackground isLoaded={!!thumbnails[media.id]} hasError={false} />
+                                    <div className="absolute top-1.5 right-1.5">
+                                       <div
+                                          className={clsx(
+                                             "flex size-5 items-center justify-center rounded-full border-2 transition-all",
+                                             attachmentsLookup[media.id] ? "bg-primary-600 border-primary-600" : "border-white",
+                                          )}
+                                       >
+                                          <IconMingcuteCheckFill
                                              className={clsx(
-                                                "flex size-5 items-center justify-center rounded-full border-2 transition-all",
-                                                attachmentsLookup[media.id] ? "bg-primary-600 border-primary-600" : "border-white",
+                                                "size-3 text-white transition-opacity",
+                                                attachmentsLookup[media.id] ? "opacity-100" : "opacity-0",
                                              )}
-                                          >
-                                             <IconMingcuteCheckFill
-                                                className={clsx(
-                                                   "size-3 text-white transition-opacity",
-                                                   attachmentsLookup[media.id] ? "opacity-100" : "opacity-0",
-                                                )}
-                                             />
-                                          </div>
+                                          />
                                        </div>
-                                       {media.type === MediaType.VIDEO && (
-                                          <div className="absolute bottom-1 left-1 flex items-center justify-center gap-x-1 rounded-md bg-black/50 px-1 py-0.5 text-sm text-white">
-                                             <IconMingcutePlayFill className="size-4" />
-                                             <div>{moment.utc(media.duration).format("mm:ss")}</div>
-                                          </div>
-                                       )}
                                     </div>
-                                 ) : (
-                                    <LoadingIcon className="size-10" />
-                                 )}
+                                    {media.type === MediaType.VIDEO && (
+                                       <div className="absolute bottom-1 left-1 flex items-center justify-center gap-x-1 rounded-md bg-black/50 px-1 py-0.5 text-sm text-white">
+                                          <IconMingcutePlayFill className="size-4" />
+                                          <div>{moment.utc(media.duration).format("mm:ss")}</div>
+                                       </div>
+                                    )}
+                                 </div>
                               </div>
                            </div>
                         ))}
+                     <LoadingBackground isLoaded={!!mediaResult} hasError={false} />
                   </div>
                   {permissionState === "partial" && (
                      <div className="flex shrink-0 flex-col items-center justify-center gap-y-2 px-10 py-5 text-center">

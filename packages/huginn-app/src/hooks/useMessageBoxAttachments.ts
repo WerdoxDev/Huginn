@@ -37,12 +37,12 @@ export function useMessageBoxAttachments() {
          const pendingAttachments: Array<Omit<AppAttachment, "key"> & { key?: string }> = [];
 
          for (const file of input) {
-            const arrayBuffer = await file.arrayBuffer();
+            // const arrayBuffer = await file.arrayBuffer();
             if (!isImageMediaType(file.type)) {
                pendingAttachments.push({
                   key: file.key,
                   filename: file.name,
-                  data: arrayBuffer,
+                  data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
                   contentType: file.type,
                   previewDataUrl: file.previewDataUrl,
                });
@@ -53,7 +53,7 @@ export function useMessageBoxAttachments() {
 
             if (!dataUrl) {
                const reader = new FileReader();
-               reader.readAsDataURL(new Blob([arrayBuffer]));
+               reader.readAsDataURL(new Blob([await file.arrayBuffer()]));
 
                dataUrl = await new Promise<string>((res, rej) => {
                   reader.onload = (readerEvent) => {
@@ -72,7 +72,7 @@ export function useMessageBoxAttachments() {
             pendingAttachments.push({
                key: file.key,
                filename: file.name,
-               data: arrayBuffer,
+               data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
                previewDataUrl: dataUrl,
                contentType: file.type,
             });

@@ -40,48 +40,20 @@ export default function ContextMenusRenderer() {
    return (
       user && (
          <>
-            <ContextMenu
-               renderChildren={<ChannelsContextMenu />}
-               onClose={dm_channel_close}
-               isOpen={dm_channel_context?.isOpen}
-               position={dm_channel_context?.position}
-            />
+            <ContextMenu renderChildren={<ChannelsContextMenu />} onClose={dm_channel_close} contextMenu={dm_channel_context} />
             <ContextMenu
                renderChildren={<ChannelRecipientContextMenu />}
                onClose={dm_channel_recipient_close}
-               isOpen={dm_channel_recipient_context?.isOpen}
-               position={dm_channel_recipient_context?.position}
+               contextMenu={dm_channel_recipient_context}
             />
 
-            <ContextMenu
-               renderChildren={<RelationshipContextMenu />}
-               onClose={relationship_close}
-               isOpen={relationship_context?.isOpen}
-               position={relationship_context?.position}
-            />
+            <ContextMenu renderChildren={<RelationshipContextMenu />} onClose={relationship_close} contextMenu={relationship_context} />
 
-            <ContextMenu
-               renderChildren={<RelationshipMoreContextMenu />}
-               onClose={relationship_more_close}
-               isOpen={relationship_more_context?.isOpen}
-               position={relationship_more_context?.position}
-            />
+            <ContextMenu renderChildren={<RelationshipMoreContextMenu />} onClose={relationship_more_close} contextMenu={relationship_more_context} />
 
-            <ContextMenu
-               renderChildren={<VoiceElementContextMenu />}
-               onClose={voice_user_close}
-               isOpen={voice_element_context?.isOpen}
-               position={voice_element_context?.position}
-               parent={parent}
-            />
+            <ContextMenu renderChildren={<VoiceElementContextMenu />} onClose={voice_user_close} contextMenu={{ ...voice_element_context, parent }} />
 
-            <ContextMenu
-               renderChildren={<MessageContextMenu />}
-               onClose={message_close}
-               isOpen={message_context?.isOpen}
-               position={message_context?.position}
-               parent={parent}
-            />
+            <ContextMenu renderChildren={<MessageContextMenu />} onClose={message_close} contextMenu={{ ...message_context, parent }} />
          </>
       )
    );
