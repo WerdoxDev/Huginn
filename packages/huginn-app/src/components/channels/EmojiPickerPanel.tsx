@@ -257,7 +257,7 @@ export default function EmojiPickerPanel(props: {
                >
                   <HuginnSelect.ItemsWrapper className="rounded-md!">
                      {toneOptions.map((x) => (
-                        <HuginnSelect.Item key={x.value} item={x} hideSelected className="size-10 justify-center" />
+                        <HuginnSelect.Item key={x.value} item={x} hideSelected={!isMobile} className="lg:size-10 lg:justify-center" />
                      ))}
                   </HuginnSelect.ItemsWrapper>
                </HuginnSelect.List>

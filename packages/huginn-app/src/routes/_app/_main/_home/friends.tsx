@@ -111,7 +111,6 @@ function FriendsComponent() {
             <PendingFriendsTab friends={friends} />
             <AddFriendTab />
          </div>
-         <div className="bg-surface flex h-16 w-full shrink-0" />
       </Tabs.Root>
    );
 }

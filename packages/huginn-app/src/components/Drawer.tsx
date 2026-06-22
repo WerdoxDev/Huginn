@@ -32,7 +32,7 @@ export function DrawerBackdrop(props: { forceRender?: boolean }) {
 
 export function DrawerPopup(props: { children: ReactNode; className?: string; behindModal?: boolean }) {
    return (
-      <Drawer.Viewport className={clsx("fixed inset-0 flex items-end justify-center", props.behindModal ? "z-10" : "z-20")}>
+      <Drawer.Viewport className={clsx("fixed inset-0 flex items-end justify-center", props.behindModal ? "z-10" : "z-20")} data-ignore-swipe>
          <Drawer.Popup className={clsx(drawerPopupClass, props.className)}>
             <div className="bg-surface mx-auto mb-2 h-1.5 w-16 shrink-0 rounded-full" />
             {props.children}
