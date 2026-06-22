@@ -129,8 +129,8 @@ function Item(
       context.isMobile && "px-3 py-3",
       "data-disabled:cursor-not-allowed",
       !props.color || props.color === "default"
-         ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 data-disabled:text-white/50"
-         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
+         ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 disabled:text-white/50 data-disabled:text-white/50"
+         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50 disabled:text-negative-100/50",
       props.className,
    );
 

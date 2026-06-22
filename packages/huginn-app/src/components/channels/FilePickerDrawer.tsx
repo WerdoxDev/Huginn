@@ -1,7 +1,8 @@
+import { Drawer } from "@base-ui/react";
 import { Capacitor } from "@capacitor/core";
 import HuginnButton from "@components/button/HuginnButton";
+import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import LoadingBackground from "@components/LoadingBackground";
-import LoadingIcon from "@components/LoadingIcon";
 import { useLookup } from "@hooks/useLookup";
 import {
    Gallery,
@@ -17,14 +18,53 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AndroidSettings, IOSSettings, NativeSettings } from "capacitor-native-settings";
 import { clsx } from "clsx";
 import moment from "moment";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
 import type { AppAttachment, AttachmentInput } from "@/types";
 
-export default function FilePickerPanel(props: {
+export default function FilePickerDrawer(props: {
    attachments: AppAttachment[];
    onAdd: (input: AttachmentInput[]) => void;
    onRemove: (key: string) => void;
+   keyboardHeight: number;
+   isOpen: boolean;
+   onOpenChange?: (open: boolean) => void;
+}) {
+   const snapPoints = useMemo(() => [props.keyboardHeight, 1], [props.keyboardHeight]);
+   const [snapPoint, setSnapPoint] = useState<number | string | null>(snapPoints[0]);
+   const canScroll = snapPoint === snapPoints.at(-1);
+
+   useEffect(() => {
+      if (!props.isOpen) {
+         setSnapPoint(snapPoints[0]);
+      }
+   }, [props.isOpen]);
+
+   return (
+      <Drawer.Root
+         disablePointerDismissal={!canScroll}
+         modal={false}
+         snapPoints={snapPoints}
+         onSnapPointChange={setSnapPoint}
+         snapPoint={snapPoint}
+         open={props.isOpen}
+         onOpenChange={props.onOpenChange}
+      >
+         <Drawer.Portal>
+            <DrawerBackdrop passThrough={!canScroll} />
+            <DrawerPopup className="h-full" passThrough={!canScroll}>
+               <FilePickerPanel attachments={props.attachments} onAdd={props.onAdd} onRemove={props.onRemove} canScroll={canScroll} />
+            </DrawerPopup>
+         </Drawer.Portal>
+      </Drawer.Root>
+   );
+}
+
+function FilePickerPanel(props: {
+   attachments: AppAttachment[];
+   onAdd: (input: AttachmentInput[]) => void;
+   onRemove: (key: string) => void;
+   canScroll?: boolean;
 }) {
    const queryClient = useQueryClient();
    const [thumbnails, setThumbnails] = useState<Record<string, ThumbnailResult>>({});
@@ -32,6 +72,8 @@ export default function FilePickerPanel(props: {
    const [permissionState, setPermissionState] = useState<MediaPermissionState | null>(null);
 
    const attachmentsLookup = useLookup(props.attachments, (attachment) => attachment.key);
+
+   const [, startTransition] = useTransition();
 
    const {
       data: mediaResult,
@@ -53,14 +95,26 @@ export default function FilePickerPanel(props: {
 
       let cancelled = false;
 
-      for (const media of mediaResult.pages.flatMap((x) => x.media)) {
-         if (thumbnails[media.id]) continue;
-         Gallery.getMediaThumbnail({ id: media.id, uri: media.uri, size: 600, quality: 80 }).then((result) => {
-            if ("error" in result) return;
-            if (cancelled) return;
-            setThumbnails((prev) => ({ ...prev, [media.id]: result }));
-         });
-      }
+      startTransition(async () => {
+         await Promise.all(
+            mediaResult.pages
+               .flatMap((x) => x.media)
+               .map(async (media) => {
+                  const result = await Gallery.getMediaThumbnail({ id: media.id, uri: media.uri, size: 600, quality: 80 });
+                  if (cancelled) return;
+                  if ("error" in result) return;
+                  setThumbnails((prev) => ({ ...prev, [media.id]: result }));
+               }),
+         );
+         // for (const media of mediaResult.pages.flatMap((x) => x.media)) {
+         //    if (thumbnails[media.id]) continue;
+         //    Gallery.getMediaThumbnail({ id: media.id, uri: media.uri, size: 600, quality: 80 }).then((result) => {
+         //       if ("error" in result) return;
+         //       if (cancelled) return;
+         //       setThumbnails((prev) => ({ ...prev, [media.id]: result }));
+         //    });
+         // }
+      });
 
       return () => {
          cancelled = true;
@@ -162,7 +216,13 @@ export default function FilePickerPanel(props: {
             </div>
          ) : (
             <>
-               <div className="scroll-super-thin flex h-full w-full flex-col overflow-y-auto pr-0" onScroll={handleScroll}>
+               <div
+                  className={clsx(
+                     "scroll-super-thin flex h-full w-full flex-col",
+                     props.canScroll ? "overflow-y-scroll pr-0" : "overflow-hidden pr-2",
+                  )}
+                  onScroll={handleScroll}
+               >
                   <div className="relative grid w-full grid-cols-3 content-start items-start gap-2">
                      {mediaResult?.pages
                         .flatMap((x) => x.media)

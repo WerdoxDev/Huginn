@@ -23,7 +23,7 @@ import HuginnButton from "./button/HuginnButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import EmojiPickerPanel from "./channels/EmojiPickerPanel";
 import EmojiPickerPopover from "./channels/EmojiPickerPopover";
-import FilePickerPanel from "./channels/FilePickerPanel";
+import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import ReplyingPreview from "./ReplyingPreview";
@@ -214,10 +214,17 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                </div>
             </div>
-            <div className="" style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
+            <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
                {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
-               {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
             </div>
+            <FilePickerDrawer
+               attachments={attachments}
+               isOpen={activeMobilePanel === "files"}
+               onOpenChange={(open) => !open && setActiveMobilePanel(null)}
+               keyboardHeight={lastKeyboardHeight}
+               onAdd={addAttachments}
+               onRemove={removeAttachment}
+            />
          </div>
       </div>
    );
