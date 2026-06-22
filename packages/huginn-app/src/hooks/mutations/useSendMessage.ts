@@ -7,7 +7,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { MessageErrorType, type AppAttachment, type PreviewAppMessage } from "@/types";
+import { MessageErrorType, type PreviewAppMessage } from "@/types";
 
 export function useSendMessage() {
    const client = useClient();

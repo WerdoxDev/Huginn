@@ -223,34 +223,37 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       }
    }
 
-   function onMessageAdd(message: ProcessedMessage) {
+   function onMessageAdd(messages: ProcessedMessage[]) {
       if (!scrollRef.current) return;
       const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = getRef(message.id)?.current?.clientHeight ?? 0;
+      const messageHeight = messages.map((msg) => getRef(msg.id)?.current?.clientHeight ?? 0).reduce((a, b) => a + b, 0);
 
-      if (message.authorId === user?.id || scrollOffset - messageHeight <= 50) {
+      if (messages.some((x) => x.authorId === user?.id) || scrollOffset - messageHeight <= 50) {
          scrollDown();
       }
    }
 
-   function onMessageUpdate(previousMessage: ProcessedMessage, message: ProcessedMessage, changeType: ChangeType, _isVisible: boolean) {
+   function onMessageUpdate(updates: { previousMessage: ProcessedMessage; message: ProcessedMessage; changeType: ChangeType; isVisible: boolean }[]) {
       if (!scrollRef.current) return;
-      const messageRef = getRef(message.id)?.current;
 
-      if (changeType === "preview") {
-         removeMessageUploadProgress(previousMessage.id);
-      }
+      for (const { previousMessage, message, changeType } of updates) {
+         const messageRef = getRef(message.id)?.current;
 
-      if (changeType === "edit" && messageRef) {
-         // scrollIntoViewMinimal(messageRef);
-         return;
-      }
+         if (changeType === "preview") {
+            removeMessageUploadProgress(previousMessage.id);
+         }
 
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = messageRef?.clientHeight ?? 0;
+         if (changeType === "edit" && messageRef) {
+            continue;
+         }
 
-      if (scrollOffset - messageHeight <= 50) {
-         scrollDown();
+         const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
+         const messageHeight = messageRef?.clientHeight ?? 0;
+
+         if (scrollOffset - messageHeight <= 50) {
+            scrollDown();
+            break; // No need to scroll multiple times
+         }
       }
    }
 
@@ -277,15 +280,6 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== options.channelId) return;
       scrollToLastSeenMessage();
    }, [options.queryData]);
-
-   // Compensate scroll position when top ghost messages appear
-   // const prevIsFetchingPreviousPage = useRef(false);
-   // useLayoutEffect(() => {
-   //    if (options.isFetchingPreviousPage && !prevIsFetchingPreviousPage.current && options.ghostTopRef.current && scrollRef.current) {
-   //       scrollRef.current.scrollTop += options.ghostTopRef.current.offsetHeight;
-   //    }
-   //    prevIsFetchingPreviousPage.current = options.isFetchingPreviousPage;
-   // }, [options.isFetchingPreviousPage]);
 
    // Save scroll state when leaving a channel
    useEffect(() => {

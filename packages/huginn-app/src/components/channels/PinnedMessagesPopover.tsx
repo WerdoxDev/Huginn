@@ -108,7 +108,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
    }
 
    return (
-      <HuginnPopover.Panel align="end" className="mx-2 w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
+      <HuginnPopover.Panel align="end" className="w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
          <div className="text-text flex items-center gap-x-2 px-4 py-4">
             <IconMingcutePinFill className="size-5" />
             <div className="text-lg font-bold">Pinned Messages</div>
