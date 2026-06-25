@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.77.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.76.0...app@v0.77.0) (2026-06-25)
+
+
+### Features
+
+* **app:** active panel indicator + taller message box + new user info design ([cc6d1c8](https://github.com/WerdoxDev/Huginn/commit/cc6d1c8083dadcc537aba48f801ed94d0e39689c))
+* **app:** add drawer for select component ([03611a0](https://github.com/WerdoxDev/Huginn/commit/03611a039751f3bd406ac79815e8553b421f3121))
+* **app:** add drawer style popups for ocntext menus and menus ([c59df63](https://github.com/WerdoxDev/Huginn/commit/c59df6317b5e34b53e7772c413a657f96030a1a3))
+* **app:** check platform in changelogs ([55258c7](https://github.com/WerdoxDev/Huginn/commit/55258c794cfc93967571a9c44d63ef812f837c5b))
+* **app:** stacked back handler + better performance for attachments on mobile + popover drawer ([daf5f09](https://github.com/WerdoxDev/Huginn/commit/daf5f092748b196c7c00c9469ccacc86bc742999))
+
+
+### Bug Fixes
+
+* **app:** back handler missing for submenus ([4320370](https://github.com/WerdoxDev/Huginn/commit/4320370412dd7fbd3006812da017f734410a2c74))
+* **app:** emoji panel color selection wrong ui in mobile ([7c34019](https://github.com/WerdoxDev/Huginn/commit/7c34019e32a0d6cda5d52e8a992b043aa225901d))
+* **app:** keyboard inset overlay not working on some andorids + some menue fixes ([3464298](https://github.com/WerdoxDev/Huginn/commit/3464298e4434c0e6c38bedbc9b0fae97c80d8bb1))
+* **app:** multi message add or update scroll fix ([c5fa5b2](https://github.com/WerdoxDev/Huginn/commit/c5fa5b26b0575f4270c28c5d1993954f637bd889))
+* **app:** rtl and ltr mixed text ordering is wrong ([a76f60b](https://github.com/WerdoxDev/Huginn/commit/a76f60b38f30668fe20637fded1fc06ee747127a))
+* **app:** use debug for android bundle upload ([e3a9c6a](https://github.com/WerdoxDev/Huginn/commit/e3a9c6a9e2fc58100126e664b4309d956c600ffa))
+* **app:** wrong apk file path for android ([ca1b1b9](https://github.com/WerdoxDev/Huginn/commit/ca1b1b9ec758eafecfb5697dac4e4ed4581d5fca))
+
 ## [0.76.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.75.0...app@v0.76.0) (2026-06-19)
 
 
