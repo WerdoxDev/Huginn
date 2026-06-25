@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 
 import { Drawer } from "@base-ui/react";
+import { useInset } from "@contexts/InsetContext";
 import clsx from "clsx";
 
 export const drawerPopupClass = clsx(
-   "flex w-full flex-col overflow-visible rounded-t-xl bg-zinc-900 p-2 shadow-lg outline-hidden select-none",
+   "pointer-events-auto flex w-full flex-col overflow-visible rounded-t-xl bg-zinc-900 p-2 shadow-lg outline-hidden select-none",
    "transition-[transform_height_opacity] duration-200",
    "data-starting-style:[transform:translateY(calc(100%+2px))]",
    "data-starting-style:translate-y-full",
@@ -28,6 +29,8 @@ export const drawerPopupClass = clsx(
 );
 
 export function DrawerBackdrop(props: { forceRender?: boolean; passThrough?: boolean }) {
+   const { lastNavBarHeight } = useInset();
+
    return (
       <Drawer.Backdrop
          forceRender={props.forceRender}
@@ -35,11 +38,14 @@ export function DrawerBackdrop(props: { forceRender?: boolean; passThrough?: boo
             "fixed inset-0 top-6 z-10 bg-black opacity-[calc(var(--backdrop-opacity)*(1-var(--drawer-swipe-progress)))] transition-opacity duration-200 [--backdrop-opacity:0.5] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0",
             props.passThrough && "pointer-events-none",
          )}
+         style={{ bottom: lastNavBarHeight }}
       />
    );
 }
 
 export function DrawerPopup(props: { children: ReactNode; className?: string; behindModal?: boolean; passThrough?: boolean }) {
+   const { lastNavBarHeight } = useInset();
+
    return (
       <Drawer.Viewport
          className={clsx(
@@ -47,9 +53,10 @@ export function DrawerPopup(props: { children: ReactNode; className?: string; be
             props.passThrough && "pointer-events-none",
             props.behindModal ? "z-10" : "z-20",
          )}
+         style={{ bottom: lastNavBarHeight }}
          data-ignore-swipe
       >
-         <Drawer.Popup className={clsx(drawerPopupClass, props.className, "pointer-events-auto")}>
+         <Drawer.Popup className={clsx(drawerPopupClass, props.className)}>
             <div className="bg-surface mx-auto mb-2 h-1.5 w-16 shrink-0 rounded-full" />
             {props.children}
          </Drawer.Popup>

@@ -2,8 +2,6 @@ import { analytics, initAnalytics as externalInitAnalytics } from "@huginn/share
 import { WebAnalytics } from "@huginn/shared/web-analytics";
 import { storageStore } from "@stores/storageStore";
 
-// let unlistenLogger: (() => void) | undefined;
-
 export function initAnalytics() {
    const store = storageStore.getState();
    const settings = store.cache["settings"];

@@ -2,8 +2,8 @@ import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
 import StartBackground from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
+import { InsetProvider } from "@contexts/InsetContext";
 import KeybindsProvider from "@contexts/KeybindsProvider";
-import { KeyboardProvider } from "@contexts/KeyboardContext";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { useInitDeviceStore } from "@hooks/initializers/useInitDeviceStore";
 import { useInitPresenceStore } from "@hooks/initializers/useInitPresenceStore";
@@ -41,7 +41,7 @@ function AppLayoutComponent() {
          <SettingsProvider>
             <KeybindsProvider>
                <ContextMenuProvider>
-                  <KeyboardProvider>
+                  <InsetProvider>
                      <div className={clsx("flex h-full flex-col overflow-hidden")}>
                         {!huginnWindow.browserFullscreen && <TitleBar />}
                         <div className="relative h-full w-full">
@@ -57,7 +57,7 @@ function AppLayoutComponent() {
                            <ContextMenusRenderer />
                         </div>
                      </div>
-                  </KeyboardProvider>
+                  </InsetProvider>
                </ContextMenuProvider>
             </KeybindsProvider>
          </SettingsProvider>

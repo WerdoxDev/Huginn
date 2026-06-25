@@ -1,9 +1,12 @@
 import { Dialog } from "@base-ui/react";
+import { useInset } from "@contexts/InsetContext";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 
 export default function ModalBackground(props: { className?: string }) {
    const huginnWindow = useHuginnWindow();
+
+   const { lastNavBarHeight } = useInset();
 
    return (
       <Dialog.Backdrop
@@ -13,6 +16,7 @@ export default function ModalBackground(props: { className?: string }) {
             !huginnWindow.maximized && "rounded-b-lg",
             props.className,
          )}
+         style={{ bottom: lastNavBarHeight }}
       />
    );
 }

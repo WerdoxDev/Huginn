@@ -1,6 +1,6 @@
 import type { Descendant } from "slate";
 
-import { useKeyboard } from "@contexts/KeyboardContext";
+import { useInset } from "@contexts/InsetContext";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
@@ -74,7 +74,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
 
-   const { isKeyboardOpen, lastKeyboardHeight } = useKeyboard();
+   const { isKeyboardOpen, lastKeyboardHeight } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
 
    const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpen);

@@ -1,6 +1,6 @@
 import { Dialog } from "@base-ui/react";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
-import { useKeyboard } from "@contexts/KeyboardContext";
+import { useInset } from "@contexts/InsetContext";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
@@ -21,7 +21,7 @@ export default function BaseModal(props: {
 }) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const { updateModals } = useModals();
-   const { shouldResizeWindow, lastKeyboardHeight, isKeyboardOpen } = useKeyboard();
+   const { shouldResizeWindow, lastKeyboardHeight, isKeyboardOpen, lastNavBarHeight } = useInset();
    const [key, setKey] = useState(0);
 
    const queryErrorResetBoundary = useQueryErrorResetBoundary();
@@ -50,7 +50,7 @@ export default function BaseModal(props: {
                   <ModalBackground className={props.backgroundClassName} />
                   <div
                      className={clsx("fixed inset-0 top-6 z-10")}
-                     style={{ bottom: shouldResizeWindow && isKeyboardOpen ? `${lastKeyboardHeight}px` : undefined }}
+                     style={{ bottom: shouldResizeWindow && isKeyboardOpen ? lastKeyboardHeight + lastNavBarHeight : lastNavBarHeight }}
                   >
                      <div className={clsx("flex h-full w-full justify-center", !props.headless && "items-end pt-20 lg:items-center lg:py-10")}>
                         {props.renderChildren}

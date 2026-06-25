@@ -1,9 +1,9 @@
 packages:
   - "packages/*"
 allowBuilds:
-  '@firebase/util': true
-  '@posthog/cli': set this to true or false
-  '@prisma/engines': false
+  "@firebase/util": true
+  "@posthog/cli": true
+  "@prisma/engines": false
   core-js: false
   electron-winstaller: false
   esbuild: false
@@ -11,3 +11,4 @@ allowBuilds:
   prisma: true
   protobufjs: true
   sharp: true
+minimumReleaseAge: 0

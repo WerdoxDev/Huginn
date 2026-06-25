@@ -2,7 +2,7 @@ import posthog from "@posthog/rollup-plugin";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
@@ -13,7 +13,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 import { version } from "./package.json";
 
-const reactCompilerConfig = { target: "19" };
+// const reactCompilerConfig = { target: "19" };
 
 const isHttps = process.env.VITE_LAN_HTTPS === "true";
 
@@ -30,7 +30,9 @@ export default defineConfig(({ mode }) => {
    const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app/";
    return {
       base,
-
+      experimental: {
+         // bundledDev: true,
+      },
       publicDir: "public",
       // optimizeDeps: ["@huginn/shared"],
       plugins: [
@@ -39,8 +41,9 @@ export default defineConfig(({ mode }) => {
          tanstackRouter({ target: "react", autoCodeSplitting: true }),
          react({ jsxRuntime: "automatic" }),
          babel({
-            presets: ["@babel/preset-typescript"],
-            plugins: [["babel-plugin-react-compiler", reactCompilerConfig], "@babel/plugin-syntax-jsx"],
+            presets: [reactCompilerPreset()],
+            // presets: ["@babel/preset-typescript"],
+            // plugins: ["@babel/plugin-syntax-jsx"],
          }),
          tailwindcss(),
          Icons({ compiler: "jsx" }),

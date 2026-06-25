@@ -1,5 +1,5 @@
 import { Drawer, Menu } from "@base-ui/react";
-import { DrawerBackdrop, DrawerPopup } from "@components/Drawer"; // 👈 shared
+import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
@@ -17,12 +17,22 @@ const popupClass = clsx(
    "data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-sm",
 );
 
-export function HuginnMenu(props: Menu.Root.Props) {
+export function HuginnMenu(props: Menu.Root.Props | Drawer.Root.Props) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const [isOpen, setIsOpen] = useState(false);
    const isMobile = useIsMobile();
 
    useStackBackHandler(`menu-${id}`, () => setIsOpen(false), isOpen);
+
+   function handleOpenChange(open: boolean, eventDetails: Menu.Root.ChangeEventDetails | Drawer.Root.ChangeEventDetails) {
+      if (props.open !== undefined) {
+         props.onOpenChange?.(open, eventDetails as any); // I don't see a better way to type this.
+         return;
+      }
+
+      setIsOpen(open);
+      props.onOpenChange?.(open, eventDetails as any);
+   }
 
    const children = (
       <MenuContext.Provider value={{ onClose: () => setIsOpen(false), isMobile: isMobile }}>{props.children as ReactNode}</MenuContext.Provider>
@@ -30,13 +40,13 @@ export function HuginnMenu(props: Menu.Root.Props) {
 
    if (isMobile) {
       return (
-         <Drawer.Root open={isOpen} onOpenChange={setIsOpen} modal={true} {...(props as Drawer.Root.Props)}>
+         <Drawer.Root open={isOpen} modal={true} {...(props as Drawer.Root.Props)} onOpenChange={handleOpenChange}>
             {children}
          </Drawer.Root>
       );
    }
    return (
-      <Menu.Root open={isOpen} onOpenChange={setIsOpen} modal={true} {...props}>
+      <Menu.Root open={isOpen} modal={true} {...(props as Menu.Root.Props)} onOpenChange={handleOpenChange}>
          {children}
       </Menu.Root>
    );
@@ -44,10 +54,10 @@ export function HuginnMenu(props: Menu.Root.Props) {
 
 function Trigger(props: (Menu.Trigger.Props | Drawer.Trigger.Props) & { asChild?: boolean }) {
    const { className, children, asChild, ...rest } = props;
-   const isMobile = useIsMobile();
+   const context = useContext(MenuContext)!;
 
    if (asChild && isValidElement(children)) {
-      if (isMobile) {
+      if (context.isMobile) {
          return (
             <Drawer.Trigger
                {...(rest as Drawer.Trigger.Props)}
@@ -61,7 +71,7 @@ function Trigger(props: (Menu.Trigger.Props | Drawer.Trigger.Props) & { asChild?
       return <Menu.Trigger {...(rest as Menu.Trigger.Props)} nativeButton={false} className={clsx("cursor-pointer", className)} render={children} />;
    }
 
-   if (isMobile) {
+   if (context.isMobile) {
       return (
          <Drawer.Trigger {...(rest as Drawer.Trigger.Props)} className={clsx("cursor-pointer", className)} render={props.render}>
             {children}

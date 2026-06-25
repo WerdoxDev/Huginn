@@ -40,6 +40,10 @@ export default function FilePickerDrawer(props: {
       }
    }, [props.isOpen]);
 
+   useEffect(() => {
+      setSnapPoint(snapPoints[0]);
+   }, [snapPoints]);
+
    return (
       <Drawer.Root
          disablePointerDismissal={!canScroll}

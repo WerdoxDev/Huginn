@@ -1,33 +1,36 @@
 import { useCapacitorListener } from "@hooks/useCapacitorListener";
-import KeyboardInset from "@lib/capacitor/keyboard-inset-plugin";
+import Inset from "@lib/capacitor/inset-plugin";
 import { useHuginnWindow } from "@stores/windowStore";
 import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 
-const KeyboardContext = createContext<{
+const InsetContext = createContext<{
    isKeyboardOpen: boolean;
    lastKeyboardHeight: number;
+   lastNavBarHeight: number;
    shouldResizeWindow: boolean;
 }>({
    isKeyboardOpen: false,
    lastKeyboardHeight: 0,
+   lastNavBarHeight: 0,
    shouldResizeWindow: true,
 });
 
 const elementSuppressesResize = (el: Element | null) => el?.classList.contains("keyboard-no-resize") ?? false;
 
-export function KeyboardProvider(props: { children: ReactNode }) {
+export function InsetProvider(props: { children: ReactNode }) {
    const huginnWindow = useHuginnWindow();
 
    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
    const [lastKeyboardHeight, setLastKeyboardHeight] = useState(Number(localStorage.getItem("cached-keyboard-height")) || 0);
+   const [lastNavBarHeight, setLastNavBarHeight] = useState(Number(localStorage.getItem("cached-navBar-height")) || 0);
    const [shouldResizeWindow, setShouldResizeWindow] = useState(true);
    const focusedElementRef = useRef<Element | null>(null);
 
    useEffect(() => {
       if (huginnWindow.environment !== "android") return;
 
-      if (lastKeyboardHeight === 0) {
-         KeyboardInset.show();
+      if (lastKeyboardHeight === 0 || lastNavBarHeight === 0) {
+         Inset.show();
       }
    }, []);
 
@@ -56,25 +59,44 @@ export function KeyboardProvider(props: { children: ReactNode }) {
       return () => abortController.abort();
    }, [isKeyboardOpen]);
 
-   const handleKeyboardChange = useEffectEvent((data: { height: number; isShowing: boolean }) => {
-      if (data.height !== 0) {
-         setLastKeyboardHeight(data.height);
-         localStorage.setItem("cached-keyboard-height", data.height.toString());
+   const handleInsetChange = useEffectEvent((data: { keyboardHeight: number; navBarHeight: number; isShowing: boolean }) => {
+      if (data.keyboardHeight !== 0) {
+         const height = data.keyboardHeight - data.navBarHeight;
+         setLastKeyboardHeight(height);
+         localStorage.setItem("cached-keyboard-height", height.toString());
       }
-      // if we never had a keyboard height, this open call is from the initial show so hide it again
-      if (lastKeyboardHeight === 0 && data.height !== 0) {
-         KeyboardInset.hide();
+
+      if (data.navBarHeight !== 0) {
+         setLastNavBarHeight(data.navBarHeight);
+         localStorage.setItem("cached-navBar-height", data.navBarHeight.toString());
+      }
+
+      // if we never had a keyboard or navbar height, this open call is from the initial show so hide it again
+      if ((lastKeyboardHeight === 0 && data.keyboardHeight !== 0) || (lastNavBarHeight === 0 && data.navBarHeight !== 0)) {
+         Inset.hide();
          return;
       }
+
       setIsKeyboardOpen(data.isShowing);
    });
 
-   useCapacitorListener(() => KeyboardInset.addListener("keyboardInsetChange", handleKeyboardChange));
+   useCapacitorListener(() => Inset.addListener("insetChange", handleInsetChange));
 
    return (
-      <KeyboardContext.Provider value={{ isKeyboardOpen, lastKeyboardHeight, shouldResizeWindow }}>
-         <div style={{ height: shouldResizeWindow && isKeyboardOpen ? `calc(100% - ${lastKeyboardHeight}px)` : "100%" }}>{props.children}</div>
-      </KeyboardContext.Provider>
+      <InsetContext.Provider value={{ isKeyboardOpen, lastKeyboardHeight, shouldResizeWindow, lastNavBarHeight }}>
+         <div
+            className="relative"
+            style={{
+               height:
+                  shouldResizeWindow && isKeyboardOpen
+                     ? `calc(100% - ${lastKeyboardHeight}px - ${lastNavBarHeight}px)`
+                     : `calc(100% - ${lastNavBarHeight}px)`,
+            }}
+         >
+            {props.children}
+         </div>
+         <div className="bg-surface fixed right-0 bottom-0 left-0 z-999" style={{ height: lastNavBarHeight }} />
+      </InsetContext.Provider>
    );
 }
 
@@ -92,6 +114,6 @@ function willOpenKeyboard(el: Element | null): boolean {
    return (el as HTMLElement).isContentEditable;
 }
 
-export function useKeyboard() {
-   return useContext(KeyboardContext);
+export function useInset() {
+   return useContext(InsetContext);
 }
