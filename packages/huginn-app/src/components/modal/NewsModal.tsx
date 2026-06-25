@@ -12,6 +12,13 @@ import { useMemo } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
+const PLATFORM_TO_HUGINN_ENV_MAP = {
+   windows: "desktop",
+   macos: "desktop",
+   linux: "desktop",
+   android: "android",
+} as const;
+
 export default function NewsModal() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
@@ -21,13 +28,15 @@ export default function NewsModal() {
    const changelogs = useMemo(() => {
       if (!data || data.length === 0) return;
       const md = new markdownit("default");
-      return data.reduce(
-         (acc, item) => {
-            acc[item.version] = { html: md.render(item.content), date: item.date, title: item.title };
-            return acc;
-         },
-         {} as Record<string, { html: string; date: string; title: string }>,
-      );
+      return data
+         .filter((x) => PLATFORM_TO_HUGINN_ENV_MAP[x.platform as keyof typeof PLATFORM_TO_HUGINN_ENV_MAP] === huginnWindow.environment)
+         .reduce(
+            (acc, item) => {
+               acc[item.version] = { html: md.render(item.content), date: item.date, title: item.title };
+               return acc;
+            },
+            {} as Record<string, { html: string; date: string; title: string }>,
+         );
    }, [data]);
 
    function close() {
