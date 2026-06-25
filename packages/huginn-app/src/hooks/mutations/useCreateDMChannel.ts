@@ -29,7 +29,7 @@ export function useCreateDMChannel(
             });
          },
          async onSuccess(data, variables) {
-            if (!variables.skipNavigation) await navigate({ to: `/channels/@me/$channelId`, params: { channelId: data?.id } });
+            if (!variables.skipNavigation && data) await navigate({ to: `/channels/@me/$channelId`, params: { channelId: data.id } });
          },
       },
       handleErrors,

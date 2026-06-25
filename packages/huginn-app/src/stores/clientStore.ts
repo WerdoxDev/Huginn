@@ -142,8 +142,9 @@ export async function initializeClient() {
       window.electronAPI.setUpdateUrl(url);
    }
 
-   if (huginnWindowStore.environment === "android") {
-      await CapacitorUpdater.setUpdateUrl({ url: `${thisStore.hostnames.api}/api/update/android` });
+   if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
+      const url = `${thisStore.hostnames.api}/api/update/android`;
+      await CapacitorUpdater.setUpdateUrl({ url });
    }
 
    const unlisteners: Array<(() => void) | undefined> = [];

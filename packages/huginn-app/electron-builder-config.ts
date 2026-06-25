@@ -5,6 +5,7 @@ export default {
    appId: "dev.huginn.desktop",
    electronLanguages: ["en-US"],
    compression: "maximum",
+
    win: {
       target: { target: "nsis", arch: ["x64"] },
       icon: "electron-assets/icon.ico",

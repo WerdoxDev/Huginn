@@ -1,14 +1,13 @@
 import HuginnButton from "./HuginnButton";
 
-export default function EmojiPickerButton(props: { onClick?: () => void }) {
+export default function EmojiPickerButton(props: { onClick?: () => void; isActive?: boolean }) {
    return (
       <HuginnButton
-         color="primary"
-         className="flex size-8 cursor-pointer items-center justify-center rounded-full!"
-         type="button"
          onClick={props.onClick}
+         color={props.isActive ? "primary" : "surface"}
+         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-2"
       >
-         <IconMingcuteEmoji2Fill className="text-text size-5" />
+         <IconMingcuteEmoji2Fill className="text-text size-full" />
       </HuginnButton>
    );
 }

@@ -1,4 +1,3 @@
-import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
@@ -56,7 +55,7 @@ export default function ChangeUsernameModal() {
    }
 
    return (
-      <HuginnDialogPanel className="w-full max-w-xs">
+      <HuginnDialogPanel className="lg:max-w-xs">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
                <HuginnDialogTitle title="Change Username" />

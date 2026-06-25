@@ -1,6 +1,8 @@
 import GuildsBar from "@components/GuildsBar";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
+import { useInset } from "@contexts/InsetContext";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
@@ -40,6 +42,7 @@ function HomeLayoutComponent() {
       openRight,
       closeRight,
    } = useMobileMenuStore();
+   const { lastNavBarHeight } = useInset();
 
    const settings = useStorage("settings");
 
@@ -116,6 +119,20 @@ function HomeLayoutComponent() {
       }
    }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
 
+   useBackHandler("left-sidebar", 20, () => {
+      if (!isLeftOpen) {
+         openLeft();
+         return true;
+      }
+   });
+
+   useBackHandler("right-sidebar", 30, () => {
+      if (isRightOpen) {
+         closeRight();
+         return true;
+      }
+   });
+
    return (
       <div
          className="bg-surface relative flex h-full w-full overflow-hidden select-none"
@@ -129,12 +146,13 @@ function HomeLayoutComponent() {
                "fixed inset-0 z-10 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
                isLeftOpen ? "opacity-100" : "pointer-events-none opacity-0",
             )}
+            style={{ bottom: lastNavBarHeight }}
             onClick={resetToCenter}
          />
 
          <div
             className={clsx(
-               "fixed top-6 bottom-0 z-20 flex lg:relative lg:top-0 lg:bottom-0 lg:z-auto lg:h-full",
+               "absolute top-0 bottom-0 z-20 flex lg:relative lg:top-0 lg:bottom-0 lg:z-auto lg:h-full",
                !isDragging && "transition-transform",
             )}
             style={{

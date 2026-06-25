@@ -11,8 +11,10 @@ export type ChangeType = undefined | "edit" | "embed" | "attachment" | "content"
 export function useMessageDiff(
    messages: ProcessedMessage[],
    options: {
-      onMessageAdd?: (message: ProcessedMessage) => void;
-      onMessageUpdate?: (previousMessage: ProcessedMessage, message: ProcessedMessage, changeType: ChangeType, isVisible: boolean) => void;
+      onMessageAdd?: (messages: ProcessedMessage[]) => void;
+      onMessageUpdate?: (
+         updates: { previousMessage: ProcessedMessage; message: ProcessedMessage; changeType: ChangeType; isVisible: boolean }[],
+      ) => void;
    },
 ) {
    const previousMessages = usePrevious(messages);
@@ -23,21 +25,26 @@ export function useMessageDiff(
          return;
       }
 
-      const latestMessage = messages[messages.length - 1];
+      // Collect all added messages
+      const addedMessages: ProcessedMessage[] = [];
+      if (messages.length > previousMessages.length) {
+         const previousLastId = previousMessages[previousMessages.length - 1]?.id;
 
-      // Check if a new message is visible at the bottom
-      if (messages.length > (previousMessages?.length ?? 0) && latestMessage.id !== previousMessages[previousMessages.length - 1]?.id) {
-         // Check if the message is preview (sent by us) or from realtime websocket (not fetching)
-         if (latestMessage.isPreview || latestMessage.source === "websocket") {
-            options.onMessageAdd?.(latestMessage);
+         for (let i = previousMessages.length; i < messages.length; i++) {
+            const newMessage = messages[i];
+            if (newMessage.id !== previousLastId && (newMessage.isPreview || newMessage.source === "websocket")) {
+               addedMessages.push(newMessage);
+            }
          }
       }
 
-      if (!previousMessages) {
-         return;
+      if (addedMessages.length > 0) {
+         options.onMessageAdd?.(addedMessages);
       }
 
-      // If message is updated
+      // Collect all updated messages
+      const updates: { previousMessage: ProcessedMessage; message: ProcessedMessage; changeType: ChangeType; isVisible: boolean }[] = [];
+
       for (const [index, message] of messages.entries()) {
          let changedType: ChangeType;
          const previousMessage = previousMessages[index];
@@ -62,10 +69,12 @@ export function useMessageDiff(
 
          if (changedType) {
             const isVisible = currentVisibleMessages.some((x) => x.messageId === message.id);
-
-            options.onMessageUpdate?.(previousMessage, message, changedType, isVisible);
-            break;
+            updates.push({ previousMessage, message, changeType: changedType, isVisible });
          }
+      }
+
+      if (updates.length > 0) {
+         options.onMessageUpdate?.(updates);
       }
    }, [messages]);
 }

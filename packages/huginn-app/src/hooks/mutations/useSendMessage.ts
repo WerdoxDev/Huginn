@@ -7,7 +7,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { MessageErrorType, type AppAttachment, type PreviewAppMessage } from "@/types";
+import { MessageErrorType, type PreviewAppMessage } from "@/types";
 
 export function useSendMessage() {
    const client = useClient();
@@ -81,11 +81,13 @@ export function useSendMessage() {
                nonce: previewMessage.nonce,
                messageReference,
             },
-            attachments?.map((x) => ({
-               data: x.data,
-               name: x.filename,
-               contentType: x.contentType,
-            })) ?? [],
+            await Promise.all(
+               attachments?.map(async (x) => ({
+                  data: x.data instanceof Function ? await x.data() : x.data,
+                  name: x.filename,
+                  contentType: x.contentType,
+               })) ?? [],
+            ),
             data.previewMessage.attachments?.length
                ? (event) =>
                     updateMessageUploadProgress({

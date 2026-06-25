@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
          version: version,
       },
    },
-   // server: { cleartext: true, url: "http://localhost:5174" },
+   server: process.env.VITE_DEV_SERVER_URL ? { cleartext: true, url: process.env.VITE_DEV_SERVER_URL } : undefined,
 };
 
 export default config;

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, type RefObject } from "react";
 
-export function useIsInView(ref: RefObject<HTMLElement | null>) {
+export function useIsInView(ref: RefObject<HTMLElement | null>, rootRef?: RefObject<HTMLElement | null>) {
    const [isInView, setIsInView] = useState(false);
 
-   const observer = useMemo(() => new IntersectionObserver(([entry]) => setIsInView(entry.isIntersecting)), [ref]);
+   const observer = useMemo(
+      () => new IntersectionObserver(([entry]) => setIsInView(entry.isIntersecting), { root: rootRef?.current }),
+      [ref, rootRef],
+   );
 
    useEffect(() => {
       if (ref.current) {

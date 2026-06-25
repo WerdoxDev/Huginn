@@ -5,7 +5,7 @@ import { useThisUser } from "@stores/userStore";
 
 export function usePatchUser(
    onSuccess?: (result: APIPatchCurrentUserResult) => void,
-   handleErrors?: (errors: HuginnErrorData) => Promise<boolean | void>,
+   handleErrors?: (errors: HuginnErrorData) => Promise<boolean | void> | boolean | void,
 ) {
    const client = useClient();
    const { setUser } = useThisUser();

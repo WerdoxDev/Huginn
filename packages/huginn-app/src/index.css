@@ -74,7 +74,7 @@
   If we ever want to remove these styles, we need to add an explicit border
   color utility to any element that depends on these defaults.
 */
-@layer base {
+/* @layer base {
    *,
    ::after,
    ::before,
@@ -82,7 +82,7 @@
    ::file-selector-button {
       border-color: var(--color-gray-200, currentcolor);
    }
-}
+} */
 
 @font-face {
    font-family: "Rubik";
@@ -126,7 +126,6 @@
    /* font-family: "Cascadia Mono", sans-serif; */
    -webkit-font-smoothing: none;
    /* letter-spacing: 0.05rem; */
-   /* font-size: 17px; */
    font-synthesis: none;
    text-rendering: optimizeLegibility;
    interpolate-size: allow-keywords;
@@ -135,6 +134,9 @@
 html,
 body,
 #root {
+   font-size: 16px;
+   -webkit-text-size-adjust: 100%;
+   text-size-adjust: 100%;
    @apply bg-surface-alt h-full overflow-hidden overscroll-none;
 }
 

@@ -2,8 +2,8 @@ import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import ModalsRenderer from "@components/modal/ModalsRenderer";
 import StartBackground from "@components/StartBackgroundSvg";
 import TitleBar from "@components/TitleBar";
+import { InsetProvider } from "@contexts/InsetContext";
 import KeybindsProvider from "@contexts/KeybindsProvider";
-import { KeyboardProvider } from "@contexts/KeyboardContext";
 import SettingsProvider from "@contexts/SettingsProvider";
 import { useInitDeviceStore } from "@hooks/initializers/useInitDeviceStore";
 import { useInitPresenceStore } from "@hooks/initializers/useInitPresenceStore";
@@ -12,8 +12,8 @@ import { useInitStorageStore } from "@hooks/initializers/useInitStorageStore";
 import { useInitTypingStore } from "@hooks/initializers/useInitTypingStore";
 import { useInitUserStore } from "@hooks/initializers/useInitUserStore";
 import { useInitVoiceStore } from "@hooks/initializers/useInitVoiceStore";
+import { useBackButtonManager } from "@hooks/useBackButtonManager";
 import { ContextMenuProvider } from "@stores/contextMenuStore";
-import { ThemeProvider } from "@stores/themeStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
@@ -25,6 +25,8 @@ export const Route = createFileRoute("/_app")({ component: AppLayoutComponent })
 
 function AppLayoutComponent() {
    const huginnWindow = useHuginnWindow();
+
+   useBackButtonManager();
 
    useInitStorageStore();
    useInitUserStore();
@@ -39,7 +41,7 @@ function AppLayoutComponent() {
          <SettingsProvider>
             <KeybindsProvider>
                <ContextMenuProvider>
-                  <KeyboardProvider>
+                  <InsetProvider>
                      <div className={clsx("flex h-full flex-col overflow-hidden")}>
                         {!huginnWindow.browserFullscreen && <TitleBar />}
                         <div className="relative h-full w-full">
@@ -55,7 +57,7 @@ function AppLayoutComponent() {
                            <ContextMenusRenderer />
                         </div>
                      </div>
-                  </KeyboardProvider>
+                  </InsetProvider>
                </ContextMenuProvider>
             </KeybindsProvider>
          </SettingsProvider>

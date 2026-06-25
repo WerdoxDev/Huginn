@@ -52,12 +52,8 @@ export default function StreamButton(props: {
             )}
          </div>
          <HuginnMenu.Content sideOffset={8} className="border-surface border">
-            <HuginnMenu.Item color="negative" onClick={props.onCloseStream}>
-               End Stream
-            </HuginnMenu.Item>
-            <HuginnMenu.Item onClick={props.onChangeStream} endSlot={<IconMingcuteTransfer3Fill />}>
-               Change Stream
-            </HuginnMenu.Item>
+            <HuginnMenu.Item label="End Stream" color="negative" onClick={props.onCloseStream} />
+            <HuginnMenu.Item label="Change Stream" onClick={props.onChangeStream} endSlot={<IconMingcuteTransfer3Fill />} />
             <HuginnMenu.Submenu
                label="Resolution"
                endSlot={<span className="text-white/60">{videoSettings?.height ? `${videoSettings.height}p` : "Unknown"}</span>}
@@ -65,11 +61,10 @@ export default function StreamButton(props: {
                {SCREEN_SHARE_QUALITIES.map((x) => (
                   <HuginnMenu.Item
                      key={x.value}
+                     label={`${x.height}p`}
                      onClick={() => handleUpdateStream({ quality: x.value })}
                      endSlot={videoSettings?.height === x.height ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
-                  >
-                     {`${x.height}p`}
-                  </HuginnMenu.Item>
+                  />
                ))}
             </HuginnMenu.Submenu>
             <HuginnMenu.Submenu
@@ -79,11 +74,10 @@ export default function StreamButton(props: {
                {SCREEN_SHARE_FRAME_RATES.map((x) => (
                   <HuginnMenu.Item
                      key={x}
+                     label={`${x} fps`}
                      onClick={() => props.onUpdateStream?.({ frameRate: x })}
                      endSlot={videoSettings?.frameRate === x ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
-                  >
-                     {`${x} fps`}
-                  </HuginnMenu.Item>
+                  />
                ))}
             </HuginnMenu.Submenu>
          </HuginnMenu.Content>
@@ -96,12 +90,13 @@ export default function StreamButton(props: {
             </HuginnMenu.Trigger>
          </div>
          <HuginnMenu.Content sideOffset={8} className="border-surface border">
-            <HuginnMenu.Item onClick={props.onOpenScreenShare} endSlot={<IconMingcuteMonitorFill />}>
-               Screen Share
-            </HuginnMenu.Item>
-            <HuginnMenu.Item onClick={props.onOpenAudioStream} disabled={huginnWindow.environment !== "desktop"} endSlot={<IconMingcuteVolumeFill />}>
-               Audio Stream
-            </HuginnMenu.Item>
+            <HuginnMenu.Item label="Screen Share" onClick={props.onOpenScreenShare} endSlot={<IconMingcuteMonitorFill />} />
+            <HuginnMenu.Item
+               label="Audio Stream"
+               onClick={props.onOpenAudioStream}
+               disabled={huginnWindow.environment !== "desktop"}
+               endSlot={<IconMingcuteVolumeFill />}
+            />
          </HuginnMenu.Content>
       </HuginnMenu>
    );

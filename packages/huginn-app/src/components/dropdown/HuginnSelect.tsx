@@ -1,18 +1,21 @@
 import { Select } from "@base-ui/react";
+import { Drawer } from "@base-ui/react";
+import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import HuginnLabel from "@components/HuginnLabel";
+import { useIsMobile } from "@hooks/useIsMobile";
+import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
 
 import type { SelectItem } from "@/types";
 
-type SelectContextValue = {
+const SelectContext = createContext<{
    id: string;
-};
-
-const SelectContext = createContext<SelectContextValue>({
-   id: "",
-});
+   isMobile: boolean;
+   isDrawerOpen: boolean;
+   setIsDrawerOpen: (open: boolean) => void;
+}>(undefined!);
 
 export default function HuginnSelect<T = string>(props: {
    children?: ReactNode;
@@ -21,15 +24,28 @@ export default function HuginnSelect<T = string>(props: {
    onChange?: (value: SelectItem<T>) => void;
 }) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
+   const isMobile = useIsMobile();
+   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
    function handleValueChange(value: SelectItem<T> | null) {
       if (!value) return;
       props.onChange?.(value);
+      if (isMobile) setIsDrawerOpen(false);
    }
 
+   useStackBackHandler(`select-drawer-${id}`, () => setIsDrawerOpen(false), isDrawerOpen);
+
    return (
-      <SelectContext.Provider value={{ id: id }}>
-         <Select.Root id={id} modal={false} value={props.selected ?? null} onValueChange={handleValueChange} itemToStringLabel={(x) => x.text}>
+      <SelectContext.Provider value={{ id, isMobile, isDrawerOpen, setIsDrawerOpen }}>
+         <Select.Root
+            id={id}
+            modal={false}
+            value={props.selected ?? null}
+            onValueChange={handleValueChange}
+            itemToStringLabel={(x) => x.text}
+            // On mobile, prevent the native select popup from opening
+            onOpenChange={isMobile ? () => {} : undefined}
+         >
             <div className={clsx("flex flex-col", props.className)}>{props.children}</div>
          </Select.Root>
       </SelectContext.Provider>
@@ -44,10 +60,12 @@ function List(props: {
    hideArrow?: boolean;
    triggerClassName?: string;
 }) {
+   const context = useContext(SelectContext);
+
    return (
-      <div className={clsx("bg-surface-alt w-52 overflow-hidden rounded-lg", props.className)}>
+      <div className={clsx("bg-surface-alt w-full overflow-hidden rounded-lg lg:w-52", props.className)}>
          <Select.Trigger
-            onClick={props.onClick}
+            onClick={context.isMobile ? () => context.setIsDrawerOpen(true) : props.onClick}
             className={clsx(
                "relative flex w-full cursor-pointer items-center gap-x-1.5 p-2 text-white outline-hidden select-none",
                props.triggerClassName,
@@ -88,8 +106,22 @@ function ItemsWrapper(props: {
    sideOffset?: Select.Positioner.Props["sideOffset"];
    alignOffset?: Select.Positioner.Props["alignOffset"];
 }) {
+   const context = useContext(SelectContext);
    const sideOffset = props.sideOffset ?? 4;
    const alignOffset = props.alignOffset ?? 0;
+
+   if (context.isMobile) {
+      return (
+         <Drawer.Root open={context.isDrawerOpen} onOpenChange={context.setIsDrawerOpen}>
+            <Drawer.Portal>
+               <DrawerBackdrop forceRender />
+               <DrawerPopup>
+                  <div className={clsx("flex flex-col overflow-y-auto", props.className)}>{props.children}</div>
+               </DrawerPopup>
+            </Drawer.Portal>
+         </Drawer.Root>
+      );
+   }
 
    return (
       <Select.Portal>
@@ -117,14 +149,46 @@ function ItemsWrapper(props: {
 }
 
 function Item<T = string>(props: { item: SelectItem<T>; children?: ReactNode; hideSelected?: boolean; className?: string }) {
+   const context = useContext(SelectContext);
+
+   const itemClass = clsx(
+      "group data-highlighted:bg-surface active:bg-surface flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70",
+      context.isMobile ? "rounded-md px-3 py-3" : "data-selected:bg-surface/50 data-selected:text-white",
+      props.className,
+   );
+
+   if (context.isMobile) {
+      return (
+         // Select.Item still needs to be used so Select.Root tracks the selected value
+         <Select.Item
+            value={props.item}
+            className={itemClass}
+            // close drawer on selection — onValueChange in root also handles this,
+            // but onClick gives instant feedback
+            onClick={() => context.setIsDrawerOpen(false)}
+         >
+            {props.item.icon}
+            {props.item.text && <Select.ItemText className="wrap-anywhere">{props.item.text}</Select.ItemText>}
+            {props.children}
+            {!props.hideSelected && (
+               <Select.ItemIndicator
+                  keepMounted
+                  className={(state) =>
+                     clsx(
+                        "text-primary-500 ml-auto flex size-5 shrink-0 items-center justify-center transition-opacity",
+                        !state.selected && "opacity-0",
+                     )
+                  }
+               >
+                  <IconMingcuteCheckFill className="size-5" />
+               </Select.ItemIndicator>
+            )}
+         </Select.Item>
+      );
+   }
+
    return (
-      <Select.Item
-         value={props.item}
-         className={clsx(
-            "group data-highlighted:bg-surface data-selected:bg-surface/50 flex cursor-pointer items-center gap-x-2 px-2 py-2 text-white/70 data-selected:text-white",
-            props.className,
-         )}
-      >
+      <Select.Item value={props.item} className={itemClass}>
          {props.item.icon}
          {props.item.text && <Select.ItemText className="wrap-anywhere">{props.item.text}</Select.ItemText>}
          {props.children}
@@ -143,8 +207,8 @@ function Item<T = string>(props: { item: SelectItem<T>; children?: ReactNode; hi
 }
 
 function Label(props: { children?: ReactNode }) {
-   const dropdownContext = useContext(SelectContext);
-   return <HuginnLabel htmlFor={dropdownContext.id}>{props.children}</HuginnLabel>;
+   const context = useContext(SelectContext);
+   return <HuginnLabel htmlFor={context.id}>{props.children}</HuginnLabel>;
 }
 
 HuginnSelect.Label = Label;

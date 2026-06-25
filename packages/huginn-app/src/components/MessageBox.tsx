@@ -1,8 +1,8 @@
 import type { Descendant } from "slate";
 
-import { App } from "@capacitor/app";
-import { useKeyboard } from "@contexts/KeyboardContext";
+import { useInset } from "@contexts/InsetContext";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
@@ -23,7 +23,7 @@ import HuginnButton from "./button/HuginnButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import EmojiPickerPanel from "./channels/EmojiPickerPanel";
 import EmojiPickerPopover from "./channels/EmojiPickerPopover";
-import FilePickerPanel from "./channels/FilePickerPanel";
+import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import ReplyingPreview from "./ReplyingPreview";
@@ -59,6 +59,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const isMobile = useIsMobile();
    const { setMessageBoxHeight } = useChannelStore();
    const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange } = usePreviewMessageRenderer();
+   const editorRef = useRef<HTMLDivElement | null>(null);
 
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
 
@@ -74,7 +75,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
 
-   const { isKeyboardOpen, lastKeyboardHeight } = useKeyboard();
+   const { isKeyboardOpen, lastKeyboardHeight } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
 
    const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpen);
@@ -105,24 +106,36 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => resizeObserver.disconnect();
    }, []);
 
+   // don't close the keyboard when clicking outside the keyboard (except for actual buttons and focusable things)
    useEffect(() => {
-      let unlisten: () => void;
-      let cancelled = false;
+      const controller = new AbortController();
+      document.addEventListener(
+         "focusout",
+         (e) => {
+            console.log(e.relatedTarget);
+            if (
+               e.target === editorRef.current &&
+               isKeyboardOpen &&
+               (e.relatedTarget === null ||
+                  (e.relatedTarget as HTMLElement).closest("[data-keyboard-no-close]") ||
+                  (e.relatedTarget as HTMLElement)?.hasAttribute("data-keyboard-no-close"))
+            ) {
+               ReactEditor.focus(editor);
+               e.preventDefault();
+            }
+         },
+         { signal: controller.signal },
+      );
 
-      App.addListener("backButton", () => {
-         if (activeMobilePanel) {
-            setActiveMobilePanel(null);
-         }
-      }).then((listener) => {
-         if (cancelled) listener.remove();
-         unlisten = () => listener.remove();
-      });
+      return () => controller.abort();
+   }, [isKeyboardOpen]);
 
-      return () => {
-         cancelled = true;
-         unlisten?.();
-      };
-   }, [activeMobilePanel]);
+   useBackHandler("message-box", 100, () => {
+      if (activeMobilePanel) {
+         setActiveMobilePanel(null);
+         return true;
+      }
+   });
 
    function handleMobileEmojiPickerClick() {
       setActiveMobilePanel((prev) => (prev === "emoji" && !isKeyboardOpen ? null : "emoji"));
@@ -139,14 +152,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          <div className="to-surface-deep pointer-events-none absolute inset-x-0 -top-7 right-2.5 z-10 h-7 bg-linear-to-b from-transparent" />
 
          <ChannelTypingIndicator channelId={channelId!} />
-         <div
-            className={clsx("bottom-0 z-10 flex flex-col select-text")}
-            // style={{ height: shouldShowMobilePanel ? lastKeyboardHeight + (containerRef.current?.clientHeight ?? 0) + 6 : undefined }}
-         >
+         <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
             <div
                className={clsx(
-                  "bg-surface-alt border-surface mx-1.5 mb-1.5 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
+                  "bg-surface-alt border-surface mx-2 mb-2 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
                   hasAddon && "rounded-t-xl",
                )}
                ref={containerRef}
@@ -160,26 +170,32 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                />
                <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
                <div className="flex h-full items-start">
-                  {!currentEditingMessageId &&
-                     (isMobileEnvironment ? (
-                        <FilePickerButton onClick={handleMobileFilePickerClick} />
-                     ) : (
-                        <Tooltip>
-                           <Tooltip.Trigger asChild>
-                              <FilePickerButton onClick={openFileSelector} />
-                           </Tooltip.Trigger>
-                           <Tooltip.Content>Upload Files</Tooltip.Content>
-                        </Tooltip>
-                     ))}
+                  <div className="flex gap-x-2 py-2 pl-2">
+                     {!currentEditingMessageId &&
+                        (isMobileEnvironment ? (
+                           <FilePickerButton onClick={handleMobileFilePickerClick} isActive={activeMobilePanel === "files" && !isKeyboardOpen} />
+                        ) : (
+                           <Tooltip>
+                              <Tooltip.Trigger asChild>
+                                 <FilePickerButton onClick={openFileSelector} />
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>Upload Files</Tooltip.Content>
+                           </Tooltip>
+                        ))}
+                     {isMobileEnvironment && (
+                        <EmojiPickerButton onClick={handleMobileEmojiPickerClick} isActive={activeMobilePanel === "emoji" && !isKeyboardOpen} />
+                     )}
+                  </div>
                   <div className="h-full w-full overflow-hidden">
-                     {/* <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}> */}
                      <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
                         <Editable
+                           tabIndex={-1}
+                           ref={editorRef}
                            onPaste={onPaste}
                            placeholder={`Message ${currentChannel?.name}`}
                            className={clsx(
-                              "keyboard-no-resize h-full py-3 leading-6 font-light whitespace-break-spaces text-white caret-white outline-hidden",
-                              currentEditingMessageId && "pl-3",
+                              "h-full shrink-0 py-4.25 pl-2 leading-6 whitespace-break-spaces text-white caret-white outline-hidden lg:leading-5.5",
+                              currentEditingMessageId && "pl-2.25",
                            )}
                            renderLeaf={renderLeaf}
                            renderElement={renderElement}
@@ -187,30 +203,34 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            onKeyDown={onEditorKeyDown}
                            renderPlaceholder={Placeholder}
                            disableDefaultStyles
+                           data-keyboard-no-resize
                         />
                      </Slate>
                   </div>
-                  <div className="ml-2 flex h-8 gap-x-2 p-2">
-                     {isMobileEnvironment ? (
-                        <EmojiPickerButton onClick={handleMobileEmojiPickerClick} />
-                     ) : (
-                        <EmojiPickerPopover onEmojiSelect={insertEmoji} />
-                     )}
+                  <div className="flex gap-x-2 p-2">
+                     {!isMobileEnvironment && <EmojiPickerPopover onEmojiSelect={insertEmoji} />}
                      <HuginnButton
                         color="primary"
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full!"
+                        className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
                         type="button"
                         onClick={() => sendMessage(MessageFlags.NONE)}
                      >
-                        <IconLetsIconsSendHorFill className="text-text size-6" />
+                        <IconLetsIconsSendHorFill className="text-text size-full" />
                      </HuginnButton>
                   </div>
                </div>
             </div>
-            <div className="" style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
+            <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
                {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
-               {activeMobilePanel === "files" && <FilePickerPanel attachments={attachments} onAdd={addAttachments} onRemove={removeAttachment} />}
             </div>
+            <FilePickerDrawer
+               attachments={attachments}
+               isOpen={activeMobilePanel === "files"}
+               onOpenChange={(open) => !open && setActiveMobilePanel(null)}
+               keyboardHeight={lastKeyboardHeight}
+               onAdd={addAttachments}
+               onRemove={removeAttachment}
+            />
          </div>
       </div>
    );

@@ -113,12 +113,25 @@ public class GalleryPlugin extends Plugin {
         }
 
         long id = Long.parseLong(idString);
-        ContentResolver cr = getContext().getContentResolver();
 
-        String base64 = generateThumbnail(cr, Uri.parse(uri), id, size, quality);
-        JSObject data = new JSObject();
-        data.put("base64", base64);
-        call.resolve(data);
+        call.setKeepAlive(true);
+        ;
+
+        bridge.execute(() -> {
+            try {
+                ContentResolver cr = getContext().getContentResolver();
+                String base64 = generateThumbnail(cr, Uri.parse(uri), id, size, quality);
+
+                JSObject data = new JSObject();
+                data.put("base64", base64);
+                call.resolve(data);
+
+            } catch (Exception e) {
+                call.reject("Failed to generate thumbnail: " + e.getMessage());
+            } finally {
+                call.setKeepAlive(false);
+            }
+        });
     }
 
     private void executeGetMedia(PluginCall call) {
@@ -267,22 +280,24 @@ public class GalleryPlugin extends Plugin {
         }
     }
 
-    private String generateThumbnail(ContentResolver cr, Uri uri,
-                                     long id, int size, int quality) {
+    private String generateThumbnail(ContentResolver cr, Uri uri, long id, int size, int quality) {
+        Bitmap bmp = null;
         try {
-            Bitmap bmp;
-
             bmp = cr.loadThumbnail(uri, new Size(size, size), null);
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream(
+                    bmp.getWidth() * bmp.getHeight()  // rough pre-size to avoid resizing
+            );
             bmp.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-            bmp.recycle();
 
-            byte[] bytes = stream.toByteArray();
-            return "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP);
+            return "data:image/jpeg;base64," + Base64.encodeToString(
+                    stream.toByteArray(), Base64.NO_WRAP
+            );
 
         } catch (IOException e) {
             return "";
+        } finally {
+            if (bmp != null) bmp.recycle();
         }
     }
 

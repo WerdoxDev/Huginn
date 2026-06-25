@@ -108,13 +108,13 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
    }
 
    return (
-      <HuginnPopover.Panel align="end" className="mx-2 w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
+      <HuginnPopover.Panel align="end" className="w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
          <div className="text-text flex items-center gap-x-2 px-4 py-4">
             <IconMingcutePinFill className="size-5" />
             <div className="text-lg font-bold">Pinned Messages</div>
          </div>
          <div className="bg-surface h-0.5 w-full" />
-         <div className="bg-surface-deep scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pl-2" onScroll={onScroll}>
+         <div className="scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pl-2" onScroll={onScroll}>
             {isLoading && (
                <div className="text-text/70 flex h-20 items-center justify-center gap-x-2">
                   <LoadingIcon className="size-10" />
@@ -128,7 +128,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
                <ol className="flex flex-col gap-y-2 overflow-hidden">
                   {processedMessages.map((message, index) => (
                      <div
-                        className="bg-surface-alt group/background relative cursor-pointer rounded-lg transition-colors"
+                        className="bg-surface-deep group/background relative cursor-pointer rounded-lg transition-colors"
                         key={message.id}
                         // onKeyDown={(event) => {
                         //    if (event.key === "Enter" || event.key === " ") {
@@ -149,14 +149,14 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
                         <div className="absolute top-2 right-2 flex gap-x-1 select-none lg:opacity-0 lg:group-hover/background:opacity-100">
                            <button
                               onClick={() => props.onMessageClick(message.id)}
-                              className="bg-surface-deep hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-2 py-1 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white"
+                              className="bg-surface-alt hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-3 py-2 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white lg:px-2 lg:py-1"
                            >
                               Jump
                            </button>
 
                            <button
                               onClick={() => handleDeletePin(message.id)}
-                              className="bg-surface-deep hover:bg-surface active:bg-surface flex shrink-0 cursor-pointer items-center justify-center rounded-md p-1.5 text-white/70 transition-colors outline-none hover:text-white active:text-white"
+                              className="bg-surface-alt hover:bg-surface active:bg-surface flex shrink-0 cursor-pointer items-center justify-center rounded-md p-2 text-white/70 transition-colors outline-none hover:text-white active:text-white lg:p-1.5"
                            >
                               <IconMingcuteCloseFill className="size-4" />
                            </button>

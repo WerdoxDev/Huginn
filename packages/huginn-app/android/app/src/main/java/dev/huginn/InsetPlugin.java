@@ -12,8 +12,8 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.JSObject;
 
-@CapacitorPlugin(name = "KeyboardInset")
-public class KeyboardInsetPlugin extends Plugin {
+@CapacitorPlugin(name = "Inset")
+public class InsetPlugin extends Plugin {
     @PluginMethod
     public void show(PluginCall call) {
         AppCompatActivity activity = getActivity();
@@ -33,10 +33,11 @@ public class KeyboardInsetPlugin extends Plugin {
         call.resolve();
     }
 
-    public void notifyKeyboard(boolean isShowing, float heightDp) {
+    public void notifyInsetChange(boolean isShowing, float keyboardHeightDp, float navBarHeightDp) {
         JSObject data = new JSObject();
-        data.put("height", heightDp);
+        data.put("keyboardHeight", keyboardHeightDp);
+        data.put("navBarHeight", navBarHeightDp);
         data.put("isShowing", isShowing);
-        notifyListeners("keyboardInsetChange", data);
+        notifyListeners("insetChange", data);
     }
 }
