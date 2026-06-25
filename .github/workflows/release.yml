@@ -78,7 +78,7 @@ jobs:
               bun-version: latest
 
          - name: Install dependencies
-           run: cd packages/huginn-app && pnpm install --ignore-scripts --filter huginn-app-react --filter @huginn/api --filter @huginn/shared
+           run: cd packages/huginn-app && pnpm install --ignore-scripts
 
          - name: Setup Cmake
            uses: jwlawson/actions-setup-cmake@v2
@@ -131,7 +131,7 @@ jobs:
               distribution: "temurin"
 
          - name: Install dependencies
-           run: cd packages/huginn-app && pnpm install --ignore-scripts --filter huginn-app-react --filter @huginn/api --filter @huginn/shared
+           run: cd packages/huginn-app && pnpm install --ignore-scripts
 
          - name: Decode keystore
            run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d -i > $RELEASE_STORE_FILE
