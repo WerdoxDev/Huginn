@@ -39,6 +39,16 @@ function getEntryDate(entry: PageObjectResponse) {
    return dateProperty.date.start;
 }
 
+function getEntryPlatform(entry: PageObjectResponse) {
+   const platformProperty = entry.properties?.Platform;
+
+   console.log("platformProperty", platformProperty);
+   if (!platformProperty || platformProperty.type !== "select") return "";
+
+   const platformText = platformProperty.select?.name.toLowerCase().trim();
+   return platformText ?? "";
+}
+
 const querySchema = t.Object({ since: t.Optional(t.String()), current: t.String() });
 
 const contentCache = new CacheStorage<string, string>(60 * 60); // Cache for 1 hour
@@ -58,12 +68,13 @@ export const getChangelog = new Elysia().get(
       const selectedPages = sinceVersion
          ? pages.filter((entry) => {
               const entryVersion = coerceVersion(getEntryVersion(entry));
-              return entryVersion ? semver.gt(entryVersion, sinceVersion) && semver.lte(entryVersion, query.current) : false;
+              const currentVersion = coerceVersion(query.current);
+              return entryVersion && currentVersion ? semver.gt(entryVersion, sinceVersion) && semver.lte(entryVersion, currentVersion) : false;
            })
          : pages.filter((entry) => {
               const entryVersion = coerceVersion(getEntryVersion(entry));
               const currentVersion = coerceVersion(query.current);
-              return entryVersion && currentVersion ? semver.lte(entryVersion, currentVersion) : false;
+              return entryVersion && currentVersion ? semver.eq(entryVersion, currentVersion) : false;
            });
 
       if (selectedPages.length === 0) {
@@ -73,7 +84,13 @@ export const getChangelog = new Elysia().get(
       const result = await Promise.all(
          selectedPages.map(async (entry) => {
             const result = await contentCache.cacheOrGet(entry.id, async () => (await n2m.convert(entry.id)).content);
-            return { title: getEntryTitle(entry), version: getEntryVersion(entry), content: result, date: getEntryDate(entry) };
+            return {
+               title: getEntryTitle(entry),
+               version: getEntryVersion(entry),
+               content: result,
+               date: getEntryDate(entry),
+               platform: getEntryPlatform(entry),
+            };
          }),
       );
 
