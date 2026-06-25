@@ -15,7 +15,7 @@ export default function EmojiPickerPopover(props: { onEmojiSelect?: (emoji: stri
    return (
       <HuginnPopover onOpenChange={handleOpenChange} open={isOpen}>
          <HuginnPopover.Trigger asChild>
-            <EmojiPickerButton />
+            <EmojiPickerButton isActive={isOpen} />
          </HuginnPopover.Trigger>
          <HuginnPopover.Panel sideGap={12} className="bg-surface flex flex-col overflow-hidden rounded-lg pr-0">
             <EmojiPickerPanel isOpen={isOpen} onEmojiSelect={props.onEmojiSelect} maxWidth={340} maxHeight={480} />

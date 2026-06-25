@@ -1,13 +1,13 @@
 import HuginnButton from "./HuginnButton";
 
-export default function FilePickerButton(props: { onClick: () => void }) {
+export default function FilePickerButton(props: { onClick: () => void; isActive?: boolean }) {
    return (
       <HuginnButton
          onClick={props.onClick}
-         color="surface"
-         className="bg-surface m-2 mr-2 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full!"
+         color={props.isActive ? "primary" : "surface"}
+         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-2"
       >
-         <IconMingcuteAddFill name="gravity-ui:plus" className="text-text size-5" />
+         <IconMingcuteAddFill name="gravity-ui:plus" className="text-text size-full" />
       </HuginnButton>
    );
 }

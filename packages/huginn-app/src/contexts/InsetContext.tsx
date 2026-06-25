@@ -15,7 +15,8 @@ const InsetContext = createContext<{
    shouldResizeWindow: true,
 });
 
-const elementSuppressesResize = (el: Element | null) => el?.classList.contains("keyboard-no-resize") ?? false;
+const elementSuppressesResize = (el: Element | null) =>
+   el?.hasAttribute("data-keyboard-no-resize") || el?.closest("[data-keyboard-no-resize]") !== null;
 
 export function InsetProvider(props: { children: ReactNode }) {
    const huginnWindow = useHuginnWindow();

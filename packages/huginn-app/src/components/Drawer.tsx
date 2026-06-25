@@ -23,8 +23,6 @@ export const drawerPopupClass = clsx(
    "data-nested-drawer-open:h-[calc(var(--height)+var(--bleed))]",
    "data-nested-drawer-swiping:duration-0",
    "max-h-[calc(100dvh-var(--top-margin))] min-h-0",
-   "[padding-bottom:max(0.5rem,calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
-   // "[transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
    "[transform:translateY(calc((var(--drawer-swipe-movement-y))+var(--drawer-snap-point-offset)-var(--stack-peek-offset)-(var(--shrink)*var(--height))))_scale(var(--scale))]",
 );
 

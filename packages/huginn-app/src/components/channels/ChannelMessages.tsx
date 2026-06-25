@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
-import ChannelTypingIndicator from "./ChannelTypingIndicator";
 import GhostMessages from "./GhostMessages";
 
 const ACTION_MESSAGE_TYPES: MessageType[] = [

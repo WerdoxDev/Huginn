@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import HuginnButton from "@components/button/HuginnButton";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import LoadingBackground from "@components/LoadingBackground";
+import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
 import {
    Gallery,
@@ -18,7 +19,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AndroidSettings, IOSSettings, NativeSettings } from "capacitor-native-settings";
 import { clsx } from "clsx";
 import moment from "moment";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { AppAttachment, AttachmentInput } from "@/types";
 
@@ -74,10 +75,9 @@ function FilePickerPanel(props: {
    const [thumbnails, setThumbnails] = useState<Record<string, ThumbnailResult>>({});
    const { updateModals } = useModals();
    const [permissionState, setPermissionState] = useState<MediaPermissionState | null>(null);
+   const scrollRef = useRef<HTMLDivElement>(null);
 
    const attachmentsLookup = useLookup(props.attachments, (attachment) => attachment.key);
-
-   const [, startTransition] = useTransition();
 
    const {
       data: mediaResult,
@@ -94,36 +94,39 @@ function FilePickerPanel(props: {
       enabled: !!permissionState,
    });
 
-   useEffect(() => {
-      if (!mediaResult) return;
+   // useEffect(() => {
+   //    if (!mediaResult) return;
 
-      let cancelled = false;
+   //    let cancelled = false;
 
-      startTransition(async () => {
-         await Promise.all(
-            mediaResult.pages
-               .flatMap((x) => x.media)
-               .map(async (media) => {
-                  const result = await Gallery.getMediaThumbnail({ id: media.id, uri: media.uri, size: 600, quality: 80 });
-                  if (cancelled) return;
-                  if ("error" in result) return;
-                  setThumbnails((prev) => ({ ...prev, [media.id]: result }));
-               }),
-         );
-         // for (const media of mediaResult.pages.flatMap((x) => x.media)) {
-         //    if (thumbnails[media.id]) continue;
-         //    Gallery.getMediaThumbnail({ id: media.id, uri: media.uri, size: 600, quality: 80 }).then((result) => {
-         //       if ("error" in result) return;
-         //       if (cancelled) return;
-         //       setThumbnails((prev) => ({ ...prev, [media.id]: result }));
-         //    });
-         // }
-      });
+   //    const allMedia = mediaResult.pages.flatMap((x) => x.media);
 
-      return () => {
-         cancelled = true;
-      };
-   }, [mediaResult]);
+   //    // Load thumbnails one at a time instead of all at once,
+   //    // and skip ones we already have
+   //    (async () => {
+   //       for (const media of allMedia) {
+   //          if (cancelled || thumbnails[media.id]) continue;
+
+   //          const result = await Gallery.getMediaThumbnail({
+   //             id: media.id,
+   //             uri: media.uri,
+   //             size: 600,
+   //             quality: 80,
+   //          });
+
+   //          if (cancelled || "error" in result) continue;
+
+   //          // Each setState call here is batched by React 18 automatically
+   //          setThumbnails((prev) => ({ ...prev, [media.id]: result }));
+   //       }
+   //    })();
+
+   //    return () => {
+   //       cancelled = true;
+   //    };
+   //    // thumbnails intentionally omitted — we only want to run this when pages change
+   //    // eslint-disable-next-line react-hooks/exhaustive-deps
+   // }, [mediaResult]);
 
    useEffect(() => {
       return () => {
@@ -197,6 +200,10 @@ function FilePickerPanel(props: {
       await NativeSettings.open({ optionAndroid: AndroidSettings.ApplicationDetails, optionIOS: IOSSettings.App });
    }
 
+   const handleThumbnailReady = useCallback((id: string, result: ThumbnailResult) => {
+      setThumbnails((prev) => ({ ...prev, [id]: result }));
+   }, []);
+
    return (
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden pb-2 pl-2">
          {error ? (
@@ -225,48 +232,23 @@ function FilePickerPanel(props: {
                      "scroll-super-thin flex h-full w-full flex-col",
                      props.canScroll ? "overflow-y-scroll pr-0" : "overflow-hidden pr-2",
                   )}
+                  ref={scrollRef}
                   onScroll={handleScroll}
                >
                   <div className="relative grid w-full grid-cols-3 content-start items-start gap-2">
                      {mediaResult?.pages
                         .flatMap((x) => x.media)
                         .map((media) => (
-                           <div
-                              className={clsx("aspect-square h-full w-full transition-transform", attachmentsLookup[media.id] && "scale-95")}
+                           <MediaGridItem
                               key={media.id}
-                           >
-                              <div className="bg-surface relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg">
-                                 <div className="relative h-full w-full" onClick={() => handleSelectFile(media)}>
-                                    {thumbnails[media.id] && (
-                                       <img src={thumbnails[media.id].base64} alt={media.name} className="h-full w-full object-cover" />
-                                    )}
-                                    <LoadingBackground isLoaded={!!thumbnails[media.id]} hasError={false} />
-                                    <div className="absolute top-1.5 right-1.5">
-                                       <div
-                                          className={clsx(
-                                             "flex size-5 items-center justify-center rounded-full border-2 transition-all",
-                                             attachmentsLookup[media.id] ? "bg-primary-600 border-primary-600" : "border-white",
-                                          )}
-                                       >
-                                          <IconMingcuteCheckFill
-                                             className={clsx(
-                                                "size-3 text-white transition-opacity",
-                                                attachmentsLookup[media.id] ? "opacity-100" : "opacity-0",
-                                             )}
-                                          />
-                                       </div>
-                                    </div>
-                                    {media.type === MediaType.VIDEO && (
-                                       <div className="absolute bottom-1 left-1 flex items-center justify-center gap-x-1 rounded-md bg-black/50 px-1 py-0.5 text-sm text-white">
-                                          <IconMingcutePlayFill className="size-4" />
-                                          <div>{moment.utc(media.duration).format("mm:ss")}</div>
-                                       </div>
-                                    )}
-                                 </div>
-                              </div>
-                           </div>
+                              media={media}
+                              scrollRef={scrollRef}
+                              thumbnail={thumbnails[media.id]}
+                              isSelected={!!attachmentsLookup[media.id]}
+                              onSelect={handleSelectFile}
+                              onThumbnailReady={handleThumbnailReady}
+                           />
                         ))}
-                     <LoadingBackground isLoaded={!!mediaResult} hasError={false} />
                   </div>
                   {permissionState === "partial" && (
                      <div className="flex shrink-0 flex-col items-center justify-center gap-y-2 px-10 py-5 text-center">
@@ -279,6 +261,89 @@ function FilePickerPanel(props: {
                </div>
             </>
          )}
+      </div>
+   );
+}
+
+function MediaGridItem(props: {
+   media: GalleryMediaItem;
+   thumbnail: ThumbnailResult | undefined;
+   isSelected: boolean;
+   scrollRef: RefObject<HTMLDivElement | null>;
+   onSelect: (media: GalleryMediaItem) => void;
+   onThumbnailReady: (id: string, result: ThumbnailResult) => void;
+}) {
+   const ref = useRef<HTMLDivElement>(null);
+   const isFetched = useRef(false);
+
+   const isInView = useIsInView(ref, props.scrollRef);
+
+   // useEffect(() => {
+   //    const el = ref.current;
+   //    if (!el) return;
+
+   //    const observer = new IntersectionObserver(
+   //       (entries) => {
+   //          const entry = entries[0];
+   //          if (!entry.isIntersecting || fetchedRef.current || props.thumbnail) return;
+
+   //          fetchedRef.current = true;
+   //          observer.disconnect();
+
+   //          Gallery.getMediaThumbnail({ id: props.media.id, uri: props.media.uri, size: 600, quality: 80 }).then((result) => {
+   //             if ("error" in result) return;
+   //             props.onThumbnailReady(props.media.id, result);
+   //          });
+   //       },
+   //       {
+   //          root: props.scrollRef?.current,
+   //          threshold: 0.1, // trigger as soon as 10% of the item is visible
+   //       },
+   //    );
+
+   //    observer.observe(el);
+   //    return () => observer.disconnect();
+   // }, [props.media.id, props.media.uri, props.thumbnail, props.onThumbnailReady]);
+
+   useEffect(() => {
+      if (!isInView || isFetched.current) return;
+      console.log(isInView);
+
+      Gallery.getMediaThumbnail({ id: props.media.id, uri: props.media.uri, size: 600, quality: 80 }).then((result) => {
+         if ("error" in result) return;
+         isFetched.current = true;
+         props.onThumbnailReady(props.media.id, result);
+      });
+   }, [isInView, props.media.id, props.media.uri, props.thumbnail, props.onThumbnailReady]);
+
+   const handleClick = useCallback(() => props.onSelect(props.media), [props.media, props.onSelect]);
+
+   return (
+      <div ref={ref} className={clsx("aspect-square h-full w-full transition-transform", props.isSelected && "scale-95")}>
+         <div className="bg-surface relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg">
+            <div className="relative h-full w-full" onClick={handleClick}>
+               {props.thumbnail && <img src={props.thumbnail.base64} alt={props.media.name} className="h-full w-full object-cover" />}
+               {/* <LoadingBackground isLoaded={!!props.thumbnail} hasError={false} /> */}
+               <div className="absolute top-1.5 right-1.5">
+                  <div
+                     className={clsx(
+                        "flex size-5 items-center justify-center rounded-full border-2 transition-all",
+                        props.isSelected ? "bg-primary-600 border-primary-600" : "border-white",
+                     )}
+                  >
+                     <IconMingcuteCheckFill
+                        className={clsx("size-3 text-white transition-opacity", props.isSelected ? "opacity-100" : "opacity-0")}
+                     />
+                  </div>
+               </div>
+               {props.media.type === MediaType.VIDEO && (
+                  <div className="absolute bottom-1 left-1 flex items-center justify-center gap-x-1 rounded-md bg-black/50 px-1 py-0.5 text-sm text-white">
+                     <IconMingcutePlayFill className="size-4" />
+                     <div>{moment.utc(props.media.duration).format("mm:ss")}</div>
+                  </div>
+               )}
+            </div>
+         </div>
       </div>
    );
 }

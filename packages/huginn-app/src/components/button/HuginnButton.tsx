@@ -15,6 +15,7 @@ const colors = {
 };
 
 export default function HuginnButton(props: HuginnButtonProps) {
+   const { color, className, children, disabled, type, onClick, ...rest } = props;
    // const colorClassNames = useMemo(() => {
    //    switch (props.color) {
    //       case "primary":
@@ -34,16 +35,17 @@ export default function HuginnButton(props: HuginnButtonProps) {
       <button
          className={clsx(
             "cursor-pointer rounded-md text-white opacity-100 outline-hidden transition-colors select-none disabled:cursor-not-allowed",
-            props.className,
-            colors[props.color ?? "none"],
+            className,
+            colors[color ?? "none"],
          )}
          // ref={props.ref}
-         type={props.type}
-         disabled={props.disabled}
-         onClick={props.onClick}
+         type={type}
+         disabled={disabled}
+         onClick={onClick}
+         {...rest}
       >
          {/* <div className={clsx("text-white opacity-100", props.innerClassName)}>{props.children}</div> */}
-         {props.children}
+         {children}
       </button>
    );
 }
