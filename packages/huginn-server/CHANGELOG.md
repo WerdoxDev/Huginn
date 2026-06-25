@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.40.0...server@v0.41.0) (2026-06-25)
+
+
+### Features
+
+* **server:** add platform to changelogs ([de350c3](https://github.com/WerdoxDev/Huginn/commit/de350c3ff03e91da5209d0e3c3726ea4cfd967d4))
+
 ## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.39.0...server@v0.40.0) (2026-06-19)
 
 
