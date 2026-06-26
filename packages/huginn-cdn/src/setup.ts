@@ -1,10 +1,9 @@
 import { readEnv } from "@huginn/runtime-shared";
+import { initAnalytics } from "@huginn/shared";
+import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
 import pathe from "pathe";
 
 import type { Storage } from "#storage/storage";
-
-import { FileStorage } from "#storage/file-storage";
-import { S3Storage } from "#storage/s3-storage";
 
 export const envs = readEnv([
    "CDN_HOST",
@@ -20,8 +19,23 @@ export const envs = readEnv([
    { key: "CACHE_DIR", default: pathe.resolve(import.meta.dir, "../cache") },
    "CDN_HMAC_SECRET",
    "OTEL_SERVICE_NAME",
-   "SIGNOZ_API_URL",
+   "OTLP_TRACE_URL",
+   "OTLP_LOG_URL",
+   "POSTHOG_HOST",
+   "POSTHOG_KEY",
 ] as const);
+
+initAnalytics(
+   new RuntimeAnalytics(envs.POSTHOG_KEY!, {
+      serviceName: envs.OTEL_SERVICE_NAME!,
+      otlpTraceUrl: envs.OTLP_TRACE_URL,
+      otlpLogUrl: envs.OTLP_LOG_URL,
+      posthogHost: envs.POSTHOG_HOST,
+   }),
+);
+
+const { FileStorage } = await import("#storage/file-storage");
+const { S3Storage } = await import("#storage/s3-storage");
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
 export const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
@@ -29,3 +43,5 @@ export const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH)
 export const AWS_AVAILABLE = !!envs.AWS_SECRET_KEY && !!envs.AWS_KEY_ID && !!envs.AWS_BUCKET && !!envs.AWS_REGION;
 export const storage: Storage = AWS_AVAILABLE ? new S3Storage() : new FileStorage(envs.UPLOADS_DIR);
 export const cacheStorage: Storage = new FileStorage(envs.CACHE_DIR);
+
+await import("./index");

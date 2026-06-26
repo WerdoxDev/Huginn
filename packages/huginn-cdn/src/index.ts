@@ -1,9 +1,9 @@
 import cors from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
+import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import consola from "consola";
 import Elysia from "elysia";
 
 import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
@@ -21,7 +21,7 @@ import { envs } from "#setup";
 
 import { getIndex } from "./routes";
 
-export const main = new Elysia({})
+export const main = new Elysia({ normalize: "typebox" })
    .use(cors())
    .use(globalPlugin)
    .use(
@@ -30,14 +30,14 @@ export const main = new Elysia({})
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.SIGNOZ_API_URL,
+                  url: envs.OTLP_TRACE_URL,
                }),
             ),
          ],
       }),
    )
    .onError(({ error, code, status, path, request }) => {
-      consola.box(path, request.method, code, error);
+      logger.error({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = cdnOnError(error, status);
          if (returnedError) {
@@ -87,5 +87,6 @@ export const main = new Elysia({})
    .use(getEmoji)
 
    .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
-      consola.box(`Listening on ${server.hostname}:${server.port}`);
+      logger.info({ listenHostname: server.hostname, port: server.port }, "cdn listening");
+      // consola.box(`Listening on ${server.hostname}:${server.port}`);
    });

@@ -1,12 +1,11 @@
-import { logFileNotFound, logGetFile, logWriteFile } from "@huginn/runtime-shared";
 import { S3Client, type S3Stats } from "bun";
 import { join } from "pathe";
 
 import type { FileCategory } from "#utils/types";
 
+import { storageLogger } from "#loggers";
 import { envs } from "#setup";
 import { Storage } from "#storage/storage";
-import { extractFileInfo } from "#utils/file-utils";
 
 export class S3Storage extends Storage {
    private s3: S3Client;
@@ -25,7 +24,7 @@ export class S3Storage extends Storage {
    public async getFile(category: FileCategory, subDirectory: string, name: string, start?: number, end?: number): Promise<Blob | undefined> {
       try {
          if (!(await this.exists(category, subDirectory, name))) {
-            logFileNotFound(category, subDirectory, name);
+            storageLogger.info({ category, subDirectory, filename: name }, "file not found");
             return undefined;
          }
 
@@ -37,23 +36,23 @@ export class S3Storage extends Storage {
             file = file.slice(start, end);
          }
 
-         logGetFile(category, subDirectory, name);
+         storageLogger.info({ category, subDirectory, filename: name }, "get file");
          return file;
-         // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         logFileNotFound(category, subDirectory, name);
+         storageLogger.error(e, "failed to get file");
          return undefined;
       }
    }
 
    public async writeFile(category: FileCategory, subDirectory: string, name: string, data: Blob): Promise<boolean> {
-      logWriteFile(category, subDirectory, name);
       try {
+         storageLogger.info({ category, subDirectory, filename: name }, "write file");
+
          const file = this.s3.file(join(category, ...subDirectory.split("/"), name));
          await file.write(data);
          return true;
       } catch (e) {
-         console.error(this.name, "writeFile", e);
+         storageLogger.error(e, "failed to write file");
          return false;
       }
    }
@@ -62,9 +61,8 @@ export class S3Storage extends Storage {
       try {
          const exists = await this.s3.exists(join(category, ...subDirectory.split("/"), name));
          return exists;
-         // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         logFileNotFound(category, subDirectory, name);
+         storageLogger.error(e, "failed to check if file exists");
          return false;
       }
    }
@@ -73,9 +71,8 @@ export class S3Storage extends Storage {
       try {
          const stat = await this.s3.stat(join(category, ...subDirectory.split("/"), name));
          return stat;
-         // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         logFileNotFound(category, subDirectory, name);
+         storageLogger.error(e, "failed to get file stats");
          return undefined;
       }
    }
