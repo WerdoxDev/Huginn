@@ -1,6 +1,8 @@
-import pino from "pino";
+// import pino from "pino";
 
-const logger = pino({ level: "debug" });
+import type { Logger } from "pino";
 
-export { logger };
-// logger.info("asdasd", {a: ""});
+const pino = require("pino");
+const logger: Logger = pino({ level: process.env.LOG_LEVEL || "info", transport: { target: "pino-pretty" } });
+
+export { logger, type Logger };
