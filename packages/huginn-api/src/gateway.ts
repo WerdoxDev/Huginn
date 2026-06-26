@@ -15,7 +15,6 @@ import {
    type GatewayHello,
    GatewayOperations,
    type GatewayReadyData,
-   log,
    analytics,
    recordSpanError,
    SpanStatusCode,
@@ -145,8 +144,6 @@ export class Gateway extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiGateway.authenticate", async (span): Promise<AuthenticationResult> => {
          span.setAttributes(this.getDefaultAttributes());
          try {
-            log("api:gateway", "default", "authenticate");
-
             if (this.isAuthenticated) {
                return { authenticated: true, retryable: true, status: "success" };
             }
