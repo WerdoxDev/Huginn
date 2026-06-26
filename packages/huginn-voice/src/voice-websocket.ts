@@ -379,7 +379,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             );
          } catch (e) {
             recordSpanError(e as Error);
-            console.error(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -489,7 +488,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             );
          } catch (e) {
             recordSpanError(e as Error);
-            console.error(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
