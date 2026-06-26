@@ -78,8 +78,5 @@ export const postAndroidUpdate = new Elysia().post(
    },
    {
       body: schema,
-      afterResponse: ({ responseValue }) => {
-         console.log("Response value:", responseValue);
-      },
    },
 );

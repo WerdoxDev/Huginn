@@ -6,8 +6,8 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "dev": "bun --hot src/index.ts | pino-pretty",
-      "start": "bun src/index.ts",
+      "dev": "bun --hot src/setup.ts",
+      "start": "bun src/setup.ts",
       "tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
    },
    "dependencies": {

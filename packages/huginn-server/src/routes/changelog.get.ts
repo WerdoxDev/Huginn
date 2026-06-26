@@ -42,7 +42,6 @@ function getEntryDate(entry: PageObjectResponse) {
 function getEntryPlatform(entry: PageObjectResponse) {
    const platformProperty = entry.properties?.Platform;
 
-   console.log("platformProperty", platformProperty);
    if (!platformProperty || platformProperty.type !== "select") return "";
 
    const platformText = platformProperty.select?.name.toLowerCase().trim();

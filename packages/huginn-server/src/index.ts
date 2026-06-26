@@ -1,7 +1,8 @@
 import { cors } from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { staticPlugin } from "@elysiajs/static";
-import { globalPlugin, invalidBody, logger, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
@@ -74,14 +75,13 @@ export const app = new Elysia({
    .use(cors())
    .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
    .use(globalPlugin)
-   // .use(openapi({ references: fromTypes("src/index.ts") }))
    .use(
       opentelemetry({
          serviceName: envs.OTEL_SERVICE_NAME,
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.SIGNOZ_API_URL,
+                  url: envs.OTLP_TRACE_URL,
                }),
             ),
          ],
@@ -89,7 +89,6 @@ export const app = new Elysia({
    )
    .onError(function onError({ error, code, status, path, request }) {
       logger.error({ error, code, path, method: request.method }, "Request error");
-      // consola.box(path, request.method, code, error);
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
          if (returnedError) {
@@ -189,8 +188,7 @@ export const app = new Elysia({
       (server) => {
          if (process.env.TEST) {
          } else {
-            logger.info(`listening on ${server.hostname}:${server.port}`);
-            // consola.box(`Listening on ${server.hostname}:${server.port}`);
+            logger.info({ listenHostname: server.hostname, port: server.port }, "server listening");
          }
       },
    );

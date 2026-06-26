@@ -1,4 +1,3 @@
-import { logger } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
@@ -8,6 +7,7 @@ import {
    type KnownApplicationPayload,
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
+import { logger } from "@huginn/backend-shared/logger";
 import {
    analytics,
    type APIMessageCall,

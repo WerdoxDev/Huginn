@@ -1,19 +1,12 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { readEnv } from "@huginn/runtime-shared";
-import { loggerOld } from "@huginn/shared";
-import { Client } from "@notionhq/client";
-import {} from "firebase-admin";
+import { initAnalytics } from "@huginn/shared";
+import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
+import { Client, LogLevel } from "@notionhq/client";
 import * as firebase from "firebase-admin/app";
-import { getMessaging } from "firebase-admin/messaging";
 import { NotionConverter } from "notion-to-md";
 import { Octokit } from "octokit";
 import { Resend } from "resend";
-
-import { startCronJobs } from "#cron-jobs";
-import { ServerGateway } from "#gateway/server-gateway";
-
-// logger.enableLogs({ "server:gateway": ["default", "detail-identify"], "server:presence-manager": ["default", "detail"] });
-loggerOld.enableLogs({ "backend-shared:websocket": ["default"], "server:cron": ["default"] });
 
 export const envs = readEnv([
    "CDN_LOCAL_URL",
@@ -38,7 +31,10 @@ export const envs = readEnv([
    "CDN_HMAC_SECRET",
    "IGDB_CLIENT_ID",
    "IGDB_CLIENT_SECRET",
-   "SIGNOZ_API_URL",
+   "OTLP_TRACE_URL",
+   "OTLP_LOG_URL",
+   "POSTHOG_HOST",
+   "POSTHOG_KEY",
    "RESEND_API_KEY",
    "NOTION_TOKEN",
    "OTEL_SERVICE_NAME",
@@ -46,6 +42,18 @@ export const envs = readEnv([
    "FIREBASE_CLIENT_EMAIL",
    "FIREBASE_PRIVATE_KEY",
 ] as const);
+
+initAnalytics(
+   new RuntimeAnalytics(envs.POSTHOG_KEY!, {
+      serviceName: envs.OTEL_SERVICE_NAME!,
+      otlpTraceUrl: envs.OTLP_TRACE_URL,
+      otlpLogUrl: envs.OTLP_LOG_URL,
+      posthogHost: envs.POSTHOG_HOST,
+   }),
+);
+
+const { startCronJobs } = await import("#cron-jobs");
+const { ServerGateway } = await import("#gateway/server-gateway");
 
 export const CERT_FILE = envs.CERTIFICATE_PATH && Bun.file(envs.CERTIFICATE_PATH);
 export const KEY_FILE = envs.PRIVATE_KEY_PATH && Bun.file(envs.PRIVATE_KEY_PATH);
@@ -60,7 +68,7 @@ export const s3 = new S3Client({
 
 export const resend = new Resend(envs.RESEND_API_KEY);
 
-export const notion = new Client({ auth: envs.NOTION_TOKEN, notionVersion: "2026-03-11" });
+export const notion = new Client({ auth: envs.NOTION_TOKEN, notionVersion: "2026-03-11", logLevel: process.env.LOG_LEVEL as LogLevel });
 
 export const n2m = new NotionConverter(notion);
 
@@ -73,3 +81,5 @@ firebase.initializeApp({
 });
 
 await startCronJobs();
+
+await import("./index");

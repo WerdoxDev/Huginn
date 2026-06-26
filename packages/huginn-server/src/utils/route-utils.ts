@@ -1,7 +1,8 @@
 import type { Endpoints } from "@octokit/types";
 
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData, logger } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
+import { logger } from "@huginn/backend-shared/logger";
 import {
    type APIBadge,
    type APIEmbed,
@@ -182,7 +183,7 @@ export async function extractEmbedTags(response: Response): Promise<Record<strin
 
       return metadata;
    } catch (error) {
-      console.error("Error fetching embed info:", error);
+      logger.error(error, "fetching embed info failed");
       return {};
    }
 }
@@ -374,7 +375,7 @@ export async function sendPushNotification(
          const tokens = (await prisma.notificationToken.getByUserId(userId)).map((x) => x.token);
          span.setAttribute("tokens.count", tokens.length);
 
-         logger.debug(`sending push notification to user ${userId} with tokens ${tokens.join(", ")}`);
+         logger.info(`sending push notification to user ${userId} with tokens ${tokens.join(", ")}`);
 
          if (tokens.length === 0) {
             logger.debug(`no tokens found for user ${userId}, skipping push notification`);
