@@ -23,7 +23,6 @@ export async function fetchPosthogUserInfo(clientId: string) {
 
    const data = await response.json();
 
-   console.log(data);
    const results = data.results;
    return {
       clientId: results[0]?.[0] as string | undefined,
