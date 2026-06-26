@@ -19,6 +19,7 @@
       "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
       "@opentelemetry/instrumentation": "^0.218.0",
       "@opentelemetry/instrumentation-fetch": "^0.218.0",
+      "@opentelemetry/instrumentation-pino": "^0.65.0",
       "@opentelemetry/instrumentation-xml-http-request": "^0.218.0",
       "@opentelemetry/resources": "^2.7.1",
       "@opentelemetry/sdk-logs": "^0.218.0",
