@@ -7,7 +7,7 @@ import mediasoup from "mediasoup";
 import type { ClientSession } from "#client-session";
 import type { RouterData } from "#utils/types";
 
-import { env } from "./env.ts";
+import { env } from "./env";
 
 export const routers = new Map<string, RouterData>();
 
