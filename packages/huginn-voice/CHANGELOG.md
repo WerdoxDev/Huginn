@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.17.0...voice@v0.17.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **voice:** migrate to new logging ([7f791af](https://github.com/WerdoxDev/Huginn/commit/7f791af56ed18d7f2d51796f4b2278c25ff90d03))
+
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.1...voice@v0.17.0) (2026-06-05)
 
 

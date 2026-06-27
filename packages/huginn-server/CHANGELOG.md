@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.41.0...server@v0.42.0) (2026-06-27)
+
+
+### Features
+
+* **server:** migrate out old logging to pino + analytics for presence and voice ([b8b6791](https://github.com/WerdoxDev/Huginn/commit/b8b679192b085fbbfb998f775453546fe2558640))
+
 ## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.40.0...server@v0.41.0) (2026-06-25)
 
 
