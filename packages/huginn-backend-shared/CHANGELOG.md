@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.0...backend-shared@v0.28.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **backend-shared:** pino logger needs required() to be instrumented ([5c3d083](https://github.com/WerdoxDev/Huginn/commit/5c3d083b250c0526b0f5d07a9b709ffaea2e6e35))
+
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.1...backend-shared@v0.28.0) (2026-06-19)
 
 

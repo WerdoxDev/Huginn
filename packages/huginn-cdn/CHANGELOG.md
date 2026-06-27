@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.18.0...cdn@v0.19.0) (2026-06-27)
+
+
+### Features
+
+* **cdn:** migrate out old logging to pino ([6f5aa62](https://github.com/WerdoxDev/Huginn/commit/6f5aa62213eb87814b7dec9a2ad06256477bef56))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.17.0...cdn@v0.18.0) (2026-06-10)
 
 

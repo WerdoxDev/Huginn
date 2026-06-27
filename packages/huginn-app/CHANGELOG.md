@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.77.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.0...app@v0.77.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **app:** many message box vertical alignment fixes ([82dad7a](https://github.com/WerdoxDev/Huginn/commit/82dad7a69879928a9f6c68a9d3c67ec2cfe763af))
+
 ## [0.77.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.76.0...app@v0.77.0) (2026-06-25)
 
 

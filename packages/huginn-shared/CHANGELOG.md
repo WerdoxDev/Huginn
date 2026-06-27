@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.38.0...shared@v0.39.0) (2026-06-27)
+
+
+### Features
+
+* **shared:** new pino intrumentation and posthog log/trace sending ([ae3bb0d](https://github.com/WerdoxDev/Huginn/commit/ae3bb0de2d80782d70e3f88cb6191234bee87652))
+
 ## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.37.0...shared@v0.38.0) (2026-06-19)
 
 
