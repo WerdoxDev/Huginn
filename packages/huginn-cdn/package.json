@@ -17,6 +17,7 @@
       "@huginn/shared": "workspace:*",
       "consola": "^3.4.2",
       "elysia": "^1.4.19",
+      "envalid": "^8.2.0",
       "octokit": "^5.0.5",
       "p-queue": "^9.3.0",
       "pathe": "^2.0.3",

@@ -4,7 +4,7 @@ import { join } from "pathe";
 import type { FileCategory } from "#utils/types";
 
 import { storageLogger } from "#loggers";
-import { envs } from "#setup";
+import { env } from "#setup";
 import { Storage } from "#storage/storage";
 
 export class S3Storage extends Storage {
@@ -14,10 +14,10 @@ export class S3Storage extends Storage {
       super("s3");
 
       this.s3 = new S3Client({
-         region: envs.AWS_REGION,
-         accessKeyId: envs.AWS_KEY_ID,
-         secretAccessKey: envs.AWS_SECRET_KEY,
-         bucket: envs.AWS_BUCKET,
+         region: env.AWS_REGION,
+         accessKeyId: env.AWS_KEY_ID,
+         secretAccessKey: env.AWS_SECRET_KEY,
+         bucket: env.AWS_BUCKET,
       });
    }
 

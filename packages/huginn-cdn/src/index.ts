@@ -17,7 +17,7 @@ import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[name].get";
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { getIndex } from "./routes";
 
@@ -26,11 +26,11 @@ export const main = new Elysia({ normalize: "typebox" })
    .use(globalPlugin)
    .use(
       opentelemetry({
-         serviceName: envs.OTEL_SERVICE_NAME,
+         serviceName: env.OTEL_SERVICE_NAME,
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.OTLP_TRACE_URL,
+                  url: env.OTLP_TRACE_URL,
                }),
             ),
          ],
@@ -86,7 +86,7 @@ export const main = new Elysia({ normalize: "typebox" })
    .use(postChannelIcon)
    .use(getEmoji)
 
-   .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
+   .listen({ hostname: env.CDN_HOST, port: env.CDN_PORT, idleTimeout: 40 }, (server) => {
       logger.info({ listenHostname: server.hostname, port: server.port }, "cdn listening");
       // consola.box(`Listening on ${server.hostname}:${server.port}`);
    });

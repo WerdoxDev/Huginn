@@ -1,10 +1,11 @@
-import { envs } from "#setup";
-import { FileStorage } from "#storage/file-storage";
-import { S3Storage } from "#storage/s3-storage";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
 
-const storages = [new FileStorage(envs.UPLOADS_DIR), new S3Storage()];
+import { env } from "#setup";
+import { FileStorage } from "#storage/file-storage";
+import { S3Storage } from "#storage/s3-storage";
+
+const storages = [new FileStorage(env.UPLOADS_DIR), new S3Storage()];
 
 for (const storage of storages) {
    describe(`${storage.name} storage operations`, () => {
