@@ -9,8 +9,8 @@ export default function PreviewEmojiElement(props: RenderElementProps) {
    const emoji = useMemo(() => element.emoji ?? (element.slug ? getEmojiFromSlug(element.slug) : undefined), [element.emoji, element.slug]);
    const src = useMemo(() => `${import.meta.env.BASE_URL}emojis/${getEmojiId(emoji)}.svg`, [emoji]);
    return (
-      <div {...props.attributes} contentEditable={false} className="inline-block align-middle [&>span]:hidden">
-         <img src={src} draggable={false} data-type="emoji" alt={element.emoji} className="size-5 object-contain" />
+      <div {...props.attributes} contentEditable={false} className="inline-block align-baseline">
+         <img src={src} draggable={false} data-type="emoji" alt={element.emoji} className="inline size-5.5 object-contain align-bottom" />
          {props.children}
       </div>
    );

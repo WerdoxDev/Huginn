@@ -173,7 +173,7 @@ export class VoiceManager<V extends Voice = Voice> {
                this.isConnecting = false;
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -190,7 +190,7 @@ export class VoiceManager<V extends Voice = Voice> {
             this.voice.signaling.close();
             this.isConnecting = false;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

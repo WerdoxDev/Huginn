@@ -19,7 +19,7 @@ import type { AppMessage, MarkedToken } from "@/types";
 
 import type { CustomElement, ListItemElement as SlateListItemElement, ParagraphElement } from "..";
 
-export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean) {
+export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean, smallEmojis?: boolean) {
    function getNodeByPath(rootNode: CustomElement, path: number[]) {
       let current = rootNode;
 
@@ -50,7 +50,10 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return (
                   <div
                      key={key}
-                     className={clsx("[text-box-edge:text_text]!", noWrapping ? "w-full overflow-hidden text-ellipsis whitespace-nowrap" : "w-fit")}
+                     className={clsx(
+                        "leading-5.5 [text-box-edge:text_text]!",
+                        noWrapping ? "w-full overflow-hidden text-ellipsis whitespace-nowrap" : "w-fit",
+                     )}
                   >
                      {children}
                   </div>
@@ -64,7 +67,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                   </LinkElement>
                );
             case "emoji":
-               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} big={node.big} key={key} />;
+               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} big={node.big && !smallEmojis} key={key} />;
             case "code":
                return <CodeElement code={node.code} language={node.language} key={key} />;
             case "codespan":

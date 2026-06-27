@@ -20,22 +20,24 @@ export const snowflake = {
    },
 };
 
-export enum WorkerID {
-   AUTH = 0,
-   CHANNEL = 1,
-   MESSAGE = 2,
-   RELATIONSHIP = 3,
-   GATEWAY = 4,
-   API = 5,
-   APP = 6,
-   IDENTITY_PROVIDER = 7,
-   TESTING = 8,
-   EMBED = 9,
-   THUMBNAIL = 10,
-   ATTACHMENT = 11,
-   CALL = 12,
-   VOICE = 13,
-   MESSAGE_REFERENCE = 14,
-   EMAIL_VERIFICATION = 15,
-   VIDEO = 16,
-}
+export const WorkerID = {
+   AUTH: 0,
+   CHANNEL: 1,
+   MESSAGE: 2,
+   RELATIONSHIP: 3,
+   GATEWAY: 4,
+   API: 5,
+   APP: 6,
+   IDENTITY_PROVIDER: 7,
+   TESTING: 8,
+   EMBED: 9,
+   THUMBNAIL: 10,
+   ATTACHMENT: 11,
+   CALL: 12,
+   VOICE: 13,
+   MESSAGE_REFERENCE: 14,
+   EMAIL_VERIFICATION: 15,
+   VIDEO: 16,
+} as const;
+
+export type WorkerID = (typeof WorkerID)[keyof typeof WorkerID];

@@ -2,6 +2,7 @@ import { context, propagation, ROOT_CONTEXT, trace, type Span } from "@opentelem
 import { logs } from "@opentelemetry/api-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
@@ -10,7 +11,7 @@ import { PostHog } from "posthog-node";
 
 import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
 
-type Options = { posthogHost?: string; otlpHost?: string; serviceName: string; clientId?: string };
+type Options = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: string; serviceName: string; clientId?: string };
 
 export class RuntimeAnalytics extends Analytics {
    private readonly client: PostHog;
@@ -27,23 +28,35 @@ export class RuntimeAnalytics extends Analytics {
          logRecordProcessors: [
             new BatchLogRecordProcessor(
                new OTLPLogExporter({
-                  url: options.otlpHost,
+                  url: options.otlpLogUrl,
+               }),
+            ),
+            new BatchLogRecordProcessor(
+               new OTLPLogExporter({
+                  url: `${options.posthogHost}/i/v1/logs`,
                   headers: {
                      Authorization: `Bearer ${posthogApiKey}`,
                   },
                }),
             ),
+            // new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
          ],
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: options.otlpHost,
+                  url: options.otlpTraceUrl,
+               }),
+            ),
+            new BatchSpanProcessor(
+               new OTLPTraceExporter({
+                  url: `${options.posthogHost}/i/v1/traces`,
                   headers: {
                      Authorization: `Bearer ${posthogApiKey}`,
                   },
                }),
             ),
          ],
+         instrumentations: [new PinoInstrumentation()],
       });
 
       sdk.start();

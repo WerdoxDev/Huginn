@@ -1,12 +1,13 @@
 import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
 
-import { analytics, GatewayCode, type Snowflake } from "@huginn/shared";
+import { logger } from "@huginn/backend-shared/logger";
+import { analytics, GatewayCode, recordSpanError, type Snowflake } from "@huginn/shared";
 import mediasoup from "mediasoup";
 
 import type { ClientSession } from "#client-session";
 import type { RouterData } from "#utils/types";
 
-import { envs } from "#index";
+import { env } from "./env";
 
 export const routers = new Map<string, RouterData>();
 
@@ -34,33 +35,44 @@ let worker: Worker;
 let webRtcServer: WebRtcServer;
 
 export async function runMediasoupWorker() {
-   worker = await mediasoup.createWorker({
-      logLevel: "warn",
-   });
+   return analytics.startActiveSpan("mediasoup.runMediasoupWorker", async (span) => {
+      try {
+         worker = await mediasoup.createWorker({
+            logLevel: "warn",
+         });
 
-   const listenInfos = envs.MEDIA_LISTEN_INFOS?.trim()
-      .split(";")
-      .map((x) => {
-         const split = x.trim().split(":");
-         return {
-            protocol: split[0] as TransportProtocol,
-            port: Number(split[1]),
-            ip: split[2],
-            announcedAddress: split[3],
-         };
-      });
+         const listenInfos = env.MEDIA_LISTEN_INFOS?.trim()
+            .split(";")
+            .map((x) => {
+               const split = x.trim().split(":");
+               return {
+                  protocol: split[0] as TransportProtocol,
+                  port: Number(split[1]),
+                  ip: split[2],
+                  announcedAddress: split[3],
+               };
+            });
 
-   if (!listenInfos) throw new Error("MEDIA_LISTEN_INFOS was undefined");
+         span.setAttribute("listen_info.count", listenInfos.length);
 
-   webRtcServer = await worker.createWebRtcServer({
-      listenInfos: listenInfos,
-   });
+         if (!listenInfos) throw new Error("MEDIA_LISTEN_INFOS was undefined");
 
-   console.log("mediasoup worker created");
+         webRtcServer = await worker.createWebRtcServer({
+            listenInfos: listenInfos,
+         });
 
-   worker.on("died", () => {
-      console.error("mediasoup worker died, exiting...");
-      process.exit(1);
+         logger.info("mediasoup worker created");
+
+         worker.on("died", () => {
+            logger.error("mediasoup worker died, exiting...");
+            process.exit(1);
+         });
+      } catch (e) {
+         recordSpanError(e);
+         throw e;
+      } finally {
+         span.end();
+      }
    });
 }
 

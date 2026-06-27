@@ -6,8 +6,8 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "dev": "bun --hot src/index.ts | pino-pretty",
-      "start": "bun src/index.ts",
+      "dev": "bun --hot src/setup.ts",
+      "start": "bun src/setup.ts",
       "tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
    },
    "dependencies": {
@@ -28,6 +28,7 @@
       "@types/markdown-it": "^14.1.2",
       "crossws": "^0.4.4",
       "elysia": "^1.4.29",
+      "envalid": "^8.2.0",
       "firebase-admin": "^14.0.0",
       "jsdom": "^29.1.1",
       "markdown-it": "^14.1.1",

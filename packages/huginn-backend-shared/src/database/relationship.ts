@@ -23,7 +23,7 @@ export const relationshipExtension = Prisma.defineExtension({
                   assertObj(methodName, relationship, DBErrorType.NULL_RELATIONSHIP, `${ownerId}, ${userId}`);
                   return idFix(relationship) as RelationshipPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -46,7 +46,7 @@ export const relationshipExtension = Prisma.defineExtension({
                   assertObj(methodName, relationships, DBErrorType.NULL_RELATIONSHIP);
                   return idFix(relationships) as RelationshipPayload<Args>[];
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
                } finally {
@@ -82,7 +82,7 @@ export const relationshipExtension = Prisma.defineExtension({
 
                   await prisma.$transaction([deleteRelation, deleteOppositeRelation]);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -160,7 +160,7 @@ export const relationshipExtension = Prisma.defineExtension({
 
                   return idFix(relationships) as RelationshipPayload<Args>[];
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [senderId, receiverId]);
                   throw e;
                } finally {

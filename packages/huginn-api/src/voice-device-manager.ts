@@ -26,7 +26,7 @@ export class VoiceDeviceManager {
          try {
             await this.transport.createProducer("microphone", track);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -45,7 +45,7 @@ export class VoiceDeviceManager {
          try {
             await this.transport.replaceProducerTrack("microphone", track);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -63,7 +63,7 @@ export class VoiceDeviceManager {
          try {
             await this.transport.closeProducer("microphone");
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -85,7 +85,7 @@ export class VoiceDeviceManager {
                codecOptions: { videoGoogleStartBitrate: 1000 },
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -104,7 +104,7 @@ export class VoiceDeviceManager {
          try {
             await this.transport.replaceProducerTrack("camera", track);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -122,7 +122,7 @@ export class VoiceDeviceManager {
          try {
             await this.transport.closeProducer("camera");
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

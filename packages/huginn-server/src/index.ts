@@ -1,7 +1,8 @@
 import { cors } from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { staticPlugin } from "@elysiajs/static";
-import { globalPlugin, invalidBody, logger, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
@@ -56,13 +57,13 @@ import { patchUserSettings } from "#routes/users/@me/settings.patch";
 import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { getUser } from "#routes/users/[userId].get";
 import { getUserProfile } from "#routes/users/[userId]/profile.get";
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { getIndex } from "./routes";
 
 export const app = new Elysia({
    cookie: {
-      secrets: envs.SESSION_PASSWORD,
+      secrets: env.SESSION_PASSWORD,
       sign: ["oauth"],
       httpOnly: true,
       secure: true,
@@ -74,22 +75,21 @@ export const app = new Elysia({
    .use(cors())
    .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
    .use(globalPlugin)
-   // .use(openapi({ references: fromTypes("src/index.ts") }))
    .use(
       opentelemetry({
-         serviceName: envs.OTEL_SERVICE_NAME,
+         serviceName: env.OTEL_SERVICE_NAME,
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.SIGNOZ_API_URL,
+                  url: env.OTLP_TRACE_URL,
                }),
             ),
          ],
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {
-      logger.error({ error, code, path, method: request.method }, "Request error");
-      // consola.box(path, request.method, code, error);
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
          if (returnedError) {
@@ -182,15 +182,14 @@ export const app = new Elysia({
    .listen(
       {
          websocket: ws.websocket,
-         hostname: envs.SERVER_HOST,
-         port: envs.SERVER_PORT,
+         hostname: env.SERVER_HOST,
+         port: env.SERVER_PORT,
          idleTimeout: 40,
       },
       (server) => {
          if (process.env.TEST) {
          } else {
-            logger.info(`listening on ${server.hostname}:${server.port}`);
-            // consola.box(`Listening on ${server.hostname}:${server.port}`);
+            logger.info({ listenHostname: server.hostname, port: server.port }, "server listening");
          }
       },
    );

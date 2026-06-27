@@ -172,7 +172,7 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
       ("attachments" in props.referencedMessage && props.referencedMessage.attachments.length !== 0) ||
       ("embeds" in props.referencedMessage && props.referencedMessage.embeds.length !== 0);
 
-   const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true);
+   const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true, true);
    const user = useUser(props.referencedMessage.authorId);
 
    function handleClick() {
@@ -231,7 +231,7 @@ function DefaultRenderer(props: {
             <div style={{ width: `${props.widths.width + 20}px` }} className="shrink-0">
                <div
                   className={clsx(
-                     "pointer-events-none z-0 h-full w-full transition-[background-color,shadow] group-hover:shadow-sm",
+                     "pointer-events-none z-0 h-full w-full transition-[shadow] group-hover:shadow-sm",
                      props.error === undefined && props.isPreview
                         ? "bg-surface"
                         : props.error !== undefined
@@ -252,7 +252,7 @@ function DefaultRenderer(props: {
                      <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                         <div
                            className={clsx(
-                              "h-full w-full overflow-hidden",
+                              "h-full w-full overflow-hidden transition-all duration-1000",
                               props.error !== undefined
                                  ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-negative-600))]"
                                  : props.isSelf
@@ -273,7 +273,7 @@ function DefaultRenderer(props: {
                   <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(
-                           "h-full w-full overflow-hidden",
+                           "h-full w-full overflow-hidden transition-all duration-1000",
                            props.error !== undefined
                               ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-negative-600))]"
                               : props.isSelf

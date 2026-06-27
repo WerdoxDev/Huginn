@@ -1,14 +1,10 @@
-import "dotenv/config";
-import { readEnv } from "@huginn/runtime-shared";
 import { defineHooks } from "crossws";
 import { serve } from "crossws/server";
 import Elysia from "elysia";
 
-import { runMediasoupWorker } from "#mediasoup";
-
+import { env } from "./env";
+import { runMediasoupWorker } from "./mediasoup";
 import { VoiceWebsocket } from "./voice-websocket";
-
-export const envs = readEnv(["VOICE_HOST", "VOICE_PORT", "MEDIA_LISTEN_INFOS"] as const);
 
 await runMediasoupWorker();
 
@@ -21,4 +17,4 @@ const hooks = defineHooks({
 });
 
 const main = new Elysia();
-serve({ websocket: hooks, fetch: main.fetch, port: envs.VOICE_PORT, hostname: envs.VOICE_HOST });
+serve({ websocket: hooks, fetch: main.fetch, port: env.VOICE_PORT, hostname: env.VOICE_HOST });

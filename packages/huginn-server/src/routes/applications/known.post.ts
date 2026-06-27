@@ -1,12 +1,13 @@
-import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
-
-import { envs } from "#setup";
-import { filterKnownApplication } from "#utils/helpers";
-import { serverFetch } from "#utils/server-request";
 import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
 import { CONSTANTS, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
+
+import { env } from "#setup";
+import { filterKnownApplication } from "#utils/helpers";
+import { serverFetch } from "#utils/server-request";
 
 const schema = t.Object({ windowTitle: t.String(), exePath: t.String() });
 
@@ -23,15 +24,15 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
       }
 
       const search = new URLSearchParams({
-         client_id: envs.IGDB_CLIENT_ID!,
-         client_secret: envs.IGDB_CLIENT_SECRET!,
+         client_id: env.IGDB_CLIENT_ID!,
+         client_secret: env.IGDB_CLIENT_SECRET!,
          grant_type: "client_credentials",
       });
       const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", { query: search });
       const token = result.access_token;
 
       let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
-         headers: { "Client-ID": envs.IGDB_CLIENT_ID! },
+         headers: { "Client-ID": env.IGDB_CLIENT_ID! },
          auth: true,
          token: token,
          body: `

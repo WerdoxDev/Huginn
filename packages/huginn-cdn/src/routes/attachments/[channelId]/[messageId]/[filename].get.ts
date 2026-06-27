@@ -4,7 +4,7 @@ import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
 import { type ImageFormats, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import Elysia, { StatusMap, t } from "elysia";
 
-import { envs, storage } from "#setup";
+import { env, storage } from "#setup";
 import { extractFileInfo } from "#utils/file-utils";
 import { tryResolveImage } from "#utils/route-utils";
 
@@ -20,7 +20,7 @@ const querySchema = t.Object({
 export const getMessageAttachment = new Elysia().use(globalPlugin).get(
    "/cdn/attachments/:channelId/:messageId/:filename",
    async ({ status, path, params: { channelId, filename, messageId }, headers, global, query: { ex, hm, format, height, quality, width } }) => {
-      const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+      const hasher = new Bun.CryptoHasher("sha256", env.CDN_HMAC_SECRET);
 
       const hashPath = decodeURIComponent(path.replace("/cdn/", ""));
       hasher.update(`${hashPath}:${ex}`);

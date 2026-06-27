@@ -16,9 +16,9 @@ export default function AttachmentsPreview(props: { attachments: AppAttachment[]
                className="border-surface overflow-hidden px-2 pb-0"
                data-ignore-swipe
                initial={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               animate={{ opacity: 1, height: isMobile ? 108 : 220, borderBottomWidth: 1 }}
+               animate={{ opacity: 1, height: isMobile ? "6.75rem" : "13.75rem", borderBottomWidth: 1 }}
                exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               transition={{ duration: 0.15 }}
+               transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
                style={{ willChange: "height" }}
             >
                <div className="relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-1.5 py-3.5 pb-0">

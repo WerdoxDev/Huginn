@@ -17,7 +17,7 @@ export const assertExtension = Prisma.defineExtension({
                   });
                   assertCondition(methodName, foundCount !== userIds.length, DBErrorType.NULL_USER, userIds.join(","));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -36,7 +36,7 @@ export const assertExtension = Prisma.defineExtension({
                   });
                   assertCondition(methodName, foundCount !== channelIds.length, DBErrorType.NULL_CHANNEL, channelIds.join(","));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -55,7 +55,7 @@ export const assertExtension = Prisma.defineExtension({
                   });
                   assertCondition(methodName, foundCount !== relationshipIds.length, DBErrorType.NULL_RELATIONSHIP, relationshipIds.join(","));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -74,7 +74,7 @@ export const assertExtension = Prisma.defineExtension({
                   });
                   assertCondition(methodName, foundCount !== messageIds.length, DBErrorType.NULL_MESSAGE, messageIds.join(","));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -93,7 +93,7 @@ export const assertExtension = Prisma.defineExtension({
                   });
                   assertCondition(methodName, foundCount !== messageIds.length, DBErrorType.NULL_MESSAGE_PIN, messageIds.join(","));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -120,7 +120,7 @@ export const assertExtension = Prisma.defineExtension({
                      idPairs.map((x) => `${x.userId}:${x.channelId}`).join(","),
                   );
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();

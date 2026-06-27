@@ -49,7 +49,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
 
       this.peer.send(JSON.stringify(data));
       // } catch (e) {
-      // recordSpanError(e as Error);
+      // recordSpanError(e);
       // throw e;
       // } finally {
       // span.end();
@@ -66,7 +66,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
 
             await this.subscribeToTopics();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

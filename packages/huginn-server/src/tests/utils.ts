@@ -1,4 +1,3 @@
-import { envs, gateway } from "#setup";
 import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
@@ -19,6 +18,8 @@ import {
    isOpcode,
    snowflake,
 } from "@huginn/shared";
+
+import { env, gateway } from "#setup";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & {
@@ -157,7 +158,7 @@ export async function resolveAll(...promises: Promise<unknown>[]) {
 
 export async function checkCDNRunning() {
    try {
-      const url = envs.CDN_LOCAL_URL;
+      const url = env.CDN_LOCAL_URL;
       if (!url) return false;
 
       const result = await fetch(url);

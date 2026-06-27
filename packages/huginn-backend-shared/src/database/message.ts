@@ -29,7 +29,7 @@ export const messagesExtension = Prisma.defineExtension({
                   assertObj(methodName, message, DBErrorType.NULL_MESSAGE, messageId);
                   return idFix(message) as MessagePayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [messageId]);
                   throw e;
@@ -126,7 +126,7 @@ export const messagesExtension = Prisma.defineExtension({
                   assertObj(methodName, messages, DBErrorType.NULL_MESSAGE);
                   return idFix(messages) as BigIntToString<Prisma.MessageGetPayload<Args>[]>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
                } finally {
@@ -266,7 +266,7 @@ export const messagesExtension = Prisma.defineExtension({
                   assertObj(methodName, message, DBErrorType.NULL_MESSAGE);
                   return idFix(message) as MessagePayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [options.authorId]);
                   if (options.call?.participants) {
@@ -351,7 +351,7 @@ export const messagesExtension = Prisma.defineExtension({
                   assertObj(methodName, message, DBErrorType.NULL_MESSAGE);
                   return idFix(message) as MessagePayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [id]);
                   throw e;
                } finally {
@@ -413,7 +413,7 @@ export const messagesExtension = Prisma.defineExtension({
                   assertObj(methodName, deletedMessage, DBErrorType.NULL_MESSAGE);
                   return idFix(deletedMessage) as MessagePayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [id]);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;

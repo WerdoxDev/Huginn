@@ -6,6 +6,7 @@
       "skipLibCheck": true,
       "types": ["node"],
       "jsx": "react-jsx",
-      "jsxImportSource": "hono/jsx"
+      "module": "preserve",
+      "rewriteRelativeImportExtensions": true
    }
 }

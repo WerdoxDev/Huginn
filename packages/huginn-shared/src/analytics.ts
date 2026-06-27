@@ -60,10 +60,10 @@ export const analytics: Analytics = new Proxy({} as Analytics, {
    },
 });
 
-export function recordSpanError(error: Error, providedAnalytics: Analytics = analytics): void {
+export function recordSpanError(error: unknown, providedAnalytics: Analytics = analytics): void {
    const span = providedAnalytics.getActiveSpan();
-   span?.recordException(error);
-   span?.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+   span?.recordException(error as Error);
+   span?.setStatus({ code: SpanStatusCode.ERROR, message: (error as Error).message });
 }
 
 export function logLevelToSeverityNumber(level: LogLevel): SeverityNumber {

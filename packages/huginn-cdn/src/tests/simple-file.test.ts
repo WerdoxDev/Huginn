@@ -3,7 +3,7 @@ import { compareArrayBuffers } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
 
-import { envs } from "../setup";
+import { env } from "../setup";
 import { cdnTokenHeader } from "./utils";
 
 const categories = ["avatars", "channel-icons"];
@@ -45,7 +45,7 @@ for (const category of categories) {
          expect(results.every((x) => x.ok)).toBeTrue();
 
          for (const format of ["jpeg", "jpg", "webp"]) {
-            const file = Bun.file(path.resolve(envs.UPLOADS_DIR, `${category}/123/pixel.${format}`));
+            const file = Bun.file(path.resolve(env.UPLOADS_DIR, `${category}/123/pixel.${format}`));
             expect(await file.exists()).toBeTrue();
          }
       });

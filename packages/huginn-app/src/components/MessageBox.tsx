@@ -8,6 +8,7 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { MessageFlags } from "@huginn/shared";
+import Inset from "@lib/capacitor/inset-plugin";
 import { useChannelStore } from "@stores/channelStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
@@ -130,19 +131,28 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => controller.abort();
    }, [isKeyboardOpen]);
 
+   useEffect(() => {
+      if (isKeyboardOpen) {
+         setActiveMobilePanel(null);
+      }
+   }, [isKeyboardOpen]);
+
    useBackHandler("message-box", 100, () => {
-      if (activeMobilePanel) {
+      console.log("back button pressed");
+      if (isKeyboardOpen || activeMobilePanel) {
          setActiveMobilePanel(null);
          return true;
       }
    });
 
-   function handleMobileEmojiPickerClick() {
-      setActiveMobilePanel((prev) => (prev === "emoji" && !isKeyboardOpen ? null : "emoji"));
-   }
-
-   function handleMobileFilePickerClick() {
-      setActiveMobilePanel((prev) => (prev === "files" && !isKeyboardOpen ? null : "files"));
+   function handleMobilePanelClick(panel: "emoji" | "files") {
+      const prevState = activeMobilePanel;
+      let newState = prevState === panel ? null : panel;
+      if (!newState && !isKeyboardOpen) {
+         ReactEditor.focus(editor);
+         return;
+      }
+      setActiveMobilePanel(newState);
    }
 
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
@@ -173,7 +183,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   <div className="flex gap-x-2 py-2 pl-2">
                      {!currentEditingMessageId &&
                         (isMobileEnvironment ? (
-                           <FilePickerButton onClick={handleMobileFilePickerClick} isActive={activeMobilePanel === "files" && !isKeyboardOpen} />
+                           <FilePickerButton
+                              onClick={() => handleMobilePanelClick("files")}
+                              isActive={activeMobilePanel === "files" && !isKeyboardOpen}
+                           />
                         ) : (
                            <Tooltip>
                               <Tooltip.Trigger asChild>
@@ -183,18 +196,20 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </Tooltip>
                         ))}
                      {isMobileEnvironment && (
-                        <EmojiPickerButton onClick={handleMobileEmojiPickerClick} isActive={activeMobilePanel === "emoji" && !isKeyboardOpen} />
+                        <EmojiPickerButton
+                           onClick={() => handleMobilePanelClick("emoji")}
+                           isActive={activeMobilePanel === "emoji" && !isKeyboardOpen}
+                        />
                      )}
                   </div>
                   <div className="h-full w-full overflow-hidden">
                      <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
                         <Editable
-                           tabIndex={-1}
                            ref={editorRef}
                            onPaste={onPaste}
                            placeholder={`Message ${currentChannel?.name}`}
                            className={clsx(
-                              "h-full shrink-0 py-4.25 pl-2 leading-6 whitespace-break-spaces text-white caret-white outline-hidden lg:leading-5.5",
+                              "h-full shrink-0 py-4.25 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
                               currentEditingMessageId && "pl-2.25",
                            )}
                            renderLeaf={renderLeaf}
@@ -214,6 +229,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
                         type="button"
                         onClick={() => sendMessage(MessageFlags.NONE)}
+                        data-keyboard-no-close
                      >
                         <IconLetsIconsSendHorFill className="text-text size-full" />
                      </HuginnButton>

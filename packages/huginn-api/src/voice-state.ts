@@ -62,7 +62,7 @@ export class VoiceState extends EventEmitter<Events> {
                throw new Error("Confirmed gateway voice state does not match local state");
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

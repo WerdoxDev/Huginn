@@ -4,7 +4,7 @@ import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID } fro
 import { toSnakeCase } from "@std/text";
 import Elysia, { t } from "elysia";
 
-import { envs } from "#setup";
+import { env } from "#setup";
 import { cdnUpload, serverFetch } from "#utils/server-request";
 
 const querySchema = t.Object({
@@ -45,7 +45,7 @@ type GoogleUserResponse = {
 export const getGoogleCallback = new Elysia().get(
    "/api/auth/callback/google",
    async ({ cookie: { oauth }, status, query: { code, error, state }, redirect }) => {
-      if (!envs.GOOGLE_CLIENT_ID || !envs.GOOGLE_CLIENT_SECRET || !envs.SESSION_PASSWORD) {
+      if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
 
@@ -60,8 +60,8 @@ export const getGoogleCallback = new Elysia().get(
       // Code from google oauth
       if (code) {
          const query = new URLSearchParams({
-            client_id: envs.GOOGLE_CLIENT_ID,
-            client_secret: envs.GOOGLE_CLIENT_SECRET,
+            client_id: env.GOOGLE_CLIENT_ID,
+            client_secret: env.GOOGLE_CLIENT_SECRET,
             code: code,
             grant_type: "authorization_code",
             redirect_uri: `${origin}/api/auth/callback/google`,

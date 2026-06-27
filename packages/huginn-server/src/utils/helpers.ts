@@ -1,4 +1,3 @@
-import { logger } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectChannelDefaults,
@@ -8,11 +7,12 @@ import {
    type KnownApplicationPayload,
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
+import { logger } from "@huginn/backend-shared/logger";
 import {
    analytics,
+   type APIMessage,
    type APIMessageCall,
    type APIMessageReference,
-   type APIPublicUser,
    changeUrlBase,
    ChannelType,
    CONSTANTS,
@@ -27,7 +27,7 @@ import {
    type Snowflake,
 } from "@huginn/shared";
 
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { dispatchToTopic } from "./gateway-utils";
 import { sendPushNotification } from "./route-utils";
@@ -75,7 +75,7 @@ export async function dispatchCallMessage(options: { authorId: Snowflake; channe
       { select: selectAllMessage },
    );
 
-   dispatchToTopic(options.channelId, "message_create", filterMessage(message));
+   dispatchToTopic(options.channelId, "message_create", filterMessage(message) as APIMessage);
 
    return message;
 }
@@ -92,9 +92,8 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T) {
+export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T): APIMessage {
    const signedAttachments = message.attachments.map(signAttachment);
-
    return {
       ...omit(message, ["call", "messageReference"]),
       ...(message.call !== null && {
@@ -140,7 +139,7 @@ export function signAttachment<A extends { url: string }>(attachment: A): A {
    const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
    const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
 
-   const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+   const hasher = new Bun.CryptoHasher("sha256", env.CDN_HMAC_SECRET);
    hasher.update(`${attachment.url}:${expiry}`);
    const signature = hasher.digest("hex");
 
@@ -170,7 +169,7 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
          const username = message.author.displayName ?? message.author.username;
          const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channelName})` : "");
          const firstAttachment = message.attachments[0] ? signAttachment(message.attachments[0]) : undefined;
-         const imageUrl = envs.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, envs.CDN_PUBLIC_URL) : undefined;
+         const imageUrl = env.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, env.CDN_PUBLIC_URL) : undefined;
 
          span.setAttributes({
             "notification.title": title,
@@ -192,7 +191,7 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
             ),
          );
       } catch (e) {
-         recordSpanError(e as Error);
+         recordSpanError(e);
       } finally {
          span.end();
       }

@@ -154,6 +154,7 @@
          "xtr1common": "cpp",
          "xutility": "cpp",
       },
-      "oxc.enable.oxfmt": false,
+      "oxc.enable.oxfmt": true,
+      "oxc.enable.oxlint": true,
    },
 }

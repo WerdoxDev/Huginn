@@ -41,7 +41,7 @@ export const settingsExtension = Prisma.defineExtension({
 
                   return settings?.json as UserSettings;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                   throw e;
                } finally {
@@ -66,7 +66,7 @@ export const settingsExtension = Prisma.defineExtension({
 
                   return updatedSettings.json as UserSettings;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                   throw e;
                } finally {

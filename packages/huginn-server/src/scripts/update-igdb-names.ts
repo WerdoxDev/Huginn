@@ -2,7 +2,7 @@ import { prisma } from "@huginn/backend-shared/database/index";
 
 import type { TwitchOAuthResult } from "#utils/types";
 
-import { envs } from "#setup";
+import { env } from "#setup";
 import { serverFetch } from "#utils/server-request";
 
 const knownApplications = await prisma.knownApplication.findMany({
@@ -17,8 +17,8 @@ type IGDBSearchResult = {
    alternative_names?: Array<{ name: string }>;
 };
 const search = new URLSearchParams({
-   client_id: envs.IGDB_CLIENT_ID!,
-   client_secret: envs.IGDB_CLIENT_SECRET!,
+   client_id: env.IGDB_CLIENT_ID!,
+   client_secret: env.IGDB_CLIENT_SECRET!,
    grant_type: "client_credentials",
 });
 const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", {
@@ -27,7 +27,7 @@ const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2
 const token = result.access_token;
 
 let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
-   headers: { "Client-ID": envs.IGDB_CLIENT_ID! },
+   headers: { "Client-ID": env.IGDB_CLIENT_ID! },
    auth: true,
    token: token,
    body: `

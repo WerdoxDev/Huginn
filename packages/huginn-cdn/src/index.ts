@@ -1,9 +1,9 @@
 import cors from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
+import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import consola from "consola";
 import Elysia from "elysia";
 
 import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
@@ -17,27 +17,28 @@ import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[name].get";
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { getIndex } from "./routes";
 
-export const main = new Elysia({})
+export const main = new Elysia({ normalize: "typebox" })
    .use(cors())
    .use(globalPlugin)
    .use(
       opentelemetry({
-         serviceName: envs.OTEL_SERVICE_NAME,
+         serviceName: env.OTEL_SERVICE_NAME,
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.SIGNOZ_API_URL,
+                  url: env.OTLP_TRACE_URL,
                }),
             ),
          ],
       }),
    )
    .onError(({ error, code, status, path, request }) => {
-      consola.box(path, request.method, code, error);
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = cdnOnError(error, status);
          if (returnedError) {
@@ -86,6 +87,7 @@ export const main = new Elysia({})
    .use(postChannelIcon)
    .use(getEmoji)
 
-   .listen({ hostname: envs.CDN_HOST, port: envs.CDN_PORT, idleTimeout: 40 }, (server) => {
-      consola.box(`Listening on ${server.hostname}:${server.port}`);
+   .listen({ hostname: env.CDN_HOST, port: env.CDN_PORT, idleTimeout: 40 }, (server) => {
+      logger.info({ listenHostname: server.hostname, port: server.port }, "cdn listening");
+      // consola.box(`Listening on ${server.hostname}:${server.port}`);
    });

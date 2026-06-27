@@ -14,21 +14,24 @@ import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 
 export function setupWebInstrumentation(
-   options: { traceUrl: string; logUrl: string; serviceName: string; serviceVersion?: string; clientId?: string },
+   options: {
+      otlpTraceUrl: string;
+      otlpLogUrl: string;
+      posthogHost: string;
+      posthogApiKey: string;
+      serviceName: string;
+      serviceVersion?: string;
+      clientId?: string;
+   },
    requestHook: (span: Span) => void,
 ): void {
-   const exporter = new OTLPTraceExporter({
-      // For self-hosted version, please use the collector url instead.
-      url: options.traceUrl,
-
-      // headers: {
-      //    // Optional for the self-hosted version
-      //    "signoz-ingestion-key": "<INGESTION_KEY>",
-      // },
-   });
-
    const logProvider = new LoggerProvider({
-      processors: [new BatchLogRecordProcessor(new OTLPLogExporter({ url: options.logUrl }))],
+      processors: [
+         new BatchLogRecordProcessor(new OTLPLogExporter({ url: options.otlpLogUrl })),
+         new BatchLogRecordProcessor(
+            new OTLPLogExporter({ url: `${options.posthogHost}/i/v1/logs`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
+         ),
+      ],
       resource: resourceFromAttributes({
          "service.name": options.serviceName,
          "service.version": options.serviceVersion,
@@ -45,7 +48,16 @@ export function setupWebInstrumentation(
          "client.id": options.clientId,
          electron: "__IS_ELECTRON__" in window && window.__IS_ELECTRON__ ? true : false,
       }),
-      spanProcessors: [new BatchSpanProcessor(exporter)],
+      spanProcessors: [
+         new BatchSpanProcessor(
+            new OTLPTraceExporter({
+               url: options.otlpTraceUrl,
+            }),
+         ),
+         new BatchSpanProcessor(
+            new OTLPTraceExporter({ url: `${options.posthogHost}/i/v1/traces`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
+         ),
+      ],
    });
 
    provider.register({

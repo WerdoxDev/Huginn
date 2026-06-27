@@ -6,22 +6,24 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "start": "tsx ./src/index.ts",
-      "dev": "tsx watch ./src/index.ts",
+      "start": "node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/index.ts",
+      "dev": "node --import=tsx --watch --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
       "bun-dev": "bun ./src/index.ts"
    },
    "dependencies": {
       "@huginn/backend-shared": "workspace:*",
       "@huginn/runtime-shared": "workspace:*",
       "@huginn/shared": "workspace:*",
-      "crossws": "^0.4.1",
+      "@opentelemetry/instrumentation": "^0.218.0",
+      "crossws": "^0.4.6",
       "dotenv": "^17.4.2",
-      "elysia": "^1.4.19",
-      "mediasoup": "^3.19.14",
-      "srvx": "^0.11.16"
+      "elysia": "^1.4.29",
+      "envalid": "^8.2.0",
+      "mediasoup": "^3.20.10",
+      "srvx": "^0.11.17"
    },
    "devDependencies": {
-      "@types/node": "^25.9.1",
+      "@types/node": "^26.0.1",
       "tsx": "^4.21.0"
    },
    "trustedDependencies": [

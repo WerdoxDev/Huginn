@@ -58,8 +58,10 @@ export class WebAnalytics extends Analytics {
       setupWebInstrumentation(
          {
             serviceName: options.serviceName,
-            traceUrl: options.otlpTraceUrl,
-            logUrl: options.otlpLogUrl,
+            otlpTraceUrl: options.otlpTraceUrl,
+            otlpLogUrl: options.otlpLogUrl,
+            posthogHost: options.posthogHost,
+            posthogApiKey: posthogApiKey,
             serviceVersion: options.serviceVersion,
             clientId: options.clientId,
          },
@@ -74,7 +76,6 @@ export class WebAnalytics extends Analytics {
 
    public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void {
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
-      posthog.captureLog({ body: options.body, level: options.level, attributes: mergedAttributes, trace_id: options.traceId });
       this.logger.emit({
          body: options.body,
          severityNumber: logLevelToSeverityNumber(options.level),

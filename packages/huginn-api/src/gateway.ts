@@ -15,7 +15,6 @@ import {
    type GatewayHello,
    GatewayOperations,
    type GatewayReadyData,
-   log,
    analytics,
    recordSpanError,
    SpanStatusCode,
@@ -120,7 +119,7 @@ export class Gateway extends SharedWebsocket<Events> {
             this.socket.onmessage = (e) => this.onMessage(e);
             this.socket.onerror = () => this.onError();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -145,8 +144,6 @@ export class Gateway extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiGateway.authenticate", async (span): Promise<AuthenticationResult> => {
          span.setAttributes(this.getDefaultAttributes());
          try {
-            log("api:gateway", "default", "authenticate");
-
             if (this.isAuthenticated) {
                return { authenticated: true, retryable: true, status: "success" };
             }
@@ -168,7 +165,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
             return await this.waitForAuthentication();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -219,7 +216,7 @@ export class Gateway extends SharedWebsocket<Events> {
                });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -324,7 +321,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
             return tokenResult.status === "fulfilled" ? tokenResult.value : undefined;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -348,7 +345,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
             await this.waitForVoiceStateUpdate(null);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -449,7 +446,7 @@ export class Gateway extends SharedWebsocket<Events> {
                   return { authenticated: false, retryable: false, status: "authentication_failed" };
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -486,7 +483,7 @@ export class Gateway extends SharedWebsocket<Events> {
                },
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -569,7 +566,7 @@ export class Gateway extends SharedWebsocket<Events> {
                this.emit("reconnected", undefined);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

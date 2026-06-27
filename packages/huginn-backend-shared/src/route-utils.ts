@@ -66,7 +66,6 @@ export function verifyJwt<Type extends TokenType = "user-access">(type?: Type) {
       }
 
       const span = getCurrentSpan();
-      // console.log(span);
       span?.setAttributes({ "token.type": tokenType });
       if (tokenType) {
          const data = payload as UserTokenPayload;

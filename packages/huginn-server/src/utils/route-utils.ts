@@ -1,7 +1,8 @@
 import type { Endpoints } from "@octokit/types";
 
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData, logger } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
+import { logger } from "@huginn/backend-shared/logger";
 import {
    type APIBadge,
    type APIEmbed,
@@ -25,7 +26,7 @@ import markdownit from "markdown-it";
 import * as semver from "semver";
 
 import { octokit, resend } from "#setup";
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { cdnUpload } from "./server-request";
 
@@ -41,7 +42,7 @@ const allReleasesCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/
 
 export async function getAllAppReleases() {
    const releases = await allReleasesCache.cacheOrGet("releases", async () => {
-      const fetchedReleases = (await octokit.rest.repos.listReleases({ owner: envs.REPO_OWNER, repo: envs.REPO })).data
+      const fetchedReleases = (await octokit.rest.repos.listReleases({ owner: env.REPO_OWNER, repo: env.REPO })).data
          .filter((x) => x.tag_name.includes("app@"))
          .sort((v1, v2) => semver.rcompare(getAppPackageVersion(v1.tag_name), getAppPackageVersion(v2.tag_name)));
       return fetchedReleases;
@@ -60,8 +61,8 @@ export async function getAllTags() {
       const response = await tagsCache.cacheOrGet(`page-${page}`, async () => {
          return (
             await octokit.rest.repos.listTags({
-               owner: envs.REPO_OWNER,
-               repo: envs.REPO,
+               owner: env.REPO_OWNER,
+               repo: env.REPO,
                per_page: 100,
                page,
             })
@@ -83,8 +84,8 @@ const releaseCache = new CacheStorage<string, Endpoints["GET /repos/{owner}/{rep
 export async function getReleaseByTag(tag: string) {
    const release = await releaseCache.cacheOrGet(tag, async () => {
       const response = await octokit.rest.repos.getReleaseByTag({
-         owner: envs.REPO_OWNER,
-         repo: envs.REPO,
+         owner: env.REPO_OWNER,
+         repo: env.REPO,
          tag,
       });
       return response.data;
@@ -182,7 +183,7 @@ export async function extractEmbedTags(response: Response): Promise<Record<strin
 
       return metadata;
    } catch (error) {
-      console.error("Error fetching embed info:", error);
+      logger.error(error, "fetching embed info failed");
       return {};
    }
 }
@@ -374,7 +375,7 @@ export async function sendPushNotification(
          const tokens = (await prisma.notificationToken.getByUserId(userId)).map((x) => x.token);
          span.setAttribute("tokens.count", tokens.length);
 
-         logger.debug(`sending push notification to user ${userId} with tokens ${tokens.join(", ")}`);
+         logger.info(`sending push notification to user ${userId} with tokens ${tokens.join(", ")}`);
 
          if (tokens.length === 0) {
             logger.debug(`no tokens found for user ${userId}, skipping push notification`);
@@ -394,7 +395,7 @@ export async function sendPushNotification(
          span.setAttribute("success_count", response.successCount);
          span.setAttribute("failure_count", response.failureCount);
       } catch (e) {
-         recordSpanError(e as Error);
+         recordSpanError(e);
       } finally {
          span.end();
       }

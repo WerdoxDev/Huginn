@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import * as semver from "semver";
 
 import { octokit } from "#setup";
-import { envs } from "#setup";
+import { env } from "#setup";
 import { getAllTags } from "#utils/route-utils";
 
 const schema = t.Object({
@@ -46,8 +46,8 @@ export const postAndroidUpdate = new Elysia().post(
 
       // Fetch the GitHub release for the latest tag
       const latestRelease = await octokit.rest.repos.getReleaseByTag({
-         owner: envs.REPO_OWNER,
-         repo: envs.REPO,
+         owner: env.REPO_OWNER,
+         repo: env.REPO,
          tag: latestTag.name,
       });
 
@@ -78,8 +78,5 @@ export const postAndroidUpdate = new Elysia().post(
    },
    {
       body: schema,
-      afterResponse: ({ responseValue }) => {
-         console.log("Response value:", responseValue);
-      },
    },
 );

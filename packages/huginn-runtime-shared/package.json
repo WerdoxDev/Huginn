@@ -10,10 +10,6 @@
       "./*": "./src/*.ts"
    },
    "dependencies": {
-      "@huginn/shared": "workspace:*",
-      "consola": "^3.4.2"
-   },
-   "devDependencies": {
-      "@types/bun": "latest"
+      "@huginn/shared": "workspace:*"
    }
 }
