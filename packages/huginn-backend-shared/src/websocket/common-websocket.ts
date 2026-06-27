@@ -39,7 +39,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
             await session.enqueue(() => this.onOpen(session));
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -74,7 +74,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
                this.deleteSession(session.sessionId);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -101,7 +101,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          await session.enqueue(async () => await this.onMessage(session, data));
          // oxlint-disable-next-line no-unused-vars
       } catch (e) {
-         // recordSpanError(e as Error);
+         // recordSpanError(e);
          if (e instanceof SyntaxError) {
             peer.close(GatewayCode.DECODE_ERROR, "DECODE_ERROR");
             return;
@@ -164,7 +164,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
             this.sessionDeleteTimeouts.set(sessionId, timeout);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -184,7 +184,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
                this.sessionDeleteTimeouts.delete(sessionId);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -250,7 +250,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
             return { oldSession, user };
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -271,7 +271,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
                this.sessions.delete(sessionId);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -289,7 +289,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
 
             return session;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

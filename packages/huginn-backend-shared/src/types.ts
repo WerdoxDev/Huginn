@@ -1,22 +1,26 @@
 import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake, UserPresence, WorkerID } from "@huginn/shared";
 
-export enum DBErrorType {
-   INVALID_ID = "INVALID_ID",
-   NULL_USER = "NULL_USER",
-   NULL_CHANNEL = "NULL_CHANNEL",
-   NULL_MESSAGE = "NULL_MESSAGE",
-   NULL_MESSAGE_PIN = "NULL_MESSAGE_PIN",
-   NULL_RELATIONSHIP = "NULL_RELATIONSHIP",
-   NULL_READ_STATE = "NULL_READ_STATE",
-   NULL_SETTINGS = "NULL_SETTINGS",
-   NULL_KNOWN_APPLICATION = "NULL_KNOWN_APPLICATION",
-   NULL_EMAIL_VERIFICATION = "NULL_EMAIL_VERIFICATION",
-}
+export const DBErrorType = {
+   INVALID_ID: "INVALID_ID",
+   NULL_USER: "NULL_USER",
+   NULL_CHANNEL: "NULL_CHANNEL",
+   NULL_MESSAGE: "NULL_MESSAGE",
+   NULL_MESSAGE_PIN: "NULL_MESSAGE_PIN",
+   NULL_RELATIONSHIP: "NULL_RELATIONSHIP",
+   NULL_READ_STATE: "NULL_READ_STATE",
+   NULL_SETTINGS: "NULL_SETTINGS",
+   NULL_KNOWN_APPLICATION: "NULL_KNOWN_APPLICATION",
+   NULL_EMAIL_VERIFICATION: "NULL_EMAIL_VERIFICATION",
+} as const;
 
-export enum CDNErrorType {
-   FILE_NOT_FOUND = "FILE_NOT_FOUND",
-   INVALID_FILE_FORMAT = "INVALID_FILE_FORMAT",
-}
+export type DBErrorType = (typeof DBErrorType)[keyof typeof DBErrorType];
+
+export const CDNErrorType = {
+   FILE_NOT_FOUND: "FILE_NOT_FOUND",
+   INVALID_FILE_FORMAT: "INVALID_FILE_FORMAT",
+} as const;
+
+export type CDNErrorType = (typeof CDNErrorType)[keyof typeof CDNErrorType];
 
 export type DBEmbed = Omit<APIEmbed, "thumbnail" | "video"> & {
    thumbnail?: DBThumbnail;

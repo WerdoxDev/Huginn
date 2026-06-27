@@ -70,7 +70,7 @@ export const embedExtension = Prisma.defineExtension({
 
                   return embed;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();

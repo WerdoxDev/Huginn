@@ -32,7 +32,7 @@ export const userExtension = Prisma.defineExtension({
                   assertObj(methodName, user, DBErrorType.NULL_USER, id);
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -49,7 +49,7 @@ export const userExtension = Prisma.defineExtension({
                   assertObj(methodName, user, DBErrorType.NULL_USER, username);
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -82,7 +82,7 @@ export const userExtension = Prisma.defineExtension({
 
                   return idFix(user) as BigIntToString<NonNullable<typeof user>>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -118,7 +118,7 @@ export const userExtension = Prisma.defineExtension({
                   assertObj(methodName, updatedUser, DBErrorType.NULL_USER, id);
                   return idFix(updatedUser) as UserPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -166,7 +166,7 @@ export const userExtension = Prisma.defineExtension({
                   assertObj(methodName, newUser, DBErrorType.NULL_USER);
                   return idFix(newUser);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -189,7 +189,7 @@ export const userExtension = Prisma.defineExtension({
 
                   return hasAccess;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();

@@ -27,7 +27,7 @@ export const knownApplicationExtension = Prisma.defineExtension({
                   assertObj(methodName, knownApplications, DBErrorType.NULL_KNOWN_APPLICATION);
                   return idFix(knownApplications) as KnownApplicationPayload<Args>[];
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -72,7 +72,7 @@ export const knownApplicationExtension = Prisma.defineExtension({
                   assertObj(methodName, knownApplication, DBErrorType.NULL_KNOWN_APPLICATION);
                   return idFix(knownApplication) as KnownApplicationPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   assertExists(e, methodName, DBErrorType.NULL_KNOWN_APPLICATION, [options.contributorId]);
                   throw e;
                } finally {

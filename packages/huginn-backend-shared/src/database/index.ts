@@ -2,19 +2,19 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
 
-import { assertExtension } from "./assert";
-import { attachmentExtension } from "./attachment";
-import { channelExtension } from "./channel";
-import { emailVerificationExtension } from "./emailVerification";
-import { embedExtension } from "./embed";
-import { knownApplicationExtension } from "./knownApplication";
-import { messagesExtension } from "./message";
-import { messagePinExtension } from "./messagePin";
-import { notificationTokenExtension } from "./notificationToken";
-import { readStateExtension } from "./readState";
-import { relationshipExtension } from "./relationship";
-import { settingsExtension } from "./settings";
-import { userExtension } from "./user";
+import { assertExtension } from "./assert.ts";
+import { attachmentExtension } from "./attachment.ts";
+import { channelExtension } from "./channel.ts";
+import { emailVerificationExtension } from "./emailVerification.ts";
+import { embedExtension } from "./embed.ts";
+import { knownApplicationExtension } from "./knownApplication.ts";
+import { messagesExtension } from "./message.ts";
+import { messagePinExtension } from "./messagePin.ts";
+import { notificationTokenExtension } from "./notificationToken.ts";
+import { readStateExtension } from "./readState.ts";
+import { relationshipExtension } from "./relationship.ts";
+import { settingsExtension } from "./settings.ts";
+import { userExtension } from "./user.ts";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });
@@ -59,6 +59,6 @@ export const prisma = prismaBase
 // 	// console.log(`Duration: ${e.duration}ms`);
 // });
 
-export * from "./error";
-export * from "./common";
+export * from "./error.ts";
+export * from "./common.ts";
 export { Prisma, type Message, type EmailVerification };

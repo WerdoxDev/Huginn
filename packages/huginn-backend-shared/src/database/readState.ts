@@ -24,7 +24,7 @@ export const readStateExtension = Prisma.defineExtension({
                   assertObj(methodName, readState, DBErrorType.NULL_READ_STATE, `${userId}:${channelId}`);
                   return idFix(readState) as ReadStatePayload<undefined>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -47,7 +47,7 @@ export const readStateExtension = Prisma.defineExtension({
                   assertObj(methodName, readStates, DBErrorType.NULL_READ_STATE);
                   return idFix(readStates);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -81,7 +81,7 @@ export const readStateExtension = Prisma.defineExtension({
 
                   return idFix(readState);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
@@ -109,7 +109,7 @@ export const readStateExtension = Prisma.defineExtension({
                   assertObj(methodName, deletedReadState, DBErrorType.NULL_READ_STATE);
                   return idFix(deletedReadState);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
                } finally {
@@ -153,7 +153,7 @@ export const readStateExtension = Prisma.defineExtension({
 
                   return idFix(updatedReadState);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [lastReadMessageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
@@ -182,7 +182,7 @@ export const readStateExtension = Prisma.defineExtension({
                   span.setAttribute("read_state.unread_count", unreadCount);
                   return unreadCount < 0 ? 0 : unreadCount;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -219,7 +219,7 @@ export const readStateExtension = Prisma.defineExtension({
                      unreadCount: Number(x.unreadCount),
                   }));
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();

@@ -43,7 +43,7 @@ export const attachmentExtension = Prisma.defineExtension({
 
                   return attachment;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();

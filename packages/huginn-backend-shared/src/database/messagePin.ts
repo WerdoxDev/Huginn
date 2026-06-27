@@ -30,7 +30,7 @@ export const messagePinExtension = Prisma.defineExtension({
                   assertObj(methodName, pins, DBErrorType.NULL_MESSAGE_PIN);
                   return idFix(pins) as MessagePinPayload<Args>[];
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
                } finally {
@@ -56,7 +56,7 @@ export const messagePinExtension = Prisma.defineExtension({
                   assertObj(methodName, pin, DBErrorType.NULL_MESSAGE_PIN, messageId);
                   return idFix(pin) as MessagePinPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE_PIN, [messageId]);
                   throw e;
                } finally {
@@ -103,7 +103,7 @@ export const messagePinExtension = Prisma.defineExtension({
                   assertObj(methodName, pin, DBErrorType.NULL_MESSAGE, options.messageId);
                   return idFix(pin) as MessagePinPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [options.messageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [options.pinnedById]);
@@ -145,7 +145,7 @@ export const messagePinExtension = Prisma.defineExtension({
                   assertObj(methodName, deletedPin, DBErrorType.NULL_MESSAGE_PIN, messageId);
                   return idFix(deletedPin) as MessagePinPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE_PIN, [messageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;

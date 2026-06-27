@@ -4,7 +4,7 @@ import { prisma } from "#database";
 import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
 
-import { assertExists, assertId } from "./error";
+import { assertExists, assertId } from "./error.ts";
 
 export const notificationTokenExtension = Prisma.defineExtension({
    model: {
@@ -17,7 +17,7 @@ export const notificationTokenExtension = Prisma.defineExtension({
                   span.setAttribute("notification_token.count", result.length);
                   return idFix(result);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   throw e;
                } finally {
                   span.end();
@@ -45,7 +45,7 @@ export const notificationTokenExtension = Prisma.defineExtension({
 
                   span.setAttribute("notification_token.device_id", notificationToken.deviceId);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   assertExists(e, methodName, DBErrorType.NULL_USER, [options.userId]);
                   throw e;
                } finally {

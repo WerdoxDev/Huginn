@@ -3,7 +3,7 @@ import { ChannelType, type Snowflake, WorkerID, analytics, idFix, recordSpanErro
 import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from "#database";
 import { DBErrorType } from "#types";
 
-import { assertId, assertObj } from "./error";
+import { assertId, assertObj } from "./error.ts";
 
 export const channelExtension = Prisma.defineExtension({
    model: {
@@ -21,7 +21,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, channel, DBErrorType.NULL_CHANNEL, id);
                   return idFix(channel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [id]);
                   throw e;
                } finally {
@@ -47,7 +47,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, channels, DBErrorType.NULL_CHANNEL);
                   return idFix(channels) as ChannelPayload<Args>[];
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
                } finally {
@@ -113,7 +113,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, channel, DBErrorType.NULL_CHANNEL);
                   return idFix(channel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [initiatorId, ...recipients]);
                   throw e;
                } finally {
@@ -156,7 +156,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, updatedChannel, DBErrorType.NULL_CHANNEL);
                   return idFix(updatedChannel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [owner]);
                   throw e;
@@ -182,7 +182,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, updatedChannel, DBErrorType.NULL_CHANNEL);
                   return idFix(updatedChannel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [recipientId]);
                   throw e;
@@ -208,7 +208,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, updatedChannel, DBErrorType.NULL_CHANNEL);
                   return idFix(updatedChannel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [recipientId]);
                   throw e;
@@ -248,7 +248,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, editedChannel, DBErrorType.NULL_CHANNEL);
                   return idFix(editedChannel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
@@ -270,7 +270,7 @@ export const channelExtension = Prisma.defineExtension({
                   assertObj(methodName, deletedChannel, DBErrorType.NULL_CHANNEL);
                   return idFix(deletedChannel) as ChannelPayload<Args>;
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
                } finally {
@@ -292,7 +292,7 @@ export const channelExtension = Prisma.defineExtension({
                      .then((x) => x?.recipients ?? []);
                   return idFix(recipients);
                } catch (e) {
-                  recordSpanError(e as Error);
+                  recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
                } finally {
