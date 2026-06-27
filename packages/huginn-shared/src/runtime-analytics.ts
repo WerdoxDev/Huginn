@@ -39,6 +39,7 @@ export class RuntimeAnalytics extends Analytics {
                   },
                }),
             ),
+            // new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
          ],
          spanProcessors: [
             new BatchSpanProcessor(

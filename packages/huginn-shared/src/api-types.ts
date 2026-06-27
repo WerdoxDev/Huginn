@@ -32,12 +32,14 @@ type APIBaseUser = {
    id: Snowflake;
 };
 
-export enum UserFlags {
-   NONE = 0,
-   STAFF = 1 << 0,
-   BUG_HUNTER = 1 << 1,
-   EARLY_HUGINN_SUPPORTER = 1 << 2,
-}
+export const UserFlags = {
+   NONE: 0,
+   STAFF: (1 << 0) as number,
+   BUG_HUNTER: (1 << 1) as number,
+   EARLY_HUGINN_SUPPORTER: (1 << 2) as number,
+} as const;
+
+export type UserFlags = (typeof UserFlags)[keyof typeof UserFlags];
 
 export type APIUser = {
    username: string;
@@ -143,13 +145,15 @@ export type APIRelationship = {
 
 export type APIRelationshipWithoutOwner = Omit<APIRelationship, "owner">;
 
-export enum RelationshipType {
-   NONE = 0,
-   FRIEND = 1,
-   BLOCKED = 2,
-   PENDING_INCOMING = 3,
-   PENDING_OUTGOING = 4,
-}
+export const RelationshipType = {
+   NONE: 0,
+   FRIEND: 1,
+   BLOCKED: 2,
+   PENDING_INCOMING: 3,
+   PENDING_OUTGOING: 4,
+} as const;
+
+export type RelationshipType = (typeof RelationshipType)[keyof typeof RelationshipType];
 
 export type APIGetUserRelationshipsResult = APIRelationshipWithoutOwner[];
 export type APIGetUserRelationshipByIdResult = APIRelationshipWithoutOwner;
@@ -160,19 +164,29 @@ export type APIPostRelationshipJSONBody = {
 //#endregion
 
 //#region CHANNEL
+export const ChannelType = {
+   DM: 0,
+   GROUP_DM: 1,
+   GUILD_TEXT: 2,
+   GUILD_VOICE: 3,
+   GUILD_CATEGORY: 4,
+} as const;
+
+export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType];
+
 type APIBaseChannel = {
    id: Snowflake;
    type: ChannelType;
 };
 
 export type APIDMChannel = {
-   type: ChannelType.DM;
+   type: typeof ChannelType.DM;
    lastMessageId: Snowflake | null;
    recipients: APIChannelUser[];
 } & APIBaseChannel;
 
 export type APIGroupDMChannel = {
-   type: ChannelType.GROUP_DM;
+   type: typeof ChannelType.GROUP_DM;
    name: string;
    icon: string | null;
    ownerId: Snowflake;
@@ -181,19 +195,11 @@ export type APIGroupDMChannel = {
 } & APIBaseChannel;
 
 export type APIGuildCategoryChannel = {
-   type: ChannelType.GUILD_CATEGORY;
+   type: typeof ChannelType.GUILD_CATEGORY;
    // guildId: Snowflake;
    // position: number;
    name: string;
 } & APIBaseChannel;
-
-export enum ChannelType {
-   DM = 0,
-   GROUP_DM = 1,
-   GUILD_TEXT = 2,
-   GUILD_VOICE = 3,
-   GUILD_CATEGORY = 4,
-}
 
 export type APIPostDMChannelJSONBody = {
    name?: string;
@@ -214,6 +220,21 @@ export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 
 //#region MESSAGE
+export const MessageType = {
+   DEFAULT: 0,
+   RECIPIENT_ADD: 1,
+   RECIPIENT_REMOVE: 2,
+   CALL: 3,
+   CHANNEL_NAME_CHANGED: 4,
+   CHANNEL_ICON_CHANGED: 5,
+   CHANNEL_PINNED_MESSAGE: 6,
+   CHANNEL_OWNER_CHANGED: 7,
+   USER_JOIN: 8,
+   REPLY: 9,
+} as const;
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType];
+
 type APIBaseMessage = {
    id: Snowflake;
    type: MessageType;
@@ -233,35 +254,37 @@ type APIBaseMessage = {
 
 export type APIDefaultMessage = APIBaseMessage & {
    type:
-      | MessageType.DEFAULT
-      | MessageType.RECIPIENT_ADD
-      | MessageType.RECIPIENT_REMOVE
-      | MessageType.CHANNEL_ICON_CHANGED
-      | MessageType.CHANNEL_NAME_CHANGED
-      | MessageType.CHANNEL_OWNER_CHANGED;
+      | typeof MessageType.DEFAULT
+      | typeof MessageType.RECIPIENT_ADD
+      | typeof MessageType.RECIPIENT_REMOVE
+      | typeof MessageType.CHANNEL_ICON_CHANGED
+      | typeof MessageType.CHANNEL_NAME_CHANGED
+      | typeof MessageType.CHANNEL_OWNER_CHANGED;
 };
 
 export type APICallMessage = APIBaseMessage & {
-   type: MessageType.CALL;
+   type: typeof MessageType.CALL;
    call: APIMessageCall;
 };
 
 export type APIReferenceMessage = APIBaseMessage & {
-   type: MessageType.REPLY | MessageType.CHANNEL_PINNED_MESSAGE;
+   type: typeof MessageType.REPLY | typeof MessageType.CHANNEL_PINNED_MESSAGE;
    messageReference: APIMessageReference;
    referencedMessage?: APIMessage | null;
 };
 
 export type APIMessage = APICallMessage | APIDefaultMessage | APIReferenceMessage;
 
-export enum MessageFlags {
-   NONE = 0,
-   SUPPRESS_NOTIFICATIONS = 1 << 0,
-   SUPPRESS_EMBEDS = 1 << 1,
-   URGENT = 1 << 2,
-   EPHEMERAL = 1 << 3,
-   LOADING = 1 << 4,
-}
+export const MessageFlags = {
+   NONE: 0,
+   SUPPRESS_NOTIFICATIONS: (1 << 0) as number,
+   SUPPRESS_EMBEDS: (1 << 1) as number,
+   URGENT: (1 << 2) as number,
+   EPHEMERAL: (1 << 3) as number,
+   LOADING: (1 << 4) as number,
+} as const;
+
+export type MessageFlags = (typeof MessageFlags)[keyof typeof MessageFlags];
 
 export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date | string | null };
 
@@ -274,9 +297,11 @@ export type APIPostMessageJSONBody = {
    messageReference?: APIPostMessageReferenceJSONBody;
 };
 
-export enum MessageReferenceType {
-   DEFAULT = 0,
-}
+export const MessageReferenceType = {
+   DEFAULT: 0,
+} as const;
+
+export type MessageReferenceType = (typeof MessageReferenceType)[keyof typeof MessageReferenceType];
 
 export type APIPostMessageReferenceJSONBody = APIMessageReference;
 
@@ -363,19 +388,6 @@ export type APICheckUpdateResult = {
    signature: string;
    notes: string;
 };
-
-export enum MessageType {
-   DEFAULT = 0,
-   RECIPIENT_ADD = 1,
-   RECIPIENT_REMOVE = 2,
-   CALL = 3,
-   CHANNEL_NAME_CHANGED = 4,
-   CHANNEL_ICON_CHANGED = 5,
-   CHANNEL_PINNED_MESSAGE = 6,
-   CHANNEL_OWNER_CHANGED = 7,
-   USER_JOIN = 8,
-   REPLY = 9,
-}
 //#endregion
 
 export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
@@ -398,10 +410,12 @@ export type ActiveSession = {
    sessionId: Snowflake;
 };
 
-export enum ActivityType {
-   PLAYING = 0,
-   LISTENING = 1,
-}
+export const ActivityType = {
+   PLAYING: 0,
+   LISTENING: 1,
+} as const;
+
+export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
 
 export type Activity = {
    name: string;

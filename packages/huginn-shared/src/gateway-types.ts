@@ -17,16 +17,18 @@ import type { Snowflake } from "./snowflake";
 
 export type GatewayStatus = "disconnected" | "connecting" | "connected" | "authenticated" | "idle" | "helloed";
 
-export enum GatewayOperations {
-   HELLO = 0,
-   IDENTIFY = 1,
-   HEARTBEAT = 2,
-   HEARTBEAT_ACK = 3,
-   DISPATCH = 4,
-   RESUME = 5,
-   VOICE_STATE_UPDATE = 6,
-   PRESENCE_UPDATE = 7,
-}
+export const GatewayOperations = {
+   HELLO: 0,
+   IDENTIFY: 1,
+   HEARTBEAT: 2,
+   HEARTBEAT_ACK: 3,
+   DISPATCH: 4,
+   RESUME: 5,
+   VOICE_STATE_UPDATE: 6,
+   PRESENCE_UPDATE: 7,
+};
+
+export type GatewayOperations = (typeof GatewayOperations)[keyof typeof GatewayOperations];
 
 export type GatewayOperationTypes = {
    [GatewayOperations.HELLO]: GatewayHello;
@@ -69,7 +71,7 @@ export type GatewayWebsocketEvents = {
 
 export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefined = undefined> = Event extends undefined
    ? {
-        [K in keyof GatewayOperationTypes]: GatewayOperationTypes[K]["op"] extends GatewayOperations.DISPATCH
+        [K in keyof GatewayOperationTypes]: GatewayOperationTypes[K]["op"] extends typeof GatewayOperations.DISPATCH
            ? GatewayDispatch
            : {
                 op: K;
@@ -79,7 +81,7 @@ export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefine
                 ("t" extends keyof GatewayOperationTypes[K] ? { t: string } : {});
      }[keyof GatewayOperationTypes]
    : {
-        op: GatewayOperations.DISPATCH;
+        op: typeof GatewayOperations.DISPATCH;
         s?: number;
         d: GatewayWebsocketEvents[Extract<Event, keyof GatewayWebsocketEvents>];
         t: Event;
@@ -87,7 +89,7 @@ export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefine
 
 export type GatewayDispatch = {
    [K in keyof GatewayWebsocketEvents]: {
-      op: GatewayOperations.DISPATCH;
+      op: typeof GatewayOperations.DISPATCH;
       s?: number;
       t: K;
       d: GatewayWebsocketEvents[K];
@@ -95,7 +97,7 @@ export type GatewayDispatch = {
 }[keyof GatewayWebsocketEvents];
 
 export type GatewayHello = {
-   op: GatewayOperations.HELLO;
+   op: typeof GatewayOperations.HELLO;
    d: GatewayHelloData;
 };
 
@@ -105,18 +107,18 @@ export type GatewayHelloData = {
 };
 
 export type GatewayHeartbeat = {
-   op: GatewayOperations.HEARTBEAT;
+   op: typeof GatewayOperations.HEARTBEAT;
    d: GatewayHeartbeatData;
 };
 
 export type GatewayHeartbeatData = number | undefined;
 
 export type GatewayHeartbeatAck = {
-   op: GatewayOperations.HEARTBEAT_ACK;
+   op: typeof GatewayOperations.HEARTBEAT_ACK;
 };
 
 export type GatewayIdentify = {
-   op: GatewayOperations.IDENTIFY;
+   op: typeof GatewayOperations.IDENTIFY;
    d: GatewayIdentifyData;
 };
 
@@ -144,7 +146,7 @@ export type GatewayReadyData = {
 };
 
 export type GatewayResume = {
-   op: GatewayOperations.RESUME;
+   op: typeof GatewayOperations.RESUME;
    d: GatewayResumeData;
 };
 
@@ -160,7 +162,7 @@ export type GatewayUpdateVoiceStateData = {
 } & GatewayVoiceStateFlags;
 
 export type GatewayUpdateVoiceState = {
-   op: GatewayOperations.VOICE_STATE_UPDATE;
+   op: typeof GatewayOperations.VOICE_STATE_UPDATE;
    d: GatewayUpdateVoiceStateData;
 };
 
@@ -230,7 +232,7 @@ export type GatewayCallDeleteData = {
 };
 
 export type GatewayUpdatePresence = {
-   op: GatewayOperations.PRESENCE_UPDATE;
+   op: typeof GatewayOperations.PRESENCE_UPDATE;
    d: GatewayUpdatePresenceData;
 };
 

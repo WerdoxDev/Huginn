@@ -1,4 +1,4 @@
-import { UserFlags, type APIBadge, type BadgeType, type UserSettings } from ".";
+import { UserFlags, type APIBadge, type BadgeType, type UserSettings } from "./api-types.ts";
 
 export const CONSTANTS = {
    USERNAME_MIN_LENGTH: 3,

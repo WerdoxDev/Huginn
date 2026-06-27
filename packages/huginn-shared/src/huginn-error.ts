@@ -1,9 +1,15 @@
 import type { InternalRequest } from "./rest-types";
 
-import { type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper, type RequestBody, isErrorResponse } from "./errors";
+import { type HuginnError, type HuginnErrorData, type HuginnErrorGroupWrapper, type RequestBody, isErrorResponse } from "./errors.ts";
 
 export class HuginnAPIError extends Error {
    public requestBody: RequestBody;
+
+   public rawError: HuginnErrorData;
+   public code: number | string;
+   public status: number;
+   public method: string;
+   public url: string;
 
    /**
     * @param rawError - The error reported by Huginn
@@ -14,15 +20,20 @@ export class HuginnAPIError extends Error {
     * @param bodyData - The unparsed data for the request that errored
     */
    public constructor(
-      public rawError: HuginnErrorData,
-      public code: number | string,
-      public status: number,
-      public method: string,
-      public url: string,
+      rawError: HuginnErrorData,
+      code: number | string,
+      status: number,
+      method: string,
+      url: string,
 
       bodyData: Pick<InternalRequest, "body" | "files">,
    ) {
       super(HuginnAPIError.getMessage(rawError, status));
+      this.rawError = rawError;
+      this.code = code;
+      this.status = status;
+      this.method = method;
+      this.url = url;
 
       this.requestBody = { files: bodyData.files, json: bodyData.body };
    }

@@ -1,4 +1,4 @@
-import { EventEmitter } from "./event-emitter";
+import { EventEmitter } from "./event-emitter.ts";
 
 export const LOG_VALUES_MAP = {
    "api:voice": ["default"],
