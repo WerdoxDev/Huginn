@@ -135,8 +135,8 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
                   <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                      <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
                      <HuginnSelect onChange={onApplicationChanged} selected={selectedApplication}>
-                        <HuginnSelect.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                           <HuginnSelect.ItemsWrapper className="w-(--button-width)">
+                        <HuginnSelect.List className="bg-surface-deep w-full! rounded-md!" placeholder="Select an application">
+                           <HuginnSelect.ItemsWrapper>
                               {applicationOptions.map((x) => (
                                  <HuginnSelect.Item key={x.value} item={x} />
                               ))}

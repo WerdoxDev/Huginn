@@ -321,15 +321,17 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!scrollRef.current) return;
 
       const resizeObserver = new ResizeObserver((entries) => {
-         if (!scrollRef.current) return;
-         const scrollHeight = entries[0].target.scrollHeight;
+         requestAnimationFrame(() => {
+            if (!scrollRef.current) return;
+            const scrollHeight = entries[0].target.scrollHeight;
 
-         const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
+            const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
 
-         if (shouldAnchorToBottom.current) {
-            isResizing.current = !alreadyAtBottom;
-            scrollRef.current.scrollTo(0, scrollHeight);
-         }
+            if (shouldAnchorToBottom.current) {
+               isResizing.current = !alreadyAtBottom;
+               scrollRef.current.scrollTo(0, scrollHeight);
+            }
+         });
       });
 
       resizeObserver.observe(scrollRef.current);

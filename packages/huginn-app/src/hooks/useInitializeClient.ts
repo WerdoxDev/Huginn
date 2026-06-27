@@ -76,7 +76,6 @@ export function useInitializeClient() {
                await options.onSuccess?.();
 
                if (options.navigatePath) {
-                  console.log("LETS NAVIGATE");
                   await navigate({
                      to: options.navigatePath,
                      viewTransition: { types: ["forwards"] },

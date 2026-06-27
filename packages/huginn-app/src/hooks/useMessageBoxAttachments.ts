@@ -93,7 +93,6 @@ export function useMessageBoxAttachments() {
                   contentType: pendingAttachment.contentType,
                });
             }
-            console.log(newAttachments);
 
             return newAttachments;
          });

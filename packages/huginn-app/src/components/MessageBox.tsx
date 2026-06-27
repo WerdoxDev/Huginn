@@ -99,7 +99,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       if (!containerRef.current) return;
 
       const resizeObserver = new ResizeObserver((entries) => {
-         setMessageBoxHeight(entries[0].target.clientHeight);
+         requestAnimationFrame(() => {
+            setMessageBoxHeight(entries[0].target.clientHeight);
+         });
       });
 
       resizeObserver.observe(containerRef.current);
@@ -113,7 +115,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       document.addEventListener(
          "focusout",
          (e) => {
-            console.log(e.relatedTarget);
             if (
                e.target === editorRef.current &&
                isKeyboardOpen &&
@@ -138,7 +139,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    }, [isKeyboardOpen]);
 
    useBackHandler("message-box", 100, () => {
-      console.log("back button pressed");
       if (isKeyboardOpen || activeMobilePanel) {
          setActiveMobilePanel(null);
          return true;

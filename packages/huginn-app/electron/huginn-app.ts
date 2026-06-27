@@ -1,6 +1,6 @@
-import { analytics, analyticsShim, error, initAnalytics, log } from "@huginn/shared";
+import { analytics, analyticsShim, initAnalytics } from "@huginn/shared";
 import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
-import { Tray, app, Menu, ipcMain } from "electron";
+import { Tray, app, Menu, ipcMain, session } from "electron";
 import updater from "electron-updater";
 import path from "node:path";
 
@@ -12,7 +12,6 @@ const { autoUpdater } = updater;
 
 export class HuginnApp {
    private storage: StorageController<ElectronStorage>;
-   // private cache: CacheController;
    private mainWindow?: MainWindow;
    private tray?: Tray;
    private allowedToRun: boolean;
@@ -20,56 +19,54 @@ export class HuginnApp {
    public constructor(allowedToRun: boolean) {
       this.allowedToRun = allowedToRun;
       this.storage = new StorageController(new ElectronStorage(app.isPackaged ? "" : "dev", analyticsShim));
-      // this.cache = new CacheController();
+
       this.configureUpdater();
-      this.eventListeners();
+      this.registerEvents();
 
-      app.commandLine.appendSwitch("no-proxy-server");
-      app.on("ready", () => this.onReady());
-      app.on("window-all-closed", () => this.onAllWindowClosed());
-      app.on("second-instance", (_e, argv) => this.onSecondInstance(argv));
+      app.on("ready", async () => await this.onReady());
+      app.on("window-all-closed", () => this.handleAllWindowClosed());
+      app.on("second-instance", (_e, argv) => this.handleSecondInstance(argv));
    }
 
-   async initAsync() {
-      await this.storage.mergeNewProperties();
-      await this.storage.setupClientInfo();
-      await this.initAnalytics();
+   public static async create(allowedToRun: boolean) {
+      const instance = new HuginnApp(allowedToRun);
+      await instance.storage.mergeNewProperties();
+      await instance.storage.setupClientInfo();
+      await instance.initAnalytics();
+
+      return instance;
    }
 
-   private eventListeners() {
-      this.cliCategoryEvents();
+   private registerEvents() {
+      this.registerCliEvents();
+      this.registerAppEvents();
    }
 
-   private onReady() {
-      log("app:electron", "recv", "app ready");
-
+   private async onReady() {
       if (!this.allowedToRun) {
          app.quit();
          return;
       }
 
       this.mainWindow = new MainWindow();
-      this.configureTray();
+      this.createTray();
 
       // Setup as Startup App
-      log("app:electron", "default", "set startup");
       app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
+
+      const settings = await this.storage.loadFile("settings");
+      await this.applyProxySettings(settings.data.useProxy);
    }
 
-   private onAllWindowClosed() {
-      log("app:electron", "recv", "app all windows closed");
-
+   private handleAllWindowClosed() {
       if (process.platform !== "darwin") {
          app.quit();
       }
    }
 
-   private onSecondInstance(argv: string[]) {
-      log("app:electron", "recv", "second instance", "args:", argv);
-
+   private handleSecondInstance(argv: string[]) {
       const cmd = argv.find((arg) => arg.startsWith("huginn://"));
       if (cmd) {
-         log("app:electron", "send", "cli deep link", "cmd:", cmd);
          this.mainWindow?.window.webContents.send("cli:deep-link", cmd);
       }
 
@@ -78,28 +75,22 @@ export class HuginnApp {
    }
 
    async initAnalytics() {
-      try {
-         // const content = await fs.readFile(this.storage.adapter.getFilePath("client-info"), "utf-8");
-         const { data: settings } = await this.storage.loadFile("settings");
-         const { data: info } = await this.storage.loadFile("client-info");
-         const posthogHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.posthogHostname;
-         const otelHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.otelHostname;
+      const { data: settings } = await this.storage.loadFile("settings");
+      const { data: info } = await this.storage.loadFile("client-info");
+      const posthogHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.posthogHostname;
+      const otelHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.otelHostname;
 
-         initAnalytics(
-            new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
-               serviceName: "app-electron",
-               posthogHost: posthogHostname,
-               otlpTraceUrl: `${otelHostname}/v1/traces`,
-               otlpLogUrl: `${otelHostname}/v1/logs`,
-               clientId: info.id,
-               // host: apiHostname,
-            }),
-         );
+      initAnalytics(
+         new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
+            serviceName: "app-electron",
+            posthogHost: posthogHostname,
+            otlpTraceUrl: `${otelHostname}/v1/traces`,
+            otlpLogUrl: `${otelHostname}/v1/logs`,
+            clientId: info.id,
+         }),
+      );
 
-         this.storage.adapter.setAnalytics(analytics);
-      } catch (e) {
-         error("app:electron", "logger setup failed:", e);
-      }
+      this.storage.adapter.setAnalytics(analytics);
    }
 
    private configureUpdater() {
@@ -107,35 +98,12 @@ export class HuginnApp {
       autoUpdater.allowDowngrade = true;
       autoUpdater.autoDownload = false;
 
-      autoUpdater.on("error", (e) => {
-         error("app:electron", "updater error:", e);
-      });
-
-      autoUpdater.on("update-not-available", () => {
-         log("app:electron", "updater", "not available");
-      });
-
-      autoUpdater.on("checking-for-update", () => {
-         log("app:electron", "updater", "check for update");
-      });
-
-      autoUpdater.on("update-cancelled", () => {
-         log("app:electron", "updater", "cancelled");
-      });
-
-      autoUpdater.on("update-available", () => {
-         log("app:electron", "updater", "available");
-      });
-
       autoUpdater.on("update-downloaded", () => {
-         log("app:electron", "updater", "downloaded");
          autoUpdater.quitAndInstall(true, true);
       });
    }
 
-   private configureTray() {
-      log("app:electron", "default", "configure tray");
-
+   private createTray() {
       const iconName = "icon.ico";
       this.tray = new Tray(
          app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : path.join(__dirname, "../", "electron-assets", iconName),
@@ -158,11 +126,25 @@ export class HuginnApp {
       });
    }
 
-   private cliCategoryEvents() {
-      ipcMain.handle("cli:get-args", () => {
-         log("app:electron", "recv", "cli get args");
+   public async applyProxySettings(useSystemProxy: boolean) {
+      analytics.log({ body: "applying proxy settings", attributes: { use_proxy: useSystemProxy }, level: "info" });
+      if (useSystemProxy) {
+         await session.defaultSession.setProxy({ mode: "system" });
+      } else {
+         await session.defaultSession.setProxy({ mode: "direct" });
+      }
+      await session.defaultSession.closeAllConnections();
+   }
 
+   private registerCliEvents() {
+      ipcMain.handle("cli:get-args", () => {
          return process.argv;
+      });
+   }
+
+   private registerAppEvents() {
+      ipcMain.handle("app:set-proxy", async (_, useSystemProxy: boolean) => {
+         await this.applyProxySettings(useSystemProxy);
       });
    }
 }

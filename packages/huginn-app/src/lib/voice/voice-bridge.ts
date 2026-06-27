@@ -27,31 +27,31 @@ export class VoiceBridge extends Voice {
       this.inputDevice = new VoiceInputDevice(client);
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
-      this.on("ready", async () => await this.onReady());
-      this.on("reset", async () => await this.onReset());
+      this.on("ready", async () => await this.handleReady());
+      this.on("reset", async () => await this.handleReset());
 
-      this.transport.on("consumer_created", async (d) => await this.onConsumerCreated(d));
+      this.transport.on("consumer_created", async (d) => await this.handleConsumerCreated(d));
 
-      this.transport.on("producer_created", (d) => this.onProducerCreated(d));
-      this.transport.on("remote_producer_created", async (d) => await this.onRemoteProducerCreated(d));
+      this.transport.on("producer_created", (d) => this.handleProducerCreated(d));
+      this.transport.on("remote_producer_created", async (d) => await this.handleRemoteProducerCreated(d));
 
-      this.transport.on("producer_closed", async (d) => await this.onAnyProducerClosed(d));
-      this.transport.on("remote_producer_closed", async (d) => await this.onAnyProducerClosed(d));
+      this.transport.on("producer_closed", async (d) => await this.handleAnyProducerClosed(d));
+      this.transport.on("remote_producer_closed", async (d) => await this.handleAnyProducerClosed(d));
 
       storageStore.subscribe(
          (state) => state.cache.settings,
-         (current, old) => this.onStorageUpdated(current, old),
+         (current, old) => this.handleStorageUpdated(current, old),
       );
    }
 
-   private async onReady() {
+   private async handleReady() {
       const settings = storageStore.getState().getCachedValue("settings");
 
       // Initialize the actual audio sending stream
       await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
    }
 
-   private async onReset() {
+   private async handleReset() {
       this.inputDevice.close();
       this.stopAudioLoopback();
 
@@ -70,7 +70,7 @@ export class VoiceBridge extends Voice {
       this.audioLevelCheckers.clear();
    }
 
-   private async onConsumerCreated(consumer: Consumer<MediasoupAppData>) {
+   private async handleConsumerCreated(consumer: Consumer<MediasoupAppData>) {
       if (consumer.appData.mediaKind === "microphone") {
          const store = voiceStore.getState();
 
@@ -101,7 +101,7 @@ export class VoiceBridge extends Voice {
       this.refreshConsumerAudioPlayers();
    }
 
-   private async onRemoteProducerCreated(data: ProducerData): Promise<void> {
+   private async handleRemoteProducerCreated(data: ProducerData): Promise<void> {
       if (data.kind === "camera" || data.kind === "microphone") {
          await this.transport.createConsumer(data.userId, data.kind);
       }
@@ -125,7 +125,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private async onAnyProducerClosed(data: ProducerData) {
+   private async handleAnyProducerClosed(data: ProducerData) {
       const voice = voiceStore.getState();
 
       if (data.kind === "microphone") {
@@ -148,7 +148,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private onProducerCreated(producer: Producer<MediasoupAppData>) {
+   private handleProducerCreated(producer: Producer<MediasoupAppData>) {
       this.client.checkUser();
       const store = voiceStore.getState();
 
@@ -159,7 +159,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private onStorageUpdated(current: AppSettings, previous: AppSettings) {
+   private handleStorageUpdated(current: AppSettings, previous: AppSettings) {
       if (this.status !== "ready") {
          return;
       }
