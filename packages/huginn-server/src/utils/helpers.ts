@@ -10,9 +10,9 @@ import {
 import { logger } from "@huginn/backend-shared/logger";
 import {
    analytics,
+   type APIMessage,
    type APIMessageCall,
    type APIMessageReference,
-   type APIPublicUser,
    changeUrlBase,
    ChannelType,
    CONSTANTS,
@@ -75,7 +75,7 @@ export async function dispatchCallMessage(options: { authorId: Snowflake; channe
       { select: selectAllMessage },
    );
 
-   dispatchToTopic(options.channelId, "message_create", filterMessage(message));
+   dispatchToTopic(options.channelId, "message_create", filterMessage(message) as APIMessage);
 
    return message;
 }
@@ -92,9 +92,8 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T) {
+export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T): APIMessage {
    const signedAttachments = message.attachments.map(signAttachment);
-
    return {
       ...omit(message, ["call", "messageReference"]),
       ...(message.call !== null && {

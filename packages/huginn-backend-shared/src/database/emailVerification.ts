@@ -4,7 +4,7 @@ import { assertExists, prisma } from "#database";
 import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
 
-import { assertId } from "./error.ts";
+import { assertId } from "./error";
 
 export const emailVerificationExtension = Prisma.defineExtension({
    model: {

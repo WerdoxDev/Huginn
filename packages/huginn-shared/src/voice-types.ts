@@ -3,18 +3,16 @@ import type { DtlsParameters, IceCandidate, IceParameters, RtpCapabilities, RtpP
 
 import type { Snowflake } from "./snowflake";
 
-export const VoiceOperations = {
-   HELLO: 0,
-   IDENTIFY: 1,
-   HEARTBEAT: 2,
-   HEARTBEAT_ACK: 3,
-   DISPATCH: 4,
-   PING: 5,
-   PONG: 6,
-   RESUME: 7,
-} as const;
-
-export type VoiceOperations = (typeof VoiceOperations)[keyof typeof VoiceOperations];
+export enum VoiceOperations {
+   HELLO = 0,
+   IDENTIFY = 1,
+   HEARTBEAT = 2,
+   HEARTBEAT_ACK = 3,
+   DISPATCH = 4,
+   PING = 5,
+   PONG = 6,
+   RESUME = 7,
+}
 
 export type VoiceOperationTypes = {
    [VoiceOperations.HELLO]: VoiceHello;
@@ -82,7 +80,7 @@ export type VoiceWebsocketEvents = {
 
 export type VoicePayload<Event extends keyof VoiceWebsocketEvents | undefined = undefined> = Event extends undefined
    ? {
-        [K in keyof VoiceOperationTypes]: VoiceOperationTypes[K]["op"] extends typeof VoiceOperations.DISPATCH
+        [K in keyof VoiceOperationTypes]: VoiceOperationTypes[K]["op"] extends VoiceOperations.DISPATCH
            ? VoiceDispatch
            : {
                 op: K;
@@ -91,7 +89,7 @@ export type VoicePayload<Event extends keyof VoiceWebsocketEvents | undefined = 
                 ("t" extends keyof VoiceOperationTypes[K] ? { t: string } : {});
      }[keyof VoiceOperationTypes]
    : {
-        op: typeof VoiceOperations.DISPATCH;
+        op: VoiceOperations.DISPATCH;
         s?: number;
         d: VoiceWebsocketEvents[Extract<Event, keyof VoiceWebsocketEvents>];
         t: Event;
@@ -99,7 +97,7 @@ export type VoicePayload<Event extends keyof VoiceWebsocketEvents | undefined = 
 
 export type VoiceDispatch = {
    [K in keyof VoiceWebsocketEvents]: {
-      op: typeof VoiceOperations.DISPATCH;
+      op: VoiceOperations.DISPATCH;
       s?: number;
       t: K;
       d: VoiceWebsocketEvents[K];
@@ -127,18 +125,18 @@ export type ConsumerData = {
 };
 
 export type VoiceHeartbeat = {
-   op: typeof VoiceOperations.HEARTBEAT;
+   op: VoiceOperations.HEARTBEAT;
    d: VoiceHeartbeatData;
 };
 
 export type VoiceHeartbeatData = number | undefined;
 
 export type VoiceHeartbeatAck = {
-   op: typeof VoiceOperations.HEARTBEAT_ACK;
+   op: VoiceOperations.HEARTBEAT_ACK;
 };
 
 export type VoiceHello = {
-   op: typeof VoiceOperations.HELLO;
+   op: VoiceOperations.HELLO;
    d: VoiceHelloData;
 };
 
@@ -148,7 +146,7 @@ export type VoiceHelloData = {
 };
 
 export type VoiceIdentify = {
-   op: typeof VoiceOperations.IDENTIFY;
+   op: VoiceOperations.IDENTIFY;
    d: VoiceIdentifyData;
 };
 
@@ -159,11 +157,11 @@ export type VoiceIdentifyData = {
 };
 
 export type VoicePing = {
-   op: typeof VoiceOperations.PING;
+   op: VoiceOperations.PING;
 };
 
 export type VoicePong = {
-   op: typeof VoiceOperations.PONG;
+   op: VoiceOperations.PONG;
 };
 
 export type VoiceReadyData = {
@@ -173,7 +171,7 @@ export type VoiceReadyData = {
 };
 
 export type VoiceResume = {
-   op: typeof VoiceOperations.RESUME;
+   op: VoiceOperations.RESUME;
    d: VoiceResumeData;
 };
 

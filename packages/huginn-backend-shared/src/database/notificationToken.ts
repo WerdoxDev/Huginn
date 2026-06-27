@@ -4,7 +4,7 @@ import { prisma } from "#database";
 import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
 
-import { assertExists, assertId } from "./error.ts";
+import { assertExists, assertId } from "./error";
 
 export const notificationTokenExtension = Prisma.defineExtension({
    model: {

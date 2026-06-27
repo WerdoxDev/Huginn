@@ -1,7 +1,6 @@
 {
    "extends": "../../tsconfig.json",
    "compilerOptions": {
-      "module": "preserve",
       "lib": ["ESNext"],
       "esModuleInterop": true
       // "isolatedDeclarations": true

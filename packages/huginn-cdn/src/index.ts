@@ -37,7 +37,8 @@ export const main = new Elysia({ normalize: "typebox" })
       }),
    )
    .onError(({ error, code, status, path, request }) => {
-      logger.error({ error, code, path, method: request.method }, "Request error");
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = cdnOnError(error, status);
          if (returnedError) {

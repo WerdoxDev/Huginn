@@ -3,7 +3,7 @@ import { ChannelType, type Snowflake, WorkerID, analytics, idFix, recordSpanErro
 import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from "#database";
 import { DBErrorType } from "#types";
 
-import { assertId, assertObj } from "./error.ts";
+import { assertId, assertObj } from "./error";
 
 export const channelExtension = Prisma.defineExtension({
    model: {

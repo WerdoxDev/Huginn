@@ -30,7 +30,7 @@ import type { RouterData, RTCPeer } from "#utils/types";
 
 import { createRouter, createTransport, getRouterConsumers, getRouterProducers, routers, verifySession } from "#mediasoup";
 
-import { ClientSession } from "./client-session.ts";
+import { ClientSession } from "./client-session";
 
 export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload> {
    public constructor() {

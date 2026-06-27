@@ -88,7 +88,8 @@ export const app = new Elysia({
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {
-      logger.error({ error, code, path, method: request.method }, "Request error");
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
          if (returnedError) {

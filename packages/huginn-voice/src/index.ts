@@ -2,9 +2,9 @@ import { defineHooks } from "crossws";
 import { serve } from "crossws/server";
 import Elysia from "elysia";
 
-import { env } from "./env.ts";
-import { runMediasoupWorker } from "./mediasoup.ts";
-import { VoiceWebsocket } from "./voice-websocket.ts";
+import { env } from "./env";
+import { runMediasoupWorker } from "./mediasoup";
+import { VoiceWebsocket } from "./voice-websocket";
 
 await runMediasoupWorker();
 

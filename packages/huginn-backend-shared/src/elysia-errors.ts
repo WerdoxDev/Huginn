@@ -6,17 +6,14 @@ import { createErrorFactory, type ErrorFactory } from "#error-factory";
 import { CDNErrorType, DBErrorType } from "#types";
 
 export class DBError extends Error {
-   public callerName: string;
-   public type: DBErrorType;
-   public cause?: string;
-
-   public constructor(callerName: string, type: DBErrorType, cause?: string) {
+   public constructor(
+      public callerName: string,
+      public type: DBErrorType,
+      public cause?: string,
+   ) {
       super(`Database Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
          cause: cause,
       });
-      this.callerName = callerName;
-      this.type = type;
-      this.cause = cause;
    }
 
    isErrorType(type: DBErrorType): boolean {
@@ -25,16 +22,14 @@ export class DBError extends Error {
 }
 
 export class CDNError extends Error {
-   public callerName: string;
-   public type: CDNErrorType;
-   public cause?: string;
-   public constructor(callerName: string, type: CDNErrorType, cause?: string) {
+   public constructor(
+      public callerName: string,
+      public type: CDNErrorType,
+      public cause?: string,
+   ) {
       super(`CDN Error => ${callerName} => ${type}: ${cause ? `(${cause})` : ""}`, {
          cause: cause,
       });
-      this.callerName = callerName;
-      this.type = type;
-      this.cause = cause;
    }
 
    isErrorType(type: CDNErrorType): boolean {

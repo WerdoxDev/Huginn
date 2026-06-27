@@ -10,7 +10,7 @@ import { Resend } from "resend";
 
 export const env = cleanEnv(process.env, {
    CDN_LOCAL_URL: str(),
-   CDN_PUBLIC_URL: str(),
+   CDN_PUBLIC_URL: str({ default: undefined }),
    SERVER_HOST: str(),
    SERVER_PORT: port(),
    GITHUB_TOKEN: str(),
