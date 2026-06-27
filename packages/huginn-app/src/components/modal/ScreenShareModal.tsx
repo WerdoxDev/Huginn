@@ -2,8 +2,8 @@ import { Accordion } from "@base-ui/react";
 import LoadingButton from "@components/button/LoadingButton";
 import DisplayPreview from "@components/DisplayPreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
-import HuginnCheckbox from "@components/HuginnToggle";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
@@ -265,7 +265,7 @@ export default function ScreenShareModal() {
             </HuginnSelect>
 
             <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
-               <HuginnCheckbox.Toggle>Share Audio</HuginnCheckbox.Toggle>
+               <HuginnCheckbox.Input>Share Audio</HuginnCheckbox.Input>
             </HuginnCheckbox>
 
             {isAudioEnabled && activeTab === "devices" && (
@@ -292,7 +292,7 @@ export default function ScreenShareModal() {
                   <Accordion.Panel className="flex origin-top flex-col gap-y-5 transition duration-200 data-ending-style:-translate-y-5 data-ending-style:opacity-0 data-starting-style:-translate-y-5 data-starting-style:opacity-0">
                      {modal.type === "create" && (
                         <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
-                           <HuginnCheckbox.Toggle>Use Simulcast</HuginnCheckbox.Toggle>
+                           <HuginnCheckbox.Input innerClassName="bg-surface!">Use Simulcast</HuginnCheckbox.Input>
                            <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
                         </HuginnCheckbox>
                      )}

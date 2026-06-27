@@ -32,6 +32,7 @@ export const storageDefaults: StorageMap = {
       screenShareSimulcast: true,
       screenShareAudioBitrate: CONSTANTS.DEFAULT_AUDIO_BITRATE,
       screenShareVideoBitrate: CONSTANTS.DEFAULT_VIDEO_BITRATE,
+      useProxy: true,
    },
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },

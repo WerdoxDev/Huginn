@@ -307,7 +307,6 @@ function MediaGridItem(props: {
 
    useEffect(() => {
       if (!isInView || isFetched.current) return;
-      console.log(isInView);
 
       Gallery.getMediaThumbnail({ id: props.media.id, uri: props.media.uri, size: 600, quality: 80 }).then((result) => {
          if ("error" in result) return;

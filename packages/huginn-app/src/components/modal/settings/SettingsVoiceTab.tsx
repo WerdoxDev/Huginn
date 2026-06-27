@@ -1,7 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnTab from "@components/HuginnTab";
-import HuginnCheckbox from "@components/HuginnToggle";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";
 import { clamp, remap } from "@huginn/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
@@ -215,7 +214,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                </HuginnSlider>
                <div className="flex">
                   <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
-                     <HuginnCheckbox.Toggle innerClassName="bg-surface-alt">Noise Suppression</HuginnCheckbox.Toggle>
+                     <HuginnCheckbox.Input>Noise Suppression</HuginnCheckbox.Input>
                   </HuginnCheckbox>
                </div>
                <div className="bg-surface-alt h-px w-full" />
@@ -227,8 +226,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   selected={cameraDeviceOptions.find((x) => x.value === selectedCamera?.deviceId)}
                >
                   <HuginnSelect.Label>Video Device</HuginnSelect.Label>
-                  <HuginnSelect.List className="w-full">
-                     <HuginnSelect.ItemsWrapper className="w-80">
+                  <HuginnSelect.List className="w-full!">
+                     <HuginnSelect.ItemsWrapper>
                         {cameraDeviceOptions?.map((x) => (
                            <HuginnSelect.Item key={x.value} item={x} />
                         ))}

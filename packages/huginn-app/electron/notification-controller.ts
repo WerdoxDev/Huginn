@@ -5,7 +5,7 @@ export class NotificationController {
    private current: Notification | null = null;
 
    public sendNotification(options: Electron.NotificationConstructorOptions, onClick?: () => void) {
-      analytics.startActiveSpan("send notification", (span) => {
+      analytics.startActiveSpan("notificationController.sendNotification", (span) => {
          try {
             const notification = new Notification(options);
             if (options.title) span.setAttribute("notification.title", options.title);

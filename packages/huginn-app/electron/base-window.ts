@@ -1,7 +1,5 @@
-import { log } from "@huginn/shared";
 import { BrowserWindow, type BrowserWindowConstructorOptions } from "electron";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 
 export abstract class BaseWindow {
    private readonly _window: BrowserWindow;
@@ -15,20 +13,17 @@ export abstract class BaseWindow {
       if (baseUrl) {
          const url = `${baseUrl}/app/#/${startPath}`;
 
-         log("app:electron", "default", `${this.name}`, "url:", url);
          this._window.loadURL(url);
       } else {
          const filePath = path.join(import.meta.dirname, "../dist/index.html");
-         const url = `${filePath}/#/${startPath}`;
 
-         log("app:electron", "default", `${this.name}`, "url:", url);
          this._window.loadFile(filePath, { hash: `/${startPath}` });
       }
 
-      this.eventListeners?.(this._window);
+      this.registerEvents?.(this._window);
    }
 
-   public eventListeners?(window: BrowserWindow): void;
+   public registerEvents?(window: BrowserWindow): void;
 
    public get window() {
       return this._window;

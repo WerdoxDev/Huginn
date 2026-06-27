@@ -12,7 +12,7 @@ const CheckboxContext = createContext<{
    checked: false,
 });
 
-export default function HuginnToggle(props: { checked: boolean; onChange?: (checked: boolean) => void; children?: ReactNode; className?: string }) {
+export default function HuginnCheckbox(props: { checked: boolean; onChange?: (checked: boolean) => void; children?: ReactNode; className?: string }) {
    const [id, _setId] = useState(() => snowflake.generateString(WorkerID.APP));
 
    return (
@@ -22,7 +22,7 @@ export default function HuginnToggle(props: { checked: boolean; onChange?: (chec
    );
 }
 
-function Toggle(props: { className?: string; children?: ReactNode; innerClassName?: string }) {
+function Input(props: { className?: string; children?: ReactNode; innerClassName?: string }) {
    const checkboxContext = useContext(CheckboxContext);
    return (
       <Checkbox.Root
@@ -33,7 +33,7 @@ function Toggle(props: { className?: string; children?: ReactNode; innerClassNam
          <div className="text-text text-xs font-medium uppercase opacity-90 select-none">{props.children}</div>
          <div
             className={clsx(
-               "bg-surface group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
+               "bg-surface-alt group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
                props.innerClassName,
             )}
          >
@@ -43,4 +43,4 @@ function Toggle(props: { className?: string; children?: ReactNode; innerClassNam
    );
 }
 
-HuginnToggle.Toggle = Toggle;
+HuginnCheckbox.Input = Input;

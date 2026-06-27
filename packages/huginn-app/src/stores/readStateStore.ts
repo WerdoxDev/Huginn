@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { analytics, ChannelType, MessageType, RelationshipType, type Snowflake } from "@huginn/shared";
+import { analytics, ChannelType, MessageType, recordSpanError, RelationshipType, type Snowflake } from "@huginn/shared";
 import { playAudio } from "@lib/audio-player";
 import { listenEvent } from "@lib/event-handler";
 import { sendNotification } from "@lib/notification";
@@ -100,63 +100,88 @@ export function initReadStateStore() {
    });
 
    const unlisten2 = listenEvent("message_added", async (data) => {
-      if (!data.self && !data.visible && !data.message.isPreview) {
-         const author = getUser(data.message.authorId);
-         const mentions = getUsers(data.message.mentions);
-         const channel = findChannel(getChannels(), data.message.channelId);
+      analytics.startActiveSpan("readStateStore.message_added", async (span) => {
+         try {
+            span.setAttributes({
+               "message.channel_id": data.message.channelId,
+               "message.author_id": data.message.authorId,
+               "message.is_preview": data.message.isPreview,
+               "message.is_self": data.self,
+               "message.visible": data.visible,
+            });
 
-         if (windowStore.getState().environment === "desktop") {
-            let content;
-            const username = author?.displayName ?? "Unknown User";
-            const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channel.name})` : "");
+            if (!data.self && !data.visible && !data.message.isPreview) {
+               const author = getUser(data.message.authorId);
+               const mentions = getUsers(data.message.mentions);
+               const channel = findChannel(getChannels(), data.message.channelId);
 
-            switch (data.message.type) {
-               case MessageType.DEFAULT:
-                  if (data.message.content) {
-                     content = data.message.content;
-                  } else if (data.message.attachments.length !== 0) {
-                     content = `Uploaded ${data.message.attachments[0].filename}`;
+               span.setAttributes({ "message.type": data.message.type });
+
+               if (windowStore.getState().environment === "desktop") {
+                  let content = "";
+                  const username = author?.displayName ?? "Unknown User";
+                  const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channel.name})` : "");
+
+                  switch (data.message.type) {
+                     case MessageType.DEFAULT:
+                        if (data.message.content) {
+                           content = data.message.content;
+                        } else if (data.message.attachments.length !== 0) {
+                           content = `Uploaded ${data.message.attachments[0].filename}`;
+                        }
+                        break;
+                     case MessageType.RECIPIENT_ADD:
+                        content = `${username} added ${mentions[0].displayName}`;
+                        break;
+                     case MessageType.RECIPIENT_REMOVE:
+                        content = `${username} removed ${mentions[0].displayName}`;
+                        break;
+                     case MessageType.CALL:
+                        content = `${username} started a call`;
+                        break;
+                     case MessageType.CHANNEL_NAME_CHANGED:
+                        content = `${username} changed the channel name to ${data.message.content}`;
+                        break;
+                     case MessageType.CHANNEL_ICON_CHANGED:
+                        content = `${username} changed the channel icon`;
+                        break;
+                     case MessageType.CHANNEL_OWNER_CHANGED:
+                        content = `${username} promoted ${mentions[0].displayName} to Channel Owner`;
+                        break;
                   }
-                  break;
-               case MessageType.RECIPIENT_ADD:
-                  content = `${username} added ${mentions[0].displayName}`;
-                  break;
-               case MessageType.RECIPIENT_REMOVE:
-                  content = `${username} removed ${mentions[0].displayName}`;
-                  break;
-               case MessageType.CALL:
-                  content = `${username} started a call`;
-                  break;
-               case MessageType.CHANNEL_NAME_CHANGED:
-                  content = `${username} changed the channel name to ${data.message.content}`;
-                  break;
-               case MessageType.CHANNEL_ICON_CHANGED:
-                  content = `${username} changed the channel icon`;
-                  break;
-               case MessageType.CHANNEL_OWNER_CHANGED:
-                  content = `${username} promoted ${mentions[0].displayName} to Channel Owner`;
-                  break;
+
+                  const theme = themeStore.getState().theme;
+
+                  let dataURL;
+                  if (author && author.avatar) {
+                     const url = client.cdn.avatar(author?.id, author?.avatar, { format: "png", size: 64 });
+                     dataURL = await getDataURLFromSrc(url);
+                     analytics.log({ body: "notification icon conversion", level: "info", attributes: { url, length: dataURL.length } });
+                  } else {
+                     dataURL = getSolidColorDataURL(theme["primary-700"], 64);
+                     analytics.log({ body: "notification default icon", level: "info", attributes: { theme, length: dataURL.length } });
+                  }
+
+                  span.setAttributes({
+                     "notification.icon_length": dataURL.length,
+                     "notification.content_length": content.length ?? 0,
+                     "notification.title_length": title.length ?? 0,
+                     "notification.channel_type": channel?.type ?? "null",
+                  });
+
+                  sendNotification(data.message.channelId, title, content ?? "", dataURL);
+               }
+
+               playAudio("notification", true);
+
+               store.getState().increaseUnreadCount(data.message.channelId);
             }
-
-            const theme = themeStore.getState().theme;
-
-            let dataURL;
-            if (author && author.avatar) {
-               const url = client.cdn.avatar(author?.id, author?.avatar, { format: "png", size: 64 });
-               dataURL = await getDataURLFromSrc(url);
-               analytics.log({ body: "notification icon conversion", level: "info", attributes: { url, length: dataURL.length } });
-            } else {
-               dataURL = getSolidColorDataURL(theme["primary-700"], 64);
-               analytics.log({ body: "notification default icon", level: "info", attributes: { theme, length: dataURL.length } });
-            }
-
-            sendNotification(data.message.channelId, title, content ?? "", dataURL);
+         } catch (e) {
+            recordSpanError(e);
+         } finally {
+            span.end();
          }
-
-         playAudio("notification", true);
-
-         store.getState().increaseUnreadCount(data.message.channelId);
-      }
+      });
    });
 
    return () => {

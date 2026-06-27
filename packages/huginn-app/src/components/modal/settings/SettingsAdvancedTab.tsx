@@ -1,5 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnLabel from "@components/HuginnLabel";
 import HuginnInput from "@components/input/HuginnInput";
 import { type ConnectionStatus, useConnectionStatus } from "@hooks/useConnectionStatus";
@@ -284,6 +285,10 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       }
    });
 
+   const handleUseProxyChanged = useEffectEvent(async (value: boolean) => {
+      await setStorageValue("settings", { ...settings, useProxy: value });
+   });
+
    useEffect(() => {
       return () => {
          if (props.onChange && shouldRestart()) {
@@ -317,7 +322,7 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
       <div className="flex w-full flex-col items-center">
          <div className="flex w-full max-w-100 flex-col gap-y-5">
             <div>
-               <div className="text-text mb-2 text-xs font-medium uppercase opacity-90 select-none">Presets</div>
+               <HuginnLabel>Hostname Presets</HuginnLabel>
                <div className="flex flex-wrap items-center gap-2">
                   {presets.map((p) => (
                      <PresetItem
@@ -390,6 +395,10 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                   </HuginnButton>
                )}
             </form>
+            <div className="bg-surface-alt h-px w-full" />
+            <HuginnCheckbox checked={settings.useProxy} onChange={handleUseProxyChanged}>
+               <HuginnCheckbox.Input>Use System Proxy</HuginnCheckbox.Input>
+            </HuginnCheckbox>
          </div>
       </div>
    );

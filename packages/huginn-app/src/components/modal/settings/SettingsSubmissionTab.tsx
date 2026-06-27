@@ -2,7 +2,6 @@ import type { ProcessInfo } from "native-addon";
 
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnIcon from "@components/HuginnIcon";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
@@ -162,8 +161,8 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                         Not seeing what you're doing? Try adding it here. And if your application gets verified, we'll show your contribution!
                      </div>
                      <HuginnSelect onChange={onApplicationChanged} selected={selectedApplication}>
-                        <HuginnSelect.List className="bg-surface-deep w-full rounded-md!" placeholder="Select an application">
-                           <HuginnSelect.ItemsWrapper className="w-(--button-width)">
+                        <HuginnSelect.List className="bg-surface-deep w-full! rounded-md!" placeholder="Select an application">
+                           <HuginnSelect.ItemsWrapper>
                               {applicationOptions.map((x) => (
                                  <HuginnSelect.Item key={x.value} item={x} />
                               ))}

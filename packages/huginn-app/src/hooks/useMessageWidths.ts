@@ -48,10 +48,10 @@ export function useMessageWidths(options: {
          return;
       }
 
-      const observer = new ResizeObserver(() => updateWidths());
+      const observer = new ResizeObserver(() => requestAnimationFrame(() => updateWidths()));
       observer.observe(root);
 
-      const extrasObserver = new ResizeObserver(() => updateWidths());
+      const extrasObserver = new ResizeObserver(() => requestAnimationFrame(() => updateWidths()));
       if (extrasRef.current) {
          extrasObserver.observe(extrasRef.current);
       }

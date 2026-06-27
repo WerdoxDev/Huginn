@@ -93,6 +93,9 @@ export const electronAPI = {
    openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),
    closeVoiceDebug: () => ipcRenderer.send("voice-debug:close"),
    isVoiceDebugOpen: () => ipcRenderer.invoke("voice-debug:is-open") as Promise<boolean>,
+
+   // App
+   setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

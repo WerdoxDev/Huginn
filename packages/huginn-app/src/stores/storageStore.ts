@@ -59,6 +59,8 @@ export async function initStorageStoreEarly() {
    }
 
    store.setState({ cache: cache });
+
+   registerChangeHandlers();
 }
 
 export function initStorageStoreClient() {
@@ -116,6 +118,17 @@ export async function updateKnownApplications() {
 
       store.getState().setValue("known-applications", finalFile);
    }
+}
+
+function registerChangeHandlers() {
+   store.subscribe(
+      (state) => state.cache,
+      async (state, prevState) => {
+         if (state.settings.useProxy !== prevState.settings?.useProxy) {
+            await window.electronAPI.setProxy(state.settings.useProxy);
+         }
+      },
+   );
 }
 
 export function useStorageStore() {

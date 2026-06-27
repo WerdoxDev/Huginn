@@ -1,4 +1,4 @@
-import HuginnCheckbox from "@components/HuginnToggle";
+import HuginnCheckbox from "@components/HuginnCheckbox";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -173,7 +173,7 @@ function KeybindDisplay(props: {
                   checked={props.isEnabled}
                   onChange={() => props.onChange(props.type, props.combination, !props.isEnabled)}
                >
-                  <HuginnCheckbox.Toggle />
+                  <HuginnCheckbox.Input innerClassName="bg-surface!" />
                </HuginnCheckbox>
             </Tooltip.Trigger>
          </Tooltip>

@@ -21,7 +21,6 @@ export default function ChannelName() {
    const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
    function handleClick() {
-      console.log(channel?.type === ChannelType.DM && otherUsers[0]);
       if (channel?.type === ChannelType.DM && otherUsers[0]) {
          updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } });
       } else {
