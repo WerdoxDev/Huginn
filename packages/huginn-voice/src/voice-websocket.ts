@@ -30,7 +30,7 @@ import type { RouterData, RTCPeer } from "#utils/types";
 
 import { createRouter, createTransport, getRouterConsumers, getRouterProducers, routers, verifySession } from "#mediasoup";
 
-import { ClientSession } from "./client-session";
+import { ClientSession } from "./client-session.ts";
 
 export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload> {
    public constructor() {
@@ -50,7 +50,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                false,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -117,7 +117,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                }
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -184,7 +184,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                   break;
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -235,7 +235,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -378,7 +378,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                { excludeSession: session },
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -487,7 +487,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                { excludeSession: session },
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -546,7 +546,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -601,7 +601,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -660,7 +660,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -750,7 +750,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                { excludeSession: session },
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -836,7 +836,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                { excludeSession: session },
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
@@ -936,7 +936,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                false,
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -963,7 +963,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
             result.oldSession.send({ op: VoiceOperations.DISPATCH, t: "resumed", d: undefined }, true, false);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

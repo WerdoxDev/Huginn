@@ -7,7 +7,7 @@ import mediasoup from "mediasoup";
 import type { ClientSession } from "#client-session";
 import type { RouterData } from "#utils/types";
 
-import { envs } from "#index";
+import { env } from "./env.ts";
 
 export const routers = new Map<string, RouterData>();
 
@@ -35,13 +35,13 @@ let worker: Worker;
 let webRtcServer: WebRtcServer;
 
 export async function runMediasoupWorker() {
-   return analytics.startActiveSpan("mediasoup.runMediasoupWorker", async () => {
+   return analytics.startActiveSpan("mediasoup.runMediasoupWorker", async (span) => {
       try {
          worker = await mediasoup.createWorker({
             logLevel: "warn",
          });
 
-         const listenInfos = envs.MEDIA_LISTEN_INFOS?.trim()
+         const listenInfos = env.MEDIA_LISTEN_INFOS?.trim()
             .split(";")
             .map((x) => {
                const split = x.trim().split(":");

@@ -18,6 +18,8 @@
       "strict": true,
       "skipLibCheck": true,
       "verbatimModuleSyntax": true,
-      "noEmit": true
+      "noEmit": true,
+      "rewriteRelativeImportExtensions": true,
+      "erasableSyntaxOnly": true,
    }
 }
