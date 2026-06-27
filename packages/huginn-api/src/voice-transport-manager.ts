@@ -161,7 +161,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                await this.restartIce("recv");
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -200,7 +200,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.device = new mediasoupClient.Device();
             await this.device.load({ routerRtpCapabilities: rtpCapabilities });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -258,7 +258,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             transport.on("connectionstatechange", async (d) => await this.onTransportStateChanged(d, transport.direction));
             this.checkAndSetStatus();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -298,7 +298,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             transport.on("connectionstatechange", async (d) => await this.onTransportStateChanged(d, transport.direction));
             this.checkAndSetStatus();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -327,7 +327,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             return (await response.json()).iceServers;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             return undefined;
          } finally {
             span.end();
@@ -370,7 +370,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             return producer;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -405,7 +405,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                userId: producer.appData.userId,
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -468,7 +468,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             return consumer;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -509,7 +509,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                userId: consumer.appData.userId,
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -545,7 +545,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             await transport.restartIce({ iceParameters: result.iceParameters });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -608,7 +608,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             await producer.replaceTrack({ track });
             this.emit("producer_updated", { id: producer.id, kind: producer.appData.mediaKind, track });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -658,7 +658,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.remoteProducers.set(producer.producerId, producer);
             this.emit("remote_producer_created", producer);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -680,7 +680,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.remoteConsumers.set(consumer.consumerId, consumer);
             this.emit("remote_consumer_created", consumer);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -702,7 +702,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.remoteProducers.delete(producerId);
             this.emit("remote_producer_closed", producer);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -724,7 +724,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.remoteConsumers.delete(consumerId);
             this.emit("remote_consumer_closed", consumer);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -740,7 +740,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.sendTransport?.close();
             this.recvTransport?.close();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
          } finally {
             this.device = undefined;
             this.sendTransport = undefined;

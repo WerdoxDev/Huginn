@@ -74,7 +74,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
                });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -125,7 +125,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
                frameRate: newSettings.frameRate,
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -170,7 +170,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
 
             this.emit("video_bitrate_updated", { maxBitrate: clampedBitrate });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -211,7 +211,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
 
             this.emit("audio_bitrate_updated", { maxBitrate: clampedBitrate });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -244,7 +244,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
                await this.updateVideoBitrate(maxBitrate);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -264,7 +264,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          try {
             await this.transport.replaceProducerTrack("stream_video", track);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -284,7 +284,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          try {
             await this.transport.replaceProducerTrack("stream_audio", track);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -302,7 +302,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          try {
             await this.transport.closeProducer("stream_audio");
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -320,7 +320,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          try {
             await this.transport.closeProducer("stream_video");
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -341,7 +341,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          try {
             await Promise.all([hasAudio && this.transport.closeProducer("stream_audio"), hasVideo && this.transport.closeProducer("stream_video")]);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

@@ -104,7 +104,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             this.socket.onmessage = (e) => this.onMessage(e);
             this.socket.onerror = () => this.onError();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -121,7 +121,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
             this.hardReset();
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -137,7 +137,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             this.setStatus("connected");
             this.emit("connected", undefined);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -177,7 +177,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -202,7 +202,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
             this.connect(this.connectionData.token, this.connectionData.channelId, this.connectionData.guildId);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -418,7 +418,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -454,7 +454,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -491,7 +491,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -526,7 +526,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -565,7 +565,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -600,7 +600,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -635,7 +635,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -669,7 +669,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                });
             });
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

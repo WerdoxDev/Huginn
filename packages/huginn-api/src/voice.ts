@@ -73,7 +73,7 @@ export class Voice extends EventEmitter<Events> {
                   await this.transport.checkAndRestartIce();
                }
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -121,7 +121,7 @@ export class Voice extends EventEmitter<Events> {
                   this.transport.addRemoteConsumer(consumer);
                }
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -187,7 +187,7 @@ export class Voice extends EventEmitter<Events> {
                   }
                }
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -211,7 +211,7 @@ export class Voice extends EventEmitter<Events> {
                   await this.transport.checkAndRestartIce();
                }
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -230,7 +230,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -250,7 +250,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -269,7 +269,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendCloseProducer(d.id);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -289,7 +289,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendCreateConsumer(d.producerId, d.transportId, d.rtpCapabilities);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -308,7 +308,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendResumeConsumer(d.id);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -327,7 +327,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendCloseConsumer(d.id);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
@@ -346,7 +346,7 @@ export class Voice extends EventEmitter<Events> {
                const result = await this.signaling.sendRestartIce(d.transportId);
                d.callback(result);
             } catch (e) {
-               recordSpanError(e as Error);
+               recordSpanError(e);
                throw e;
             } finally {
                span.end();
