@@ -1,8 +1,7 @@
 {
    "extends": "../../tsconfig.json",
    "compilerOptions": {
-      "lib": ["ESNext"],
-      "baseUrl": "./"
+      "lib": ["ESNext", "DOM"]
       // "isolatedDeclarations": true
    },
    "include": ["src"]
