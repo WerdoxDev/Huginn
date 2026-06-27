@@ -1,9 +1,10 @@
-import { envs } from "#setup";
-import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { getFileHash, resolveImage, toArrayBuffer, type APIPostApplicationIconJSONBody } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
+
+import { env } from "#setup";
+import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("POST /api/applications/icon", () => {
    test.skipIf(!isCDNRunning)("should upload an application's icon to cdn when request is successful", async () => {
@@ -17,7 +18,7 @@ describe("POST /api/applications/icon", () => {
          applicationId: undefined,
       } as APIPostApplicationIconJSONBody);
 
-      const cdnIconData = await resolveImage(new URL(`/cdn/application-icons/${iconHash}.webp`, envs.CDN_LOCAL_URL!).toString());
+      const cdnIconData = await resolveImage(new URL(`/cdn/application-icons/${iconHash}.webp`, env.CDN_LOCAL_URL!).toString());
       expect(cdnIconData).toBeDefined();
    });
 });

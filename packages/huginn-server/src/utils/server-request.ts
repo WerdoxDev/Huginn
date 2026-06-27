@@ -1,5 +1,4 @@
 import { createToken } from "@huginn/backend-shared";
-import { logCDNRequest } from "@huginn/runtime-shared";
 import {
    HTTPError,
    type InternalRequest,
@@ -12,10 +11,10 @@ import {
    analytics,
 } from "@huginn/shared";
 
-import { envs } from "#setup";
+import { env } from "#setup";
 
 export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = {}) {
-   if (!envs.CDN_LOCAL_URL) {
+   if (!env.CDN_LOCAL_URL) {
       throw new Error("CDN Root was not configured");
    }
 
@@ -24,7 +23,7 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
    const traceparent = analytics.getTraceparent();
    return (await request({
       ...options,
-      root: envs.CDN_LOCAL_URL,
+      root: env.CDN_LOCAL_URL,
       method: "POST",
       fullRoute,
       throw: true,

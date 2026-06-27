@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import * as semver from "semver";
 
 import { octokit } from "#setup";
-import { envs } from "#setup";
+import { env } from "#setup";
 import { getAllTags, getReleaseByTag } from "#utils/route-utils";
 
 export const getWinUpdate = new Elysia().get(
@@ -32,8 +32,8 @@ export const getWinUpdate = new Elysia().get(
       }
 
       const latestRelease = await octokit.rest.repos.getReleaseByTag({
-         owner: envs.REPO_OWNER,
-         repo: envs.REPO,
+         owner: env.REPO_OWNER,
+         repo: env.REPO,
          tag: latestTag.name,
       });
 

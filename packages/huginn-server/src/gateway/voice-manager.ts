@@ -32,7 +32,7 @@ export class VoiceManager {
 
             dispatchToTopic(channelId, "call_create", callState);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -67,7 +67,7 @@ export class VoiceManager {
                span.setAttributes({ "call.voice_states_sent": voiceStatesSent });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -93,7 +93,7 @@ export class VoiceManager {
 
             this.checkForEmptyCall(channelId);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -133,7 +133,7 @@ export class VoiceManager {
                voiceLogger.info({ channelId }, "call deleted");
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -219,7 +219,7 @@ export class VoiceManager {
                this.checkForEmptyCall(previousChannelId);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -246,7 +246,7 @@ export class VoiceManager {
 
             return callStates;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -273,7 +273,7 @@ export class VoiceManager {
 
             return voiceStates;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -294,7 +294,7 @@ export class VoiceManager {
 
             return voiceState;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

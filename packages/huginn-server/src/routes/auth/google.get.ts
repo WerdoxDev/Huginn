@@ -1,7 +1,8 @@
-import { envs } from "#setup";
 import { forbidden, tryCatch } from "@huginn/backend-shared";
 import { decodeBase64 } from "@std/encoding";
 import Elysia, { t } from "elysia";
+
+import { env } from "#setup";
 
 const querySchema = t.Object({
    state: t.String(),
@@ -12,7 +13,7 @@ const querySchema = t.Object({
 export const getGoogle = new Elysia().get(
    "/api/auth/google",
    async ({ query: { flow, state, redirect_url }, status, redirect, cookie: { oauth }, request }) => {
-      if (!envs.GOOGLE_CLIENT_ID || !envs.SESSION_PASSWORD) {
+      if (!env.GOOGLE_CLIENT_ID || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
 
@@ -31,7 +32,7 @@ export const getGoogle = new Elysia().get(
          return forbidden(status);
       }
 
-      // const allowedOrigins = envs.ALLOWED_ORIGINS?.split(",");
+      // const allowedOrigins = env.ALLOWED_ORIGINS?.split(",");
       // if (redirect_url && !allowedOrigins?.some((x) => redirect_url.includes(x))) {
       //    return forbidden(status);
       // }
@@ -47,7 +48,7 @@ export const getGoogle = new Elysia().get(
       oauth.value = { state, flow, origin: host, redirect_url };
 
       const authEndpoint = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-      authEndpoint.searchParams.set("client_id", envs.GOOGLE_CLIENT_ID);
+      authEndpoint.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
       authEndpoint.searchParams.set("redirect_uri", `${host}/api/auth/callback/google`);
       authEndpoint.searchParams.set("access_type", "offline");
       authEndpoint.searchParams.set("response_type", "code");

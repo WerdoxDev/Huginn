@@ -57,13 +57,13 @@ import { patchUserSettings } from "#routes/users/@me/settings.patch";
 import { postVerifyEmail } from "#routes/users/@me/verify-email.post";
 import { getUser } from "#routes/users/[userId].get";
 import { getUserProfile } from "#routes/users/[userId]/profile.get";
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { getIndex } from "./routes";
 
 export const app = new Elysia({
    cookie: {
-      secrets: envs.SESSION_PASSWORD,
+      secrets: env.SESSION_PASSWORD,
       sign: ["oauth"],
       httpOnly: true,
       secure: true,
@@ -77,11 +77,11 @@ export const app = new Elysia({
    .use(globalPlugin)
    .use(
       opentelemetry({
-         serviceName: envs.OTEL_SERVICE_NAME,
+         serviceName: env.OTEL_SERVICE_NAME,
          spanProcessors: [
             new BatchSpanProcessor(
                new OTLPTraceExporter({
-                  url: envs.OTLP_TRACE_URL,
+                  url: env.OTLP_TRACE_URL,
                }),
             ),
          ],
@@ -181,8 +181,8 @@ export const app = new Elysia({
    .listen(
       {
          websocket: ws.websocket,
-         hostname: envs.SERVER_HOST,
-         port: envs.SERVER_PORT,
+         hostname: env.SERVER_HOST,
+         port: env.SERVER_PORT,
          idleTimeout: 40,
       },
       (server) => {

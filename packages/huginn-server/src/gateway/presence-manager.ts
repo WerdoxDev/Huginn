@@ -63,7 +63,7 @@ export class PresenceManager {
 
             this.sendSessionUpdate(userId, presence);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -137,7 +137,7 @@ export class PresenceManager {
                span.setAttributes({ "presence.update_skipped": true });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -216,7 +216,7 @@ export class PresenceManager {
                "active sessions",
             );
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -246,7 +246,7 @@ export class PresenceManager {
 
             return presences;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -268,7 +268,7 @@ export class PresenceManager {
 
             return presence;
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -297,7 +297,7 @@ export class PresenceManager {
                presenceLogger.info({ userId, whomToSendId }, "sendToUser skipped - no presence found");
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

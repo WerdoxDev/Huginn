@@ -27,7 +27,7 @@ import {
    type Snowflake,
 } from "@huginn/shared";
 
-import { envs } from "#setup";
+import { env } from "#setup";
 
 import { dispatchToTopic } from "./gateway-utils";
 import { sendPushNotification } from "./route-utils";
@@ -140,7 +140,7 @@ export function signAttachment<A extends { url: string }>(attachment: A): A {
    const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
    const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
 
-   const hasher = new Bun.CryptoHasher("sha256", envs.CDN_HMAC_SECRET);
+   const hasher = new Bun.CryptoHasher("sha256", env.CDN_HMAC_SECRET);
    hasher.update(`${attachment.url}:${expiry}`);
    const signature = hasher.digest("hex");
 
@@ -170,7 +170,7 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
          const username = message.author.displayName ?? message.author.username;
          const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channelName})` : "");
          const firstAttachment = message.attachments[0] ? signAttachment(message.attachments[0]) : undefined;
-         const imageUrl = envs.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, envs.CDN_PUBLIC_URL) : undefined;
+         const imageUrl = env.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, env.CDN_PUBLIC_URL) : undefined;
 
          span.setAttributes({
             "notification.title": title,
@@ -192,7 +192,7 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
             ),
          );
       } catch (e) {
-         recordSpanError(e as Error);
+         recordSpanError(e);
       } finally {
          span.end();
       }

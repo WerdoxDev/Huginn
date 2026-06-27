@@ -58,7 +58,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             session.send(helloData, false, false);
             // oxlint-disable-next-line no-unused-vars
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             session.peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
          } finally {
             span.end();
@@ -99,7 +99,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                span.setAttribute("session.user.voice_state_cleared", true);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -155,7 +155,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                   session.peer.close(GatewayCode.UNKNOWN_OPCODE, "UNKNOWN_OPCODE");
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -239,7 +239,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             session.send(readyData, true, false);
             this.presenceManager.setUserPresence(user.id, session, settings);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -276,7 +276,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             result.oldSession.send(resumedData, true, false);
             this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -310,7 +310,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                dispatchToTopic(session.sessionId, "voice_server_update", { token });
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();
@@ -334,7 +334,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                this.presenceManager.updateUserPresence(userId, session, undefined, data.status, data.activities);
             }
          } catch (e) {
-            recordSpanError(e as Error);
+            recordSpanError(e);
             throw e;
          } finally {
             span.end();

@@ -28,6 +28,7 @@
       "@types/markdown-it": "^14.1.2",
       "crossws": "^0.4.4",
       "elysia": "^1.4.29",
+      "envalid": "^8.2.0",
       "firebase-admin": "^14.0.0",
       "jsdom": "^29.1.1",
       "markdown-it": "^14.1.1",
