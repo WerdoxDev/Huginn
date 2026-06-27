@@ -90,6 +90,14 @@ export class RuntimeAnalytics extends Analytics {
          body: options.body,
          attributes: mergedAttributes,
       });
+
+      if (options.level === "error" || options.level === "fatal") {
+         console.error(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+      } else if (options.level === "warn") {
+         console.warn(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
+      } else {
+         console.log(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
+      }
    }
 
    public reset(): void {

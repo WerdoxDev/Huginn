@@ -90,9 +90,9 @@ export class WebAnalytics extends Analytics {
       if (options.level === "error" || options.level === "fatal") {
          console.error(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
       } else if (options.level === "warn") {
-         console.warn(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+         console.warn(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
       } else {
-         console.log(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
+         console.log(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
       }
    }
 
