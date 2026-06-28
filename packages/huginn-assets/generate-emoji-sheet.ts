@@ -1,24 +1,8 @@
+import type { EmojiMapMeta, EmojiPosition } from "@huginn/shared";
+
 import fs from "fs/promises";
 import path from "path";
 import sharp, { type OverlayOptions } from "sharp";
-
-export type EmojiPosition = {
-   x: number;
-   y: number;
-   row: number;
-   col: number;
-};
-
-export type EmojiMapMeta = {
-   cellSize: number;
-   padding: number;
-   step: number;
-   cols: number;
-   rows: number;
-   sheetWidth: number;
-   sheetHeight: number;
-   count: number;
-};
 
 type EmojiMap = {
    meta: EmojiMapMeta;

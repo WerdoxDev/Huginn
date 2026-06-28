@@ -5,11 +5,10 @@ import HuginnInput from "@components/input/HuginnInput";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { getEmojiById, type Emoji, getAllEmojis } from "@huginn/shared";
+import { type Emoji, getAllEmojis, getEmojiByCodepoint, getEmojiBySlug } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
 import emojiMessages from "emojibase-data/en/messages.json";
-// import emojiMeta from "emojibase-data/meta/groups.json";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { SelectItem } from "@/types";
@@ -107,7 +106,7 @@ export default function EmojiPickerPanel(props: {
    const categoryScrollRef = useRef<HTMLDivElement>(null);
    const activeStickyIndexRef = useRef(0);
    const [activeGroupId, setActiveGroupId] = useState<number | null>(0);
-   const [recentEmojiIds, setRecentEmojiIds] = useState(getRecentEmojis());
+   const [recentEmojiSlugs, setRecentEmojiSlugs] = useState(getRecentEmojis());
    const [selectedTone, setSelectedTone] = useState<SelectItem<number>>(toneOptions[0]);
    const isMobile = useIsMobile();
    const groupNames: Record<number, string> = useMemo(() => {
@@ -117,9 +116,9 @@ export default function EmojiPickerPanel(props: {
    const groupedEmojis = useMemo(() => {
       const groups: Record<number, Emoji[]> = {};
 
-      if (recentEmojiIds.length > 0) {
-         groups[RECENT_GROUP_ID] = recentEmojiIds.flatMap((id) => {
-            const emoji = getEmojiById(id);
+      if (recentEmojiSlugs.length > 0) {
+         groups[RECENT_GROUP_ID] = recentEmojiSlugs.flatMap((slug) => {
+            const emoji = getEmojiBySlug(slug);
             return emoji ? [{ ...emoji, group: RECENT_GROUP_ID }] : [];
          });
       }
@@ -132,10 +131,8 @@ export default function EmojiPickerPanel(props: {
          (groups[group] ??= []).push(emoji);
       }
 
-      console.log(groups, getAllEmojis());
-
       return groups;
-   }, [recentEmojiIds, selectedTone]);
+   }, [recentEmojiSlugs, selectedTone]);
 
    const allRows = useMemo<VirtualRow[]>(() => {
       const result: VirtualRow[] = [];
@@ -218,8 +215,8 @@ export default function EmojiPickerPanel(props: {
    }
 
    function handleEmojiClick(emoji: Emoji) {
-      saveRecentEmoji(emoji.id);
-      setRecentEmojiIds(getRecentEmojis());
+      saveRecentEmoji(emoji.slugs[0]);
+      setRecentEmojiSlugs(getRecentEmojis());
       props.onEmojiSelect?.(emoji.slugs[0]);
    }
 
@@ -330,16 +327,16 @@ export default function EmojiPickerPanel(props: {
                                     <div className="grid grid-cols-8 place-items-center">
                                        {row.emojis.map((entry) => (
                                           <button
-                                             key={entry.id}
+                                             key={entry.slugs[0]}
                                              type="button"
                                              className={clsx(
                                                 "z-10 flex size-10 cursor-pointer items-center justify-center rounded-md transition-transform",
-                                                lastHoveredEmoji?.id === entry.id ? "bg-surface" : "",
+                                                lastHoveredEmoji?.slugs[0] === entry.slugs[0] ? "bg-surface" : "",
                                              )}
                                              onClick={() => handleEmojiClick(entry)}
                                              onMouseEnter={() => setLastHoveredEmoji(entry)}
                                           >
-                                             <Emoji id={entry.id} size={32} />
+                                             <Emoji codepoint={entry.codepoint} size={32} />
                                           </button>
                                        ))}
                                     </div>
@@ -354,7 +351,7 @@ export default function EmojiPickerPanel(props: {
                         <div className="bg-surface h-px shrink-0" />
                         {lastHoveredEmoji && (
                            <div className="flex h-12 w-full shrink-0 items-center gap-x-2 px-3.5">
-                              <Emoji id={lastHoveredEmoji.id} size={32} />
+                              <Emoji codepoint={lastHoveredEmoji.codepoint} size={32} />
                               <div className="text-sm text-white">{lastHoveredEmoji.slugs.join(" ")}</div>
                            </div>
                         )}
@@ -375,14 +372,14 @@ export default function EmojiPickerPanel(props: {
    );
 }
 
-function Emoji(props: { id: string; size: number }) {
-   const styles = useMemo(() => getEmojiSprite(props.id), [props.id]);
+function Emoji(props: { codepoint: string; size: number }) {
+   const styles = useMemo(() => getEmojiSprite(props.codepoint), [props.codepoint]);
 
    return <div style={{ ...styles, width: props.size, height: props.size }} className="shrink-0" />;
 }
 
-function getEmojiSprite(id: string) {
-   const emoji = getEmojiById(id);
+function getEmojiSprite(codepoint: string) {
+   const emoji = getEmojiByCodepoint(codepoint);
    if (!emoji || !emoji.position) return;
 
    const { cols, rows } = emojiData.meta;

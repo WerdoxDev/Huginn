@@ -16,7 +16,7 @@ import { postUserBanner } from "#routes/banners/[userId].post";
 import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
-import { getEmoji } from "#routes/emoji/[name].get";
+import { getEmoji } from "#routes/emoji/[id].get";
 import { env } from "#setup";
 
 import { getIndex } from "./routes";

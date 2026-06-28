@@ -30,7 +30,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
          link?: { href: string };
          list?: { ordered: boolean; index: number; total: number };
-         emoji?: { id: string; unicode?: string; slug?: string; initial: "slug" | "emoji" };
+         emoji?: { id?: string; unicode?: string; slug: string; initial: "slug" | "emoji" };
       },
    ) {
       // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);

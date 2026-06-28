@@ -20,7 +20,7 @@ function serializeFragments(nodes: Descendant[]): string {
       const children = serializeFragments(node.children);
 
       if (Element.isElement(node) && node.type === "emoji") {
-         text += node.unicode || node.slug;
+         text += node.unicode ?? node.slug;
          continue;
       }
 

@@ -12,7 +12,7 @@ import { CONSTANTS } from "@huginn/shared";
 import { marked } from "@lib/marked";
 import { organizeMarkedTokens } from "@lib/marked-utils";
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
 
 import type { AppMessage, MarkedToken } from "@/types";

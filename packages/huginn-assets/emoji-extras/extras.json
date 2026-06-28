@@ -4,21 +4,21 @@
       "svgPath": "1f1ee-1f1f7.svg",
       "pngPath": "1f1ee-1f1f7.png",
       "slugs": [
-         "iran",
-         "flag_ir"
+         ":iran:",
+         ":flag_ir:"
       ],
       "group": 9,
-      "emoji": "🇮🇷"
+      "unicode": "🇮🇷"
    },
    {
       "codepoint": "1f1f0-1f1fa",
       "svgPath": "1f1f0-1f1fa.svg",
       "pngPath": "1f1f0-1f1fa.png",
       "slugs": [
-         "kurdistan",
-         "flag_ku"
+         ":kurdistan:",
+         ":flag_ku:"
       ],
       "group": 9,
-      "emoji": "🇰🇺"
+      "unicode": "🇰🇺"
    }
 ]
