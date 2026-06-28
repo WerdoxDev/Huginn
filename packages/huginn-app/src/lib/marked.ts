@@ -45,11 +45,11 @@ const underlineExtension: TokenizerExtension = {
    },
 };
 
-const EMOJI_PICTOGRAPHIC_RE =
-   /(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
-const EMOJI_SLUG_RE = /^:([+\-a-zA-Z0-9_]+):/;
-const EMOJI_PICTOGRAPHIC_ANCHORED_RE =
-   /^(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f)*/u;
+const UNICODE_PICTOGRAPHIC_RE =
+   /(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation}|[*#0-9]\ufe0f\u20e3|[*#0-9]\u20e3)(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f|[\u{e0020}-\u{e007e}]+\u{e007f})*/u;
+const UNICODE_SLUG_RE = /^:([+\-a-zA-Z0-9_]+):/;
+const UNICODE_PICTOGRAPHIC_ANCHORED_RE =
+   /^(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}|\p{Emoji_Presentation}|[*#0-9]\ufe0f\u20e3|[*#0-9]\u20e3)(?:\u200d[\p{Extended_Pictographic}\p{Emoji_Presentation}]|[\u{1f3fb}-\u{1f3ff}]|\ufe0f|[\u{e0020}-\u{e007e}]+\u{e007f})*/u;
 
 const anchorEmojiCache = new Map<string, RegExpExecArray | null>();
 const slugEmojiCache = new Map<string, RegExpExecArray | null>();
@@ -59,26 +59,26 @@ const emojiExtension: TokenizerExtension = {
    level: "inline",
    start(src) {
       const colon = src.indexOf(":");
-      const emojiIdx = src.search(EMOJI_PICTOGRAPHIC_RE);
+      const unicodeIdx = src.search(UNICODE_PICTOGRAPHIC_RE);
 
-      if (colon === -1) return emojiIdx;
-      if (emojiIdx === -1) return colon;
-      return Math.min(colon, emojiIdx);
+      if (colon === -1) return unicodeIdx;
+      if (unicodeIdx === -1) return colon;
+      return Math.min(colon, unicodeIdx);
    },
    tokenizer(src) {
       let slugMatch = slugEmojiCache.get(src);
       if (slugMatch === undefined) {
-         slugMatch = EMOJI_SLUG_RE.exec(src);
+         slugMatch = UNICODE_SLUG_RE.exec(src);
          slugEmojiCache.set(src, slugMatch);
       }
 
-      let emojiMatch = anchorEmojiCache.get(src);
-      if (emojiMatch === undefined) {
-         emojiMatch = EMOJI_PICTOGRAPHIC_ANCHORED_RE.exec(src);
-         anchorEmojiCache.set(src, emojiMatch);
+      let unicodeMatch = anchorEmojiCache.get(src);
+      if (unicodeMatch === undefined) {
+         unicodeMatch = UNICODE_PICTOGRAPHIC_ANCHORED_RE.exec(src);
+         anchorEmojiCache.set(src, unicodeMatch);
       }
 
-      let emoji = emojiMatch?.[0];
+      let unicode = unicodeMatch?.[0];
       let slug = slugMatch?.[0];
       const raw = unicode ?? slug!;
       const codepoint = unicode ? getEmojiCodepoint(unicode) : undefined;

@@ -2,14 +2,13 @@ import MessageRenderer from "@components/message/MessageRenderer";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { snowflake, WorkerID, type Snowflake } from "@huginn/shared";
 import { deleteAppMessage } from "@lib/query-utils";
-import { createPreviewMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
-import { createContext, useCallback, type RefObject } from "react";
+import { createContext, useCallback, useEffect, type RefObject } from "react";
 
 import type { PreviewAppMessage, ProcessedMessage } from "@/types";
 
@@ -59,14 +58,7 @@ export function MessageProvider(props: MessageProviderProps) {
          const newPreviewMessage: PreviewAppMessage = { ...previewMessage, id: snowflake.generateString(WorkerID.APP), nonce, error: undefined };
 
          await mutation.mutateAsync({
-            // content: props.message.content,
-            // channelId,
-            // attachments: [],
             previewMessage: newPreviewMessage,
-            // flags:
-            // attachments: props.message.attachments,
-            // flags: props.message.flags,
-            // previewMessage: props.message,
          });
       },
       [channelId],

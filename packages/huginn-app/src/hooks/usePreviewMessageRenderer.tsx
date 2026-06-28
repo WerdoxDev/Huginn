@@ -20,7 +20,7 @@ function serializeFragments(nodes: Descendant[]): string {
       const children = serializeFragments(node.children);
 
       if (Element.isElement(node) && node.type === "emoji") {
-         text += node.slug;
+         text += node.unicode || node.slug;
          continue;
       }
 
@@ -271,7 +271,13 @@ export function usePreviewMessageRenderer() {
 
          editor.delete({ at: { anchor: { path: deletePath, offset: emojiToken.start }, focus: { path: deletePath, offset: emojiToken.end } } });
 
-         const emojiElement: Element = { type: "emoji", slug: emojiToken.emoji!.slug, emoji: emojiToken.emoji!.emoji, children: [{ text: "" }] };
+         const emojiElement: Element = {
+            type: "emoji",
+            slug: emojiToken.emoji!.slug,
+            unicode: emojiToken.emoji!.unicode,
+            id: emojiToken.emoji!.id,
+            children: [{ text: "" }],
+         };
          editor.insertNodes(emojiElement, { at: { path, offset: emojiToken.start } });
 
          editor.removeNodes({

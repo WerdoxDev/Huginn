@@ -27,36 +27,10 @@ const ACTION_MESSAGE_TYPES: MessageType[] = [
    MessageType.CALL,
 ];
 
-function processMessages(
-   messages: AppMessage[],
-   hasPreviousPage: boolean,
-   firstUnreadMessageId?: Snowflake,
-   currentEditingMessageId?: Snowflake,
-   currentReplyingMessageId?: Snowflake,
-   highlightedMessageId?: Snowflake,
-): ProcessedMessage[] {
-   return messages.map((message, i) => {
-      const lastMessage: AppMessage | undefined = messages[i - 1];
-
-      const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
-      const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
-      const hasNewAuthor = message.authorId !== lastMessage?.authorId;
-      const isActionType = message.isPreview ? false : ACTION_MESSAGE_TYPES.includes(message.type);
-      const isReplyType = message.isPreview ? !!message.referencedMessage : message.type === MessageType.REPLY;
-
-      return {
-         ...message,
-         hasNewMinute,
-         hasNewDate,
-         hasNewAuthor,
-         isActionType,
-         isReplyType,
-         isUnread: firstUnreadMessageId === message.id,
-         isEditing: currentEditingMessageId === message.id,
-         isReplying: currentReplyingMessageId === message.id,
-         isJumpHighlighted: highlightedMessageId === message.id,
-      };
-   });
+function shallowEqual(a: object, b: object) {
+   const aKeys = Object.keys(a);
+   if (aKeys.length !== Object.keys(b).length) return false;
+   return aKeys.every((k) => a[k as keyof typeof a] === b[k as keyof typeof b]);
 }
 
 export default function ChannelMessages(props: { messages: AppMessage[]; channel: AppDirectChannel }) {
@@ -75,18 +49,64 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    useMessageAcker(props.channel.id, props.messages);
    const { firstUnreadMessageId } = useFirstUnreadMessage(props.channel.id, props.messages);
 
-   const processedMessages = useMemo<ProcessedMessage[]>(
-      () =>
-         processMessages(
-            props.messages,
-            hasPreviousPage,
-            firstUnreadMessageId,
-            currentEditingMessageId,
-            currentReplyingMessageId,
-            highlightedMessageId,
-         ),
-      [props.messages, props.channel.id, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
-   );
+   const prevProcessed = useRef<Map<Snowflake, ProcessedMessage>>(new Map());
+   const prevChannelId = useRef<Snowflake | undefined>(props.channel.id);
+
+   const processedMessages = useMemo<ProcessedMessage[]>(() => {
+      if (prevChannelId.current !== props.channel.id) {
+         prevProcessed.current = new Map();
+         prevChannelId.current = props.channel.id;
+      }
+
+      const prevMap = prevProcessed.current;
+      const nextMap = new Map<Snowflake, ProcessedMessage>();
+
+      const result = props.messages.map((message, i) => {
+         const lastMessage: AppMessage | undefined = props.messages[i - 1];
+
+         const hasNewDate = (lastMessage && !moment(message.timestamp).isSame(lastMessage.timestamp, "date")) || (!lastMessage && !hasPreviousPage);
+         const hasNewMinute = !lastMessage || moment(message.timestamp).diff(moment(lastMessage.timestamp), "minutes") >= 5;
+         const hasNewAuthor = message.authorId !== lastMessage?.authorId;
+         const isActionType = message.isPreview ? false : ACTION_MESSAGE_TYPES.includes(message.type);
+         const isReplyType = message.isPreview ? !!message.referencedMessage : message.type === MessageType.REPLY;
+
+         const nextProcessed: ProcessedMessage = {
+            ...message,
+            hasNewMinute,
+            hasNewDate,
+            hasNewAuthor,
+            isActionType,
+            isReplyType,
+            isUnread: firstUnreadMessageId === message.id,
+            isEditing: currentEditingMessageId === message.id,
+            isReplying: currentReplyingMessageId === message.id,
+            isJumpHighlighted: highlightedMessageId === message.id,
+         };
+
+         // Reuse the old reference if nothing changed
+         const prevProcessed = prevMap.get(message.id);
+         const stable = prevProcessed && shallowEqual(prevProcessed, nextProcessed) ? prevProcessed : nextProcessed;
+
+         nextMap.set(message.id, stable);
+         return stable;
+      });
+
+      prevProcessed.current = nextMap;
+      return result;
+   }, [props.messages, props.channel.id, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId]);
+
+   // const processedMessages = useMemo<ProcessedMessage[]>(
+   //    () =>
+   //       processMessages(
+   //          props.messages,
+   //          hasPreviousPage,
+   //          firstUnreadMessageId,
+   //          currentEditingMessageId,
+   //          currentReplyingMessageId,
+   //          highlightedMessageId,
+   //       ),
+   //    [props.messages, props.channel.id, firstUnreadMessageId, currentEditingMessageId, currentReplyingMessageId, highlightedMessageId],
+   // );
 
    const ghostTopRef = useRef<HTMLDivElement>(null);
    const ghostBottomRef = useRef<HTMLDivElement>(null);

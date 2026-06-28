@@ -11,7 +11,7 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types";
 

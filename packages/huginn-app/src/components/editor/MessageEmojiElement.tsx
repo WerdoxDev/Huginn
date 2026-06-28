@@ -1,10 +1,10 @@
-import { getEmojiFromSlug, getEmojiId } from "@huginn/shared";
+import { getEmojiById } from "@huginn/shared";
 import clsx from "clsx";
 import { useMemo } from "react";
 
-export default function MessageEmojiElement(props: { emoji?: string; slug?: string; big?: boolean }) {
-   const emoji = useMemo(() => props.emoji ?? (props.slug ? getEmojiFromSlug(props.slug) : undefined), [props.emoji, props.slug]);
-   const src = useMemo(() => (emoji ? `${import.meta.env.BASE_URL}emojis/${getEmojiId(emoji)}.svg` : undefined), [emoji]);
+export default function MessageEmojiElement(props: { id: string; slug?: string; unicode?: string; big?: boolean }) {
+   const emoji = useMemo(() => getEmojiById(props.id), [props.id]);
+   const src = useMemo(() => (emoji ? `${import.meta.env.BASE_URL}emojis/${emoji.id}.svg` : undefined), [emoji]);
    return (
       <div className={clsx("relative inline-block align-bottom", props.big ? "size-16" : "size-5.5")}>
          <img

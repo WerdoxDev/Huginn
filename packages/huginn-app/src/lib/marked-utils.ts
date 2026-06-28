@@ -30,7 +30,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
          code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
          link?: { href: string };
          list?: { ordered: boolean; index: number; total: number };
-         emoji?: { slug: string; emoji: string; initial: "slug" | "emoji" };
+         emoji?: { id: string; unicode?: string; slug?: string; initial: "slug" | "emoji" };
       },
    ) {
       // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);
@@ -149,7 +149,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
                start: offset,
                end: offset + token.raw.length,
                raw: token.raw,
-               emoji: { slug: token.slug, emoji: token.emoji, initial: token.initial },
+               emoji: { id: token.id, slug: token.slug, unicode: token.unicode, initial: token.initial },
             });
          } else if (token.type === "codespan") {
             pushRange("codespan", { mark: null, text: token.text, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });

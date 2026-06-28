@@ -5,17 +5,17 @@ import HuginnInput from "@components/input/HuginnInput";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { getEmojiFromHexcode, getEmojiId, getEmojis, type NormalizedEmoji } from "@huginn/shared";
+import { getEmojiById, type Emoji, getAllEmojis } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
 import emojiMessages from "emojibase-data/en/messages.json";
-import emojiMeta from "emojibase-data/meta/groups.json";
+// import emojiMeta from "emojibase-data/meta/groups.json";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { SelectItem } from "@/types";
 
-import emojiMap from "@/assets/emoji-map.json";
-import emojiSheet from "@/assets/emoji-sheet.png";
+import emojiSheet from "@/assets/emoji-sheet.webp";
+import emojiData from "@/assets/emojis.json";
 
 const RECENT_MAX = 32;
 const RECENT_GROUP_ID = -1;
@@ -30,7 +30,7 @@ type HeaderRow = {
 
 type EmojiRow = {
    type: "emojis";
-   emojis: NormalizedEmoji[];
+   emojis: Emoji[];
 };
 
 type VirtualRow = HeaderRow | EmojiRow;
@@ -44,23 +44,11 @@ function getRecentEmojis(): string[] {
    return recent;
 }
 
-function saveRecentEmoji(hexcode: string) {
+function saveRecentEmoji(id: string) {
    const prev = getRecentEmojis();
-   const next = [hexcode, ...prev.filter((h) => h !== hexcode)].slice(0, RECENT_MAX);
+   const next = [id, ...prev.filter((h) => h !== id)].slice(0, RECENT_MAX);
    localStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(next));
 }
-
-function getGroupName(groupId: number) {
-   if (groupId === RECENT_GROUP_ID) return "Recently Used";
-   return (groupNames[groupId] ?? "misc")
-      .split(" ")
-      .map((word) => word[0].toUpperCase() + word.slice(1))
-      .join(" ");
-}
-
-const groupNames: Record<number, string> = Object.fromEntries(
-   Object.entries(emojiMeta.groups).map(([id, key]) => [Number(id), emojiMessages.groups[Number(id)].message ?? key]),
-);
 
 const toneOptions: SelectItem<number>[] = [
    {
@@ -122,24 +110,29 @@ export default function EmojiPickerPanel(props: {
    const [recentEmojiIds, setRecentEmojiIds] = useState(getRecentEmojis());
    const [selectedTone, setSelectedTone] = useState<SelectItem<number>>(toneOptions[0]);
    const isMobile = useIsMobile();
+   const groupNames: Record<number, string> = useMemo(() => {
+      return Object.fromEntries(emojiMessages.groups.map((x) => [Number(x.order), x.message]));
+   }, []);
 
    const groupedEmojis = useMemo(() => {
-      const groups: Record<number, NormalizedEmoji[]> = {};
+      const groups: Record<number, Emoji[]> = {};
 
       if (recentEmojiIds.length > 0) {
-         groups[RECENT_GROUP_ID] = recentEmojiIds.flatMap((hexcode) => {
-            const emoji = getEmojiFromHexcode(hexcode);
+         groups[RECENT_GROUP_ID] = recentEmojiIds.flatMap((id) => {
+            const emoji = getEmojiById(id);
             return emoji ? [{ ...emoji, group: RECENT_GROUP_ID }] : [];
          });
       }
 
-      for (const emoji of getEmojis()) {
-         if (emoji.skinTone !== selectedTone.value && emoji.skinTone !== null) continue;
+      for (const emoji of getAllEmojis()) {
+         if (emoji.tone !== selectedTone.value && emoji.tone !== undefined) continue;
          // Put the indicators in "Symbols" and exclude "Components"
          const group = emoji.group === undefined ? 8 : emoji.group === 2 ? undefined : emoji.group;
          if (group === undefined) continue;
          (groups[group] ??= []).push(emoji);
       }
+
+      console.log(groups, getAllEmojis());
 
       return groups;
    }, [recentEmojiIds, selectedTone]);
@@ -172,7 +165,7 @@ export default function EmojiPickerPanel(props: {
 
    const stickyIndexes = useMemo(() => rows.flatMap((row, i) => (row.type === "header" ? [i] : [])), [rows]);
    const stickyIndexSet = useMemo(() => new Set(stickyIndexes), [stickyIndexes]);
-   const [lastHoveredEmoji, setLastHoveredEmoji] = useState<NormalizedEmoji | null>(rows.find((x) => x.type === "emojis")?.emojis[0] ?? null);
+   const [lastHoveredEmoji, setLastHoveredEmoji] = useState<Emoji | null>(rows.find((x) => x.type === "emojis")?.emojis[0] ?? null);
 
    const groupHeaderIndexMap = useMemo(() => Object.fromEntries(rows.flatMap((row, i) => (row.type === "header" ? [[row.groupId, i]] : []))), [rows]);
 
@@ -209,6 +202,14 @@ export default function EmojiPickerPanel(props: {
       ),
    });
 
+   function getGroupName(groupId: number) {
+      if (groupId === RECENT_GROUP_ID) return "Recently Used";
+      return (groupNames[groupId] ?? "misc")
+         .split(" ")
+         .map((word) => word[0].toUpperCase() + word.slice(1))
+         .join(" ");
+   }
+
    function handleCategoryClick(groupId: number) {
       const headerIndex = groupHeaderIndexMap[groupId];
       if (headerIndex === undefined) return;
@@ -216,8 +217,8 @@ export default function EmojiPickerPanel(props: {
       virtualizer.scrollToIndex(headerIndex, { align: "start", behavior: "instant" });
    }
 
-   function handleEmojiClick(emoji: NormalizedEmoji) {
-      saveRecentEmoji(emoji.hexcode);
+   function handleEmojiClick(emoji: Emoji) {
+      saveRecentEmoji(emoji.id);
       setRecentEmojiIds(getRecentEmojis());
       props.onEmojiSelect?.(emoji.slugs[0]);
    }
@@ -329,16 +330,16 @@ export default function EmojiPickerPanel(props: {
                                     <div className="grid grid-cols-8 place-items-center">
                                        {row.emojis.map((entry) => (
                                           <button
-                                             key={entry.hexcode}
+                                             key={entry.id}
                                              type="button"
                                              className={clsx(
                                                 "z-10 flex size-10 cursor-pointer items-center justify-center rounded-md transition-transform",
-                                                lastHoveredEmoji?.hexcode === entry.hexcode ? "bg-surface" : "",
+                                                lastHoveredEmoji?.id === entry.id ? "bg-surface" : "",
                                              )}
                                              onClick={() => handleEmojiClick(entry)}
                                              onMouseEnter={() => setLastHoveredEmoji(entry)}
                                           >
-                                             <Emoji emoji={entry.emoji} size={32} />
+                                             <Emoji id={entry.id} size={32} />
                                           </button>
                                        ))}
                                     </div>
@@ -353,7 +354,7 @@ export default function EmojiPickerPanel(props: {
                         <div className="bg-surface h-px shrink-0" />
                         {lastHoveredEmoji && (
                            <div className="flex h-12 w-full shrink-0 items-center gap-x-2 px-3.5">
-                              <Emoji emoji={lastHoveredEmoji.emoji} size={32} />
+                              <Emoji id={lastHoveredEmoji.id} size={32} />
                               <div className="text-sm text-white">{lastHoveredEmoji.slugs.join(" ")}</div>
                            </div>
                         )}
@@ -374,17 +375,17 @@ export default function EmojiPickerPanel(props: {
    );
 }
 
-function Emoji(props: { emoji: string; size: number }) {
-   const styles = useMemo(() => getEmojiSprite(getEmojiId(props.emoji)), [props.emoji]);
+function Emoji(props: { id: string; size: number }) {
+   const styles = useMemo(() => getEmojiSprite(props.id), [props.id]);
 
    return <div style={{ ...styles, width: props.size, height: props.size }} className="shrink-0" />;
 }
 
 function getEmojiSprite(id: string) {
-   const entry = emojiMap.emojis[id.toLowerCase() as keyof typeof emojiMap.emojis];
-   if (!entry) return null;
+   const emoji = getEmojiById(id);
+   if (!emoji || !emoji.position) return;
 
-   const { cols, rows } = emojiMap.meta;
+   const { cols, rows } = emojiData.meta;
 
    return {
       display: "inline-block",
@@ -394,6 +395,7 @@ function getEmojiSprite(id: string) {
       backgroundRepeat: "no-repeat",
       backgroundSize: `${cols * 100}% ${rows * 100}%`,
       backgroundPosition:
-         `${cols === 1 ? 0 : ((entry.col / (cols - 1)) * 100).toFixed(4)}% ` + `${rows === 1 ? 0 : ((entry.row / (rows - 1)) * 100).toFixed(4)}%`,
+         `${cols === 1 ? 0 : ((emoji.position.col / (cols - 1)) * 100).toFixed(4)}% ` +
+         `${rows === 1 ? 0 : ((emoji.position.row / (rows - 1)) * 100).toFixed(4)}%`,
    };
 }

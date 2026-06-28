@@ -8,7 +8,6 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { MessageFlags } from "@huginn/shared";
-import Inset from "@lib/capacitor/inset-plugin";
 import { useChannelStore } from "@stores/channelStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";

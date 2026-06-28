@@ -12,7 +12,7 @@ import { CONSTANTS } from "@huginn/shared";
 import { marked } from "@lib/marked";
 import { organizeMarkedTokens } from "@lib/marked-utils";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
 
 import type { AppMessage, MarkedToken } from "@/types";
@@ -67,7 +67,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                   </LinkElement>
                );
             case "emoji":
-               return <MessageEmojiElement emoji={node.emoji} slug={node.slug} big={node.big && !smallEmojis} key={key} />;
+               return <MessageEmojiElement id={node.id} slug={node.slug} unicode={node.unicode} big={node.big && !smallEmojis} key={key} />;
             case "code":
                return <CodeElement code={node.code} language={node.language} key={key} />;
             case "codespan":
@@ -123,7 +123,14 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          } else if (token.type === "emoji" && token.emoji) {
-            deepestNode.children.push({ type: "emoji", slug: token.emoji.slug, emoji: token.emoji.emoji, big: isBigEmoji, children: [] });
+            deepestNode.children.push({
+               type: "emoji",
+               id: token.emoji.id,
+               slug: token.emoji.slug,
+               unicode: token.emoji.unicode,
+               big: isBigEmoji,
+               children: [],
+            });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);
