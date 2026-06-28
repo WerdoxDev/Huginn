@@ -55,6 +55,10 @@
       {
          "name": "transactional",
          "path": "packages/transactional"
+      },
+      {
+         "name": "huginn-assets",
+         "path": "packages/huginn-assets"
       }
    ],
    "settings": {

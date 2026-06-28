@@ -13,6 +13,8 @@ builds
 target
 certs
 
+emoji-out
+
 *.env
 
 .data

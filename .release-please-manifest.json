@@ -10,5 +10,6 @@
    "packages/huginn-voice": "0.17.1",
    "packages/native-addon": "0.4.0",
    "packages/huginn-tui": "0.3.0",
-   "packages/transactional": "0.2.0"
+   "packages/transactional": "0.2.0",
+   "packages/huginn-assets": "0.0.0"
 }

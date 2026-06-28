@@ -44,6 +44,9 @@
       },
       "packages/transactional": {
          "package-name": "transactional"
+      },
+      "packages/huginn-assets": {
+         "package-name": "assets"
       }
    }
 }
