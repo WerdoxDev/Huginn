@@ -16,7 +16,7 @@ export const messagesExtension = Prisma.defineExtension({
                const methodName = "message.getById";
                assertId(methodName, channelId, messageId);
                try {
-                  const message = await prisma.message.findUnique({
+                  const message = await prisma.message.findUniqueOrThrow({
                      where: {
                         channelId: BigInt(channelId),
                         id: BigInt(messageId),
@@ -24,9 +24,6 @@ export const messagesExtension = Prisma.defineExtension({
                      ...args,
                   });
 
-                  span.setAttribute("message.found", !!message);
-
-                  assertObj(methodName, message, DBErrorType.NULL_MESSAGE, messageId);
                   return idFix(message) as MessagePayload<Args>;
                } catch (e) {
                   recordSpanError(e);
@@ -228,7 +225,7 @@ export const messagesExtension = Prisma.defineExtension({
                         embeds: options.embeds ? { connect: createdEmbeds.map((x) => ({ id: x.id })) } : undefined,
                         editedTimestamp: null,
                         pinned: false,
-                        reactions: [],
+                        reactions: undefined,
                         flags: options.flags ?? 0,
                         call:
                            participantsConnect && participantsConnect.length !== 0 && options.type === MessageType.CALL

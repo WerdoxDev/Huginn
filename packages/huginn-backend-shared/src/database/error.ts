@@ -44,27 +44,59 @@ export function assertCondition(methodName: string, shouldThrow: boolean, errorT
    }
 }
 
+type ReadStateId = { userId: Snowflake; channelId: Snowflake };
+type ReactionId = { channelId: Snowflake; messageId: Snowflake; userId: Snowflake; emojiKey: string };
+type ReactionAggregateId = { messageId: Snowflake; emojiKey: string };
+
+// Normal ID error types
+export async function assertExists(
+   error: unknown,
+   methodName: string,
+   errorType:
+      | DBErrorType.NULL_USER
+      | DBErrorType.NULL_CHANNEL
+      | DBErrorType.NULL_MESSAGE
+      | DBErrorType.NULL_MESSAGE_PIN
+      | DBErrorType.NULL_RELATIONSHIP
+      | DBErrorType.NULL_EMOJI,
+   ids: Snowflake[],
+): Promise<void>;
+
+export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_KNOWN_APPLICATION, ids: number[]): Promise<void>;
+// Compound ID error types
+export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_READ_STATE, ids: ReadStateId[]): Promise<void>;
+export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_REACTION, ids: ReactionId[]): Promise<void>;
+export async function assertExists(
+   error: unknown,
+   methodName: string,
+   errorType: DBErrorType.NULL_REACTION_AGGREGATE,
+   ids: ReactionAggregateId[],
+): Promise<void>;
+// Implementation signature (not visible to callers)
 export async function assertExists(
    error: unknown,
    methodName: string,
    errorType: DBErrorType,
-   ids: (Snowflake | undefined)[] | { userId: Snowflake; channelId: Snowflake }[],
-) {
-   const normalIds = ids as Snowflake[];
-   const readStateIds = ids as { userId: Snowflake; channelId: Snowflake }[];
-
+   ids: Snowflake[] | number[] | ReadStateId[] | ReactionId[] | ReactionAggregateId[],
+): Promise<void> {
    if (errorType === DBErrorType.NULL_USER) {
-      await prisma.user.assertUsersExist(methodName, normalIds);
+      await prisma.user.assertUsersExist(methodName, ids as Snowflake[]);
    } else if (errorType === DBErrorType.NULL_CHANNEL) {
-      await prisma.channel.assertChannelsExist(methodName, normalIds);
+      await prisma.channel.assertChannelsExist(methodName, ids as Snowflake[]);
    } else if (errorType === DBErrorType.NULL_MESSAGE) {
-      await prisma.message.assertMessagesExist(methodName, normalIds);
+      await prisma.message.assertMessagesExist(methodName, ids as Snowflake[]);
    } else if (errorType === DBErrorType.NULL_MESSAGE_PIN) {
-      await prisma.messagePin.assertMessagePinExist(methodName, normalIds);
+      await prisma.messagePin.assertMessagePinExist(methodName, ids as Snowflake[]);
    } else if (errorType === DBErrorType.NULL_RELATIONSHIP) {
-      await prisma.relationship.assertRelationshipsExist(methodName, normalIds);
+      await prisma.relationship.assertRelationshipsExist(methodName, ids as Snowflake[]);
    } else if (errorType === DBErrorType.NULL_READ_STATE) {
-      await prisma.readState.assertReadStatesExist(methodName, readStateIds);
+      await prisma.readState.assertReadStatesExist(methodName, ids as ReadStateId[]);
+   } else if (errorType === DBErrorType.NULL_REACTION) {
+      await prisma.reaction.assertReactionsExist(methodName, ids as ReactionId[]);
+   } else if (errorType === DBErrorType.NULL_REACTION_AGGREGATE) {
+      await prisma.reactionAggregate.assertReactionAggregatesExist(methodName, ids as ReactionAggregateId[]);
+   } else if (errorType === DBErrorType.NULL_KNOWN_APPLICATION) {
+      await prisma.knownApplication.assertKnownApplicationsExist(methodName, ids as number[]);
    }
 }
 

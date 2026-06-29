@@ -12,7 +12,7 @@ import {
    type Snowflake,
 } from "@huginn/shared";
 
-import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma } from "#database";
+import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma, assertExists } from "#database";
 import { DBErrorType } from "#types";
 
 export const userExtension = Prisma.defineExtension({
@@ -25,14 +25,12 @@ export const userExtension = Prisma.defineExtension({
 
                assertId(methodName, id);
                try {
-                  const user = await prisma.user.findUnique({ where: { id: BigInt(id) }, ...args });
+                  const user = await prisma.user.findUniqueOrThrow({ where: { id: BigInt(id) }, ...args });
 
-                  span.setAttribute("user.exists", !!user);
-
-                  assertObj(methodName, user, DBErrorType.NULL_USER, id);
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
+                  await assertExists(e, methodName, DBErrorType.NULL_USER, [id]);
                   throw e;
                } finally {
                   span.end();
@@ -44,12 +42,11 @@ export const userExtension = Prisma.defineExtension({
                span.setAttribute("query.username.length", username.length);
                const methodName = "user.getByUsername";
                try {
-                  const user = await prisma.user.findUnique({ where: { username: username }, ...args });
-                  span.setAttribute("user.exists", !!user);
-                  assertObj(methodName, user, DBErrorType.NULL_USER, username);
+                  const user = await prisma.user.findUniqueOrThrow({ where: { username: username }, ...args });
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
+                  await assertExists(e, methodName, DBErrorType.NULL_USER, [username]);
                   throw e;
                } finally {
                   span.end();
@@ -73,7 +70,7 @@ export const userExtension = Prisma.defineExtension({
                      select: selectPrivateUser,
                   });
 
-                  span.setAttribute("user.exists", !!user);
+                  span.setAttribute("user.found", !!user);
                   assertObj(methodName, user, DBErrorType.NULL_USER);
 
                   const passwordValid = await Bun.password.verify(options.password, user.password!);
