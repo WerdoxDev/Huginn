@@ -1,12 +1,13 @@
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { channelWithoutRecipient, filterChannel } from "#utils/helpers";
-import { validateChannelName } from "#utils/validation";
 import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { channelWithoutRecipient, filterChannel } from "#utils/helpers";
+import { validateChannelName } from "#utils/validation";
 
 const schema = t.Object({
    name: t.Optional(t.String()),

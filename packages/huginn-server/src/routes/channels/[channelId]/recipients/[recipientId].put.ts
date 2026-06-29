@@ -1,11 +1,12 @@
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
 import { Elysia } from "elysia";
+
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchChannel, dispatchMessage } from "#utils/helpers";
 
 export const putChannelRecipient = new Elysia()
    .use(verifyJwt())

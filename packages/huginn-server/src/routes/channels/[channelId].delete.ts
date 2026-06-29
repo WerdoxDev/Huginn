@@ -1,11 +1,12 @@
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient, selectChannelDefaults, selectChannelRecipients } from "@huginn/backend-shared/database/common";
 import { type APIDeleteDMChannelResult, ChannelType, MessageFlags, MessageType, merge, omit } from "@huginn/shared";
 import Elysia from "elysia";
+
+import { gateway } from "#setup";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
 
 export const deleteChannel = new Elysia()
    .use(verifyJwt())

@@ -13,9 +13,11 @@ import {
    type APIMessage,
    type APIMessageCall,
    type APIMessageReference,
+   type APIReaction,
    changeUrlBase,
    ChannelType,
    CONSTANTS,
+   decodeEmojiKey,
    type DirectChannel,
    type GatewayWebsocketEvents,
    MessageReferenceType,
@@ -56,7 +58,7 @@ export async function dispatchMessage(options: {
       { select: selectAllMessage },
    );
 
-   dispatchToTopic(options.channelId, "message_create", filterMessage(message));
+   dispatchToTopic(options.channelId, "message_create", await filterMessage(message));
 
    await sendMessagePushNotification(options.channelId, message);
    // await sendPushNotification()
@@ -75,7 +77,7 @@ export async function dispatchCallMessage(options: { authorId: Snowflake; channe
       { select: selectAllMessage },
    );
 
-   dispatchToTopic(options.channelId, "message_create", filterMessage(message) as APIMessage);
+   dispatchToTopic(options.channelId, "message_create", await filterMessage(message));
 
    return message;
 }
@@ -92,10 +94,45 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(message: T): APIMessage {
+export async function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(
+   message: T,
+   options?: { receiverId?: Snowflake },
+): Promise<APIMessage> {
    const signedAttachments = message.attachments.map(signAttachment);
+
+   const reactions: APIReaction[] = [];
+   if (message.reactionAggregates && message.reactionAggregates.length > 0 && options?.receiverId) {
+      const meMap = Object.assign(
+         {},
+         ...(await Promise.all(
+            message.reactionAggregates.map(async (reaction) => ({
+               [reaction.emojiKey]: await prisma.reaction.hasUserReacted({
+                  channelId: message.channelId,
+                  messageId: message.id,
+                  userId: options.receiverId!,
+                  emojiKey: reaction.emojiKey,
+               }),
+            })),
+         )),
+      );
+
+      for (const reaction of message.reactionAggregates) {
+         const emoji = decodeEmojiKey(reaction.emojiKey);
+         if (!emoji) {
+            logger.warn({ emojiKey: reaction.emojiKey }, "failed to decode emoji key");
+            continue;
+         }
+
+         reactions.push({
+            emoji,
+            me: meMap[reaction.emojiKey] ?? false,
+            count: reaction.count,
+         });
+      }
+   }
+
    return {
-      ...omit(message, ["call", "messageReference"]),
+      ...omit(message, ["call", "messageReference", "reactionAggregates"]),
       ...(message.call !== null && {
          call: {
             endedTimestamp: message.call.endedTimestamp,
@@ -108,6 +145,7 @@ export function filterMessage<T extends MessagePayload<{ select: typeof selectAl
       ...(message.messageReference?.message !== undefined && {
          referencedMessage: !message.messageReference.message ? null : message.messageReference?.message,
       }),
+      ...(reactions.length > 0 && { reactions }),
       embeds: nullToUndefined(message.embeds),
       attachments: nullToUndefined(signedAttachments),
    };

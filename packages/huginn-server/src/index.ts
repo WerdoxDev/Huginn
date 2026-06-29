@@ -2,6 +2,7 @@ import { cors } from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { staticPlugin } from "@elysiajs/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database/index";
 import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
@@ -30,6 +31,8 @@ import { deleteMessage } from "#routes/channels/[channelId]/messages/[messageId]
 import { getMessage } from "#routes/channels/[channelId]/messages/[messageId].get";
 import { patchMessage } from "#routes/channels/[channelId]/messages/[messageId].patch";
 import { postAckMessage } from "#routes/channels/[channelId]/messages/[messageId]/ack.post";
+import { deleteMeReaction } from "#routes/channels/[channelId]/messages/[messageId]/reactions/[emojiKey]/@me.delete";
+import { putMeReaction } from "#routes/channels/[channelId]/messages/[messageId]/reactions/[emojiKey]/@me.put";
 import { getChannelMessagePins } from "#routes/channels/[channelId]/messages/pins.get";
 import { deleteChannelMessagePin } from "#routes/channels/[channelId]/messages/pins/[messageId].delete";
 import { putChannelMessagePin } from "#routes/channels/[channelId]/messages/pins/[messageId].put";
@@ -149,6 +152,8 @@ export const app = new Elysia({
    .use(deleteMessage)
    .use(getMessage)
    .use(postTyping)
+   .use(putMeReaction)
+   .use(deleteMeReaction)
 
    // call
    .use(postCallRing)
