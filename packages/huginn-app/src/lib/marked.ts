@@ -1,6 +1,4 @@
-import { getEmojiFromSlug, getSlugsFromEmoji } from "@huginn/shared";
-import emojiData from "emojibase-data/en/compact.json";
-import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json";
+import { getEmojiCodepoint, getEmojiSlugsFromCodepoint, getEmojiUnicodeFromSlug } from "@huginn/shared";
 import { marked, type TokenizerExtension } from "marked";
 // import emojis from "unicode-emoji-json/data-by-emoji.json";
 
@@ -82,20 +80,17 @@ const emojiExtension: TokenizerExtension = {
 
       let emoji = emojiMatch?.[0];
       let slug = slugMatch?.[0];
-      const raw = emoji ?? slug!;
-      let initial = slug ? "slug" : "emoji";
+      const raw = unicode ?? slug!;
+      const codepoint = unicode ? getEmojiCodepoint(unicode) : undefined;
 
-      if (emoji && !slug) slug = getSlugsFromEmoji(emoji)?.[0];
-      if (slug && !emoji) emoji = getEmojiFromSlug(slug);
+      if (unicode && codepoint && !slug) slug = getEmojiSlugsFromCodepoint(codepoint)?.[0];
+      if (slug && !unicode) unicode = getEmojiUnicodeFromSlug(slug);
 
-      if (emoji && slug) {
-         return {
-            type: "emoji",
-            slug: slug,
-            emoji,
-            initial,
-            raw,
-         };
+      console.log(slugMatch, unicodeMatch, slug, unicode);
+
+      if (unicode && slug) {
+         // TODO: Id is to be used later for custom emojis
+         return { type: "emoji", id: undefined, slug, unicode, raw };
       }
    },
 };

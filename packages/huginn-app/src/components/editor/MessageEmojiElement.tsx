@@ -6,13 +6,13 @@ export default function MessageEmojiElement(props: { emoji?: string; slug?: stri
    const emoji = useMemo(() => props.emoji ?? (props.slug ? getEmojiFromSlug(props.slug) : undefined), [props.emoji, props.slug]);
    const src = useMemo(() => (emoji ? `${import.meta.env.BASE_URL}emojis/${getEmojiId(emoji)}.svg` : undefined), [emoji]);
    return (
-      <div className="inline-block align-baseline">
+      <div className={clsx("relative inline-block align-bottom", props.big ? "size-16" : "size-5.5")}>
          <img
             src={src}
             draggable={false}
             data-type="emoji"
-            alt={props.emoji}
-            className={clsx("inline object-contain align-bottom", props.big ? "size-16" : "size-5.5")}
+            alt={props.unicode}
+            className={clsx("absolute bottom-0 inline object-contain align-bottom", props.big ? "size-16" : "size-5.5")}
          />
       </div>
    );

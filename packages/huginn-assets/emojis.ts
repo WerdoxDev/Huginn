@@ -1,27 +1,14 @@
-import { S3Client } from "bun";
-import { createHash } from "crypto";
+import { type EmojiInfo, type NormalizedEmoji, getEmojiCodepoint } from "@huginn/shared";
+import Bun from "bun";
 import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
 import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };
 import { mkdtemp, rm } from "fs/promises";
 import { Octokit } from "octokit";
 import { tmpdir } from "os";
 import { join } from "path";
-import { parseArgs } from "util";
 
 import extras from "./emoji-extras/extras.json" with { type: "json" };
 import { generateEmojiSprite, type EmojiMapMeta, type EmojiPosition } from "./generate-emoji-sheet";
-
-const { values } = parseArgs({
-   args: Bun.argv,
-   options: {
-      upload: {
-         type: "boolean",
-         short: "u",
-         default: false,
-      },
-   },
-   allowPositionals: true,
-});
 
 const PREFIX = "twemoji/";
 const TOKEN = process.env.GITHUB_TOKEN;
@@ -33,13 +20,6 @@ const PNG_PATH = "assets/72x72";
 const REF = "main";
 const OUTPUT = "./emoji-out";
 const EXTRAS = "./emoji-extras";
-
-const s3 = new S3Client({
-   region: process.env.AWS_REGION,
-   accessKeyId: process.env.AWS_KEY_ID,
-   secretAccessKey: process.env.AWS_SECRET_KEY,
-   bucket: process.env.AWS_BUCKET,
-});
 
 const octokit = new Octokit({ auth: TOKEN });
 
@@ -92,58 +72,7 @@ async function extractRepo(tarPath: string, destDir: string): Promise<string> {
    return join(destDir, topLevel);
 }
 
-/** Retry an async operation with exponential backoff. */
-async function withRetry<T>(fn: () => Promise<T>, { retries = 4, baseDelayMs = 500, label = "" } = {}): Promise<T> {
-   let attempt = 0;
-   while (true) {
-      try {
-         return await fn();
-      } catch (err) {
-         attempt++;
-         if (attempt > retries) throw err;
-         const delay = baseDelayMs * 2 ** (attempt - 1); // 500 1000 2000 4000 ms
-         console.error(`${label} failed (attempt ${attempt}/${retries}), retrying in ${delay}ms — ${(err as Error).message}`);
-         await Bun.sleep(delay);
-      }
-   }
-}
-
-/** Upload one SVG file to S3. */
-async function uploadFile(filePath: string, name: string): Promise<void> {
-   await withRetry(
-      async () => {
-         const body = await Bun.file(filePath).arrayBuffer();
-         await s3.write(`${PREFIX}${name}`, body, { type: "image/svg+xml" });
-      },
-      { label: name },
-   );
-}
-
-/** Run tasks with bounded concurrency. */
-async function pool<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<void> {
-   let i = 0;
-   async function worker() {
-      while (i < tasks.length) {
-         const idx = i++;
-         await tasks[idx]();
-      }
-   }
-   await Promise.all(Array.from({ length: concurrency }, worker));
-}
-
-function createSnowflakeId(charCore: string) {
-   const hash = createHash("sha256").update(charCore, "utf8").digest();
-
-   const hi = hash.readUInt32BE(0) & 0x1fffffff; // 29 bits
-   const lo = hash.readUInt32BE(4); // 32 bits
-   const full = (BigInt(hi) << 32n) | BigInt(lo);
-
-   return (full & 0x7fff_ffff_ffff_ffffn).toString();
-}
-
-export type NormalizedEmoji = { group?: number; slugs: string[]; emoji?: string; codepoint: string; tone?: number };
-
-function getNormalizedEmojis() {
+async function getNormalizedEmojis() {
    const normalizedEmojis = new Map<string, NormalizedEmoji>();
 
    const slugsByCodepoint = new Map<string, string[]>();
@@ -152,28 +81,27 @@ function getNormalizedEmojis() {
       slugsByCodepoint.set(codepoint.toLowerCase(), slugArray);
    }
 
-   for (const emojiInfo of emojiData) {
-      const codepoint = emojiInfo.hexcode.toLowerCase();
-      const group = emojiInfo.group;
+   for (const emoji of emojiData) {
+      const codepoint = emoji.hexcode.toLowerCase();
+      const group = emoji.group;
 
       const baseSlugs = slugsByCodepoint.get(codepoint) ?? [];
       normalizedEmojis.set(codepoint, {
          group,
          slugs: baseSlugs,
-         emoji: emojiInfo.unicode,
+         unicode: emoji.unicode,
          codepoint,
-         tone: emojiInfo.skins ? 0 : undefined,
+         tone: emoji.skins ? 0 : undefined,
       });
 
-      if (emojiInfo.skins) {
-         emojiInfo.skins.forEach((skin, i) => {
-            const codepoint = skin.hexcode.toLowerCase();
-            const skinSlugs = slugsByCodepoint.get(codepoint) ?? [];
-            normalizedEmojis.set(codepoint, {
-               group,
+      if (emoji.skins) {
+         emoji.skins.forEach((skin, i) => {
+            const skinSlugs = slugsByCodepoint.get(skin.hexcode.toLowerCase()) ?? [];
+            normalizedEmojis.set(skin.hexcode.toLowerCase(), {
+               group: group,
                slugs: skinSlugs,
-               emoji: skin.unicode,
-               codepoint,
+               unicode: skin.unicode,
+               codepoint: skin.hexcode.toLowerCase(),
                tone: i + 1,
             });
          });
@@ -262,10 +190,6 @@ async function main() {
       const glob = new Bun.Glob("*.svg");
       const svgFiles = await Array.fromAsync(glob.scan({ cwd: svgDir, absolute: false }));
       console.log(`Found ${svgFiles.length} SVG files.`);
-      console.log(`Found ${svgFiles.length} PNG files.`);
-
-      let done = 0;
-      let failed = 0;
 
       const data: EmojiInfo = {
          meta: undefined,
@@ -273,28 +197,35 @@ async function main() {
       };
 
       console.log(`Normalizing emojis...`);
-      const normalizedEmojis = getNormalizedEmojis();
+      const normalizedEmojis = await getNormalizedEmojis();
+
       const extrasResolved = await resolveExtras(svgDir, pngDir);
 
       const finalEmojis = new Map([...normalizedEmojis, ...extrasResolved]);
+
       const { webpPath, emojiMap } = await generateEmojiSprite({ input: pngDir, output: OUTPUT, padding: 1, lossless: false });
       data.meta = emojiMap.meta;
 
       for (const emoji of finalEmojis.values()) {
          const codepoint = emoji.codepoint;
-         const position = emojiMap.emojis[codepoint];
-         const id = createSnowflakeId(codepoint);
          const normalized = finalEmojis.get(codepoint);
 
+         if (!normalized) {
+            console.warn(`Warning: Emoji with codepoint ${codepoint} not found in normalized emojis.`);
+            continue;
+         }
+
+         const twemojiCodepoint = getEmojiCodepoint(normalized.unicode);
+         const position = emojiMap.emojis[twemojiCodepoint];
+
          data.emojis.push({
-            codepoint,
-            filename: emoji.codepoint.toLowerCase() + ".svg",
-            id,
+            codepoint: twemojiCodepoint,
+            filename: twemojiCodepoint + ".svg",
             position,
-            slugs: normalized?.slugs ?? [],
-            emoji: normalized?.emoji,
-            group: normalized?.group?.toString(),
-            tone: normalized?.tone ?? undefined,
+            slugs: normalized.slugs,
+            unicode: normalized.unicode,
+            group: normalized.group,
+            tone: normalized.tone,
          });
       }
 
@@ -303,32 +234,12 @@ async function main() {
       checkDuplicates(data);
 
       console.log(`Copying emojis to output directory...`);
-      const copiedFiles = await copyEmojis(data, svgDir, join(OUTPUT, "emojis"));
-
-      if (values.upload) {
-         const tasks = copiedFiles.map((file) => async () => {
-            try {
-               await uploadFile(file.path, file.name);
-               done++;
-               if (done % 50 === 0 || done === svgFiles.length) {
-                  console.log(`${done}/${svgFiles.length} uploaded...`);
-               }
-            } catch (err) {
-               failed++;
-               console.error(`${file.name}: ${(err as Error).message}`);
-            }
-         });
-
-         await pool(tasks, CONCURRENCY);
-      } else {
-         console.log("Upload skipped (use --upload to enable).");
-      }
+      await copyEmojis(data, svgDir, join(OUTPUT, "emojis"));
 
       console.log("Writing emojis.json...");
       await Bun.write(join(OUTPUT, "emojis.json"), JSON.stringify(data, null, 3));
 
-      console.log(`Done!  ${done} uploaded, ${failed} failed.`);
-      console.log(`Bucket prefix: ${process.env.AWS_BUCKET}/${PREFIX}`);
+      console.log(`Done!`);
    } finally {
       console.log(`Cleaning up ${tmpDir}...`);
       // await rm(tmpDir, { recursive: true, force: true });

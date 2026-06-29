@@ -298,6 +298,12 @@ importers:
 
   packages/huginn-assets:
     dependencies:
+      '@huginn/shared':
+        specifier: workspace:*
+        version: link:../huginn-shared
+      emojibase:
+        specifier: ^17.0.0
+        version: 17.0.0
       emojibase-data:
         specifier: ^17.0.0
         version: 17.0.0(emojibase@17.0.0)
