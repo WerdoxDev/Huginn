@@ -33,7 +33,7 @@ function Input(props: { className?: string; children?: ReactNode; innerClassName
          <div className="text-text text-xs font-medium uppercase opacity-90 select-none">{props.children}</div>
          <div
             className={clsx(
-               "bg-surface-alt group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
+               "bg-surface-alt group-data-checked:bg-primary-700! relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
                props.innerClassName,
             )}
          >

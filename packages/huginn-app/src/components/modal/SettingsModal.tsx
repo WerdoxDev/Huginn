@@ -18,6 +18,7 @@ import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
@@ -56,7 +57,7 @@ const tabs: SettingsTabType[] = [
             icon: <IconMingcuteSpeakerFill />,
             component: SettingsVoiceTab,
          },
-         // { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
+         { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
          {
             name: "advanced",
             text: "Advanced",

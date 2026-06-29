@@ -12,10 +12,12 @@ export function useMessageWidths(options: {
 }) {
    const rootRef = useRef<HTMLDivElement>(null);
    const extrasRef = useRef<HTMLDivElement>(null);
-   const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number }>({
+   const reactionsRef = useRef<HTMLDivElement>(null);
+   const [widths, setWidths] = useState<{ width: number; lastWidth: number; nextWidth: number; reactionsWidth: number }>({
       width: 0,
       lastWidth: 0,
       nextWidth: 0,
+      reactionsWidth: 0,
    });
 
    useLayoutEffect(() => {
@@ -37,8 +39,9 @@ export function useMessageWidths(options: {
          const width = getMaxChildWidth(options.message.id);
          const lastWidth = getMaxChildWidth(options.lastMessage?.id);
          const nextWidth = getMaxChildWidth(options.nextMessage?.id);
+         const reactionsWidth = reactionsRef.current?.clientWidth ?? 0;
 
-         setWidths({ width, lastWidth, nextWidth });
+         setWidths({ width, lastWidth, nextWidth, reactionsWidth });
       }
 
       updateWidths();
@@ -56,11 +59,17 @@ export function useMessageWidths(options: {
          extrasObserver.observe(extrasRef.current);
       }
 
+      const reactionsObserver = new ResizeObserver(() => requestAnimationFrame(() => updateWidths()));
+      if (reactionsRef.current) {
+         reactionsObserver.observe(reactionsRef.current);
+      }
+
       return () => {
          observer.disconnect();
          extrasObserver.disconnect();
+         reactionsObserver.disconnect();
       };
    }, [options.message, options.lastMessage, options.nextMessage]);
 
-   return { rootRef, extrasRef, widths };
+   return { rootRef, extrasRef, reactionsRef, widths };
 }

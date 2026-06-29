@@ -97,7 +97,7 @@ const groupIcons: Record<number, ReactNode> = {
 
 export default function EmojiPickerPanel(props: {
    isOpen?: boolean;
-   onEmojiSelect?: (emoji: string) => void;
+   onEmojiSelect?: (slug: string, unicode?: string) => void;
    maxWidth?: number;
    maxHeight?: number;
 }) {
@@ -217,7 +217,7 @@ export default function EmojiPickerPanel(props: {
    function handleEmojiClick(emoji: Emoji) {
       saveRecentEmoji(emoji.slugs[0]);
       setRecentEmojiSlugs(getRecentEmojis());
-      props.onEmojiSelect?.(emoji.slugs[0]);
+      props.onEmojiSelect?.(emoji.slugs[0], emoji.unicode);
    }
 
    useEffect(() => {

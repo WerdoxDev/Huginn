@@ -86,8 +86,6 @@ const emojiExtension: TokenizerExtension = {
       if (unicode && codepoint && !slug) slug = getEmojiSlugsFromCodepoint(codepoint)?.[0];
       if (slug && !unicode) unicode = getEmojiUnicodeFromSlug(slug);
 
-      console.log(slugMatch, unicodeMatch, slug, unicode);
-
       if (unicode && slug) {
          // TODO: Id is to be used later for custom emojis
          return { type: "emoji", id: undefined, slug, unicode, raw };

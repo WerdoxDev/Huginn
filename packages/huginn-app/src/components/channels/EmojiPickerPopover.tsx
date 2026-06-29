@@ -3,6 +3,7 @@ import HuginnPopover from "@components/popover/HuginnPopover";
 import { useState } from "react";
 
 import EmojiPickerPanel from "./EmojiPickerPanel";
+import EmojiPickerPopoverPanel from "./EmojiPickerPopoverPanel";
 
 export default function EmojiPickerPopover(props: { onEmojiSelect?: (emoji: string) => void; onOpenChange?: (open: boolean) => void }) {
    const [isOpen, setIsOpen] = useState(false);
@@ -17,9 +18,9 @@ export default function EmojiPickerPopover(props: { onEmojiSelect?: (emoji: stri
          <HuginnPopover.Trigger asChild>
             <EmojiPickerButton isActive={isOpen} />
          </HuginnPopover.Trigger>
-         <HuginnPopover.Panel sideGap={12} className="bg-surface flex flex-col overflow-hidden rounded-lg pr-0">
+         <EmojiPickerPopoverPanel sideGap={12}>
             <EmojiPickerPanel isOpen={isOpen} onEmojiSelect={props.onEmojiSelect} maxWidth={340} maxHeight={480} />
-         </HuginnPopover.Panel>
+         </EmojiPickerPopoverPanel>
       </HuginnPopover>
    );
 }

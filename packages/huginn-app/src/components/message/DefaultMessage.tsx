@@ -11,18 +11,20 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types";
 
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
+import { MessageActions } from "./MessageActions";
+import MessageReactions from "./MessageReactions";
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
    const { open, context: contextMenu } = useContextMenu("message");
    const { updateModals } = useModals();
-   const { rootRef, extrasRef, widths } = useMessageWidths({
+   const { rootRef, extrasRef, reactionsRef, widths } = useMessageWidths({
       idPrefix: context.options?.idPrefix,
       message: context.message,
       lastMessage: context.lastMessage,
@@ -30,6 +32,7 @@ export default function DefaultMessage() {
    });
 
    const [isHovering, setIsHovering] = useState(false);
+   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -59,6 +62,9 @@ export default function DefaultMessage() {
       context.nextMessage?.hasNewDate ||
       context.nextMessage?.isActionType ||
       context.nextMessage?.isReplyType;
+   const hasReactions = !context.message.isPreview && context.message.reactions !== undefined && context.message.reactions.length > 0;
+   const hasLastReactions =
+      !context.lastMessage?.isPreview && context.lastMessage?.reactions !== undefined && context.lastMessage?.reactions.length > 0;
 
    const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
    const isUnread = context.message.isUnread;
@@ -69,27 +75,28 @@ export default function DefaultMessage() {
          onMouseEnter={() => setIsHovering(true)}
          onMouseLeave={() => setIsHovering(false)}
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
-         data-context={contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined}
+         data-context={isEmojiOpen || (contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined)}
          className={clsx(
             "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors duration-150",
-            !context.options?.hideBackground && "data-context:bg-surface-alt",
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing
                      ? "bg-positive-800/30"
                      : "bg-primary-800/30"
-                  : "hover:bg-surface-alt active:bg-surface-alt"),
+                  : "hover:bg-surface-alt active:bg-surface-alt data-context:bg-surface-alt"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0",
+            hasReactions && "pb-2",
             !isNextSeparate && "pb-0",
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
+         {!context.message.isPreview && <MessageActions message={context.message} isEmojiOpen={isEmojiOpen} onEmojiOpenChange={setIsEmojiOpen} />}
          <div
             className={clsx(
-               "absolute inset-y-0 left-0 h-full transition-[colors_width]",
+               "absolute inset-y-0 left-0 h-full transition-[width]",
                isEditing || isReplying || isJumpHighlighted ? "w-1" : "w-0",
                isEditing ? "bg-positive-400" : isReplying || isJumpHighlighted ? "bg-primary-400" : undefined,
             )}
@@ -130,6 +137,8 @@ export default function DefaultMessage() {
                extrasRef={extrasRef}
                error={error}
                nextError={nextError}
+               hasReactions={hasReactions}
+               hasLastReactions={hasLastReactions}
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
@@ -138,6 +147,7 @@ export default function DefaultMessage() {
                </div>
             )}
          </div>
+         {!context.message.isPreview && <MessageReactions message={context.message} messageWidth={widths.width} ref={reactionsRef} />}
       </div>
    );
 }
@@ -197,7 +207,7 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
 }
 
 function DefaultRenderer(props: {
-   widths: { width: number; lastWidth: number; nextWidth: number };
+   widths: { width: number; lastWidth: number; nextWidth: number; reactionsWidth: number };
    isSelf: boolean;
    isUnread: boolean;
    isSeparate: boolean;
@@ -206,9 +216,11 @@ function DefaultRenderer(props: {
    isLastAction: boolean;
    isPreview: boolean;
    isEdited?: boolean;
+   hasReactions: boolean;
+   hasLastReactions?: boolean;
    error?: MessageErrorType;
    nextError?: MessageErrorType;
-   extrasRef: React.RefObject<HTMLDivElement | null>;
+   extrasRef: RefObject<HTMLDivElement | null>;
 }) {
    const { messageUploadProgresses } = useChannelStore();
    const context = useContext(MessageContext);
@@ -240,15 +252,17 @@ function DefaultRenderer(props: {
                             ? "bg-primary-800"
                             : "bg-surface",
                      props.isUnread && !props.isSeparate && "rounded-t-none!",
-                     (props.isSeparate || props.isLastAction) && "rounded-t-xl!",
-                     props.isNextSeparate && "rounded-b-xl!",
+                     (props.isSeparate || props.isLastAction || props.hasLastReactions) && "rounded-t-xl!",
+                     props.isNextSeparate && !props.hasReactions && "rounded-b-xl!",
                   )}
                   style={{
-                     borderBottomRightRadius: `${clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12)}px`,
+                     borderBottomRightRadius: props.hasReactions
+                        ? clamp((props.widths.width + 20 - props.widths.reactionsWidth) / 2, 0, 12)
+                        : clamp((props.widths.width - props.widths.nextWidth) / 2, 0, 12),
                      borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
                   }}
                >
-                  {!props.isSeparate && props.widths.lastWidth > props.widths.width && (
+                  {!props.isSeparate && props.widths.lastWidth > props.widths.width && !props.hasLastReactions && (
                      <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                         <div
                            className={clsx(
@@ -269,7 +283,7 @@ function DefaultRenderer(props: {
                      </div>
                   )}
                </div>
-               {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && (
+               {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && !props.hasReactions && (
                   <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(
