@@ -1,3 +1,5 @@
+import type { APIEmoji } from "./api-types";
+
 import emojiData from "./emojis.json";
 
 export type EmojiInfo = {
@@ -91,10 +93,25 @@ export function getEmojiBySlug(slug: string): Emoji | undefined {
    return emojiData.emojis.find((e) => e.unicode === unicode);
 }
 
+export function getEmojiByUnicode(unicode: string): Emoji | undefined {
+   return emojiData.emojis.find((e) => e.unicode === unicode);
+}
+
 export function getEmojiByCodepoint(codepoint: string): Emoji | undefined {
    return emojiData.emojis.find((e) => e.codepoint === codepoint);
 }
 
 export function getAllEmojis(): Emoji[] {
    return emojiData.emojis;
+}
+
+export function decodeEmojiKey(emojiKey: string): { id: string | null; name: string } | null {
+   if (emojiKey.includes(":")) {
+      const [id, name] = emojiKey.split(":");
+      return { id, name };
+   } else {
+      const unicode = getEmojiByUnicode(emojiKey)?.unicode;
+      if (!unicode) return null;
+      return { id: null, name: emojiKey };
+   }
 }

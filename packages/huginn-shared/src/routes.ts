@@ -155,6 +155,22 @@ export const Routes = {
 
    /**
     * Route for:
+    * - PUT '/channels/{channel.id}/messages/{message.id}/reactions/{emoji.key}/${userId}'
+    * - DELETE '/channels/{channel.id}/messages/{message.id}/reactions/{emoji.key}/${userId}'
+    */
+   channelMessageReaction(
+      channelId: Snowflake,
+      messageId: Snowflake,
+      emojiKey: string,
+      userId?: Snowflake,
+   ):
+      | `/channels/${string}/messages/${string}/reactions/${string}/@me`
+      | `/channels/${string}/messages/${string}/reactions/${string}/users/${string}` {
+      return `/channels/${channelId}/messages/${messageId}/reactions/${emojiKey}/${userId ?? "@me"}` as const;
+   },
+
+   /**
+    * Route for:
     * - PUT    '/channels/{channel.id}/recipients/{recipient.id}'
     * - DELETE '/channels/{channel.id}/recipients/{recipient.id}'
     */
