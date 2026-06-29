@@ -14,8 +14,5 @@
    "devDependencies": {
       "@react-email/ui": "6.3.3",
       "@types/bun": "latest"
-   },
-   "peerDependencies": {
-      "typescript": "^6.0.3"
    }
 }
