@@ -13,7 +13,7 @@
       "oxfmt": "^0.56.0",
       "oxlint": "^1.71.0",
       "release-please": "^16.18.0",
-      "typescript": "^6.0.3"
+      "typescript": "7.0.1-rc"
    },
    "packageManager": "pnpm@11.9.0",
    "trustedDependencies": [

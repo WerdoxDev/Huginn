@@ -12,3 +12,5 @@ allowBuilds:
   protobufjs: true
   sharp: true
 minimumReleaseAge: 0
+overrides:
+  "typescript": "7.0.1-rc"

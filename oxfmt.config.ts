@@ -6,7 +6,7 @@ export default defineConfig({
    endOfLine: "crlf",
    useTabs: false,
    singleQuote: false,
-   printWidth: 150,
+   printWidth: 160,
    sortImports: {
       groups: [
          "type-import",
