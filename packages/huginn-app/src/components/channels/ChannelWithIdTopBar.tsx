@@ -6,11 +6,11 @@ import TopBar from "@components/TopBar";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { usePopover } from "@stores/popoverStore";
 
 import type { AppDirectChannel } from "@/types";
 
 import ChannelName from "./ChannelName";
-import PinnedMessagesPopover from "./PinnedMessagesPopover";
 
 export default function ChannelWithIdTopBar(props: {
    channel: AppDirectChannel;
@@ -20,6 +20,7 @@ export default function ChannelWithIdTopBar(props: {
 }) {
    const { isRightOpen, resetToCenter } = useMobileMenuStore();
    const isMobile = useIsMobile();
+   const { toggle } = usePopover("pinned_messages", { channelId: props.channel.id });
 
    function handleBack() {
       resetToCenter();
@@ -41,7 +42,9 @@ export default function ChannelWithIdTopBar(props: {
             <TopBarButton tooltip="Start Call" onClick={props.onCallClick}>
                <IconMingcutePhoneCallFill className="size-topbar-icon" />
             </TopBarButton>
-            <PinnedMessagesPopover channelId={props.channel.id} />
+            <TopBarButton tooltip="Pinned Messages" onClick={toggle}>
+               <IconMingcutePinFill className="size-topbar-icon" />
+            </TopBarButton>
             {props.channel.type === ChannelType.GROUP_DM && (
                <TopBarButton tooltip="Toggle Members" onClick={props.onRecipientsClick}>
                   <IconMingcuteGroup2Fill className="size-topbar-icon" />

@@ -16,6 +16,8 @@ import type { SelectItem } from "@/types";
 import emojiSheet from "@/assets/emoji-sheet.webp";
 import emojiData from "@/assets/emojis.json";
 
+import HuginnPopover from "./HuginnPopover";
+
 const RECENT_MAX = 32;
 const RECENT_GROUP_ID = -1;
 
@@ -95,7 +97,7 @@ const groupIcons: Record<number, ReactNode> = {
    9: <IconMingcuteFlag4Fill className="size-6" />,
 };
 
-export default function EmojiPickerPanel(props: {
+export default function EmojiPickerRawPanel(props: {
    isOpen?: boolean;
    onEmojiSelect?: (slug: string, unicode?: string) => void;
    maxWidth?: number;
@@ -224,7 +226,7 @@ export default function EmojiPickerPanel(props: {
       if (!props.isOpen) return;
       virtualizer.scrollToIndex(0, { align: "start" });
       // -1 is recently used
-      setActiveGroupId(values.search ? null : -1);
+      setActiveGroupId(values.search ? null : RECENT_GROUP_ID);
    }, [values.search]);
 
    useEffect(() => {

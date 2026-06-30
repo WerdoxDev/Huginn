@@ -1,3 +1,4 @@
+import type { Popover } from "@base-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -182,6 +183,12 @@ export type ContextMenuMessage = {
    message: AppMessage;
    url?: string;
    imgRef?: RefObject<HTMLImageElement | null>;
+};
+
+export type PopoverStateProps<T = unknown> = {
+   isOpen?: boolean;
+   anchor?: HTMLElement;
+   data?: T;
 };
 
 export type ProcessedMessage = AppMessage & {

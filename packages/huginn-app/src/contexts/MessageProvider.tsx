@@ -8,7 +8,7 @@ import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
-import { createContext, useCallback, useEffect, type RefObject } from "react";
+import { createContext, useCallback, type RefObject } from "react";
 
 import type { PreviewAppMessage, ProcessedMessage } from "@/types";
 
@@ -22,6 +22,7 @@ type MessageProviderProps = {
       idPrefix?: string;
       hideBackground?: boolean;
       disableContextMenu?: boolean;
+      hideActions?: boolean;
    };
    ref: RefObject<HTMLLIElement | null>;
 };

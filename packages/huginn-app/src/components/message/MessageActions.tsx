@@ -1,9 +1,9 @@
-import EmojiPickerPanel from "@components/channels/EmojiPickerPanel";
-import EmojiPickerPopoverPanel from "@components/channels/EmojiPickerPopoverPanel";
-import HuginnPopover from "@components/popover/HuginnPopover";
+import type { MouseEvent } from "react";
+
 import Tooltip from "@components/tooltip/Tooltip";
 import { useAddReaction } from "@hooks/mutations/useAddReaction";
 import { useChannelStore } from "@stores/channelStore";
+import { usePopover } from "@stores/popoverStore";
 import { clsx } from "clsx";
 
 import type { ProcessedAppMessage } from "@/types";
@@ -12,7 +12,7 @@ const iconClassName = "text-text/80 group-hover/button:text-text size-5 ";
 
 export function MessageActions(props: { message: ProcessedAppMessage; isEmojiOpen: boolean; onEmojiOpenChange?: (open: boolean) => void }) {
    const { setReplyingMessageId, setEditingMessageId } = useChannelStore();
-   // const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+   const { toggle } = usePopover("emoji_picker", { onEmojiSelect: handleEmojiSelect });
    const addMutation = useAddReaction();
 
    function handleReplyClick() {
@@ -37,19 +37,12 @@ export function MessageActions(props: { message: ProcessedAppMessage; isEmojiOpe
    return (
       <div
          className={clsx(
-            "bg-surface pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
+            "pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg bg-zinc-900 p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
          )}
       >
-         <HuginnPopover open={props.isEmojiOpen} onOpenChange={props.onEmojiOpenChange}>
-            <HuginnPopover.Trigger asChild>
-               <ActionButton tooltip="Add Reaction">
-                  <IconMingcuteEmoji2Fill className={iconClassName} />
-               </ActionButton>
-            </HuginnPopover.Trigger>
-            <EmojiPickerPopoverPanel>
-               <EmojiPickerPanel onEmojiSelect={handleEmojiSelect} maxWidth={340} maxHeight={480} />
-            </EmojiPickerPopoverPanel>
-         </HuginnPopover>
+         <ActionButton tooltip="Add Reaction" onClick={toggle}>
+            <IconMingcuteEmoji2Fill className={iconClassName} />
+         </ActionButton>
          <ActionButton onClick={handleEditClick} tooltip="Edit">
             <IconMingcuteEdit2Fill className={iconClassName} />
          </ActionButton>
@@ -60,7 +53,7 @@ export function MessageActions(props: { message: ProcessedAppMessage; isEmojiOpe
    );
 }
 
-function ActionButton(props: { onClick?: () => void; children?: React.ReactNode; tooltip: string }) {
+function ActionButton(props: { onClick?: (e: MouseEvent<HTMLButtonElement>) => void; children?: React.ReactNode; tooltip: string }) {
    return (
       <Tooltip>
          <Tooltip.Trigger asChild>

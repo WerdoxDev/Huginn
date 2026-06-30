@@ -1,4 +1,4 @@
-import { ContextMenu as BaseContextMenu, Drawer, Menu } from "@base-ui/react";
+import { ContextMenu as BaseContextMenu, Drawer, Menu, type BaseUIEvent } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
@@ -9,7 +9,7 @@ import { snowflake, WorkerID } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";
-import { createContext, type ReactNode, type RefObject, useContext, useMemo, useState } from "react";
+import { type ButtonHTMLAttributes, createContext, type MouseEvent, type ReactNode, type RefObject, useContext, useMemo, useState } from "react";
 
 import type { ContextMenuItemProps, ContextMenuProps } from "@/types";
 
@@ -100,7 +100,7 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
 
 function Item(
    props: ContextMenuItemProps &
-      React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      ButtonHTMLAttributes<HTMLButtonElement> & {
          ref?: RefObject<HTMLButtonElement>;
          preventClose?: boolean;
          color?: Tone;
@@ -109,8 +109,8 @@ function Item(
    const [isLoading, setIsLoading] = useState(false);
    const context = useContext(ContextMenuContext)!;
 
-   function handleClick() {
-      const result = props.onClick?.({} as React.MouseEvent<HTMLButtonElement>) as unknown;
+   function handleClick(e: MouseEvent<HTMLButtonElement>) {
+      const result = props.onClick?.(e) as unknown;
 
       if (result instanceof Promise) {
          setIsLoading(true);
@@ -149,7 +149,7 @@ function Item(
          label={props.label}
          disabled={props.disabled || isLoading}
          closeOnClick={false}
-         onClick={handleClick}
+         onClick={(e) => handleClick(e as unknown as MouseEvent<HTMLButtonElement>)}
          className={itemClass}
       >
          {props.label}

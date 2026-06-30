@@ -93,7 +93,9 @@ export default function DefaultMessage() {
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
-         {!context.message.isPreview && <MessageActions message={context.message} isEmojiOpen={isEmojiOpen} onEmojiOpenChange={setIsEmojiOpen} />}
+         {!context.message.isPreview && !context.options?.hideActions && (
+            <MessageActions message={context.message} isEmojiOpen={isEmojiOpen} onEmojiOpenChange={setIsEmojiOpen} />
+         )}
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[width]",
