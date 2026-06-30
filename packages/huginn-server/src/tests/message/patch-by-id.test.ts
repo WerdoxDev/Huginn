@@ -1,8 +1,9 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIPatchMessageResult, type APIPostMessageResult, ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, testIsDispatch } from "#tests/utils";
 
 describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {
@@ -59,7 +60,13 @@ describe("PATCH /api/channels/:channelId/messages/:messageId", () => {
          content: "Discord is the worst",
       })) as APIPatchMessageResult;
 
-      expectMessageExactSchema(result, MessageType.DEFAULT, BigInt(result.id), channel.id, user, "Discord is the worst", undefined);
+      expectMessageExactSchema(result, {
+         type: MessageType.DEFAULT,
+         id: BigInt(result.id),
+         channelId: channel.id,
+         author: user,
+         content: "Discord is the worst",
+      });
    });
    test(
       "should return a message with no embed when it is updated with no embeds",

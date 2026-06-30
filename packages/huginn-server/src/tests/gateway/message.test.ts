@@ -1,3 +1,8 @@
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
+import pathe from "pathe";
+
 import { expectMessageExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -10,10 +15,6 @@ import {
    multiDone,
    testIsDispatch,
 } from "#tests/utils";
-import { testHandler } from "@huginn/backend-shared";
-import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
-import { describe, expect, test } from "bun:test";
-import pathe from "pathe";
 
 describe("Message", () => {
    test(
@@ -35,10 +36,10 @@ describe("Message", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
                if (data.d.channelId === channel.id.toString()) {
-                  expectMessageExactSchema(data.d, MessageType.DEFAULT, undefined, channel.id, user, "test");
+                  expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, content: "test", channelId: channel.id, author: user });
                   tryDone();
                } else {
-                  expectMessageExactSchema(data.d, MessageType.DEFAULT, undefined, groupChannel.id, user, "test");
+                  expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, content: "test", channelId: groupChannel.id, author: user });
                   tryDone();
                }
             }
@@ -48,10 +49,10 @@ describe("Message", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
                if (data.d.channelId === channel.id.toString()) {
-                  expectMessageExactSchema(data.d, MessageType.DEFAULT, undefined, channel.id, user, "test");
+                  expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, content: "test", channelId: channel.id, author: user });
                   tryDone();
                } else {
-                  expectMessageExactSchema(data.d, MessageType.DEFAULT, undefined, groupChannel.id, user, "test");
+                  expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, content: "test", channelId: groupChannel.id, author: user });
                   tryDone();
                }
             }
@@ -61,7 +62,7 @@ describe("Message", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
                if (data.d.channelId === groupChannel.id.toString()) {
-                  expectMessageExactSchema(data.d, MessageType.DEFAULT, undefined, groupChannel.id, user, "test");
+                  expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, content: "test", channelId: groupChannel.id, author: user });
                   tryDone();
                }
             }
@@ -89,7 +90,7 @@ describe("Message", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.RECIPIENT_ADD, undefined, groupChannel.id, user2, "", [user3]);
+               expectMessageExactSchema(data.d, { type: MessageType.RECIPIENT_ADD, content: "", channelId: groupChannel.id, author: user2, mentions: [user3] });
                tryDone();
             }
          };
@@ -97,7 +98,7 @@ describe("Message", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.RECIPIENT_ADD, undefined, groupChannel.id, user2, "", [user3]);
+               expectMessageExactSchema(data.d, { type: MessageType.RECIPIENT_ADD, content: "", channelId: groupChannel.id, author: user2, mentions: [user3] });
                tryDone();
             }
          };
@@ -123,7 +124,13 @@ describe("Message", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.RECIPIENT_REMOVE, undefined, groupChannel.id, user, "", [user3]);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.RECIPIENT_REMOVE,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user,
+                  mentions: [user3],
+               });
                tryDone();
             }
          };
@@ -131,7 +138,13 @@ describe("Message", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.RECIPIENT_REMOVE, undefined, groupChannel.id, user, "", [user3]);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.RECIPIENT_REMOVE,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user,
+                  mentions: [user3],
+               });
                tryDone();
             }
          };
@@ -158,7 +171,7 @@ describe("Message", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_NAME_CHANGED, undefined, groupChannel.id, user2, "test-edited");
+               expectMessageExactSchema(data.d, { type: MessageType.CHANNEL_NAME_CHANGED, content: "test-edited", channelId: groupChannel.id, author: user2 });
                tryDone();
             }
          };
@@ -166,7 +179,7 @@ describe("Message", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_NAME_CHANGED, undefined, groupChannel.id, user2, "test-edited");
+               expectMessageExactSchema(data.d, { type: MessageType.CHANNEL_NAME_CHANGED, content: "test-edited", channelId: groupChannel.id, author: user2 });
                tryDone();
             }
          };
@@ -174,7 +187,7 @@ describe("Message", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_NAME_CHANGED, undefined, groupChannel.id, user2, "test-edited");
+               expectMessageExactSchema(data.d, { type: MessageType.CHANNEL_NAME_CHANGED, content: "test-edited", channelId: groupChannel.id, author: user2 });
                tryDone();
             }
          };
@@ -203,7 +216,13 @@ describe("Message", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_OWNER_CHANGED, undefined, groupChannel.id, user, "", [user2]);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_OWNER_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user,
+                  mentions: [user2],
+               });
                tryDone();
             }
          };
@@ -211,7 +230,13 @@ describe("Message", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_OWNER_CHANGED, undefined, groupChannel.id, user, "", [user2]);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_OWNER_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user,
+                  mentions: [user2],
+               });
                tryDone();
             }
          };
@@ -219,7 +244,13 @@ describe("Message", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_OWNER_CHANGED, undefined, groupChannel.id, user, "", [user2]);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_OWNER_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user,
+                  mentions: [user2],
+               });
                tryDone();
             }
          };
@@ -248,7 +279,13 @@ describe("Message", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_ICON_CHANGED, undefined, groupChannel.id, user2, "", []);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_ICON_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user2,
+                  mentions: [],
+               });
                tryDone();
             }
          };
@@ -256,7 +293,13 @@ describe("Message", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_ICON_CHANGED, undefined, groupChannel.id, user2, "", []);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_ICON_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user2,
+                  mentions: [],
+               });
                tryDone();
             }
          };
@@ -264,7 +307,13 @@ describe("Message", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_create")) {
-               expectMessageExactSchema(data.d, MessageType.CHANNEL_ICON_CHANGED, undefined, groupChannel.id, user2, "", []);
+               expectMessageExactSchema(data.d, {
+                  type: MessageType.CHANNEL_ICON_CHANGED,
+                  content: "",
+                  channelId: groupChannel.id,
+                  author: user2,
+                  mentions: [],
+               });
                tryDone();
             }
          };

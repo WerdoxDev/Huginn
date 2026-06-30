@@ -1,9 +1,11 @@
 import type { APIPostLoginResult, LoginCredentials } from "@huginn/shared";
 
-import { createTestUsers, removeUserLater } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { describe, expect, test } from "bun:test";
+
+import { expectUserExactSchema } from "#tests/expect-utils";
+import { createTestUsers, removeUserLater } from "#tests/utils";
 
 describe("POST /auth/login", () => {
    test("should return 'Invalid Form Body' when body constrains are not met", () => {
@@ -64,21 +66,7 @@ describe("POST /auth/login", () => {
       const result2 = (await testHandler("/api/auth/login", {}, "POST", withEmail)) as APIPostLoginResult;
 
       for (const res of [result, result2]) {
-         expect(res).toStrictEqual({
-            id: user.id.toString(),
-            flags: user.flags,
-            token: user.accessToken,
-            username: user.username,
-            displayName: user.displayName,
-            refreshToken: user.refreshToken,
-            avatar: user.avatar,
-            banner: user.banner,
-            bannerColor: user.bannerColor,
-            accentColor: user.accentColor,
-            bio: user.bio,
-            email: user.email,
-            password: user.password,
-         });
+         expectUserExactSchema(res, { ...user, hasTokens: true });
       }
    });
 

@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import * as semver from "semver";
 
-import { octokit } from "#setup";
+import { octokit } from "#server";
 import { env } from "#setup";
 import { getAllTags } from "#utils/route-utils";
 

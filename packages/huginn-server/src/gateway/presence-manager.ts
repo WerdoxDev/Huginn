@@ -44,10 +44,7 @@ export class PresenceManager {
                userId: userId,
                status: existingPresence?.status ?? settings.status,
                activities: existingPresence?.activities ?? [],
-               activeSessions: [
-                  ...(existingPresence?.activeSessions ?? []).filter((x) => x.sessionId !== session.sessionId),
-                  { sessionId: session.sessionId },
-               ],
+               activeSessions: [...(existingPresence?.activeSessions ?? []).filter((x) => x.sessionId !== session.sessionId), { sessionId: session.sessionId }],
             };
 
             span.setAttributes({
@@ -308,7 +305,7 @@ export class PresenceManager {
    public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
       return {
          ...omit(presence, ["userId"]),
-         user: pick(user, ["id", "avatar", "displayName", "flags", "username", "bannerColor"]),
+         user: pick(user, ["id", "avatar", "displayName", "flags", "username", "bannerColor", "accentColor", "banner", "bio"]),
       };
    }
 

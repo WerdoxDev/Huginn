@@ -1,8 +1,9 @@
-import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { RelationshipType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectRelationshipExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("Relationship", () => {
    test("should send a relationship_add when a relationship is made with the user", async (done) => {
@@ -15,7 +16,7 @@ describe("Relationship", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "relationship_add")) {
-            expectRelationshipExactSchema(data.d, RelationshipType.PENDING_OUTGOING, undefined, user2);
+            expectRelationshipExactSchema(data.d, { type: RelationshipType.PENDING_OUTGOING, id: undefined, user: user2 });
             tryDone();
          }
       };
@@ -23,7 +24,7 @@ describe("Relationship", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "relationship_add")) {
-            expectRelationshipExactSchema(data.d, RelationshipType.PENDING_INCOMING, undefined, user);
+            expectRelationshipExactSchema(data.d, { type: RelationshipType.PENDING_INCOMING, id: undefined, user });
             tryDone();
          }
       };
@@ -71,7 +72,7 @@ describe("Relationship", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "relationship_add")) {
-            expectRelationshipExactSchema(data.d, RelationshipType.FRIEND, relationship.id, user2);
+            expectRelationshipExactSchema(data.d, { type: RelationshipType.FRIEND, id: relationship.id, user: user2 });
             tryDone();
          }
       };
@@ -79,7 +80,7 @@ describe("Relationship", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "relationship_add")) {
-            expectRelationshipExactSchema(data.d, RelationshipType.FRIEND, relationship2.id, user);
+            expectRelationshipExactSchema(data.d, { type: RelationshipType.FRIEND, id: relationship2.id, user });
             tryDone();
          }
       };

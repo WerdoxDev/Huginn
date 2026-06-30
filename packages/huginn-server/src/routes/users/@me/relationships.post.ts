@@ -1,11 +1,12 @@
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { singleError, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { assertError, prisma } from "@huginn/backend-shared/database";
 import { selectRelationshipUser } from "@huginn/backend-shared/database/common";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { Errors, omit, RelationshipType, type Snowflake } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { gateway } from "#server";
+import { dispatchToTopic } from "#utils/gateway-utils";
 
 const schema = t.Object({ username: t.String({ minLength: 1 }) });
 

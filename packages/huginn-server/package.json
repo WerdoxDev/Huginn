@@ -6,8 +6,8 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "dev": "bun --hot src/setup.ts",
-      "start": "bun src/setup.ts",
+      "dev": "bun run --hot --preload ./src/setup.ts ./src/run.ts",
+      "start": "bun run --preload ./src/setup.ts ./src/run.ts",
       "tailwind": "bunx tailwindcss -i ./src/routes/static/input.css -o ./src/routes/static/output.css --watch"
    },
    "dependencies": {

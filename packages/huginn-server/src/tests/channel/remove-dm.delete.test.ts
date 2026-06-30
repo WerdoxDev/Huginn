@@ -1,9 +1,10 @@
-import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("DELETE /channels/:channelId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -44,7 +45,7 @@ describe("DELETE /channels/:channelId", () => {
 
          // User closes dm channel
          const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user.accessToken), "DELETE")) as APIDeleteDMChannelResult;
-         expectChannelExactSchema(result, ChannelType.DM, channel.id);
+         expectChannelExactSchema(result, { type: ChannelType.DM, id: channel.id });
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result, [user2]);
 
@@ -56,7 +57,7 @@ describe("DELETE /channels/:channelId", () => {
 
          // Non owner leaves group channel
          const result2 = (await testHandler(`/api/channels/${groupChannel.id}`, authHeader(user2.accessToken), "DELETE")) as APIDeleteDMChannelResult;
-         expectChannelExactSchema(result2, ChannelType.GROUP_DM, groupChannel.id, [user.id]);
+         expectChannelExactSchema(result2, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user.id] });
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result2, [user, user3]);
 
@@ -68,7 +69,7 @@ describe("DELETE /channels/:channelId", () => {
 
          // Owner leaves group channel
          const result3 = (await testHandler(`/api/channels/${groupChannel.id}`, authHeader(user.accessToken), "DELETE")) as APIDeleteDMChannelResult;
-         expectChannelExactSchema(result3, ChannelType.GROUP_DM, groupChannel.id, [user3.id]);
+         expectChannelExactSchema(result3, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user3.id] });
          // The deleted channel should not include deleted user
          expectChannelExactRecipients(result3, [user3]);
 
@@ -97,18 +98,18 @@ describe("DELETE /channels/:channelId", () => {
 
       // Leave the channel
       const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user2.accessToken), "DELETE")) as APIDeleteDMChannelResult;
-      expectChannelExactSchema(result, ChannelType.DM, channel.id);
+      expectChannelExactSchema(result, { type: ChannelType.DM, id: channel.id });
       expectChannelExactRecipients(result, [user]);
 
       // Reenter the channel
       const result2 = (await testHandler("/api/users/@me/channels", authHeader(user2.accessToken), "POST", {
          recipients: [user.id.toString()],
       })) as APIPostDMChannelResult;
-      expectChannelExactSchema(result2, ChannelType.DM, channel.id);
-      expectChannelExactRecipients(result, [user]);
+      expectChannelExactSchema(result2, { type: ChannelType.DM, id: channel.id });
+      expectChannelExactRecipients(result2, [user]);
 
       const readStates = await prisma.readState.findMany({ where: { userId: BigInt(user2.id) } });
-      expectReadStatesExactSchema(readStates, channel.id.toString(), [user2.id]);
+      expectReadStatesExactSchema(readStates, { channelId: channel.id.toString(), userIds: [user2.id] });
       // TODO: CHECK IF THE CHANNEL IS ACTUALLY ADDED TO DB
    });
 });

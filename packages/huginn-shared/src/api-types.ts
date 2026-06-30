@@ -173,7 +173,7 @@ export type APIDMChannel = {
 
 export type APIGroupDMChannel = {
    type: ChannelType.GROUP_DM;
-   name: string;
+   name: string | null;
    icon: string | null;
    ownerId: Snowflake;
    lastMessageId: Snowflake | null;

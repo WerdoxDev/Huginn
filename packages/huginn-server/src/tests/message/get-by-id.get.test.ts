@@ -1,8 +1,9 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetMessageByIdResult, ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("GET /channels/:channelId/messages/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -36,12 +37,8 @@ describe("GET /channels/:channelId/messages/:messageId", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
       const [message] = await createTestMessages(channel.id, user.id, 1);
 
-      const result = (await testHandler(
-         `/api/channels/${channel.id}/messages/${message.id}`,
-         authHeader(user.accessToken),
-         "GET",
-      )) as APIGetMessageByIdResult;
+      const result = (await testHandler(`/api/channels/${channel.id}/messages/${message.id}`, authHeader(user.accessToken), "GET")) as APIGetMessageByIdResult;
 
-      expectMessageExactSchema(result, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+      expectMessageExactSchema(result, { type: MessageType.DEFAULT, id: message.id, channelId: channel.id, author: user, content: message.content });
    });
 });

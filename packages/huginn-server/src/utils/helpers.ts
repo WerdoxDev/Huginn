@@ -185,6 +185,8 @@ export function signAttachment<A extends { url: string }>(attachment: A): A {
 }
 
 export async function sendMessagePushNotification(channelId: Snowflake, message: MessagePayload<{ select: typeof selectAllMessage }>) {
+   if (process.env.TEST) return;
+
    analytics.startActiveSpan("sendMessagePushNotification", async (span) => {
       try {
          span.setAttributes({

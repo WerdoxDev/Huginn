@@ -1,8 +1,9 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIPutChannelPinResult, ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("PUT /api/channels/:channelId/messages/pins/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -47,7 +48,13 @@ describe("PUT /api/channels/:channelId/messages/pins/:messageId", () => {
          "PUT",
       )) as APIPutChannelPinResult;
 
-      expectMessageExactSchema(result.message, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+      expectMessageExactSchema(result.message, {
+         type: MessageType.DEFAULT,
+         id: message.id,
+         channelId: channel.id,
+         author: user,
+         content: message.content,
+      });
       expect(result.message.pinned).toBeTrue();
       expect(typeof result.pinnedAt).toBe("string");
    });

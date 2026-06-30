@@ -1,8 +1,9 @@
-import { gateway } from "#setup";
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import Elysia from "elysia";
+
+import { gateway } from "#server";
+import { dispatchToTopic } from "#utils/gateway-utils";
 
 export const deleteUserRelationship = new Elysia()
    .use(verifyJwt())

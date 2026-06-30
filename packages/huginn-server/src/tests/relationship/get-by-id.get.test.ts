@@ -1,8 +1,9 @@
-import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserRelationshipByIdResult, RelationshipType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectRelationshipExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/relationships/:userId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -23,12 +24,12 @@ describe("GET /users/@me/relationships/:userId", () => {
 
       const [relationship] = await createTestRelationships(user.id, user2.id, true);
 
-      const result = (await testHandler(
-         `/api/users/@me/relationships/${user2.id}`,
-         authHeader(user.accessToken),
-         "GET",
-      )) as APIGetUserRelationshipByIdResult;
+      const result = (await testHandler(`/api/users/@me/relationships/${user2.id}`, authHeader(user.accessToken), "GET")) as APIGetUserRelationshipByIdResult;
 
-      expectRelationshipExactSchema(result, RelationshipType.FRIEND, relationship.id, user2);
+      expectRelationshipExactSchema(result, {
+         type: RelationshipType.FRIEND,
+         id: relationship.id,
+         user: user2,
+      });
    });
 });

@@ -1,12 +1,6 @@
-import { S3Client } from "@aws-sdk/client-s3";
 import { initAnalytics } from "@huginn/shared";
 import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
-import { Client, LogLevel } from "@notionhq/client";
 import { cleanEnv, port, str } from "envalid";
-import * as firebase from "firebase-admin/app";
-import { NotionConverter } from "notion-to-md";
-import { Octokit } from "octokit";
-import { Resend } from "resend";
 
 export const env = cleanEnv(process.env, {
    CDN_LOCAL_URL: str(),
@@ -21,8 +15,6 @@ export const env = cleanEnv(process.env, {
    AWS_SECRET_KEY: str(),
    AWS_BUCKET: str(),
    AWS_VERSIONS_OBJECT_KEY: str(),
-   CERTIFICATE_PATH: str({ default: undefined }),
-   PRIVATE_KEY_PATH: str({ default: undefined }),
    GOOGLE_CLIENT_ID: str(),
    GOOGLE_CLIENT_SECRET: str(),
    SESSION_PASSWORD: str(),
@@ -50,35 +42,3 @@ initAnalytics(
       posthogHost: env.POSTHOG_HOST,
    }),
 );
-
-const { startCronJobs } = await import("#cron-jobs");
-const { ServerGateway } = await import("#gateway/server-gateway");
-
-export const CERT_FILE = env.CERTIFICATE_PATH && Bun.file(env.CERTIFICATE_PATH);
-export const KEY_FILE = env.PRIVATE_KEY_PATH && Bun.file(env.PRIVATE_KEY_PATH);
-
-export const gateway = new ServerGateway();
-export const octokit: Octokit = new Octokit({ auth: env.GITHUB_TOKEN });
-
-export const s3 = new S3Client({
-   region: env.AWS_REGION,
-   credentials: { accessKeyId: env.AWS_KEY_ID, secretAccessKey: env.AWS_SECRET_KEY },
-});
-
-export const resend = new Resend(env.RESEND_API_KEY);
-
-export const notion = new Client({ auth: env.NOTION_TOKEN, notionVersion: "2026-03-11", logLevel: process.env.LOG_LEVEL as LogLevel });
-
-export const n2m = new NotionConverter(notion);
-
-firebase.initializeApp({
-   credential: firebase.cert({
-      projectId: env.FIREBASE_PROJECT_ID,
-      clientEmail: env.FIREBASE_CLIENT_EMAIL,
-      privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-   }),
-});
-
-await startCronJobs();
-
-await import("./index");

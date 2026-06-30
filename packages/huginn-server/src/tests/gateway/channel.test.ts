@@ -1,3 +1,7 @@
+import { testHandler } from "@huginn/backend-shared";
+import { ChannelType } from "@huginn/shared";
+import { describe, test } from "bun:test";
+
 import { expectChannelExactRecipients, expectChannelExactSchema, expectRecipientModifyExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -9,9 +13,6 @@ import {
    removeChannelLater,
    testIsDispatch,
 } from "#tests/utils";
-import { testHandler } from "@huginn/backend-shared";
-import { ChannelType } from "@huginn/shared";
-import { describe, test } from "bun:test";
 
 describe("Channel", () => {
    test(
@@ -27,7 +28,7 @@ describe("Channel", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_create")) {
-               expectChannelExactSchema(data.d, ChannelType.DM);
+               expectChannelExactSchema(data.d, { type: ChannelType.DM });
                expectChannelExactRecipients(data.d, [user2]);
                tryDone();
             }
@@ -56,7 +57,7 @@ describe("Channel", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_create")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, undefined, [user.id]);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, potentialOwnerIds: [user.id] });
                expectChannelExactRecipients(data.d, [user2, user3]);
                tryDone();
             }
@@ -65,7 +66,7 @@ describe("Channel", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_create")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, undefined, [user.id]);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, potentialOwnerIds: [user.id] });
                expectChannelExactRecipients(data.d, [user, user3]);
                tryDone();
             }
@@ -74,7 +75,7 @@ describe("Channel", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_create")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, undefined, [user.id]);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, potentialOwnerIds: [user.id] });
                expectChannelExactRecipients(data.d, [user, user2]);
                tryDone();
             }
@@ -105,10 +106,10 @@ describe("Channel", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_delete")) {
                if (channel.id.toString() === data.d.id) {
-                  expectChannelExactSchema(data.d, ChannelType.DM, channel.id, undefined, undefined, undefined, true);
+                  expectChannelExactSchema(data.d, { type: ChannelType.DM, id: channel.id, withoutRecipients: true });
                   tryDone();
                } else {
-                  expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user.id], undefined, undefined, true);
+                  expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user.id], withoutRecipients: true });
                   tryDone();
                }
             }
@@ -138,7 +139,7 @@ describe("Channel", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_update")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user2.id], "test-edited", undefined);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user2.id], name: "test-edited" });
                expectChannelExactRecipients(data.d, [user2, user3]);
                tryDone();
             }
@@ -147,7 +148,7 @@ describe("Channel", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_update")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user2.id], "test-edited", undefined);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user2.id], name: "test-edited" });
                expectChannelExactRecipients(data.d, [user, user3]);
                tryDone();
             }
@@ -156,7 +157,7 @@ describe("Channel", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_update")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user2.id], "test-edited", undefined);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user2.id], name: "test-edited" });
                expectChannelExactRecipients(data.d, [user, user2]);
                tryDone();
             }
@@ -188,7 +189,7 @@ describe("Channel", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_recipient_add")) {
-               expectRecipientModifyExactSchema(data.d, groupChannel.id, user3);
+               expectRecipientModifyExactSchema(data.d, { channelId: groupChannel.id, user: user3 });
                tryDone();
             }
          };
@@ -196,7 +197,7 @@ describe("Channel", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_recipient_add")) {
-               expectRecipientModifyExactSchema(data.d, groupChannel.id, user3);
+               expectRecipientModifyExactSchema(data.d, { channelId: groupChannel.id, user: user3 });
                tryDone();
             }
          };
@@ -204,7 +205,7 @@ describe("Channel", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_create")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user.id]);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user.id] });
                expectChannelExactRecipients(data.d, [user, user2]);
                tryDone();
             }
@@ -233,7 +234,7 @@ describe("Channel", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_recipient_remove")) {
-               expectRecipientModifyExactSchema(data.d, groupChannel.id, user3);
+               expectRecipientModifyExactSchema(data.d, { channelId: groupChannel.id, user: user3 });
                tryDone();
             }
          };
@@ -241,7 +242,7 @@ describe("Channel", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_recipient_remove")) {
-               expectRecipientModifyExactSchema(data.d, groupChannel.id, user3);
+               expectRecipientModifyExactSchema(data.d, { channelId: groupChannel.id, user: user3 });
                tryDone();
             }
          };
@@ -249,7 +250,7 @@ describe("Channel", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "channel_delete")) {
-               expectChannelExactSchema(data.d, ChannelType.GROUP_DM, groupChannel.id, [user.id], undefined, undefined, true);
+               expectChannelExactSchema(data.d, { type: ChannelType.GROUP_DM, id: groupChannel.id, potentialOwnerIds: [user.id], withoutRecipients: true });
                tryDone();
             }
          };

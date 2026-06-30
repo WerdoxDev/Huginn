@@ -25,7 +25,7 @@ import { JSDOM } from "jsdom";
 import markdownit from "markdown-it";
 import * as semver from "semver";
 
-import { octokit, resend } from "#setup";
+import { octokit, resend } from "#server";
 import { env } from "#setup";
 
 import { cdnUpload } from "./server-request";
@@ -335,6 +335,8 @@ export function generateVerificationCode() {
 }
 
 export async function sendVerificationEmail(receiverEmail: string, code: string) {
+   if (process.env.TEST) return;
+
    await resend.emails.send({
       to: receiverEmail,
       from: "Huginn <noreply@mail.huginn.dev>",

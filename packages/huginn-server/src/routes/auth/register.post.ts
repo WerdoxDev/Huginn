@@ -1,16 +1,10 @@
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
-import {
-   validateDisplayName,
-   validateEmail,
-   validateEmailUnique,
-   validatePassword,
-   validateUsername,
-   validateUsernameUnique,
-} from "#utils/validation";
-import { createErrorFactory, createHuginnError, createToken, globalPlugin } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, globalPlugin } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { CONSTANTS, type APIPostRegisterResult, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { validateDisplayName, validateEmail, validateEmailUnique, validatePassword, validateUsername, validateUsernameUnique } from "#utils/validation";
 
 const schema = t.Object({
    username: t.String(),
@@ -45,18 +39,6 @@ export const postRegister = new Elysia().use(globalPlugin).post(
       }
 
       const user = await prisma.user.createOne(body);
-      // const lastAuthenticatedAt = Date.now();
-
-      // const accessToken = await createToken(
-      //    "user-access",
-      //    { id: user.id, authType: "password", lastAuthenticatedAt },
-      //    CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-      // );
-      // const refreshToken = await createToken(
-      //    "user-refresh",
-      //    { id: user.id, authType: "password", lastAuthenticatedAt },
-      //    CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-      // );
 
       const code = generateVerificationCode();
       await prisma.emailVerification.createOrUpdate({
@@ -71,8 +53,6 @@ export const postRegister = new Elysia().use(globalPlugin).post(
 
       const json: APIPostRegisterResult = {
          ...user,
-         // token: accessToken,
-         // refreshToken: refreshToken,
          pendingEmail: user.email,
       };
 

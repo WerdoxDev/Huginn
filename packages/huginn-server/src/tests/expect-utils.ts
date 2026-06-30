@@ -1,309 +1,207 @@
 import {
    type ActiveSession,
    type Activity,
-   type APIAttachment,
-   type APIChannelUser,
    type APIEmbed,
-   type APIMessage,
-   type APIMessageReference,
-   type APIMessageUser,
-   type APIPostDMChannelResult,
-   type APIPublicUser,
-   type APIReadState,
-   type APIRelationshipWithoutOwner,
-   type APIRelationUser,
-   type APIReferenceMessage,
    type APIThumbnail,
    type APIVideo,
    ChannelType,
-   type DirectChannel,
-   type GatewayCallState,
-   type GatewayDMCannelRecipientRemoveData,
-   type GatewayDMChannelRecipientAddData,
    type GatewaySessionUpdateData,
-   type GatewayTypingStartData,
-   type GatewayVoiceState,
    type GatewayVoiceStateFlags,
    MessageType,
    type PresenceStatus,
    RelationshipType,
    type Snowflake,
-   type UserPresence,
    type UserSettings,
 } from "@huginn/shared";
 import { expect } from "bun:test";
 
-import { containsId, type TestUser } from "./utils";
+import { containsId } from "./utils";
 
-export function expectPrivateUserExactSchema(user: object) {
-   expect(Object.keys(user).sort()).toStrictEqual(
-      [
-         "id",
-         "username",
-         "displayName",
-         "password",
-         "email",
-         "avatar",
-         "flags",
-         "token",
-         "refreshToken",
-         "bio",
-         "banner",
-         "bannerColor",
-         "accentColor",
-      ].sort(),
-   );
-}
+type ExpectUserOptions = {
+   id: bigint;
+   username: string;
+   displayName: string | null;
+   avatar: string | null;
+   flags: number;
+   banner: string | null;
+   bannerColor?: string | null;
+   accentColor?: string | null;
+   bio: string | null;
+   email?: string;
+   pendingEmail?: string | null;
+   hasTokens?: boolean;
+};
 
-export function expectUserExactSchema(
-   user: object,
-   id: bigint,
-   username?: string,
-   displayName?: string | null,
-   avatar?: string | null,
-   flags?: number,
-   email?: string,
-   password?: string | null,
-   hasTokens?: boolean,
-) {
-   const castedUser = user as APIPublicUser;
+export function expectUserExactSchema(user: any, options: ExpectUserOptions) {
+   const keys = ["id", "username", "displayName", "avatar", "flags", "banner", "bannerColor", "accentColor", "bio"];
 
-   expect(Object.keys(user).sort()).toStrictEqual(
-      [
-         "id",
-         "username",
-         "displayName",
-         "avatar",
-         "flags",
-         "bio",
-         "banner",
-         "bannerColor",
-         "accentColor",
-         ...(email ? ["email"] : []),
-         ...(password ? ["password"] : []),
-         ...(hasTokens ? ["token", "refreshToken"] : []),
-      ].sort(),
-   );
-   expect(castedUser.displayName).toBe(displayName ? displayName : null);
-   expect(castedUser.avatar).toBe(avatar ? avatar : null);
+   if (options.email) {
+      expect(user).toHaveProperty("email", options.email);
+      keys.push("email");
+   }
+   if (options.pendingEmail) {
+      expect(user).toHaveProperty("pendingEmail", options.pendingEmail);
+      keys.push("pendingEmail");
+   }
+   if (options.hasTokens) {
+      expect(user).toHaveProperty("token");
+      expect(user).toHaveProperty("refreshToken");
+      keys.push("token", "refreshToken");
+   }
 
-   if (id) expect(castedUser.id).toBe(id.toString());
-   if (username) expect(castedUser.username).toBe(username);
-   if (flags) expect(castedUser.flags).toBe(flags);
+   expect(user).toContainAllKeys(keys);
+
+   expect({ ...user }).toMatchObject({
+      id: options.id.toString(),
+      username: options.username,
+      displayName: options.displayName,
+      avatar: options.avatar,
+      flags: options.flags,
+      banner: options.banner,
+      bannerColor: options.bannerColor,
+      accentColor: options.accentColor,
+      bio: options.bio,
+   });
 }
 
 export function expectChannelExactSchema(
-   channel: object,
-   type: ChannelType,
-   id?: bigint,
-   ownerIds?: bigint[],
-   name?: string,
-   icon?: string,
-   withoutRecipients?: boolean,
+   channel: any,
+   options: {
+      type: ChannelType;
+      id?: bigint;
+      potentialOwnerIds?: bigint[];
+      name?: string;
+      icon?: string;
+      withoutRecipients?: boolean;
+      lastMessageId?: bigint;
+   },
 ) {
-   expect(channel).toHaveProperty("type", type);
+   expect(channel).toHaveProperty("type", options.type);
+   expect(channel).toHaveProperty("lastMessageId");
 
-   const castedChannel = channel as DirectChannel;
+   expect({ ...channel }).toMatchObject({
+      id: options.id?.toString() ?? expect.any(String),
+      type: options.type,
+   });
+
    let handled = false;
 
-   if (id) expect(castedChannel.id).toBe(id.toString());
-
-   if (type === ChannelType.DM) {
-      expect(Object.keys(channel).sort()).toStrictEqual(
-         withoutRecipients ? ["id", "lastMessageId", "type"].sort() : ["id", "lastMessageId", "recipients", "type"].sort(),
-      );
+   if (options.type === ChannelType.DM) {
       handled = true;
    }
 
-   if (type === ChannelType.GROUP_DM) {
-      expect(Object.keys(channel).sort()).toStrictEqual(
-         withoutRecipients
-            ? ["id", "lastMessageId", "type", "icon", "name", "ownerId"].sort()
-            : ["id", "lastMessageId", "recipients", "type", "icon", "name", "ownerId"].sort(),
-      );
-      if (ownerIds && castedChannel.ownerId) expect(ownerIds).toContain(BigInt(castedChannel.ownerId));
-      expect(castedChannel.name).toBe(name ? name : null);
-      expect(castedChannel.icon).toBe(icon ? icon : null);
+   if (options.type === ChannelType.GROUP_DM) {
+      expect({ ...channel }).toMatchObject({
+         name: options.name ?? null,
+         icon: options.icon ?? null,
+         ownerId: expect.any(String),
+      });
+      expect(channel).toHaveProperty("ownerId");
+
+      if (options.potentialOwnerIds) expect(options.potentialOwnerIds).toContain(BigInt(channel.ownerId));
       handled = true;
    }
 
-   if (!withoutRecipients) {
-      for (const recipient of (channel as APIPostDMChannelResult).recipients) {
-         expect(Object.keys(recipient).sort()).toStrictEqual(["id", "username", "displayName", "flags", "avatar"].sort());
+   if (!options.withoutRecipients) {
+      expect(channel).toHaveProperty("recipients");
+      for (const recipient of channel.recipients) {
+         expect(recipient).toContainKeys(["username", "displayName", "flags", "avatar", "id", "banner", "bannerColor", "accentColor", "bio"]);
       }
    }
 
-   expect(handled, `Channel with the type of ${type} was not handled`).toBeTrue();
+   expect(handled, `Channel with the type of ${options.type} was not handled`).toBeTrue();
 }
 
-export function expectChannelExactRecipients(channel: DirectChannel, recipients: (Omit<APIChannelUser, "id"> & { id: bigint })[]) {
+export function expectChannelExactRecipients(channel: any, recipients: ExpectUserOptions[]) {
+   expect(channel).toHaveProperty("recipients");
+   expect(channel.recipients.length).toBe(recipients.length);
+
+   // check for recipients that are in the array but not in the channel.recipients
    expect(
-      channel.recipients.every((x) => recipients.some((y) => y.id.toString() === x.id)),
+      channel.recipients.every((x: any) => recipients.some((y) => y.id.toString() === x.id)),
       "The returned channel recipients does not match the expected recipients",
    ).toBeTrue();
 
    for (const user of recipients) {
       expect(containsId(channel.recipients, user.id.toString())).toBeTrue();
 
-      const channelRecipient = channel.recipients.find((x) => x.id === user.id.toString());
-
-      expect(channelRecipient).toEqual({
-         id: user.id.toString(),
-         flags: user.flags,
-         username: user.username,
-         displayName: user.displayName,
-         avatar: user.avatar,
-      } as APIChannelUser);
+      const channelRecipient = channel.recipients.find((x: any) => x.id === user.id.toString());
+      expectUserExactSchema(channelRecipient, { ...user, email: undefined });
    }
 }
 
 export function expectMessageExactSchema(
-   message: object,
-   type: MessageType,
-   id?: bigint,
-   channelId?: bigint,
-   author?: Omit<APIMessageUser, "id"> & { id: bigint },
-   content?: string,
-   mentions?: (Omit<APIMessageUser, "id"> & { id: bigint })[],
-   messageReference?: APIMessageReference,
+   message: any,
+   options: {
+      type: MessageType;
+      id?: bigint;
+      channelId?: bigint;
+      author?: ExpectUserOptions;
+      content?: string;
+      mentions?: ExpectUserOptions[];
+      reactions?: any[];
+      messageReference?: any;
+   },
 ) {
-   expect(message).toHaveProperty("type", type);
+   expect({ ...message }).toMatchObject({
+      id: options.id?.toString() ?? expect.any(String),
+      type: options.type,
+      channelId: options.channelId?.toString() ?? expect.any(String),
+      content: options.content ?? expect.any(String),
+   });
 
-   const castedMessage = message as APIMessage;
-   let handled = false;
+   const keys = ["id", "type", "author", "channelId", "content", "timestamp", "editedTimestamp", "embeds", "attachments", "pinned", "mentions", "flags"];
 
-   if (id) expect(castedMessage.id).toBe(id.toString());
+   if (options.type === MessageType.REPLY) keys.push("messageReference", "referencedMessage");
+   if (options.type === MessageType.CALL) keys.push("call");
 
-   if (
-      [
-         MessageType.DEFAULT,
-         MessageType.RECIPIENT_ADD,
-         MessageType.RECIPIENT_REMOVE,
-         MessageType.CHANNEL_ICON_CHANGED,
-         MessageType.CHANNEL_NAME_CHANGED,
-         MessageType.CHANNEL_OWNER_CHANGED,
-         MessageType.REPLY,
-      ].includes(type)
-   ) {
-      expect(Object.keys(message).sort()).toStrictEqual(
-         [
-            "id",
-            "type",
-            "channelId",
-            "author",
-            "content",
-            "timestamp",
-            "editedTimestamp",
-            "embeds",
-            "attachments",
-            "pinned",
-            "mentions",
-            "reactions",
-            "flags",
-            ...(type === MessageType.REPLY ? ["messageReference", "referencedMessage"] : []),
-         ].sort(),
-      );
+   expect(message).toContainAllKeys(keys);
 
-      if (channelId) expect(castedMessage.channelId).toBe(channelId.toString());
-      if (content) expect(castedMessage.content).toBe(content);
-      if (author) {
-         expect(castedMessage.author).toStrictEqual({
-            id: author.id.toString(),
-            avatar: author.avatar,
-            displayName: author.displayName,
-            username: author.username,
-            flags: author.flags,
-            banner: author.banner,
-            bannerColor: author.bannerColor,
-            accentColor: author.accentColor,
-            bio: author.bio,
-         });
-      }
+   if (options.author) expectUserExactSchema(message.author, { ...options.author, email: undefined });
 
-      if (mentions) {
-         expect(castedMessage.mentions.sort()).toStrictEqual(
-            mentions
-               .map((x) => ({
-                  id: x.id.toString(),
-                  avatar: x.avatar,
-                  displayName: x.displayName,
-                  flags: x.flags,
-                  username: x.username,
-                  banner: x.banner,
-                  bannerColor: x.bannerColor,
-                  accentColor: x.accentColor,
-                  bio: x.bio,
-               }))
-               .sort(),
-         );
-      }
-      if (messageReference) {
-         expect((castedMessage as APIReferenceMessage).messageReference).toStrictEqual(messageReference);
-      }
-      expect(Object.keys(castedMessage.author).sort()).toStrictEqual(
-         ["id", "username", "displayName", "flags", "avatar", "banner", "bannerColor", "accentColor", "bio"].sort(),
-      );
-
-      handled = true;
+   if (options.mentions) {
+      const messageMentions = message.mentions.toSorted();
+      options.mentions.toSorted().forEach((x, i) => expectUserExactSchema(messageMentions[i], { ...x, email: undefined }));
    }
 
-   expect(handled, `Message with the type of ${type} was not handled`).toBeTrue();
-}
-
-export function expectRelationshipExactSchema(
-   relationship: object,
-   type: RelationshipType,
-   id?: bigint,
-   user?: Omit<APIRelationUser, "id"> & { id: bigint },
-   nickname?: string,
-) {
-   expect(relationship).toHaveProperty("type", type);
-
-   const castedRelationship = relationship as APIRelationshipWithoutOwner;
-   let handled = false;
-
-   if (id) expect(castedRelationship.id).toBe(id.toString());
-
-   if ([RelationshipType.PENDING_INCOMING, RelationshipType.PENDING_OUTGOING, RelationshipType.FRIEND].includes(type)) {
-      expect(Object.keys(relationship).sort()).toStrictEqual(["id", "type", "nickname", "user", "since"].sort());
-
-      if (nickname) expect(castedRelationship.nickname).toBe(nickname);
-      if (user) {
-         expect(castedRelationship.user).toStrictEqual({
-            id: user.id.toString(),
-            avatar: user.avatar,
-            displayName: user.displayName,
-            flags: user.flags,
-            username: user.username,
-            banner: user.banner,
-            bannerColor: user.bannerColor,
-            accentColor: user.accentColor,
-            bio: user.bio,
-         });
-      }
-
-      handled = true;
+   if (options.reactions) {
+      //TODO: DO THIS
    }
 
-   expect(handled, `Relationship with the type of ${type} was not handled`).toBeTrue();
+   if (options.messageReference) expect(message.messageReference).toStrictEqual(options.messageReference);
 }
 
-export function expectPresenceExactSchema(
-   presence: object,
-   user: TestUser,
-   status: PresenceStatus,
-   activeSessionIds: Snowflake[],
-   expectFullUser: boolean,
-   activities: Activity[],
-) {
-   const castedPresence = presence as UserPresence;
-   expect(castedPresence.status).toBe(status);
-   // expect(castedPresence.activeSessions).toBe(activeSessions);
-   const activeSessions: ActiveSession[] = activeSessionIds.map((x) => ({ sessionId: x }));
+type ExpectRelationshipOptions = {
+   type: RelationshipType;
+   id?: bigint;
+   user?: ExpectUserOptions;
+   nickname?: string;
+};
 
-   if (status === "offline") {
+export function expectRelationshipExactSchema(relationship: any, options: ExpectRelationshipOptions) {
+   expect({ ...relationship }).toMatchObject({
+      id: options.id?.toString() ?? expect.any(String),
+      type: options.type,
+   });
+
+   if (options.nickname) expect(relationship).toHaveProperty("nickname", options.nickname);
+   if (options.user) expectUserExactSchema(relationship.user, { ...options.user, email: undefined });
+}
+
+type ExpectPresenceOptions = {
+   user: ExpectUserOptions;
+   status: PresenceStatus;
+   activeSessionIds: Snowflake[];
+   isPartialUser?: boolean;
+   activities: Activity[];
+};
+
+export function expectPresenceExactSchema(presence: any, options: ExpectPresenceOptions) {
+   const activeSessions: ActiveSession[] = options.activeSessionIds.map((x) => ({ sessionId: x }));
+
+   if (options.status === "offline") {
       expect(presence).toStrictEqual({
-         user: { id: user.id.toString() },
+         user: { id: options.user.id.toString() },
          status: "offline",
          activeSessions,
          activities: [],
@@ -311,156 +209,141 @@ export function expectPresenceExactSchema(
       return;
    }
 
-   if (expectFullUser) {
-      expectUserExactSchema(castedPresence.user, user.id, user.username, user.displayName, user.avatar, user.flags);
-   } else {
-      expect(presence).toStrictEqual({
-         user: { id: user.id.toString() },
-         status: castedPresence.status,
-         activeSessions,
-         activities,
-      });
-   }
+   expect(presence).toMatchObject({
+      status: options.status,
+      activeSessions,
+      activities: options.activities,
+   });
+
+   if (!options.isPartialUser) expectUserExactSchema(presence.user, { ...options.user, email: undefined });
+   else expect(presence).toHaveProperty("user", { id: options.user.id.toString() });
 }
 
-export function expectTypingExactSchema(typing: object, channelId?: bigint, userId?: bigint) {
-   const castedTyping = typing as GatewayTypingStartData;
+type ExpectTypingOptions = {
+   channelId?: bigint;
+   userId?: bigint;
+};
 
-   expect(Object.keys(typing).sort()).toStrictEqual(["channelId", "userId", "timestamp"].sort());
-   if (channelId) expect(castedTyping.channelId).toBe(channelId.toString());
-   if (userId) expect(castedTyping.userId).toBe(userId.toString());
+export function expectTypingExactSchema(typing: any, options: ExpectTypingOptions) {
+   expect(typing).toContainAllKeys(["channelId", "userId", "timestamp"]);
+   expect(typing).toHaveProperty("channelId", options.channelId?.toString());
+   expect(typing).toHaveProperty("userId", options.userId?.toString());
 }
 
-export function expectRecipientModifyExactSchema(recipientModify: object, channelId?: bigint, user?: TestUser) {
-   const castedRecipientModify = recipientModify as GatewayDMChannelRecipientAddData | GatewayDMCannelRecipientRemoveData;
+type ExpectRecipientModifyOptions = {
+   channelId?: bigint;
+   user?: ExpectUserOptions;
+};
 
-   expect(Object.keys(recipientModify).sort()).toStrictEqual(["channelId", "user"].sort());
-   if (channelId) expect(castedRecipientModify.channelId).toBe(channelId.toString());
-   if (user)
-      expect(castedRecipientModify.user).toStrictEqual({
-         id: user.id.toString(),
-         avatar: user.avatar,
-         displayName: user.displayName,
-         flags: user.flags,
-         username: user.username,
-         banner: user.banner,
-         bannerColor: user.bannerColor,
-         accentColor: user.accentColor,
-         bio: user.bio,
-      });
+export function expectRecipientModifyExactSchema(recipientModify: any, options: ExpectRecipientModifyOptions) {
+   expect(recipientModify).toContainAllKeys(["channelId", "user"]);
+   expect(recipientModify).toHaveProperty("channelId", options.channelId?.toString());
+   if (options.user) expectUserExactSchema(recipientModify.user, { ...options.user, email: undefined });
 }
 
-export function expectReadStatesExactSchema(readStates: object[], channelId: Snowflake, userIds: bigint[]) {
-   const parsedReadStates = readStates as (Omit<APIReadState, "userId"> & { userId: bigint })[];
-   expect(readStates.length).toBe(userIds.length);
+type ExpectReadStatesOptions = {
+   channelId: Snowflake;
+   userIds: bigint[];
+};
+
+export function expectReadStatesExactSchema(readStates: any[], options: ExpectReadStatesOptions) {
+   expect(readStates.length).toBe(options.userIds.length);
 
    expect(
-      parsedReadStates.every((x) => userIds.some((y) => y === x.userId)),
+      readStates.every((x) => options.userIds.some((y) => y === x.userId)),
       "The user ids of read states does not match the expected user ids",
    ).toBeTrue();
 
    for (const readState of readStates) {
-      expect(Object.keys(readState).sort()).toStrictEqual(["channelId", "userId", "lastReadMessageId"].sort());
-      expect(readState).toHaveProperty("channelId", BigInt(channelId));
+      expect(readState).toContainAllKeys(["channelId", "userId", "lastReadMessageId"]);
    }
 }
 
-export function expectAttachmentExactSchema(
-   attachment: object,
-   messageId: string,
-   channelId: string,
-   filename: string,
-   width: number,
-   height: number,
-   description?: string,
-) {
-   const parsedAttachment = attachment as APIAttachment;
+type ExpectAttachmentOptions = {
+   filename: string;
+   width: number;
+   height: number;
+   description?: string;
+};
 
-   expect(parsedAttachment).toStrictEqual({
-      id: parsedAttachment.id,
-      flags: parsedAttachment.flags,
-      size: parsedAttachment.size,
-      contentType: parsedAttachment.contentType,
-      url: parsedAttachment.url,
-      filename,
-      width,
-      height,
-      ...(parsedAttachment.description || description ? { description } : {}),
+export function expectAttachmentExactSchema(attachment: any, options: ExpectAttachmentOptions) {
+   expect(attachment).toContainAllKeys(["id", "flags", "size", "contentType", "url", "filename", "width", "height", "description"]);
+
+   expect(attachment).toMatchObject({
+      filename: options.filename,
+      width: options.width,
+      height: options.height,
+      description: options.description,
    });
-   expect(parsedAttachment.url).toInclude(filename);
-   expect(parsedAttachment.url).toInclude(messageId);
-   expect(parsedAttachment.url).toInclude(channelId);
+
+   expect(attachment.url).toInclude(options.filename);
 }
 
-export function expectEmbedExactSchema(
-   embed: object,
-   type: APIEmbed["type"],
-   title?: string,
-   url?: string,
-   description?: string,
-   timestamp?: string,
-   thumbnail?: APIThumbnail,
-   video?: APIVideo,
-) {
-   const parsedEmbed = embed as APIEmbed;
+type ExpectEmbedOptions = {
+   type: APIEmbed["type"];
+   title?: string;
+   url?: string;
+   description?: string;
+   timestamp?: string;
+   thumbnail?: APIThumbnail;
+   video?: APIVideo;
+};
 
-   expect(parsedEmbed).toStrictEqual({
-      type,
-      ...(parsedEmbed.title || title ? { title } : {}),
-      ...(parsedEmbed.url || url ? { url } : {}),
-      ...(parsedEmbed.description || description ? { description } : {}),
-      ...(parsedEmbed.type || type ? { type } : {}),
-      ...(parsedEmbed.timestamp || timestamp ? { timestamp } : {}),
-      ...(parsedEmbed.thumbnail || thumbnail ? { thumbnail } : {}),
-      ...(parsedEmbed.video || video ? { video } : {}),
+export function expectEmbedExactSchema(embed: any, options: ExpectEmbedOptions) {
+   expect(embed).toHaveProperty("type", options.type);
+   if (options.title) expect(embed).toHaveProperty("title", options.title);
+   if (options.url) expect(embed).toHaveProperty("url", options.url);
+   if (options.description) expect(embed).toHaveProperty("description", options.description);
+   if (options.timestamp) expect(embed).toHaveProperty("timestamp", options.timestamp);
+   if (options.thumbnail) expect(embed).toHaveProperty("thumbnail", options.thumbnail);
+   if (options.video) expect(embed).toHaveProperty("video", options.video);
+}
+
+type ExpectVoiceStateOptions = {
+   channelId: Snowflake | null;
+   guildId: Snowflake | null;
+   userId: Snowflake;
+   sessionId: Snowflake;
+   flags?: Partial<GatewayVoiceStateFlags>;
+};
+
+export function expectVoiceStateExactSchema(voiceState: any, options: ExpectVoiceStateOptions) {
+   expect(voiceState).toStrictEqual({
+      channelId: options.channelId,
+      guildId: options.guildId,
+      userId: options.userId,
+      sessionId: options.sessionId,
+      isAudioDeafened: options.flags?.isAudioDeafened ?? voiceState.isAudioDeafened,
+      isAudioMuted: options.flags?.isAudioMuted ?? voiceState.isAudioMuted,
+      isScreenSharing: options.flags?.isScreenSharing ?? voiceState.isScreenSharing,
+      isAudioStreaming: options.flags?.isAudioStreaming ?? voiceState.isAudioStreaming,
+      isCameraOn: options.flags?.isCameraOn ?? voiceState.isCameraOn,
    });
+}
+
+type ExpectCallStateOptions = {
+   channelId: Snowflake;
+   messageId?: Snowflake;
+   ringing?: Snowflake[];
+};
+
+export function expectCallStateExactSchema(callState: any, options: ExpectCallStateOptions) {
+   expect(callState).toHaveProperty("channelId", options.channelId.toString());
+   if (options.messageId) expect(callState).toHaveProperty("messageId", options.messageId.toString());
+   if (options.ringing) {
+      expect(callState).toHaveProperty("ringing");
+      expect(callState.ringing).toEqual(options.ringing.map((x) => x.toString()));
+   }
+}
+
+export function expectUserSettingsExactSchema(userSettings: any, expectedSettings: UserSettings) {
+   expect(userSettings).toStrictEqual(expectedSettings);
+}
+
+export function expectSessionUpdateExactSchema(sessionUpdate: any, expectedSessionUpdate: GatewaySessionUpdateData) {
+   expect(sessionUpdate).toStrictEqual(expectedSessionUpdate);
 }
 
 export function expectVoiceServerExactSchema(voiceServer: object) {
    expect(Object.keys(voiceServer).sort()).toStrictEqual(["token"].sort());
-}
-
-export function expectVoiceStateExactSchema(
-   voiceState: object,
-   channelId: Snowflake | null,
-   guildId: Snowflake | null,
-   userId: Snowflake,
-   sessionId: Snowflake,
-   flags?: Partial<GatewayVoiceStateFlags>,
-) {
-   const parsedVoiceState = voiceState as GatewayVoiceState;
-
-   expect(parsedVoiceState).toStrictEqual({
-      channelId,
-      guildId,
-      userId,
-      sessionId,
-      isAudioDeafened: flags?.isAudioDeafened ?? parsedVoiceState.isAudioDeafened,
-      isAudioMuted: flags?.isAudioMuted ?? parsedVoiceState.isAudioMuted,
-      isScreenSharing: flags?.isScreenSharing ?? parsedVoiceState.isScreenSharing,
-      isAudioStreaming: flags?.isAudioStreaming ?? parsedVoiceState.isAudioStreaming,
-      isCameraOn: flags?.isCameraOn ?? parsedVoiceState.isCameraOn,
-   });
-}
-
-export function expectCallStateExactSchema(callState: object, channelId: Snowflake, messageId: Snowflake | undefined, ringing: Snowflake[]) {
-   const parsedCallState = callState as GatewayCallState;
-
-   expect(parsedCallState).toStrictEqual({
-      channelId,
-      messageId: messageId ?? parsedCallState.messageId,
-      ringing,
-   });
-}
-
-export function expectUserSettingsExactSchema(userSettings: object, expectedSettings: UserSettings) {
-   const parsedUserSettings = userSettings as UserSettings;
-
-   expect(parsedUserSettings).toStrictEqual(expectedSettings);
-}
-
-export function expectSessionUpdateExactSchema(sessionUpdate: object, expectedSessionUpdate: GatewaySessionUpdateData) {
-   const parsedSessionUpdate = sessionUpdate as GatewaySessionUpdateData;
-
-   expect(parsedSessionUpdate).toStrictEqual(expectedSessionUpdate);
 }

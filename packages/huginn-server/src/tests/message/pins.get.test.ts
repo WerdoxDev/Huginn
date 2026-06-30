@@ -1,9 +1,10 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { type APIGetChannelPinsResult, ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("GET /api/channels/:channelId/messages/pins", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -61,7 +62,13 @@ describe("GET /api/channels/:channelId/messages/pins", () => {
             throw new Error("Expected pinned message to be present");
          }
 
-         expectMessageExactSchema(pin.message, MessageType.DEFAULT, source.id, channel.id, user, source.content);
+         expectMessageExactSchema(pin.message, {
+            type: MessageType.DEFAULT,
+            id: source.id,
+            channelId: channel.id,
+            author: user,
+            content: source.content,
+         });
          expect(pin.message.pinned).toBeTrue();
          expect(typeof pin.pinnedAt).toBe("string");
       }

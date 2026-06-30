@@ -1,5 +1,3 @@
-import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import {
    type APIMessageReference,
@@ -12,6 +10,9 @@ import {
 } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
 import { resolve } from "pathe";
+
+import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 
 describe("POST /api/channels/:channelId/messages", () => {
    test(
@@ -62,7 +63,7 @@ describe("POST /api/channels/:channelId/messages", () => {
          content: "test",
       })) as APIPostMessageResult;
 
-      expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "test");
+      expectMessageExactSchema(result, { type: MessageType.DEFAULT, channelId: channel.id, author: user, content: "test" });
    });
 
    test(
@@ -186,7 +187,14 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       expect(result.attachments).toBeArray();
       expect(result.attachments).toHaveLength(1);
-      expectAttachmentExactSchema(result.attachments[0], result.id, result.channelId, "pixel.png", 1, 1, "test");
+      expectAttachmentExactSchema(result.attachments[0], {
+         messageId: result.id,
+         channelId: result.channelId,
+         filename: "pixel.png",
+         width: 1,
+         height: 1,
+         description: "test",
+      });
    });
 
    test.if(isCDNRunning)("should create a message with multiple attachments when the request is successful", async () => {
@@ -210,8 +218,19 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       expect(result.attachments).toBeArray();
       expect(result.attachments).toHaveLength(2);
-      expectAttachmentExactSchema(result.attachments[0], result.id, result.channelId, "pixel.png", 1, 1, "test");
-      expectAttachmentExactSchema(result.attachments[1], result.id, result.channelId, "pixel2.png", 1, 1, "test2");
+      console.log(result.attachments[0]);
+      expectAttachmentExactSchema(result.attachments[0], {
+         filename: "pixel.png",
+         width: 1,
+         height: 1,
+         description: "test",
+      });
+      expectAttachmentExactSchema(result.attachments[1], {
+         filename: "pixel2.png",
+         width: 1,
+         height: 1,
+         description: "test2",
+      });
    });
 
    test(
@@ -226,7 +245,7 @@ describe("POST /api/channels/:channelId/messages", () => {
             content: "https://huginn.dev",
          })) as APIPostMessageResult;
 
-         expectMessageExactSchema(result, MessageType.DEFAULT, undefined, channel.id, user, "https://huginn.dev", undefined);
+         expectMessageExactSchema(result, { type: MessageType.DEFAULT, channelId: channel.id, author: user, content: "https://huginn.dev" });
 
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -234,15 +253,17 @@ describe("POST /api/channels/:channelId/messages", () => {
                expect(data.d.id).toBe(result.id);
                expect(data.d.embeds).toBeArray();
                expect(data.d.embeds).toHaveLength(1);
-               expectEmbedExactSchema(
-                  data.d.embeds[0],
-                  "rich",
-                  "Huginn - Norse Chat App",
-                  "https://huginn.dev/",
-                  "A fast, customizable chat app with a touch of Norse mythology.",
-                  undefined,
-                  { url: "https://huginn.dev/huginn-meta.png", width: 1150, height: 609 },
-               );
+               expectEmbedExactSchema(data.d.embeds[0], {
+                  type: "rich",
+                  title: "Huginn - Norse Chat App",
+                  url: "https://huginn.dev/",
+                  description: "A fast, customizable chat app with a touch of Norse mythology.",
+                  thumbnail: {
+                     url: "https://huginn.dev/huginn-meta.png",
+                     width: 1150,
+                     height: 609,
+                  },
+               });
                done();
             }
          };
@@ -266,10 +287,14 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       expect(result.embeds).toBeArray();
       expect(result.embeds).toHaveLength(1);
-      expectEmbedExactSchema(result.embeds[0], "image", undefined, "https://huginn.dev/huginn-meta.png", undefined, undefined, {
+      expectEmbedExactSchema(result.embeds[0], {
+         type: "image",
          url: "https://huginn.dev/huginn-meta.png",
-         width: 1150,
-         height: 609,
+         thumbnail: {
+            url: "https://huginn.dev/huginn-meta.png",
+            width: 1150,
+            height: 609,
+         },
       });
    });
 
@@ -291,6 +316,6 @@ describe("POST /api/channels/:channelId/messages", () => {
 
       const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIReferenceMessage;
 
-      expectMessageExactSchema(result, MessageType.REPLY, undefined, channel.id, user, "test", undefined, reference);
+      expectMessageExactSchema(result, { type: MessageType.REPLY, channelId: channel.id, author: user, content: "test", messageReference: reference });
    });
 });

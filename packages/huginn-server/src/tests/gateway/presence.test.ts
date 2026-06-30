@@ -1,3 +1,7 @@
+import { testHandler } from "@huginn/backend-shared";
+import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
+
 import { expectPresenceExactSchema, expectSessionUpdateExactSchema } from "#tests/expect-utils";
 import {
    authHeader,
@@ -9,9 +13,6 @@ import {
    testIsDispatch,
    wsSend,
 } from "#tests/utils";
-import { testHandler } from "@huginn/backend-shared";
-import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
-import { describe, expect, test } from "bun:test";
 
 describe("Presence", () => {
    test("should send relationship presences with the websocket ready message", async (done) => {
@@ -29,7 +30,13 @@ describe("Presence", () => {
          if (testIsDispatch(data, "ready")) {
             // user2's presence should be sent to user
             expect(data.d.presences).toHaveLength(1);
-            expectPresenceExactSchema(data.d.presences[0], user2, "online", [sessionId], false, []);
+            expectPresenceExactSchema(data.d.presences[0], {
+               user: user2,
+               status: "online",
+               activeSessionIds: [sessionId],
+               activities: [],
+               isPartialUser: true,
+            });
             done();
          }
       };
@@ -48,7 +55,7 @@ describe("Presence", () => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
             // user2's presence should be sent to user
-            expectPresenceExactSchema(data.d, user2, "online", [sessionId], false, []);
+            expectPresenceExactSchema(data.d, { user: user2, status: "online", activeSessionIds: [sessionId], activities: [], isPartialUser: true });
             done();
          }
       };
@@ -74,7 +81,7 @@ describe("Presence", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "presence_update") && data.d.status === "offline") {
                // user2's presence should be sent to user
-               expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
+               expectPresenceExactSchema(data.d, { user: user2, status: "offline", activeSessionIds: [], activities: [] });
                done();
             }
          };
@@ -96,7 +103,7 @@ describe("Presence", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user2, "online", [sessionId2], false, []);
+            expectPresenceExactSchema(data.d, { user: user2, status: "online", activeSessionIds: [sessionId2], activities: [], isPartialUser: true });
             tryDone();
          }
       };
@@ -104,7 +111,7 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "online", [sessionId], false, []);
+            expectPresenceExactSchema(data.d, { user: user, status: "online", activeSessionIds: [sessionId], activities: [], isPartialUser: true });
             tryDone();
          }
       };
@@ -126,7 +133,7 @@ describe("Presence", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "presence_update")) {
-               expectPresenceExactSchema(data.d, user2, "offline", [], false, []);
+               expectPresenceExactSchema(data.d, { user: user2, status: "offline", activeSessionIds: [], activities: [] });
                tryDone();
             }
          };
@@ -134,7 +141,7 @@ describe("Presence", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "presence_update")) {
-               expectPresenceExactSchema(data.d, user, "offline", [], false, []);
+               expectPresenceExactSchema(data.d, { user: user, status: "offline", activeSessionIds: [], activities: [] });
                tryDone();
             }
          };
@@ -159,14 +166,13 @@ describe("Presence", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "presence_update")) {
-               expectPresenceExactSchema(
-                  data.d,
+               expectPresenceExactSchema(data.d, {
                   user,
-                  updateCount === 2 ? "offline" : "online",
-                  updateCount === 0 ? [sessionId1, sessionId1_2] : updateCount === 1 ? [sessionId1_2] : [],
-                  false,
-                  [],
-               );
+                  status: updateCount === 2 ? "offline" : "online",
+                  activeSessionIds: updateCount === 0 ? [sessionId1, sessionId1_2] : updateCount === 1 ? [sessionId1_2] : [],
+                  activities: [],
+                  isPartialUser: true,
+               });
                tryDone();
                updateCount++;
             }
@@ -182,7 +188,7 @@ describe("Presence", () => {
       { timeout: 10000 },
    );
 
-   test("should send a presence_update to other subscribed users when a user is updated", async (done) => {
+   test("should send a presence_update to other subscribed users when a user is edited", async (done) => {
       const [user, user2] = await createTestUsers(2);
 
       const { sessionId: sessionId1 } = await getReadyWebSocket(user);
@@ -192,7 +198,12 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, { ...user, displayName: "test-edited" }, "online", [sessionId1], true, []);
+            expectPresenceExactSchema(data.d, {
+               user: { ...user, displayName: "test-edited" },
+               status: "online",
+               activeSessionIds: [sessionId1],
+               activities: [],
+            });
             done();
          }
       };
@@ -211,7 +222,13 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "dnd", [sessionId1], false, []);
+            expectPresenceExactSchema(data.d, {
+               user,
+               status: "dnd",
+               activeSessionIds: [sessionId1],
+               activities: [],
+               isPartialUser: true,
+            });
             done();
          }
       };
@@ -273,9 +290,13 @@ describe("Presence", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "presence_update")) {
-            expectPresenceExactSchema(data.d, user, "online", [sessionId1], false, [
-               { name: "test", createdAt: time, type: ActivityType.PLAYING, sessionId: sessionId1 },
-            ]);
+            expectPresenceExactSchema(data.d, {
+               user,
+               status: "online",
+               activeSessionIds: [sessionId1],
+               activities: [{ name: "test", createdAt: time, type: ActivityType.PLAYING, sessionId: sessionId1 }],
+               isPartialUser: true,
+            });
             done();
          }
       };

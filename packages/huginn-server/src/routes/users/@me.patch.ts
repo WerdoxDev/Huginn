@@ -1,4 +1,10 @@
-import { gateway } from "#setup";
+import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
+import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
+import { selectPrivateUser } from "@huginn/backend-shared/database/common";
+import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
+import Elysia, { t } from "elysia";
+
+import { gateway } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
@@ -11,11 +17,6 @@ import {
    validateUsername,
    validateUsernameUnique,
 } from "#utils/validation";
-import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
-import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
-import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
-import Elysia, { t } from "elysia";
 
 const schema = t.Object({
    email: t.Optional(t.String()),

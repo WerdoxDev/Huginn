@@ -1,8 +1,11 @@
 import type { APIPostRegisterResult, RegisterUser } from "@huginn/shared";
 
-import { createTestUsers, removeUserLater } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database/index";
 import { describe, expect, test } from "bun:test";
+
+import { expectUserExactSchema } from "#tests/expect-utils";
+import { createTestUsers, removeUserLater } from "#tests/utils";
 
 describe("POST /auth/register", () => {
    test("should return 'Invalid Form Body' when body constrains are not met", async () => {
@@ -78,23 +81,9 @@ describe("POST /auth/register", () => {
 
       expect(response.status).toBe(202);
       expect(result.pendingEmail).toBe(user.email);
-      expect(Object.keys(result).sort()).toStrictEqual(
-         [
-            "id",
-            "username",
-            "displayName",
-            "password",
-            "email",
-            "avatar",
-            "flags",
-            "banner",
-            "bannerColor",
-            "bio",
-            "accentColor",
-            "pendingEmail",
-            "token",
-            "refreshToken",
-         ].sort(),
-      );
+
+      const dbUser = await prisma.user.findUnique({ where: { id: BigInt(result.id) } });
+      expect(dbUser).toBeTruthy();
+      expectUserExactSchema(result, { ...dbUser!, pendingEmail: user.email });
    });
 });

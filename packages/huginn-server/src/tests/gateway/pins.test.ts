@@ -1,9 +1,10 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("Pins", () => {
    test(
@@ -21,7 +22,7 @@ describe("Pins", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_update") && data.d.id === message.id.toString()) {
-               expectMessageExactSchema(data.d, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+               expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, id: message.id, channelId: channel.id, author: user, content: message.content });
                expect(data.d.pinned).toBeTrue();
                tryDone();
             }
@@ -30,7 +31,7 @@ describe("Pins", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_update") && data.d.id === message.id.toString()) {
-               expectMessageExactSchema(data.d, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+               expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, id: message.id, channelId: channel.id, author: user, content: message.content });
                expect(data.d.pinned).toBeTrue();
                tryDone();
             }
@@ -62,7 +63,7 @@ describe("Pins", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_update") && data.d.id === message.id.toString()) {
-               expectMessageExactSchema(data.d, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+               expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, id: message.id, channelId: channel.id, author: user, content: message.content });
                expect(data.d.pinned).toBeFalse();
                tryDone();
             }
@@ -71,7 +72,7 @@ describe("Pins", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "message_update") && data.d.id === message.id.toString()) {
-               expectMessageExactSchema(data.d, MessageType.DEFAULT, message.id, channel.id, user, message.content);
+               expectMessageExactSchema(data.d, { type: MessageType.DEFAULT, id: message.id, channelId: channel.id, author: user, content: message.content });
                expect(data.d.pinned).toBeFalse();
                tryDone();
             }
