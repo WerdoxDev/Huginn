@@ -1,9 +1,10 @@
-import { filterMessage } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessagePin } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelPinsResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { filterMessage } from "#utils/helpers";
 
 const querySchema = t.Object({
    limit: t.Optional(t.Number()),
@@ -26,10 +27,12 @@ export const getChannelMessagePins = new Elysia().use(verifyJwt()).get(
          select: selectMessagePin,
       });
 
-      const json: APIGetChannelPinsResult = dbPins.map((pin) => ({
-         pinnedAt: pin.pinnedAt,
-         message: filterMessage(pin.message),
-      }));
+      const json: APIGetChannelPinsResult = await Promise.all(
+         dbPins.map(async (pin) => ({
+            pinnedAt: pin.pinnedAt,
+            message: await filterMessage(pin.message, { receiverId: tokenPayload.id }),
+         })),
+      );
 
       return status("OK", json);
    },

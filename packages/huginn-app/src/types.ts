@@ -1,3 +1,4 @@
+import type { Popover } from "@base-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -184,6 +185,12 @@ export type ContextMenuMessage = {
    imgRef?: RefObject<HTMLImageElement | null>;
 };
 
+export type PopoverStateProps<T = unknown> = {
+   isOpen?: boolean;
+   anchor?: HTMLElement;
+   data?: T;
+};
+
 export type ProcessedMessage = AppMessage & {
    hasNewMinute: boolean;
    hasNewDate: boolean;
@@ -279,7 +286,7 @@ export type MarkedToken = {
    code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
    link?: { href: string };
    list?: { ordered: boolean; index?: number };
-   emoji?: { slug: string; emoji: string; initial: "slug" | "emoji" };
+   emoji?: { id?: string; slug: string; unicode?: string; initial: "slug" | "emoji" };
 };
 
 export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };

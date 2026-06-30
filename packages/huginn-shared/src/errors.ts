@@ -62,6 +62,7 @@ export enum JsonCode {
    UNKNOWN_RELATIONSHIP = 1006,
    UNKNOWN_MESSAGE_PIN = 1007,
    UNKNOWN_READ_STATE = 1008,
+   UNKNOWN_EMOJI = 1009,
    UNKNOWN_KNOWN_APPLICATION = 1010,
    INVALID_FORM_BODY = 2001,
    MISSING_ACCESS = 2002,
@@ -198,6 +199,9 @@ export const Errors = {
    },
    unknownRelationship(relationshipId?: Snowflake): [string, JsonCode] {
       return [`Unknown Relationship (${relationshipId})`, JsonCode.UNKNOWN_RELATIONSHIP];
+   },
+   unknownEmoji(emojiKey?: string): [string, JsonCode] {
+      return [`Unknown Emoji (${emojiKey})`, JsonCode.UNKNOWN_EMOJI];
    },
    noUserWithUsername(): [string, JsonCode] {
       return ["No user with specified username was found", JsonCode.USERNAME_NOT_FOUND];

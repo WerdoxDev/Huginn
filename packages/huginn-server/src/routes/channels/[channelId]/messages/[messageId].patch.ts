@@ -1,7 +1,3 @@
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { filterMessage } from "#utils/helpers";
-import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
-import { validateEmbeds } from "#utils/validation";
 import {
    createErrorFactory,
    createHuginnError,
@@ -15,6 +11,11 @@ import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterMessage } from "#utils/helpers";
+import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
+import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
    content: t.Optional(t.String()),
@@ -79,7 +80,7 @@ export const patchMessage = new Elysia()
             { select: selectAllMessage },
          );
 
-         const message: APIMessage = filterMessage(dbMessage);
+         const message: APIMessage = await filterMessage(dbMessage, { receiverId: tokenPayload.id });
          dispatchToTopic(channelId, "message_update", message);
 
          global.waitUntil(async () => {
@@ -92,7 +93,7 @@ export const patchMessage = new Elysia()
 
             const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
 
-            dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+            dispatchToTopic(channelId, "message_update", await filterMessage(updatedMessage, { receiverId: tokenPayload.id }));
          });
 
          return status("OK", message);

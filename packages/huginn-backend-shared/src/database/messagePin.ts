@@ -46,14 +46,11 @@ export const messagePinExtension = Prisma.defineExtension({
                assertId(methodName, messageId);
 
                try {
-                  const pin = await prisma.messagePin.findUnique({
+                  const pin = await prisma.messagePin.findUniqueOrThrow({
                      where: { messageId: BigInt(messageId) },
                      ...args,
                   });
 
-                  span.setAttribute("pin.found", !!pin);
-
-                  assertObj(methodName, pin, DBErrorType.NULL_MESSAGE_PIN, messageId);
                   return idFix(pin) as MessagePinPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
@@ -121,14 +118,10 @@ export const messagePinExtension = Prisma.defineExtension({
                assertId(methodName, channelId, messageId);
 
                try {
-                  const pin = await prisma.messagePin.findUnique({
+                  await prisma.messagePin.findUniqueOrThrow({
                      where: { channelId: BigInt(channelId), messageId: BigInt(messageId) },
                      select: { messageId: true },
                   });
-
-                  span.setAttribute("pin.found", !!pin);
-
-                  assertObj(methodName, pin, DBErrorType.NULL_MESSAGE_PIN, messageId);
 
                   const [, deletedPin] = await prisma.$transaction([
                      prisma.message.update({

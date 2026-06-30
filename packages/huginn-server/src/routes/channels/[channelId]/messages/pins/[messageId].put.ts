@@ -27,7 +27,7 @@ export const putChannelMessagePin = new Elysia()
       if (existingPin) {
          const result: APIPutChannelPinResult = {
             pinnedAt: existingPin.pinnedAt,
-            message: filterMessage(existingPin.message),
+            message: await filterMessage(existingPin.message, { receiverId: tokenPayload.id }),
          };
 
          return status("Created", result);
@@ -44,7 +44,7 @@ export const putChannelMessagePin = new Elysia()
 
       const result: APIPutChannelPinResult = {
          pinnedAt: createdPin.pinnedAt,
-         message: filterMessage(createdPin.message),
+         message: await filterMessage(createdPin.message, { receiverId: tokenPayload.id }),
       };
 
       dispatchToTopic(channelId, "message_update", result.message);

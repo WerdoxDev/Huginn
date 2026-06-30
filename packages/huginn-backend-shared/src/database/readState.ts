@@ -13,18 +13,16 @@ export const readStateExtension = Prisma.defineExtension({
                assertId(methodName, userId, channelId);
 
                try {
-                  const readState = await prisma.readState.findUnique({
+                  const readState = await prisma.readState.findUniqueOrThrow({
                      where: {
                         channelId_userId: { userId: BigInt(userId), channelId: BigInt(channelId) },
                      },
                   });
 
-                  span.setAttribute("read_state.found", !!readState);
-
-                  assertObj(methodName, readState, DBErrorType.NULL_READ_STATE, `${userId}:${channelId}`);
                   return idFix(readState) as ReadStatePayload<undefined>;
                } catch (e) {
                   recordSpanError(e);
+                  await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
                } finally {
                   span.end();
@@ -44,7 +42,6 @@ export const readStateExtension = Prisma.defineExtension({
 
                   span.setAttribute("read_states.count", readStates.length);
 
-                  assertObj(methodName, readStates, DBErrorType.NULL_READ_STATE);
                   return idFix(readStates);
                } catch (e) {
                   recordSpanError(e);
@@ -77,7 +74,6 @@ export const readStateExtension = Prisma.defineExtension({
 
                   span.setAttribute("read_state.channel_id", readState.channelId.toString());
                   span.setAttribute("read_state.user_id", readState.userId.toString());
-                  assertObj(methodName, readState, DBErrorType.NULL_READ_STATE);
 
                   return idFix(readState);
                } catch (e) {

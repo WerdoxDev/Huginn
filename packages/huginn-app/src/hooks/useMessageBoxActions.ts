@@ -31,7 +31,7 @@ function serialize(nodes: Descendant[]) {
       const children = serialize(node.children);
 
       if (Element.isElement(node) && node.type === "emoji") {
-         text += node.emoji;
+         text += node.unicode || node.slug;
          continue;
       }
 

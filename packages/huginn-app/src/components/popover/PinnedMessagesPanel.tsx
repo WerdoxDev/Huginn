@@ -1,6 +1,5 @@
 import LoadingIcon from "@components/LoadingIcon";
 import HuginnPopover from "@components/popover/HuginnPopover";
-import Tooltip from "@components/tooltip/Tooltip";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { usePinnedMessages } from "@hooks/api-hooks/messageHooks";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
@@ -8,12 +7,10 @@ import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { type Snowflake } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useModals } from "@stores/modalsStore";
-import clsx from "clsx";
-import { useCallback, useMemo, useState } from "react";
+import { usePopover } from "@stores/popoverStore";
+import { useCallback, useEffectEvent, useMemo } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
-
-import ModalCloseButton from "../button/ModalCloseButton";
 
 function processMessages(messages: AppMessage[]): ProcessedMessage[] {
    return messages.map((message) => ({
@@ -30,34 +27,52 @@ function processMessages(messages: AppMessage[]): ProcessedMessage[] {
    }));
 }
 
-export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
-   const [isOpen, setIsOpen] = useState(false);
+// export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
+//    const [isOpen, setIsOpen] = useState(false);
+//    const { requestJumpToMessage } = useChannelStore();
+
+//    const handleMessageClick = useCallback(
+//       (messageId: Snowflake) => {
+//          requestJumpToMessage(props.channelId, messageId);
+//          setIsOpen(false);
+//       },
+//       [props.channelId, requestJumpToMessage],
+//    );
+
+//    return (
+//       <HuginnPopover open={isOpen} onOpenChange={setIsOpen} modal>
+//          <Tooltip hideOnMobile>
+//             <Tooltip.Trigger asChild>
+//                <HuginnPopover.Trigger className="text-text/80 hover:text-text h-full">
+//                   <IconMingcutePinFill className="size-topbar-icon" />
+//                </HuginnPopover.Trigger>
+//             </Tooltip.Trigger>
+//             <Tooltip.Content>Pinned Messages</Tooltip.Content>
+//          </Tooltip>
+//          <PinnedMessagesPanel channelId={props.channelId} isOpen={isOpen} onMessageClick={handleMessageClick} />
+//       </HuginnPopover>
+//    );
+// }
+
+export default function PinnedMessagesPanel() {
+   const { popover, close } = usePopover("pinned_messages");
    const { requestJumpToMessage } = useChannelStore();
 
-   const handleMessageClick = useCallback(
-      (messageId: Snowflake) => {
-         requestJumpToMessage(props.channelId, messageId);
-         setIsOpen(false);
-      },
-      [props.channelId, requestJumpToMessage],
-   );
+   const handleMessageClick = useEffectEvent((messageId: Snowflake) => {
+      console.log(popover?.data);
+      if (!popover?.data) return;
+      requestJumpToMessage(popover?.data?.channelId, messageId);
+      close();
+   });
 
    return (
-      <HuginnPopover open={isOpen} onOpenChange={setIsOpen} modal>
-         <Tooltip hideOnMobile>
-            <Tooltip.Trigger asChild>
-               <HuginnPopover.Trigger className="text-text/80 hover:text-text h-full">
-                  <IconMingcutePinFill className="size-topbar-icon" />
-               </HuginnPopover.Trigger>
-            </Tooltip.Trigger>
-            <Tooltip.Content>Pinned Messages</Tooltip.Content>
-         </Tooltip>
-         <PinnedMessagesPanel channelId={props.channelId} isOpen={isOpen} onMessageClick={handleMessageClick} />
-      </HuginnPopover>
+      <HuginnPopover.Panel className="w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105">
+         {popover?.data && <Renderer channelId={popover.data.channelId} isOpen={popover.isOpen ?? false} onMessageClick={handleMessageClick} />}
+      </HuginnPopover.Panel>
    );
 }
 
-function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onMessageClick: (messageId: Snowflake) => void }) {
+function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick: (messageId: Snowflake) => void }) {
    const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = usePinnedMessages(props.channelId, {
       enabled: props.isOpen,
    });
@@ -108,7 +123,7 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
    }
 
    return (
-      <HuginnPopover.Panel align="end" className="w-[calc(100vw-16px)] overflow-hidden lg:mx-0 lg:w-105" side="bottom" sideGap={16}>
+      <>
          <div className="text-text flex items-center gap-x-2 px-4 py-4">
             <IconMingcutePinFill className="size-5" />
             <div className="text-lg font-bold">Pinned Messages</div>
@@ -127,24 +142,15 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
             {!isLoading && !isError && pinnedMessages.length > 0 && (
                <ol className="flex flex-col gap-y-2 overflow-hidden">
                   {processedMessages.map((message, index) => (
-                     <div
-                        className="bg-surface-deep group/background relative cursor-pointer rounded-lg transition-colors"
-                        key={message.id}
-                        // onKeyDown={(event) => {
-                        //    if (event.key === "Enter" || event.key === " ") {
-                        //       event.preventDefault();
-                        //       props.onMessageClick(message.id);
-                        //    }
-                        // }}
-                     >
+                     <div className="bg-surface-deep group/background relative cursor-pointer rounded-lg transition-colors" key={message.id}>
                         <MessageProvider
                            key={message.id}
-                           channelId={props.channelId}
+                           channelId={props?.channelId}
                            message={message}
                            ref={setRef(message.id)}
                            lastMessage={processedMessages[index - 1]}
                            nextMessage={processedMessages[index + 1]}
-                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_" }}
+                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_", hideActions: true }}
                         />
                         <div className="absolute top-2 right-2 flex gap-x-1 select-none lg:opacity-0 lg:group-hover/background:opacity-100">
                            <button
@@ -171,6 +177,6 @@ function PinnedMessagesPanel(props: { channelId: Snowflake; isOpen: boolean; onM
                </div>
             )}
          </div>
-      </HuginnPopover.Panel>
+      </>
    );
 }

@@ -20,24 +20,12 @@ export const settingsExtension = Prisma.defineExtension({
                try {
                   assertId(methodName, userId);
 
-                  const exists = await prisma.settings.exists({ userId: BigInt(userId) });
-
-                  span.setAttribute("settings.exists", exists);
-
-                  let settings;
-                  if (!exists) {
-                     settings = await prisma.settings.create({
-                        data: { userId: BigInt(userId), json: DEFAULT_SERVER_SETTINGS },
-                        select: { json: true },
-                     });
-                  } else {
-                     settings = await prisma.settings.findUnique({
-                        where: { userId: BigInt(userId) },
-                        select: { json: true },
-                     });
-                  }
-
-                  assertObj(methodName, settings, DBErrorType.NULL_SETTINGS);
+                  const settings = await prisma.settings.upsert({
+                     where: { userId: BigInt(userId) },
+                     create: { userId: BigInt(userId), json: DEFAULT_SERVER_SETTINGS },
+                     update: {},
+                     select: { json: true },
+                  });
 
                   return settings?.json as UserSettings;
                } catch (e) {

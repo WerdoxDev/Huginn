@@ -9,8 +9,6 @@ export const knownApplicationExtension = Prisma.defineExtension({
          async getAll<Args extends KnownApplicationArgs>(since?: Date, args?: Args) {
             return analytics.startActiveSpan("db.knownApplication.getAll", async (span) => {
                span.setAttribute("query.has_since", !!since);
-
-               const methodName = "knownApplication.getAll";
                try {
                   const knownApplications = await prisma.knownApplication.findMany({
                      where: since
@@ -24,7 +22,6 @@ export const knownApplicationExtension = Prisma.defineExtension({
 
                   span.setAttribute("known_applications.count", knownApplications.length);
 
-                  assertObj(methodName, knownApplications, DBErrorType.NULL_KNOWN_APPLICATION);
                   return idFix(knownApplications) as KnownApplicationPayload<Args>[];
                } catch (e) {
                   recordSpanError(e);
@@ -73,7 +70,7 @@ export const knownApplicationExtension = Prisma.defineExtension({
                   return idFix(knownApplication) as KnownApplicationPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
-                  assertExists(e, methodName, DBErrorType.NULL_KNOWN_APPLICATION, [options.contributorId]);
+                  assertExists(e, methodName, DBErrorType.NULL_USER, [options.contributorId!]);
                   throw e;
                } finally {
                   span.end();

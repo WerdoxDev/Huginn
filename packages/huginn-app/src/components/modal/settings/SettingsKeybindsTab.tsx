@@ -28,7 +28,7 @@ export default function SettingsKeybindsTab() {
       return () => {
          window.electronAPI.setKeybindsEnabled(true);
       };
-   });
+   }, []);
 
    return (
       <div className="flex flex-col">
@@ -61,7 +61,7 @@ function KeybindDisplay(props: {
    const { updateModals } = useModals();
 
    useEffect(() => {
-      updateModals({ settings: { isClosable: !isEditing } });
+      // updateModals({ settings: { isClosable: !isEditing } });
 
       if (!isEditing) {
          return;

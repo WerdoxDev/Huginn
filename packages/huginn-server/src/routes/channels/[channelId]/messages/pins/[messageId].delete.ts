@@ -1,9 +1,10 @@
-import { dispatchToTopic } from "#utils/gateway-utils";
-import { filterMessage } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessagePin } from "@huginn/backend-shared/database/common";
 import Elysia from "elysia";
+
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterMessage } from "#utils/helpers";
 
 export const deleteChannelMessagePin = new Elysia()
    .use(verifyJwt())
@@ -18,7 +19,7 @@ export const deleteChannelMessagePin = new Elysia()
          select: selectMessagePin,
       });
 
-      dispatchToTopic(channelId, "message_update", filterMessage(deletedPin.message));
+      dispatchToTopic(channelId, "message_update", await filterMessage(deletedPin.message, { receiverId: tokenPayload.id }));
 
       return status("No Content");
    });

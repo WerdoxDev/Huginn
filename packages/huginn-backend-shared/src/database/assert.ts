@@ -128,5 +128,87 @@ export const assertExtension = Prisma.defineExtension({
             });
          },
       },
+      reaction: {
+         async assertReactionsExist(
+            methodName: string,
+            idPairs: { userId: Snowflake; messageId: Snowflake; channelId: Snowflake; emojiKey: string }[],
+         ) {
+            return analytics.startActiveSpan("db.reaction.assertReactionsExist", async (span) => {
+               span.setAttribute("query.reaction.count", idPairs.length);
+               try {
+                  assertId(methodName, ...idPairs.flatMap((x) => [x.userId, x.messageId, x.channelId]));
+                  const foundCount = await prisma.reaction.count({
+                     where: {
+                        channelId: { in: idPairs.map((x) => BigInt(x.channelId)) },
+                        messageId: { in: idPairs.map((x) => BigInt(x.messageId)) },
+                        userId: { in: idPairs.map((x) => BigInt(x.userId)) },
+                        emojiKey: { in: idPairs.map((x) => x.emojiKey) },
+                     },
+                  });
+                  assertCondition(
+                     methodName,
+                     foundCount !== idPairs.length,
+                     DBErrorType.NULL_REACTION,
+                     idPairs.map((x) => `${x.userId}:${x.messageId}:${x.channelId}:${x.emojiKey}`).join(","),
+                  );
+               } catch (e) {
+                  recordSpanError(e);
+                  throw e;
+               } finally {
+                  span.end();
+               }
+            });
+         },
+      },
+      reactionAggregate: {
+         async assertReactionAggregatesExist(methodName: string, idPairs: { messageId: Snowflake; emojiKey: string }[]) {
+            return analytics.startActiveSpan("db.reactionAggregate.assertReactionAggregatesExist", async (span) => {
+               span.setAttribute("query.reaction_aggregate.count", idPairs.length);
+               try {
+                  assertId(methodName, ...idPairs.flatMap((x) => [x.messageId]));
+                  const foundCount = await prisma.reactionAggregate.count({
+                     where: {
+                        messageId: { in: idPairs.map((x) => BigInt(x.messageId)) },
+                        emojiKey: { in: idPairs.map((x) => x.emojiKey) },
+                     },
+                  });
+                  assertCondition(
+                     methodName,
+                     foundCount !== idPairs.length,
+                     DBErrorType.NULL_REACTION_AGGREGATE,
+                     idPairs.map((x) => `${x.messageId}:${x.emojiKey}`).join(","),
+                  );
+               } catch (e) {
+                  recordSpanError(e);
+                  throw e;
+               } finally {
+                  span.end();
+               }
+            });
+         },
+      },
+      knownApplication: {
+         async assertKnownApplicationsExist(methodName: string, knownApplicationIds: number[]) {
+            return analytics.startActiveSpan("db.knownApplication.assertKnownApplicationsExist", async (span) => {
+               span.setAttribute("query.known_application.count", knownApplicationIds.length);
+               try {
+                  const foundCount = await prisma.knownApplication.count({
+                     where: { id: { in: knownApplicationIds } },
+                  });
+                  assertCondition(
+                     methodName,
+                     foundCount !== knownApplicationIds.length,
+                     DBErrorType.NULL_KNOWN_APPLICATION,
+                     knownApplicationIds.join(","),
+                  );
+               } catch (e) {
+                  recordSpanError(e);
+                  throw e;
+               } finally {
+                  span.end();
+               }
+            });
+         },
+      },
    },
 });

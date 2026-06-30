@@ -8,8 +8,8 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { MessageFlags } from "@huginn/shared";
-import Inset from "@lib/capacitor/inset-plugin";
 import { useChannelStore } from "@stores/channelStore";
+import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,11 +22,12 @@ import EmojiPickerButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
 import HuginnButton from "./button/HuginnButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
-import EmojiPickerPanel from "./channels/EmojiPickerPanel";
-import EmojiPickerPopover from "./channels/EmojiPickerPopover";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
+import EmojiPickerRawPanel from "./popover/EmojiPickerRawPanel";
+// import EmojiPickerPanel from "./popover/EmojiPickerPanel";
+// import EmojiPickerPopover from "./popover/EmojiPickerPopover";
 import ReplyingPreview from "./ReplyingPreview";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -75,6 +76,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       resetState,
       insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
+
+   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker", { onEmojiSelect: insertEmoji });
 
    const { isKeyboardOpen, lastKeyboardHeight } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
@@ -223,7 +226,19 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      </Slate>
                   </div>
                   <div className="flex gap-x-2 p-2">
-                     {!isMobileEnvironment && <EmojiPickerPopover onEmojiSelect={insertEmoji} />}
+                     {!isMobileEnvironment && (
+                        <EmojiPickerButton onClick={toggleEmojiPicker} isActive={activeMobilePanel === "emoji" && !isKeyboardOpen} />
+                     )}
+                     {/* {!isMobileEnvironment && <EmojiPickerRawPanel onEmojiSelect={insertEmoji} />} */}
+                     {/* <HuginnButton
+                        color="primary"
+                        className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
+                        type="button"
+                        onClick={() => sendMessage(MessageFlags.NONE)}
+                        data-keyboard-no-close
+                     >
+                        <IconLetsIconsSendHorFill className="text-text size-full" />
+                     </HuginnButton> */}
                      <HuginnButton
                         color="primary"
                         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
@@ -237,7 +252,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
             </div>
             <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
-               {activeMobilePanel === "emoji" && <EmojiPickerPanel onEmojiSelect={insertEmoji} />}
+               {activeMobilePanel === "emoji" && <EmojiPickerRawPanel onEmojiSelect={insertEmoji} />}
             </div>
             <FilePickerDrawer
                attachments={attachments}

@@ -39,6 +39,7 @@ model User {
    emailVerifications      EmailVerification[]
    pinnedMessages          MessagePin[]
    notificationTokens      NotificationToken[]
+   reactions               Reaction[]
 }
 
 model EmailVerification {
@@ -95,7 +96,6 @@ model Message {
    // deletedTimestamp    DateTime?
    embeds              Embed[]
    attachments         Attachment[]
-   reactions           String[]
    call                Call?
    pinned              Boolean
    type                Int
@@ -104,6 +104,9 @@ model Message {
    lastMessageChannels Channel[]    @relation("channel_last_message")
    pin                 MessagePin?
 
+   reactions          Reaction[]
+   reactionAggregates ReactionAggregate[]
+
    author            User               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    channel           Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
    mentions          User[]             @relation("message_mentions")
@@ -111,6 +114,29 @@ model Message {
    referringMessages MessageReference[] @relation("message_reference")
 
    @@index([channelId])
+}
+
+model Reaction {
+   channelId BigInt
+   messageId BigInt
+   userId    BigInt
+   emojiKey  String
+
+   message Message @relation(fields: [messageId], references: [id])
+   user    User    @relation(fields: [userId], references: [id])
+
+   @@id([channelId, messageId, userId, emojiKey])
+   @@index([messageId, emojiKey])
+}
+
+model ReactionAggregate {
+   messageId BigInt
+   emojiKey  String
+   count     Int
+
+   message Message @relation(fields: [messageId], references: [id])
+
+   @@id([messageId, emojiKey])
 }
 
 model MessagePin {

@@ -126,7 +126,7 @@ export class VoiceManager {
                      { select: selectAllMessage },
                   );
 
-                  dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+                  dispatchToTopic(channelId, "message_update", await filterMessage(updatedMessage));
                }
 
                this.callStates.delete(channelId);

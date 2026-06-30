@@ -8,11 +8,10 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 import extras from "./emoji-extras/extras.json" with { type: "json" };
-import { generateEmojiSprite, type EmojiMapMeta, type EmojiPosition } from "./generate-emoji-sheet";
+import { generateEmojiSprite } from "./generate-emoji-sheet";
 
 const PREFIX = "twemoji/";
 const TOKEN = process.env.GITHUB_TOKEN;
-const CONCURRENCY = 5;
 const OWNER = "jdecked";
 const REPO = "twemoji";
 const SVG_PATH = "assets/svg";
@@ -72,7 +71,7 @@ async function extractRepo(tarPath: string, destDir: string): Promise<string> {
    return join(destDir, topLevel);
 }
 
-async function getNormalizedEmojis() {
+function getNormalizedEmojis() {
    const normalizedEmojis = new Map<string, NormalizedEmoji>();
 
    const slugsByCodepoint = new Map<string, string[]>();
@@ -82,26 +81,27 @@ async function getNormalizedEmojis() {
    }
 
    for (const emoji of emojiData) {
-      const codepoint = emoji.hexcode.toLowerCase();
       const group = emoji.group;
+      const codepoint = emoji.hexcode.toLowerCase();
 
       const baseSlugs = slugsByCodepoint.get(codepoint) ?? [];
       normalizedEmojis.set(codepoint, {
-         group,
+         group: group,
          slugs: baseSlugs,
          unicode: emoji.unicode,
-         codepoint,
+         codepoint: codepoint,
          tone: emoji.skins ? 0 : undefined,
       });
 
       if (emoji.skins) {
          emoji.skins.forEach((skin, i) => {
-            const skinSlugs = slugsByCodepoint.get(skin.hexcode.toLowerCase()) ?? [];
-            normalizedEmojis.set(skin.hexcode.toLowerCase(), {
+            const codepoint = skin.hexcode.toLowerCase();
+            const skinSlugs = slugsByCodepoint.get(codepoint) ?? [];
+            normalizedEmojis.set(codepoint, {
                group: group,
                slugs: skinSlugs,
                unicode: skin.unicode,
-               codepoint: skin.hexcode.toLowerCase(),
+               codepoint: codepoint,
                tone: i + 1,
             });
          });
@@ -114,13 +114,13 @@ async function getNormalizedEmojis() {
 async function resolveExtras(svgDir: string, pngDir: string) {
    const normalizedEmojis = new Map<string, NormalizedEmoji>();
    for (const extra of extras) {
-      const { codepoint, slugs, group, pngPath, svgPath, emoji } = extra;
+      const { codepoint, slugs, group, pngPath, svgPath, unicode } = extra;
       const svgFile = await Bun.file(join(import.meta.dir, EXTRAS, svgPath)).arrayBuffer();
       const pngFile = await Bun.file(join(import.meta.dir, EXTRAS, pngPath)).arrayBuffer();
       await Bun.write(Bun.file(join(svgDir, svgPath)), svgFile);
       await Bun.write(Bun.file(join(pngDir, pngPath)), pngFile);
 
-      normalizedEmojis.set(codepoint.toLowerCase(), { emoji, slugs, codepoint: codepoint.toLowerCase(), group });
+      normalizedEmojis.set(codepoint.toLowerCase(), { unicode, slugs, codepoint: codepoint.toLowerCase(), group });
    }
 
    return normalizedEmojis;
@@ -131,17 +131,17 @@ async function copyEmojis(data: EmojiInfo, svgDir: string, outputDir: string) {
 
    const files: Array<{ path: string; name: string }> = [];
 
-   await Promise.allSettled(
+   const result = await Promise.allSettled(
       data.emojis.map(async (x) => {
          const srcPath = join(svgDir, x.filename);
-         const destPath = join(outputDir, `${x.id}.svg`);
+         const destPath = join(outputDir, `${x.codepoint}.svg`);
          const svgFile = await Bun.file(srcPath).arrayBuffer();
          await Bun.write(Bun.file(destPath), svgFile);
-         files.push({ path: destPath, name: `${x.id}.svg` });
+         files.push({ path: destPath, name: `${x.codepoint}.svg` });
       }),
    );
 
-   console.log(`Copied ${files.length} emojis to ${outputDir}`);
+   result.filter((r) => r.status === "rejected").forEach((r) => console.error(r.reason));
 
    return files;
 }
@@ -151,10 +151,10 @@ function checkDuplicates(data: EmojiInfo) {
    const duplicates: string[] = [];
 
    for (const emoji of data.emojis) {
-      if (seen.has(emoji.id)) {
-         duplicates.push(emoji.id);
+      if (seen.has(emoji.codepoint)) {
+         duplicates.push(emoji.codepoint);
       } else {
-         seen.add(emoji.id);
+         seen.add(emoji.codepoint);
       }
    }
 
@@ -163,19 +163,6 @@ function checkDuplicates(data: EmojiInfo) {
    }
 }
 
-type EmojiInfo = {
-   meta?: EmojiMapMeta;
-   emojis: Array<{
-      codepoint: string;
-      filename: string;
-      id: string;
-      position?: EmojiPosition;
-      slugs: string[];
-      emoji?: string;
-      group?: string;
-      tone?: number | null;
-   }>;
-};
 async function main() {
    const tmpDir = await mkdtemp(join(tmpdir(), "twemoji-"));
    console.log(`Working in ${tmpDir}\n`);
@@ -197,12 +184,10 @@ async function main() {
       };
 
       console.log(`Normalizing emojis...`);
-      const normalizedEmojis = await getNormalizedEmojis();
-
+      const normalizedEmojis = getNormalizedEmojis();
       const extrasResolved = await resolveExtras(svgDir, pngDir);
 
       const finalEmojis = new Map([...normalizedEmojis, ...extrasResolved]);
-
       const { webpPath, emojiMap } = await generateEmojiSprite({ input: pngDir, output: OUTPUT, padding: 1, lossless: false });
       data.meta = emojiMap.meta;
 
@@ -210,10 +195,7 @@ async function main() {
          const codepoint = emoji.codepoint;
          const normalized = finalEmojis.get(codepoint);
 
-         if (!normalized) {
-            console.warn(`Warning: Emoji with codepoint ${codepoint} not found in normalized emojis.`);
-            continue;
-         }
+         if (!normalized) continue;
 
          const twemojiCodepoint = getEmojiCodepoint(normalized.unicode);
          const position = emojiMap.emojis[twemojiCodepoint];

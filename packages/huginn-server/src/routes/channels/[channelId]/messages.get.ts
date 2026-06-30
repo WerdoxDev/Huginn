@@ -1,9 +1,10 @@
-import { filterMessage } from "#utils/helpers";
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIGetChannelMessagesResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { filterMessage } from "#utils/helpers";
 
 export const getChannelMessages = new Elysia().use(verifyJwt()).get(
    "/api/channels/:channelId/messages",
@@ -19,7 +20,7 @@ export const getChannelMessages = new Elysia().use(verifyJwt()).get(
          select: selectAllMessage,
       });
 
-      const messages: APIGetChannelMessagesResult = dbMessages.map((x) => filterMessage(x));
+      const messages: APIGetChannelMessagesResult = await Promise.all(dbMessages.map((x) => filterMessage(x, { receiverId: tokenPayload.id })));
 
       return status("OK", messages);
    },

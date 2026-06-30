@@ -1,6 +1,8 @@
+import type { MouseEvent } from "react";
+
 import HuginnButton from "./HuginnButton";
 
-export default function EmojiPickerButton(props: { onClick?: () => void; isActive?: boolean }) {
+export default function EmojiPickerButton(props: { onClick?: (e: MouseEvent<HTMLButtonElement>) => void; isActive?: boolean }) {
    return (
       <HuginnButton
          onClick={props.onClick}

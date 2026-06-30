@@ -3,6 +3,7 @@ import type {
    Activity,
    ActivityWithoutSessionId,
    APIChannelUser,
+   APIEmoji,
    APIMessage,
    APIReadStateWithoutUser,
    APIRelationshipWithoutOwner,
@@ -65,6 +66,8 @@ export type GatewayWebsocketEvents = {
    call_delete: GatewayCallDeleteData;
    settings_update: GatewaySettingsUpdateData;
    session_update: GatewaySessionUpdateData;
+   message_reaction_add: GatewayMessageReactionAddData;
+   message_reaction_remove: GatewayMessageReactionRemoveData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefined = undefined> = Event extends undefined
@@ -245,4 +248,19 @@ export type GatewaySessionUpdateData = {
    status: PresenceStatus;
    activities: Activity[];
    activeSessions: ActiveSession[];
+};
+
+export type GatewayMessageReactionAddData = {
+   userId: Snowflake;
+   channelId: Snowflake;
+   messageId: Snowflake;
+   emoji: APIEmoji;
+   // messageAuthorId: Snowflake;
+};
+
+export type GatewayMessageReactionRemoveData = {
+   userId: Snowflake;
+   channelId: Snowflake;
+   messageId: Snowflake;
+   emoji: APIEmoji;
 };

@@ -228,7 +228,7 @@ type APIBaseMessage = {
    mentions: APIMessageUser[];
    flags?: MessageFlags | null;
    nonce?: string;
-   reactions?: string[];
+   reactions?: APIReaction[];
 };
 
 export type APIDefaultMessage = APIBaseMessage & {
@@ -495,4 +495,15 @@ export type APIGetChangelogResult = Array<{ title: string; version: string; cont
 export type APIPostNotificationTokenJSONBody = {
    token: string;
    deviceId: string;
+};
+
+export type APIEmoji = {
+   id: Snowflake | null;
+   name: string;
+};
+
+export type APIReaction = {
+   count: number;
+   emoji: APIEmoji;
+   me: boolean;
 };

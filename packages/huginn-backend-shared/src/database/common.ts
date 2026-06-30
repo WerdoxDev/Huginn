@@ -1,6 +1,6 @@
-import type { Prisma } from "#database";
-
 import { type BigIntToString, type Snowflake } from "@huginn/shared";
+
+import type { Prisma } from "#database";
 
 export type UserArgs = Prisma.UserDefaultArgs;
 export type UserPayload<Args extends UserArgs | undefined> = BigIntToString<Prisma.UserGetPayload<Args>>;
@@ -28,6 +28,9 @@ export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToS
 
 export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
 export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<Prisma.KnownApplicationGetPayload<Args>>;
+
+export type ReactionArgs = Prisma.ReactionDefaultArgs;
+export type ReactionPayload<Args extends ReactionArgs | undefined> = BigIntToString<Prisma.ReactionGetPayload<Args>>;
 
 export const selectPublicUser = {
    id: true,
@@ -132,8 +135,11 @@ export const selectMessageDefaults = {
    type: true,
    pinned: true,
    id: true,
-   reactions: true,
    flags: true,
+} satisfies Prisma.MessageSelect;
+
+export const selectMessageReactions = {
+   reactionAggregates: { select: { messageId: true, emojiKey: true, count: true } },
 } satisfies Prisma.MessageSelect;
 
 export const selectMessageReference = {
@@ -150,6 +156,7 @@ export const selectMessageReference = {
                ...selectMessageAttachments,
                ...selectMessageCall,
                ...selectMessageDefaults,
+               ...selectMessageReactions,
                messageReference: { select: { channelId: true, messageId: true, type: true } },
             },
          },
@@ -165,6 +172,7 @@ export const selectAllMessage = {
    ...selectMessageCall,
    ...selectMessageReference,
    ...selectMessageDefaults,
+   ...selectMessageReactions,
 } satisfies Prisma.MessageSelect;
 
 // export const selectAllMessage = { ...selectMessageDefaults, ...selectMessageCall };

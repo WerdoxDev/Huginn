@@ -89,7 +89,7 @@ export const postChannelMessage = new Elysia()
             { select: selectAllMessage },
          );
 
-         const message: APIMessage = filterMessage(dbMessage);
+         const message: APIMessage = await filterMessage(dbMessage, { receiverId: tokenPayload.id });
          message.nonce = body.nonce;
          dispatchToTopic(channelId, "message_create", message);
 
@@ -108,7 +108,7 @@ export const postChannelMessage = new Elysia()
 
             const updatedMessage = await prisma.message.updateMessage(message.id, { embeds }, { select: selectAllMessage });
 
-            dispatchToTopic(channelId, "message_update", filterMessage(updatedMessage));
+            dispatchToTopic(channelId, "message_update", await filterMessage(updatedMessage, { receiverId: tokenPayload.id }));
          });
 
          return status("Created", message);
