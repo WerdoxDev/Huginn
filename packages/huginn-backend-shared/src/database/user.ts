@@ -70,7 +70,7 @@ export const userExtension = Prisma.defineExtension({
                         OR: [{ email: options.email }, { username: options.username?.toLowerCase() }],
                         password: { not: null },
                      },
-                     select: selectPrivateUser,
+                     select: { ...selectPrivateUser, password: true },
                   });
 
                   span.setAttribute("user.exists", !!user);
@@ -80,7 +80,7 @@ export const userExtension = Prisma.defineExtension({
                   span.setAttribute("user.password.valid", passwordValid);
                   assertCondition(methodName, !passwordValid, DBErrorType.NULL_USER);
 
-                  return idFix(user) as BigIntToString<NonNullable<typeof user>>;
+                  return idFix(omit(user, ["password"])) as BigIntToString<NonNullable<typeof user>>;
                } catch (e) {
                   recordSpanError(e);
                   throw e;

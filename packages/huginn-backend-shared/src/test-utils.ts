@@ -1,5 +1,3 @@
-import type Elysia from "elysia";
-
 import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
 import { join } from "pathe";
 
@@ -7,7 +5,7 @@ let _hostname = "";
 export async function prepareServer(hostname: string) {
    _hostname = hostname;
    process.env.TEST = JSON.stringify(true);
-   await import(join(process.cwd(), "src", "index"));
+   // await import(join(process.cwd(), "src", "setup"));
 }
 
 export async function testHandler(

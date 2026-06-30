@@ -52,7 +52,6 @@ export const selectPrivateUser = {
    flags: true,
    username: true,
    email: true,
-   password: true,
 } satisfies Prisma.UserSelect;
 
 export const selectChannelRecipients = {
