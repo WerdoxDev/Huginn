@@ -18,10 +18,17 @@ import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[id].get";
 import { env } from "#setup";
+import { FileStorage } from "#storage/file-storage";
+import { S3Storage } from "#storage/s3-storage";
+import { Storage } from "#storage/storage";
 
 import { getIndex } from "./routes";
 
-export const main = new Elysia({ normalize: "typebox" })
+export const AWS_AVAILABLE = !!env.AWS_SECRET_KEY && !!env.AWS_KEY_ID && !!env.AWS_BUCKET && !!env.AWS_REGION;
+export const storage: Storage = AWS_AVAILABLE ? new S3Storage() : new FileStorage(env.UPLOADS_DIR);
+export const cacheStorage: Storage = new FileStorage(env.CACHE_DIR);
+
+export const app = new Elysia({ normalize: "typebox" })
    .use(cors())
    .use(globalPlugin)
    .use(
@@ -37,8 +44,6 @@ export const main = new Elysia({ normalize: "typebox" })
       }),
    )
    .onError(({ error, code, status, path, request }) => {
-      logger.error(error, "Request error");
-      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = cdnOnError(error, status);
          if (returnedError) {
@@ -52,6 +57,8 @@ export const main = new Elysia({ normalize: "typebox" })
          return notFound(status);
       }
 
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       return serverError(status);
    })
    .onAfterResponse(async ({ global }) => {
@@ -85,9 +92,4 @@ export const main = new Elysia({ normalize: "typebox" })
    .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
-   .use(getEmoji)
-
-   .listen({ hostname: env.CDN_HOST, port: env.CDN_PORT, idleTimeout: 40 }, (server) => {
-      logger.info({ listenHostname: server.hostname, port: server.port }, "cdn listening");
-      // consola.box(`Listening on ${server.hostname}:${server.port}`);
-   });
+   .use(getEmoji);

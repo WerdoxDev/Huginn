@@ -1,7 +1,8 @@
+import { type ImageFormats } from "@huginn/shared";
+
 import type { FileCategory } from "#utils/types";
 
-import { storage } from "#setup";
-import { type ImageFormats } from "@huginn/shared";
+import { storage } from "#server";
 
 import { extractFileInfo, findImageByName, transformImage } from "./file-utils";
 

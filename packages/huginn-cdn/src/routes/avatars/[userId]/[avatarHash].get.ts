@@ -1,7 +1,7 @@
 import { globalPlugin } from "@huginn/backend-shared";
 import Elysia, { StatusMap, t } from "elysia";
 
-import { storage } from "#setup";
+import { storage } from "#server";
 import { extractFileInfo } from "#utils/file-utils";
 import { tryResolveImage } from "#utils/route-utils";
 

@@ -1,7 +1,7 @@
 import { fileNotFound } from "@huginn/backend-shared";
 import Elysia, { StatusMap } from "elysia";
 
-import { storage } from "#setup";
+import { storage } from "#server";
 import { extractFileInfo } from "#utils/file-utils";
 
 export const getEmoji = new Elysia().get("/cdn/emoji/:id", async ({ params: { id }, status }) => {

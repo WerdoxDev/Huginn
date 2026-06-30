@@ -45,7 +45,7 @@ export class FileStorage extends Storage {
       try {
          return await Bun.file(join(this.directory, category, ...subDirectory.split("/"), name)).exists();
       } catch (e) {
-         storageLogger.info({ category, subDirectory, filename: name }, "file not found");
+         storageLogger.error(e, "file not found");
          return false;
       }
    }

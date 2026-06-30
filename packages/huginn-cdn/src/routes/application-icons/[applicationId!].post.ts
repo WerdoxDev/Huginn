@@ -1,7 +1,8 @@
-import { storage } from "#setup";
-import { extractFileInfo, transformImage } from "#utils/file-utils";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
+
+import { storage } from "#server";
+import { extractFileInfo, transformImage } from "#utils/file-utils";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 

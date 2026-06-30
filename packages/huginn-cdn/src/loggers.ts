@@ -1,3 +1,3 @@
-import { logger } from "@huginn/backend-shared/logger";
+import { logger, type Logger } from "@huginn/backend-shared/logger";
 
-export const storageLogger = logger.child({ module: "storage" }, { msgPrefix: "[STORAGE] " });
+export const storageLogger: Logger = logger.child({ module: "storage" }, { msgPrefix: "[STORAGE] " });

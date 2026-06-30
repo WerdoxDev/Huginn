@@ -1,7 +1,7 @@
 import { fileNotFound, tryCatch } from "@huginn/backend-shared";
 import Elysia, { StatusMap } from "elysia";
 
-import { storage } from "#setup";
+import { storage } from "#server";
 
 // Param 1 can be both applicationId or iconHash since it's optional
 export const getApplicationIcon = new Elysia().get("/cdn/application-icons/:param1/:param2?", async ({ params: { param1, param2 }, status }) => {
