@@ -4,7 +4,7 @@ import { CacheStorage, type APIGetChangelogResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 import * as semver from "semver";
 
-import { n2m, notion } from "#setup";
+import { n2m, notion } from "#server";
 
 function coerceVersion(value?: string | null) {
    return semver.coerce(value ?? "")?.version ?? null;

@@ -4,7 +4,7 @@ import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
-import { gateway } from "#setup";
+import { gateway } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { channelWithoutRecipient, filterChannel } from "#utils/helpers";
 import { validateChannelName } from "#utils/validation";

@@ -1,25 +1,9 @@
-import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceStateExactSchema } from "#tests/expect-utils";
-import {
-   authHeader,
-   createTestChannel,
-   createTestUsers,
-   getIdentifiedWebSocket,
-   getReadyWebSocket,
-   multiDone,
-   testIsDispatch,
-   wsSend,
-} from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
-import {
-   ChannelType,
-   GatewayCode,
-   GatewayOperations,
-   type GatewayPayload,
-   type GatewayUpdateVoiceState,
-   MessageType,
-   type Snowflake,
-} from "@huginn/shared";
+import { ChannelType, GatewayCode, GatewayOperations, type GatewayPayload, type GatewayUpdateVoiceState, MessageType, type Snowflake } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceStateExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers, getIdentifiedWebSocket, getReadyWebSocket, multiDone, testIsDispatch, wsSend } from "#tests/utils";
 
 describe("Voice", () => {
    test("should receive both VOICE_SERVER_UPDATE and VOICE_STATE_UPDATE after sending OP 6", async (done) => {
@@ -53,7 +37,7 @@ describe("Voice", () => {
             tryDone();
          }
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString(), sessionId);
+            expectVoiceStateExactSchema(data.d, { channelId: channel.id.toString(), guildId: null, userId: user.id.toString(), sessionId });
             tryDone();
          }
       };
@@ -62,7 +46,7 @@ describe("Voice", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user.id.toString(), sessionId);
+            expectVoiceStateExactSchema(data.d, { channelId: channel.id.toString(), guildId: null, userId: user.id.toString(), sessionId });
             tryDone();
          }
       };
@@ -89,7 +73,7 @@ describe("Voice", () => {
             }
          }
          if (testIsDispatch(data, "call_create")) {
-            expectCallStateExactSchema(data.d, channel.id.toString(), messageId, [user2.id.toString()]);
+            expectCallStateExactSchema(data.d, { channelId: channel.id.toString(), messageId, ringing: [user2.id.toString()] });
             tryDone();
          }
       };
@@ -119,7 +103,7 @@ describe("Voice", () => {
             }
          }
          if (testIsDispatch(data, "call_update")) {
-            expectCallStateExactSchema(data.d, channel.id.toString(), messageId, []);
+            expectCallStateExactSchema(data.d, { channelId: channel.id.toString(), messageId, ringing: [] });
             tryDone();
          }
       };
@@ -160,7 +144,7 @@ describe("Voice", () => {
       ws.onmessage = ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "call_delete")) {
-            expect(data.d.channelId).toBe(channel.id.toString());
+            expectCallStateExactSchema(data.d, { channelId: channel.id.toString() });
             tryDone();
          }
       };
@@ -216,10 +200,10 @@ describe("Voice", () => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "voice_state_update")) {
                if (data.d.userId === user2.id.toString() && data.d.channelId) {
-                  expectVoiceStateExactSchema(data.d, channel.id.toString(), null, user2.id.toString(), sessionId);
+                  expectVoiceStateExactSchema(data.d, { channelId: channel.id.toString(), guildId: null, userId: user2.id.toString(), sessionId });
                   tryDone();
                } else if (data.d.userId === user2.id.toString() && !data.d.channelId) {
-                  expectVoiceStateExactSchema(data.d, null, null, user2.id.toString(), sessionId);
+                  expectVoiceStateExactSchema(data.d, { channelId: null, guildId: null, userId: user2.id.toString(), sessionId });
                   tryDone();
                }
             }
@@ -314,8 +298,8 @@ describe("Voice", () => {
          if (testIsDispatch(data, "ready")) {
             expect(data.d.voiceStates).toHaveLength(1);
             expect(data.d.callStates).toHaveLength(1);
-            expectVoiceStateExactSchema(data.d.voiceStates[0], channel.id.toString(), null, user.id.toString(), sessionId);
-            expectCallStateExactSchema(data.d.callStates[0], channel.id.toString(), messageId, [user2.id.toString()]);
+            expectVoiceStateExactSchema(data.d.voiceStates[0], { channelId: channel.id.toString(), guildId: null, userId: user.id.toString(), sessionId });
+            expectCallStateExactSchema(data.d.callStates[0], { channelId: channel.id.toString(), messageId, ringing: [user2.id.toString()] });
             done();
          }
       };
@@ -337,13 +321,12 @@ describe("Voice", () => {
 
          // Check if it's the correct channel the first time.
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(
-               data.d,
-               updateCount === 0 ? channel.id.toString() : updateCount === 1 ? null : channel2.id.toString(),
-               null,
-               user.id.toString(),
+            expectVoiceStateExactSchema(data.d, {
+               channelId: updateCount === 0 ? channel.id.toString() : updateCount === 1 ? null : channel2.id.toString(),
+               guildId: null,
+               userId: user.id.toString(),
                sessionId,
-            );
+            });
             updateCount++;
             tryDone();
          }
@@ -399,26 +382,38 @@ describe("Voice", () => {
          ws3.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "call_create")) {
-               expectCallStateExactSchema(data.d, groupChannel.id.toString(), undefined, []);
+               expectCallStateExactSchema(data.d, { channelId: groupChannel.id.toString(), messageId: undefined, ringing: [] });
                tryDone();
             }
             if (testIsDispatch(data, "voice_state_update")) {
                if (data.d.userId === user.id.toString()) {
-                  expectVoiceStateExactSchema(data.d, groupChannel.id.toString(), null, user.id.toString(), sessionId, {
-                     isAudioDeafened: true,
-                     isAudioMuted: false,
-                     isAudioStreaming: false,
-                     isScreenSharing: false,
-                     isCameraOn: true,
+                  expectVoiceStateExactSchema(data.d, {
+                     channelId: groupChannel.id.toString(),
+                     guildId: null,
+                     userId: user.id.toString(),
+                     sessionId,
+                     flags: {
+                        isAudioDeafened: true,
+                        isAudioMuted: false,
+                        isAudioStreaming: false,
+                        isScreenSharing: false,
+                        isCameraOn: true,
+                     },
                   });
                   tryDone();
                } else if (data.d.userId === user2.id.toString()) {
-                  expectVoiceStateExactSchema(data.d, groupChannel.id.toString(), null, user2.id.toString(), sessionId2, {
-                     isAudioDeafened: false,
-                     isAudioMuted: true,
-                     isAudioStreaming: true,
-                     isScreenSharing: false,
-                     isCameraOn: false,
+                  expectVoiceStateExactSchema(data.d, {
+                     channelId: groupChannel.id.toString(),
+                     guildId: null,
+                     userId: user2.id.toString(),
+                     sessionId: sessionId2,
+                     flags: {
+                        isAudioDeafened: false,
+                        isAudioMuted: true,
+                        isAudioStreaming: true,
+                        isScreenSharing: false,
+                        isCameraOn: false,
+                     },
                   });
                   tryDone();
                }

@@ -20,7 +20,6 @@ import {
    type GatewayResumeData,
    type GatewayUpdatePresenceData,
    type GatewayUpdateVoiceStateData,
-   log,
    merge,
    recordSpanError,
    WorkerID,

@@ -2,9 +2,9 @@ import type { S3Stats } from "bun";
 
 import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
 import { type ImageFormats, isImageMediaType, isVideoMediaType } from "@huginn/shared";
-import Elysia, { StatusMap, t } from "elysia";
+import Elysia, { env, StatusMap, t } from "elysia";
 
-import { env, storage } from "#setup";
+import { storage } from "#server";
 import { extractFileInfo } from "#utils/file-utils";
 import { tryResolveImage } from "#utils/route-utils";
 

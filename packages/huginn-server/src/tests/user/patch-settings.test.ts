@@ -1,7 +1,8 @@
-import { expectUserSettingsExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectUserSettingsExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("PATCH /users/@me/settings", () => {
    test("should return 'Invalid Form Body' when body constrains are not met", async () => {
@@ -46,16 +47,17 @@ describe("PATCH /users/@me/settings", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "settings_update")) {
-            expectUserSettingsExactSchema(data.d, { status: "offline", theme: "pine green" });
+            expectUserSettingsExactSchema(data.d, { status: "offline", theme: "pine-green", pinnedChannels: [] });
             tryDone();
          }
       };
 
       const result = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
          status: "offline",
-         theme: "pine green",
+         theme: "pine-green",
+         pinnedChannels: [],
       });
-      expect(result).toStrictEqual({ status: "offline", theme: "pine green" });
+      expectUserSettingsExactSchema(result, { status: "offline", theme: "pine-green", pinnedChannels: [] });
       tryDone();
    });
 });

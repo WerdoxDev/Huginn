@@ -2,11 +2,15 @@ import { cors } from "@elysiajs/cors";
 import { opentelemetry } from "@elysiajs/opentelemetry";
 import { staticPlugin } from "@elysiajs/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database/index";
 import { logger } from "@huginn/backend-shared/logger";
+import { Client, LogLevel } from "@notionhq/client";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
+import * as firebase from "firebase-admin/app";
+import { NotionConverter } from "notion-to-md";
+import { Octokit } from "octokit";
+import { Resend } from "resend";
 
 import { getAllReleases } from "#routes/all-releases.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
@@ -62,7 +66,31 @@ import { getUser } from "#routes/users/[userId].get";
 import { getUserProfile } from "#routes/users/[userId]/profile.get";
 import { env } from "#setup";
 
+import { ServerGateway } from "./gateway/server-gateway";
 import { getIndex } from "./routes";
+
+export const gateway = new ServerGateway();
+export const octokit: Octokit = new Octokit({ auth: env.GITHUB_TOKEN });
+
+export const s3 = new Bun.S3Client({
+   region: env.AWS_REGION,
+   accessKeyId: env.AWS_KEY_ID,
+   secretAccessKey: env.AWS_SECRET_KEY,
+});
+
+export const resend = new Resend(env.RESEND_API_KEY);
+
+export const notion = new Client({ auth: env.NOTION_TOKEN, notionVersion: "2026-03-11", logLevel: LogLevel.ERROR });
+
+export const n2m = new NotionConverter(notion);
+
+firebase.initializeApp({
+   credential: firebase.cert({
+      projectId: env.FIREBASE_PROJECT_ID,
+      clientEmail: env.FIREBASE_CLIENT_EMAIL,
+      privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+   }),
+});
 
 export const app = new Elysia({
    cookie: {
@@ -91,8 +119,6 @@ export const app = new Elysia({
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {
-      logger.error(error, "Request error");
-      logger.debug({ error, code, path, method: request.method }, "Request error");
       if (code === "UNKNOWN") {
          const returnedError = serverOnError(error, status);
          if (returnedError) {
@@ -106,6 +132,8 @@ export const app = new Elysia({
          return notFound(status);
       }
 
+      logger.error(error, "Request error");
+      logger.debug({ error, code, path, method: request.method }, "Request error");
       return serverError(status);
    })
    .onAfterResponse(async function onAfterResponse({ global }) {
@@ -182,19 +210,4 @@ export const app = new Elysia({
    .use(postAndroidUpdate)
    .use(postLog)
    .use(getIndex)
-   .use(getChangelog)
-
-   .listen(
-      {
-         websocket: ws.websocket,
-         hostname: env.SERVER_HOST,
-         port: env.SERVER_PORT,
-         idleTimeout: 40,
-      },
-      (server) => {
-         if (process.env.TEST) {
-         } else {
-            logger.info({ listenHostname: server.hostname, port: server.port }, "server listening");
-         }
-      },
-   );
+   .use(getChangelog);

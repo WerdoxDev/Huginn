@@ -4,7 +4,7 @@ import { selectChannelRecipients } from "@huginn/backend-shared/database/common"
 import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
 import { Elysia } from "elysia";
 
-import { gateway } from "#setup";
+import { gateway } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchMessage } from "#utils/helpers";
 

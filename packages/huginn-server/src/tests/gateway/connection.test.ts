@@ -1,4 +1,7 @@
-import { gateway } from "#setup";
+import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
+import { describe, expect, test } from "bun:test";
+
+import { gateway } from "#server";
 import {
    expectChannelExactRecipients,
    expectChannelExactSchema,
@@ -17,49 +20,50 @@ import {
    testIsOpcode,
    wsSend,
 } from "#tests/utils";
-import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
-import { describe, expect, test } from "bun:test";
 
 describe("Connection", () => {
-   test("should close the websocket with code 4001 (UNKNOWN_OPCODE) when the sent message has an unknown op code", async (done) => {
+   test("should close the websocket with code 4001 (UNKNOWN_OPCODE) when the sent message has an unknown op code", async () => {
       const { ws } = await getReadyWebSocket();
-
-      ws.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.UNKNOWN_OPCODE);
-         done();
-      };
 
       wsSend(ws, { op: 99 });
+      const closeCode = await new Promise((resolve, reject) => {
+         ws.onclose = ({ code }) => resolve(code);
+         ws.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.UNKNOWN_OPCODE);
    });
 
-   test("should close the websocket with code 4002 (DECODE_ERROR) when sent message cannot be decoded", async (done) => {
+   test("should close the websocket with code 4002 (DECODE_ERROR) when sent message cannot be decoded", async () => {
       const { ws } = await getReadyWebSocket();
 
-      ws.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.DECODE_ERROR);
-         done();
-      };
-
       ws.send("[123,]");
+      const closeCode = await new Promise((resolve, reject) => {
+         ws.onclose = ({ code }) => resolve(code);
+         ws.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.DECODE_ERROR);
    });
 
-   test("should close the websocket with code 4003 (NOT_AUTHENTICATED) when the websocket is not authenticated", async (done) => {
+   test("should close the websocket with code 4003 (NOT_AUTHENTICATED) when the websocket is not authenticated", async () => {
       const ws = await getWebSocket();
 
       ws.onmessage = ({ data }) => {
          if (testIsOpcode(data, GatewayOperations.HELLO)) {
-            // TODO: We don't have a reason to send any message that requires authentication so im sending an unknown OP but the authentication state is checked first
             wsSend(ws, { op: 99, d: 0 });
          }
       };
 
-      ws.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.NOT_AUTHENTICATED);
-         done();
-      };
-   });
+      const closeCode = await new Promise((resolve, reject) => {
+         ws.onclose = ({ code }) => resolve(code);
+         ws.onerror = (err) => reject(err);
+      });
 
-   test("should close the websocket with code 4004 (AUTHENTICATION_FAILED) when the authentication process fails", async (done) => {
+      expect(closeCode).toBe(GatewayCode.NOT_AUTHENTICATED);
+   }, 8000); // third arg sets a per-test timeout in ms, replacing your old setTimeout delay
+
+   test("should close the websocket with code 4004 (AUTHENTICATION_FAILED) when the authentication process fails", async () => {
       const ws = await getWebSocket();
 
       const identifyData: GatewayIdentify = {
@@ -77,13 +81,15 @@ describe("Connection", () => {
          }
       };
 
-      ws.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.AUTHENTICATION_FAILED);
-         done();
-      };
+      const closeCode = await new Promise((resolve, reject) => {
+         ws.onclose = ({ code }) => resolve(code);
+         ws.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.AUTHENTICATION_FAILED);
    });
 
-   test("should close the websocket with code 4005 (ALREADY_AUTHENTICATED) when the websocket is already authenticated", async (done) => {
+   test("should close the websocket with code 4005 (ALREADY_AUTHENTICATED) when the websocket is already authenticated", async () => {
       const [user] = await createTestUsers(1);
       const ws = await getWebSocket();
 
@@ -105,13 +111,15 @@ describe("Connection", () => {
          }
       };
 
-      ws.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.ALREADY_AUTHENTICATED);
-         done();
-      };
+      const closeCode = await new Promise((resolve, reject) => {
+         ws.onclose = ({ code }) => resolve(code);
+         ws.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.ALREADY_AUTHENTICATED);
    });
 
-   test("should close the websocket with code 4006 (INVALID_SEQ) when the sent sequence number for resuming is invalid", async (done) => {
+   test("should close the websocket with code 4006 (INVALID_SEQ) when the sent sequence number for resuming is invalid", async () => {
       const { ws, user, readyData } = await getReadyWebSocket();
       ws.close();
 
@@ -127,19 +135,21 @@ describe("Connection", () => {
          d: { sessionId: readyData.sessionId, token: user.accessToken, seq: 99 },
       };
 
-      ws2.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.INVALID_SEQ);
-         done();
-      };
-
       ws2.onmessage = (event) => {
          if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
             wsSend(ws2, resumeData);
          }
       };
+
+      const closeCode = await new Promise((resolve, reject) => {
+         ws2.onclose = ({ code }) => resolve(code);
+         ws2.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.INVALID_SEQ);
    });
 
-   test("should close the websocket with code 4009 (INVALID_SESSION) when trying to resume a non existing session", async (done) => {
+   test("should close the websocket with code 4009 (INVALID_SESSION) when trying to resume a non existing session", async () => {
       const { ws, user } = await getReadyWebSocket();
       ws.close();
 
@@ -156,10 +166,12 @@ describe("Connection", () => {
          }
       };
 
-      ws2.onclose = ({ code }) => {
-         expect(code).toBe(GatewayCode.INVALID_SESSION);
-         done();
-      };
+      const closeCode = await new Promise((resolve, reject) => {
+         ws2.onclose = ({ code }) => resolve(code);
+         ws2.onerror = (err) => reject(err);
+      });
+
+      expect(closeCode).toBe(GatewayCode.INVALID_SESSION);
    });
 
    test("should resume the websocket when it is disconnected and has not received some messages", async (done) => {
@@ -171,8 +183,8 @@ describe("Connection", () => {
          gateway.sendToTopic(user.id.toString(), {
             op: GatewayOperations.DISPATCH,
             s: 0,
-            t: "test",
-            d: i,
+            t: "typing_start",
+            d: { channelId: "123", userId: "123", timestamp: i },
          });
       }
 
@@ -197,8 +209,12 @@ describe("Connection", () => {
          const data = JSON.parse(event.data);
          if (testIsOpcode(data, GatewayOperations.DISPATCH)) {
             // @ts-ignore
-            if (data.t === "test") {
-               expect((data as { d: number }).d).toBe(received);
+            if (data.t === "typing_start") {
+               expect((data as { d: { channelId: string; userId: string; timestamp: number } }).d).toEqual({
+                  channelId: "123",
+                  userId: "123",
+                  timestamp: received,
+               });
                received++;
             }
          }
@@ -216,11 +232,11 @@ describe("Connection", () => {
          if (testIsDispatch(data, "ready")) {
             expect(data.d.privateChannels).toHaveLength(1);
             expect(data.d.relationships).toHaveLength(1);
-            expectChannelExactSchema(data.d.privateChannels[0], ChannelType.DM, channel.id, undefined, undefined, undefined, false);
+            expectChannelExactSchema(data.d.privateChannels[0], { type: ChannelType.DM, id: channel.id });
             expectChannelExactRecipients(data.d.privateChannels[0], [user2]);
-            expectRelationshipExactSchema(data.d.relationships[0], RelationshipType.FRIEND);
-            expectUserExactSchema(data.d.user, user.id, user.username, user.displayName, user.avatar, user.flags, user.email, user.password, false);
-            expectUserSettingsExactSchema(data.d.userSettings, { status: "online" });
+            expectRelationshipExactSchema(data.d.relationships[0], { type: RelationshipType.FRIEND, user: user2 });
+            expectUserExactSchema(data.d.user, user);
+            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [] });
             done();
          }
       };

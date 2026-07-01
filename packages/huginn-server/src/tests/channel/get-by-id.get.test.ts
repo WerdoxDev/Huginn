@@ -1,8 +1,9 @@
-import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetChannelByIdResult, ChannelType, type DirectChannel } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("GET /channels/:channelId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -32,7 +33,7 @@ describe("GET /channels/:channelId", () => {
 
       const result = (await testHandler(`/api/channels/${channel.id}`, authHeader(user.accessToken), "GET")) as APIGetChannelByIdResult;
 
-      expectChannelExactSchema(result, ChannelType.DM, channel.id, [user.id]);
+      expectChannelExactSchema(result, { type: ChannelType.DM, id: channel.id, potentialOwnerIds: [user.id] });
       // TODO: This is only for DirectChannels.
       // Getting a channel should not include the user who sent the request
       expectChannelExactRecipients(result as DirectChannel, [user2]);

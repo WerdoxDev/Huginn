@@ -1,8 +1,9 @@
-import { expectUserExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserByIdResult } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectUserExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestUsers } from "#tests/utils";
 
 describe("GET /users/:userId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -27,6 +28,6 @@ describe("GET /users/:userId", () => {
       const [user] = await createTestUsers(1);
 
       const result = (await testHandler(`/api/users/${user.id}`, authHeader(user.accessToken), "GET")) as APIGetUserByIdResult;
-      expectUserExactSchema(result, user.id, user.username, user.displayName, user.avatar, user.flags);
+      expectUserExactSchema(result, { ...user, email: undefined });
    });
 });

@@ -32,33 +32,14 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    }
 
    public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
-      // analytics.startActiveSpan("commonClientSession.send", (span) => {
-      // span.setAttributes({
-      //    ...this.getDefaultAttributes("send"),
-      //    "params.op": data.op,
-      //    "params.t": data.t ?? "null",
-      //    "params.has_sequence": data.s !== undefined,
-      //    "params.increase_sequence": increaseSequence,
-      //    "params.resumable": resumable,
-      // });
-
-      // try {
       if (increaseSequence) data.s = this.getIncreasedSequence();
       if (resumable && data.s) this.sentMessages.set(data.s, data);
-      // span.setAttribute("session.new_sequence", data.s ?? "null");
 
       this.peer.send(JSON.stringify(data));
-      // } catch (e) {
-      // recordSpanError(e);
-      // throw e;
-      // } finally {
-      // span.end();
-      // }
-      // });
    }
 
    public async initialize(user: APIUser, properties: Properties) {
-      analytics.startActiveSpan("commonClientSession.initialize", async (span) => {
+      return await analytics.startActiveSpan("commonClientSession.initialize", async (span) => {
          span.setAttributes({ ...this.getDefaultAttributes(), "user.id": user.id });
          try {
             this.user = user;

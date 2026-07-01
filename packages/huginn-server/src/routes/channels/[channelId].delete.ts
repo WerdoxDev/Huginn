@@ -4,7 +4,7 @@ import { omitChannelRecipient, selectChannelDefaults, selectChannelRecipients } 
 import { type APIDeleteDMChannelResult, ChannelType, MessageFlags, MessageType, merge, omit } from "@huginn/shared";
 import Elysia from "elysia";
 
-import { gateway } from "#setup";
+import { gateway } from "#server";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
 

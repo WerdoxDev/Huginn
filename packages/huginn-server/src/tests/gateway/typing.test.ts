@@ -1,8 +1,9 @@
-import { expectTypingExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { ChannelType } from "@huginn/shared";
 import { describe, test } from "bun:test";
+
+import { expectTypingExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers, getReadyWebSocket, multiDone, testIsDispatch } from "#tests/utils";
 
 describe("Typing", () => {
    test(
@@ -19,7 +20,7 @@ describe("Typing", () => {
          ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "typing_start")) {
-               expectTypingExactSchema(data.d, channel.id, user2.id);
+               expectTypingExactSchema(data.d, { channelId: channel.id, userId: user2.id });
                tryDone();
             }
          };
@@ -27,7 +28,7 @@ describe("Typing", () => {
          ws2.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (testIsDispatch(data, "typing_start")) {
-               expectTypingExactSchema(data.d, channel.id, user.id);
+               expectTypingExactSchema(data.d, { channelId: channel.id, userId: user.id });
                tryDone();
             }
          };

@@ -3,7 +3,7 @@ import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/sha
 // import { Readable, Writable } from "node:stream";
 import PQueue from "p-queue";
 
-import { storage } from "#setup";
+import { storage } from "#server";
 // import sharp from "sharp";
 
 import type { FileCategory, FileInfo } from "./types";

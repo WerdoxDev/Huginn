@@ -1,9 +1,10 @@
-import { gateway } from "#setup";
-import { dispatchCallMessage } from "#utils/helpers";
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { CONSTANTS, Errors } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { gateway } from "#server";
+import { dispatchCallMessage } from "#utils/helpers";
 
 const schema = t.Object({ recipients: t.Nullable(t.Array(t.String())) });
 

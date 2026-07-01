@@ -1,7 +1,7 @@
 // import { logGatewaySend } from "@huginn/backend-shared";
 import { type GatewayWebsocketEvents, GatewayOperations, type GatewayPayload, analytics } from "@huginn/shared";
 
-import { gateway } from "#setup";
+import { gateway } from "#server";
 
 export function dispatchToTopic<K extends keyof GatewayWebsocketEvents>(topics: string | string[], t: K, d: GatewayWebsocketEvents[K]) {
    analytics.startActiveSpan("gateway.dispatchToTopic", (span) => {

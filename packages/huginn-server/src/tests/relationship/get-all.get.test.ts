@@ -1,8 +1,9 @@
-import { expectRelationshipExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserRelationshipsResult, RelationshipType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectRelationshipExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/relationships", () => {
    test("should return 'Unauthorized' when no token is passed", async () => {
@@ -26,7 +27,15 @@ describe("GET /users/@me/relationships", () => {
       expect(result).toBeArray();
       expect(result).toHaveLength(2);
 
-      expectRelationshipExactSchema(result[0], RelationshipType.FRIEND, relationship.id, user2);
-      expectRelationshipExactSchema(result[1], RelationshipType.PENDING_OUTGOING, relationship2.id, user3);
+      expectRelationshipExactSchema(result[0], {
+         type: RelationshipType.FRIEND,
+         id: relationship.id,
+         user: user2,
+      });
+      expectRelationshipExactSchema(result[1], {
+         type: RelationshipType.PENDING_OUTGOING,
+         id: relationship2.id,
+         user: user3,
+      });
    });
 });

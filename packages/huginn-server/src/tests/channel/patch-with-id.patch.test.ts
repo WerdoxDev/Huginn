@@ -1,10 +1,11 @@
-import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
+
+import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("PATCH /channels/:channelId", () => {
    test(
@@ -84,7 +85,7 @@ describe("PATCH /channels/:channelId", () => {
          const readStates = await prisma.readState.findMany({
             where: { userId: BigInt(user4.id) },
          });
-         expectReadStatesExactSchema(readStates, channel.id.toString(), [user4.id]);
+         expectReadStatesExactSchema(readStates, { channelId: channel.id.toString(), userIds: [user4.id] });
 
          await new Promise((r) => setImmediate(r));
 
@@ -96,7 +97,7 @@ describe("PATCH /channels/:channelId", () => {
          const readStates2 = await prisma.readState.findMany({
             where: { userId: BigInt(user5.id) },
          });
-         expectReadStatesExactSchema(readStates2, channel.id.toString(), [user5.id]);
+         expectReadStatesExactSchema(readStates2, { channelId: channel.id.toString(), userIds: [user5.id] });
 
          await new Promise((r) => setImmediate(r));
 
@@ -123,7 +124,7 @@ describe("PATCH /channels/:channelId", () => {
             name: "test_group_edited",
          })) as APIPatchDMChannelResult;
 
-         expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], "test_group_edited");
+         expectChannelExactSchema(result, { type: ChannelType.GROUP_DM, id: channel.id, potentialOwnerIds: [user.id], name: "test_group_edited" });
          expectChannelExactRecipients(result, [user2, user3]);
 
          const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -133,7 +134,7 @@ describe("PATCH /channels/:channelId", () => {
             name: "test_group_edited2",
          })) as APIPatchDMChannelResult;
 
-         expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], "test_group_edited2");
+         expectChannelExactSchema(result2, { type: ChannelType.GROUP_DM, id: channel2.id, potentialOwnerIds: [user.id], name: "test_group_edited2" });
          expectChannelExactRecipients(result2, [user, user3]);
       },
       { timeout: 10000 },
@@ -153,7 +154,7 @@ describe("PATCH /channels/:channelId", () => {
          icon: iconData,
       })) as APIPatchDMChannelResult;
 
-      expectChannelExactSchema(result, ChannelType.GROUP_DM, channel.id, [user.id], undefined, iconHash);
+      expectChannelExactSchema(result, { type: ChannelType.GROUP_DM, id: channel.id, potentialOwnerIds: [user.id], icon: iconHash });
       expectChannelExactRecipients(result, [user2, user3]);
 
       const channel2 = await createTestChannel(user.id, ChannelType.GROUP_DM, user.id, user2.id, user3.id);
@@ -163,7 +164,7 @@ describe("PATCH /channels/:channelId", () => {
          icon: iconData,
       })) as APIPatchDMChannelResult;
 
-      expectChannelExactSchema(result2, ChannelType.GROUP_DM, channel2.id, [user.id], undefined, iconHash);
+      expectChannelExactSchema(result2, { type: ChannelType.GROUP_DM, id: channel2.id, potentialOwnerIds: [user.id], icon: iconHash });
       expectChannelExactRecipients(result2, [user, user3]);
    });
 });

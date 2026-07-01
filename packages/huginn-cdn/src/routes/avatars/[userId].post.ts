@@ -1,6 +1,7 @@
-import { storage } from "#setup";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
+
+import { storage } from "#server";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 

@@ -1,5 +1,4 @@
 import type { FileCategory } from "#utils/types";
-import type { S3File } from "bun";
 
 export abstract class Storage {
    public name: string;

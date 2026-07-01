@@ -1,9 +1,10 @@
-import { expectUserExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
+
+import { expectUserExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
 
 describe("PATCH /users/@me", () => {
    test("should return 'Invalid Form Body' when body constrains are not met", async () => {
@@ -84,24 +85,24 @@ describe("PATCH /users/@me", () => {
 
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, user.id, user.username, null, user.avatar, user.flags, user.email, user.password, true);
+      expectUserExactSchema(result, { ...user, displayName: null, hasTokens: true });
    });
 
    test("should edit the current user when the request is successful", async () => {
       const [user] = await createTestUsers(1);
 
-      const edit: Required<APIPatchCurrentUserJSONBody> = {
+      const edit = {
          displayName: "test-edited",
          email: "test-edited@gmail.com",
          username: "test_edited",
          newPassword: "test-edited",
-         password: user.password ?? "",
+         password: user.password!,
          avatar: null,
-      };
+      } satisfies APIPatchCurrentUserJSONBody;
 
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, user.id, edit.username, edit.displayName, null, user.flags, edit.email, edit.newPassword, true);
+      expectUserExactSchema(result, { ...user, ...edit, email: user.email, pendingEmail: edit.email, hasTokens: true });
    });
 
    test.skipIf(!isCDNRunning)("should change the user's avatar when the request is successful", async () => {
@@ -114,6 +115,6 @@ describe("PATCH /users/@me", () => {
          avatar: avatarData,
       })) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, user.id, user.username, user.displayName, avatarHash, user.flags, user.email, user.password, true);
+      expectUserExactSchema(result, { ...user, avatar: avatarHash, hasTokens: true });
    });
 });

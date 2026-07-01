@@ -6,8 +6,8 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "start": "bun src/setup.ts",
-      "dev": "bun --hot src/setup.ts"
+      "start": "bun run --preload ./src/setup.ts ./src/run.ts",
+      "dev": "bun run --hot --preload ./src/setup.ts ./src/run.ts"
    },
    "dependencies": {
       "@elysiajs/cors": "^1.4.0",

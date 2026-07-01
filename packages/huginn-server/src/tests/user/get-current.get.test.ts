@@ -1,9 +1,10 @@
 import type { APIGetCurrentUserResult } from "@huginn/shared";
 
-import { expectUserExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectUserExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me", () => {
    test("should return 'Unauthorized' when no token is passed", async () => {
@@ -19,6 +20,6 @@ describe("GET /users/@me", () => {
 
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "GET")) as APIGetCurrentUserResult;
 
-      expectUserExactSchema(result, user.id, user.username, user.displayName, user.avatar, user.flags, user.email, user.password);
+      expectUserExactSchema(result, user);
    });
 });

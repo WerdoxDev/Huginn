@@ -1,8 +1,9 @@
-import { expectMessageExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetChannelMessagesResult, ChannelType, MessageType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectMessageExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("GET /channels/:channelId/messages", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {
@@ -42,7 +43,13 @@ describe("GET /channels/:channelId/messages", () => {
       expect(result).toHaveLength(50);
 
       for (const [i, message] of result.entries()) {
-         expectMessageExactSchema(message, MessageType.DEFAULT, messages[i + 10].id, channel.id, user, messages[i + 10].content);
+         expectMessageExactSchema(message, {
+            type: MessageType.DEFAULT,
+            id: messages[i + 10].id,
+            channelId: channel.id,
+            author: user,
+            content: messages[i + 10].content,
+         });
       }
    });
    test("should return 'n' of channel's messages when the request is successful", async () => {
@@ -51,11 +58,7 @@ describe("GET /channels/:channelId/messages", () => {
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
       const messages = await createTestMessages(channel.id, user.id, 10);
 
-      const result = (await testHandler(
-         `/api/channels/${channel.id}/messages?limit=5`,
-         authHeader(user.accessToken),
-         "GET",
-      )) as APIGetChannelMessagesResult;
+      const result = (await testHandler(`/api/channels/${channel.id}/messages?limit=5`, authHeader(user.accessToken), "GET")) as APIGetChannelMessagesResult;
 
       expect(result).toBeArray();
       expect(result).toHaveLength(5);
@@ -78,7 +81,13 @@ describe("GET /channels/:channelId/messages", () => {
       expect(result).toHaveLength(5);
       expect(result.every((x) => messages.slice(0, 5).some((y) => x.id === y.id.toString()))).toBeTrue();
       for (const [i, message] of result.entries()) {
-         expectMessageExactSchema(message, MessageType.DEFAULT, messages[i].id, channel.id, user, messages[i].content);
+         expectMessageExactSchema(message, {
+            type: MessageType.DEFAULT,
+            id: messages[i].id,
+            channelId: channel.id,
+            author: user,
+            content: messages[i].content,
+         });
       }
 
       // With after
@@ -92,7 +101,13 @@ describe("GET /channels/:channelId/messages", () => {
       expect(result2).toHaveLength(5);
       expect(result2.every((x) => messages.slice(5).some((y) => x.id === y.id.toString()))).toBeTrue();
       for (const [i, message] of result2.entries()) {
-         expectMessageExactSchema(message, MessageType.DEFAULT, messages[i + 5].id, channel.id, user, messages[i + 5].content);
+         expectMessageExactSchema(message, {
+            type: MessageType.DEFAULT,
+            id: messages[i + 5].id,
+            channelId: channel.id,
+            author: user,
+            content: messages[i + 5].content,
+         });
       }
    });
 });

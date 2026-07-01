@@ -2,7 +2,6 @@ import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    CONSTANTS,
-   type APIChannelUser,
    type APIUser,
    type ChannelType,
    type GatewayWebsocketEvents,
@@ -17,9 +16,11 @@ import {
    WorkerID,
    isOpcode,
    snowflake,
+   omitArray,
 } from "@huginn/shared";
 
-import { env, gateway } from "#setup";
+import { gateway } from "#server";
+import { env } from "#setup";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & {
@@ -44,7 +45,7 @@ export async function handle<P extends Promise<any>>(promise: P) {
 }
 
 export async function getWebSocket() {
-   const ws = new WebSocket("ws://localhost:3004/gateway");
+   const ws = new WebSocket(`ws://${env.SERVER_HOST}:${env.SERVER_PORT}/gateway`);
    connectedWebsockets.push(ws);
    return ws;
 }
@@ -184,7 +185,7 @@ export const timeSpent = {
 export async function createTestUsers(amount: number) {
    const t0 = performance.now();
 
-   const users = [];
+   const users: any[] = [];
    for (let i = 0; i < amount; i++) {
       const index = currentIndexes.users + i;
       users.push({
@@ -192,7 +193,8 @@ export async function createTestUsers(amount: number) {
          username: `test${index}`,
          displayName: `test${index}`,
          email: `test${index}@gmail.com`,
-         password: `test${index}`,
+         password: await Bun.password.hash(`test${index}`),
+         originalPassword: `test${index}`,
          flags: 0,
          emailVerifiedAt: new Date(),
       });
@@ -200,7 +202,7 @@ export async function createTestUsers(amount: number) {
 
    currentIndexes.users += amount;
 
-   const createdUsers = await prisma.user.createManyAndReturn({ data: users });
+   const createdUsers = await prisma.user.createManyAndReturn({ data: omitArray(users, ["originalPassword"]) as any[] });
 
    const t1 = performance.now();
    timeSpent.createUsers += t1 - t0;
@@ -222,7 +224,9 @@ export async function createTestUsers(amount: number) {
 
          removeUserLater(x);
 
-         return { ...x, accessToken, refreshToken } as TestUser;
+         const password = (users as any[]).find((u) => u.id === x.id).originalPassword;
+
+         return { ...x, accessToken, refreshToken, password } as TestUser;
       }),
    );
 }
@@ -401,7 +405,7 @@ export function disconnectWebSockets() {
    }
 }
 
-export function containsId(recipients: APIChannelUser[], id: Snowflake | undefined) {
+export function containsId(recipients: any[], id: Snowflake | undefined) {
    return recipients.some((x) => x.id === id);
 }
 

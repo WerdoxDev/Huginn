@@ -32,10 +32,10 @@ export const getGoogle = new Elysia().get(
          return forbidden(status);
       }
 
-      // const allowedOrigins = env.ALLOWED_ORIGINS?.split(",");
-      // if (redirect_url && !allowedOrigins?.some((x) => redirect_url.includes(x))) {
-      //    return forbidden(status);
-      // }
+      const allowedOrigins = env.ALLOWED_ORIGINS?.split(",");
+      if (redirect_url && !allowedOrigins?.some((x) => redirect_url.includes(x))) {
+         return forbidden(status);
+      }
 
       // User clicks on google
       // Gets sent to /api/auth/google with a generated state and flow
@@ -54,10 +54,7 @@ export const getGoogle = new Elysia().get(
       authEndpoint.searchParams.set("response_type", "code");
       authEndpoint.searchParams.set("prompt", "consent");
       authEndpoint.searchParams.set("state", state);
-      authEndpoint.searchParams.set(
-         "scope",
-         "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid",
-      );
+      authEndpoint.searchParams.set("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid");
       authEndpoint.searchParams.set("access_type", "offline");
 
       return redirect(authEndpoint.toString(), 302);

@@ -1,8 +1,9 @@
-import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { type APIGetUserChannelsResult, ChannelType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";
+import { authHeader, createTestChannel, createTestUsers } from "#tests/utils";
 
 describe("GET /users/@me/channels", () => {
    test("should return 'Unauthorized' when no token is passed", async () => {
@@ -22,12 +23,16 @@ describe("GET /users/@me/channels", () => {
       const result = (await testHandler("/api/users/@me/channels", authHeader(user.accessToken), "GET")) as APIGetUserChannelsResult;
 
       expect(result).toBeArray();
-      expectChannelExactSchema(result[0], ChannelType.DM, channel.id);
+      const id1 = result.findIndex((c) => c.id === channel.id.toString());
+      const id2 = result.findIndex((c) => c.id === channel2.id.toString());
+      expect(id1).not.toBe(-1);
+      expect(id2).not.toBe(-1);
+      expectChannelExactSchema(result[id1], { type: ChannelType.DM, id: channel.id });
       // Getting channels should not include the user who sent the request
-      expectChannelExactRecipients(result[0], [user2]);
+      expectChannelExactRecipients(result[id1], [user2]);
 
-      expectChannelExactSchema(result[1], ChannelType.DM, channel2.id);
+      expectChannelExactSchema(result[id2], { type: ChannelType.DM, id: channel2.id });
       // Getting channels should not include the user who sent the request
-      expectChannelExactRecipients(result[1], [user3]);
+      expectChannelExactRecipients(result[id2], [user3]);
    });
 });
