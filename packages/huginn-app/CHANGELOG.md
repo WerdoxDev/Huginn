@@ -2,280 +2,251 @@
 
 ## [0.77.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.0...app@v0.77.1) (2026-06-27)
 
-
 ### Bug Fixes
 
-* **app:** many message box vertical alignment fixes ([82dad7a](https://github.com/WerdoxDev/Huginn/commit/82dad7a69879928a9f6c68a9d3c67ec2cfe763af))
+- **app:** many message box vertical alignment fixes ([82dad7a](https://github.com/WerdoxDev/Huginn/commit/82dad7a69879928a9f6c68a9d3c67ec2cfe763af))
 
 ## [0.77.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.76.0...app@v0.77.0) (2026-06-25)
 
-
 ### Features
 
-* **app:** active panel indicator + taller message box + new user info design ([cc6d1c8](https://github.com/WerdoxDev/Huginn/commit/cc6d1c8083dadcc537aba48f801ed94d0e39689c))
-* **app:** add drawer for select component ([03611a0](https://github.com/WerdoxDev/Huginn/commit/03611a039751f3bd406ac79815e8553b421f3121))
-* **app:** add drawer style popups for ocntext menus and menus ([c59df63](https://github.com/WerdoxDev/Huginn/commit/c59df6317b5e34b53e7772c413a657f96030a1a3))
-* **app:** check platform in changelogs ([55258c7](https://github.com/WerdoxDev/Huginn/commit/55258c794cfc93967571a9c44d63ef812f837c5b))
-* **app:** stacked back handler + better performance for attachments on mobile + popover drawer ([daf5f09](https://github.com/WerdoxDev/Huginn/commit/daf5f092748b196c7c00c9469ccacc86bc742999))
-
+- **app:** active panel indicator + taller message box + new user info design ([cc6d1c8](https://github.com/WerdoxDev/Huginn/commit/cc6d1c8083dadcc537aba48f801ed94d0e39689c))
+- **app:** add drawer for select component ([03611a0](https://github.com/WerdoxDev/Huginn/commit/03611a039751f3bd406ac79815e8553b421f3121))
+- **app:** add drawer style popups for ocntext menus and menus ([c59df63](https://github.com/WerdoxDev/Huginn/commit/c59df6317b5e34b53e7772c413a657f96030a1a3))
+- **app:** check platform in changelogs ([55258c7](https://github.com/WerdoxDev/Huginn/commit/55258c794cfc93967571a9c44d63ef812f837c5b))
+- **app:** stacked back handler + better performance for attachments on mobile + popover drawer ([daf5f09](https://github.com/WerdoxDev/Huginn/commit/daf5f092748b196c7c00c9469ccacc86bc742999))
 
 ### Bug Fixes
 
-* **app:** back handler missing for submenus ([4320370](https://github.com/WerdoxDev/Huginn/commit/4320370412dd7fbd3006812da017f734410a2c74))
-* **app:** emoji panel color selection wrong ui in mobile ([7c34019](https://github.com/WerdoxDev/Huginn/commit/7c34019e32a0d6cda5d52e8a992b043aa225901d))
-* **app:** keyboard inset overlay not working on some andorids + some menue fixes ([3464298](https://github.com/WerdoxDev/Huginn/commit/3464298e4434c0e6c38bedbc9b0fae97c80d8bb1))
-* **app:** multi message add or update scroll fix ([c5fa5b2](https://github.com/WerdoxDev/Huginn/commit/c5fa5b26b0575f4270c28c5d1993954f637bd889))
-* **app:** rtl and ltr mixed text ordering is wrong ([a76f60b](https://github.com/WerdoxDev/Huginn/commit/a76f60b38f30668fe20637fded1fc06ee747127a))
-* **app:** use debug for android bundle upload ([e3a9c6a](https://github.com/WerdoxDev/Huginn/commit/e3a9c6a9e2fc58100126e664b4309d956c600ffa))
-* **app:** wrong apk file path for android ([ca1b1b9](https://github.com/WerdoxDev/Huginn/commit/ca1b1b9ec758eafecfb5697dac4e4ed4581d5fca))
+- **app:** back handler missing for submenus ([4320370](https://github.com/WerdoxDev/Huginn/commit/4320370412dd7fbd3006812da017f734410a2c74))
+- **app:** emoji panel color selection wrong ui in mobile ([7c34019](https://github.com/WerdoxDev/Huginn/commit/7c34019e32a0d6cda5d52e8a992b043aa225901d))
+- **app:** keyboard inset overlay not working on some andorids + some menue fixes ([3464298](https://github.com/WerdoxDev/Huginn/commit/3464298e4434c0e6c38bedbc9b0fae97c80d8bb1))
+- **app:** multi message add or update scroll fix ([c5fa5b2](https://github.com/WerdoxDev/Huginn/commit/c5fa5b26b0575f4270c28c5d1993954f637bd889))
+- **app:** rtl and ltr mixed text ordering is wrong ([a76f60b](https://github.com/WerdoxDev/Huginn/commit/a76f60b38f30668fe20637fded1fc06ee747127a))
+- **app:** use debug for android bundle upload ([e3a9c6a](https://github.com/WerdoxDev/Huginn/commit/e3a9c6a9e2fc58100126e664b4309d956c600ffa))
+- **app:** wrong apk file path for android ([ca1b1b9](https://github.com/WerdoxDev/Huginn/commit/ca1b1b9ec758eafecfb5697dac4e4ed4581d5fca))
 
 ## [0.76.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.75.0...app@v0.76.0) (2026-06-19)
 
-
 ### Features
 
-* **app:** add actual icons + push notification implementation ([50745f4](https://github.com/WerdoxDev/Huginn/commit/50745f4a7e49feb7571c649a5c0443049efad3a5))
-
+- **app:** add actual icons + push notification implementation ([50745f4](https://github.com/WerdoxDev/Huginn/commit/50745f4a7e49feb7571c649a5c0443049efad3a5))
 
 ### Bug Fixes
 
-* **app:** few visual bugs + voice-debug route bug ([6518e49](https://github.com/WerdoxDev/Huginn/commit/6518e496bedd461a5d0101aecea51f6cced5d399))
-* potential android workflow fix [#4](https://github.com/WerdoxDev/Huginn/issues/4) ([0bae2d1](https://github.com/WerdoxDev/Huginn/commit/0bae2d1220debb21947724cc24e0b28b3f9473b3))
-* potential android workflow fix [#5](https://github.com/WerdoxDev/Huginn/issues/5) ([c70d8a1](https://github.com/WerdoxDev/Huginn/commit/c70d8a1d1cf9ce8a5ec614b26e91e80375b69e8a))
-* potential android workflow fix [#8](https://github.com/WerdoxDev/Huginn/issues/8) ([a5cff1b](https://github.com/WerdoxDev/Huginn/commit/a5cff1bca12548d24552585b779b0349fe370101))
+- **app:** few visual bugs + voice-debug route bug ([6518e49](https://github.com/WerdoxDev/Huginn/commit/6518e496bedd461a5d0101aecea51f6cced5d399))
+- potential android workflow fix [#4](https://github.com/WerdoxDev/Huginn/issues/4) ([0bae2d1](https://github.com/WerdoxDev/Huginn/commit/0bae2d1220debb21947724cc24e0b28b3f9473b3))
+- potential android workflow fix [#5](https://github.com/WerdoxDev/Huginn/issues/5) ([c70d8a1](https://github.com/WerdoxDev/Huginn/commit/c70d8a1d1cf9ce8a5ec614b26e91e80375b69e8a))
+- potential android workflow fix [#8](https://github.com/WerdoxDev/Huginn/issues/8) ([a5cff1b](https://github.com/WerdoxDev/Huginn/commit/a5cff1bca12548d24552585b779b0349fe370101))
 
 ## [0.75.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.1...app@v0.75.0) (2026-06-16)
 
-
 ### Features
 
-* **app:** add android keyboard handling for in-place emoji picker behind keyboard ([f8d6dcb](https://github.com/WerdoxDev/Huginn/commit/f8d6dcb698d8974111d9c8c3493115a1770653d3))
-* **app:** add android OTA update support ([abeb695](https://github.com/WerdoxDev/Huginn/commit/abeb69579cf2032feb6965f42f5065c6454a761e))
-* **app:** add native image & video viewer for attachment sending ([d0687e8](https://github.com/WerdoxDev/Huginn/commit/d0687e889a68978432944b11067e1e6b85182116))
-
+- **app:** add android keyboard handling for in-place emoji picker behind keyboard ([f8d6dcb](https://github.com/WerdoxDev/Huginn/commit/f8d6dcb698d8974111d9c8c3493115a1770653d3))
+- **app:** add android OTA update support ([abeb695](https://github.com/WerdoxDev/Huginn/commit/abeb69579cf2032feb6965f42f5065c6454a761e))
+- **app:** add native image & video viewer for attachment sending ([d0687e8](https://github.com/WerdoxDev/Huginn/commit/d0687e889a68978432944b11067e1e6b85182116))
 
 ### Bug Fixes
 
-* **app:** channel sidebar problem on mobile ([96c5b7c](https://github.com/WerdoxDev/Huginn/commit/96c5b7c244b1df1ffd33f0ad61490a4ab071f3c3))
+- **app:** channel sidebar problem on mobile ([96c5b7c](https://github.com/WerdoxDev/Huginn/commit/96c5b7c244b1df1ffd33f0ad61490a4ab071f3c3))
 
 ## [0.74.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.74.0...app@v0.74.1) (2026-06-12)
 
-
 ### Bug Fixes
 
-* **app:** add vercel rewrites ([2142362](https://github.com/WerdoxDev/Huginn/commit/2142362082bddba7380a23bf357eb1799f1c0f9e))
-* **app:** much better emoji picker design ([b138505](https://github.com/WerdoxDev/Huginn/commit/b1385051a9c9d236bf0b74f8835676cc93508861))
+- **app:** add vercel rewrites ([2142362](https://github.com/WerdoxDev/Huginn/commit/2142362082bddba7380a23bf357eb1799f1c0f9e))
+- **app:** much better emoji picker design ([b138505](https://github.com/WerdoxDev/Huginn/commit/b1385051a9c9d236bf0b74f8835676cc93508861))
 
 ## [0.74.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.1...app@v0.74.0) (2026-06-12)
 
-
 ### Features
 
-* **app:** way better emoji picker with better performance + better emoji list + local emoji assets ([5bb00fe](https://github.com/WerdoxDev/Huginn/commit/5bb00fe143d8ddfc7fb33624976c20a4f9241cb6))
-
+- **app:** way better emoji picker with better performance + better emoji list + local emoji assets ([5bb00fe](https://github.com/WerdoxDev/Huginn/commit/5bb00fe143d8ddfc7fb33624976c20a4f9241cb6))
 
 ### Bug Fixes
 
-* **app:** lots emoji picker fixes and improvements ([19738c5](https://github.com/WerdoxDev/Huginn/commit/19738c5641369d4e2606e914210779bafa37b0b3))
+- **app:** lots emoji picker fixes and improvements ([19738c5](https://github.com/WerdoxDev/Huginn/commit/19738c5641369d4e2606e914210779bafa37b0b3))
 
 ## [0.73.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.73.0...app@v0.73.1) (2026-06-10)
 
-
 ### Bug Fixes
 
-* **app:** add unicode-emoji-json to build deps ([c9bdc5f](https://github.com/WerdoxDev/Huginn/commit/c9bdc5f5f3335a04ff1666210f37026e5b5c6cb0))
-* **app:** add unicode-emoji-json to config ([f60d2db](https://github.com/WerdoxDev/Huginn/commit/f60d2db0f3ff61c6b81775a05fd6c7283183f747))
+- **app:** add unicode-emoji-json to build deps ([c9bdc5f](https://github.com/WerdoxDev/Huginn/commit/c9bdc5f5f3335a04ff1666210f37026e5b5c6cb0))
+- **app:** add unicode-emoji-json to config ([f60d2db](https://github.com/WerdoxDev/Huginn/commit/f60d2db0f3ff61c6b81775a05fd6c7283183f747))
 
 ## [0.73.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.1...app@v0.73.0) (2026-06-10)
 
-
 ### Features
 
-* **app:** add experimental emoji picker with all unicode emojis from v17 ([c3b7e24](https://github.com/WerdoxDev/Huginn/commit/c3b7e24b65d3c352f85dbbfffb29762042aade64))
-* **app:** add proper message error indicator with retry function ([cac3333](https://github.com/WerdoxDev/Huginn/commit/cac33333620013e13f8aa233a888f0b45043c558))
-* **app:** bunch of work for emoji rendering and correct void element navigation ([24a600f](https://github.com/WerdoxDev/Huginn/commit/24a600f498df0569e9610eec3da9c63131368396))
-* **app:** emoji picker search bar ([df82619](https://github.com/WerdoxDev/Huginn/commit/df82619bdbe9014d64a53a633cc2088c42eb233b))
-* **app:** more emoji fixes + emoji rendering + migrate to MarkedJS ([d9afde3](https://github.com/WerdoxDev/Huginn/commit/d9afde3d6a1dd911acbfac340efe1128ec9b8d3d))
-
+- **app:** add experimental emoji picker with all unicode emojis from v17 ([c3b7e24](https://github.com/WerdoxDev/Huginn/commit/c3b7e24b65d3c352f85dbbfffb29762042aade64))
+- **app:** add proper message error indicator with retry function ([cac3333](https://github.com/WerdoxDev/Huginn/commit/cac33333620013e13f8aa233a888f0b45043c558))
+- **app:** bunch of work for emoji rendering and correct void element navigation ([24a600f](https://github.com/WerdoxDev/Huginn/commit/24a600f498df0569e9610eec3da9c63131368396))
+- **app:** emoji picker search bar ([df82619](https://github.com/WerdoxDev/Huginn/commit/df82619bdbe9014d64a53a633cc2088c42eb233b))
+- **app:** more emoji fixes + emoji rendering + migrate to MarkedJS ([d9afde3](https://github.com/WerdoxDev/Huginn/commit/d9afde3d6a1dd911acbfac340efe1128ec9b8d3d))
 
 ### Bug Fixes
 
-* **app:** better naming for image crop modal ([5ea57b2](https://github.com/WerdoxDev/Huginn/commit/5ea57b255393f6c48b78ef57f64bbaf608f9ceeb))
-* **app:** lots more emoji fixes + ran posthog wizard for fun ([b683a91](https://github.com/WerdoxDev/Huginn/commit/b683a912f3dec78e3058bcfbfc1026da34ac2d02))
-* **app:** remove support for heic images ([66734a4](https://github.com/WerdoxDev/Huginn/commit/66734a495664967525d091f44c3bb58950b157a0))
-* **app:** set path to / for vercel previews ([dd4786b](https://github.com/WerdoxDev/Huginn/commit/dd4786b0055d4e76608eda03ebe544892b83e70c))
-* **app:** use data url for notifications + remove cache controller from electron ([5438ffd](https://github.com/WerdoxDev/Huginn/commit/5438ffd1977ca1a2e693214e47429600b089aee3))
-* new vercel structure ([1fed326](https://github.com/WerdoxDev/Huginn/commit/1fed326d43e2a8aef71b72204313c6a87b9bbac2))
-* new vercel structure ([618187e](https://github.com/WerdoxDev/Huginn/commit/618187e28add4e173cb8152ee339e4ebc08ca5b4))
+- **app:** better naming for image crop modal ([5ea57b2](https://github.com/WerdoxDev/Huginn/commit/5ea57b255393f6c48b78ef57f64bbaf608f9ceeb))
+- **app:** lots more emoji fixes + ran posthog wizard for fun ([b683a91](https://github.com/WerdoxDev/Huginn/commit/b683a912f3dec78e3058bcfbfc1026da34ac2d02))
+- **app:** remove support for heic images ([66734a4](https://github.com/WerdoxDev/Huginn/commit/66734a495664967525d091f44c3bb58950b157a0))
+- **app:** set path to / for vercel previews ([dd4786b](https://github.com/WerdoxDev/Huginn/commit/dd4786b0055d4e76608eda03ebe544892b83e70c))
+- **app:** use data url for notifications + remove cache controller from electron ([5438ffd](https://github.com/WerdoxDev/Huginn/commit/5438ffd1977ca1a2e693214e47429600b089aee3))
+- new vercel structure ([1fed326](https://github.com/WerdoxDev/Huginn/commit/1fed326d43e2a8aef71b72204313c6a87b9bbac2))
+- new vercel structure ([618187e](https://github.com/WerdoxDev/Huginn/commit/618187e28add4e173cb8152ee339e4ebc08ca5b4))
 
 ## [0.72.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.72.0...app@v0.72.1) (2026-06-05)
 
-
 ### Bug Fixes
 
-* **app:** electron build fix ([7856de5](https://github.com/WerdoxDev/Huginn/commit/7856de50b52f3d2cb43d6efb7592ecb2abee0d6e))
-* **app:** electron build fix ([e3cb96e](https://github.com/WerdoxDev/Huginn/commit/e3cb96e65922558d42c8cbb84e671cf06dec017e))
+- **app:** electron build fix ([7856de5](https://github.com/WerdoxDev/Huginn/commit/7856de50b52f3d2cb43d6efb7592ecb2abee0d6e))
+- **app:** electron build fix ([e3cb96e](https://github.com/WerdoxDev/Huginn/commit/e3cb96e65922558d42c8cbb84e671cf06dec017e))
 
 ## [0.72.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.1...app@v0.72.0) (2026-06-05)
 
-
 ### Features
 
-* **app:** add one time runnable actions after update + new settings for OTLP and Posthog ([39eaad7](https://github.com/WerdoxDev/Huginn/commit/39eaad7268883cb7be943e7e0d8c8a492c8e541d))
-* **app:** bunch of cleanups around initializing stores + unified storage solution ([06bdf44](https://github.com/WerdoxDev/Huginn/commit/06bdf44eaea439bd09a08580a7e33317932dc1dc))
-* **app:** bunch of cleanups around initializing stores + unified storage solution ([8a61b40](https://github.com/WerdoxDev/Huginn/commit/8a61b4088bd1e68197da2eb6d000d4db6cd06fae))
-* **app:** implement basic OTel (just file system and notification for now) ([cfd6a6a](https://github.com/WerdoxDev/Huginn/commit/cfd6a6af2bb1e075d0ee2bcfc5555b4f8cb184c8))
-
+- **app:** add one time runnable actions after update + new settings for OTLP and Posthog ([39eaad7](https://github.com/WerdoxDev/Huginn/commit/39eaad7268883cb7be943e7e0d8c8a492c8e541d))
+- **app:** bunch of cleanups around initializing stores + unified storage solution ([06bdf44](https://github.com/WerdoxDev/Huginn/commit/06bdf44eaea439bd09a08580a7e33317932dc1dc))
+- **app:** bunch of cleanups around initializing stores + unified storage solution ([8a61b40](https://github.com/WerdoxDev/Huginn/commit/8a61b4088bd1e68197da2eb6d000d4db6cd06fae))
+- **app:** implement basic OTel (just file system and notification for now) ([cfd6a6a](https://github.com/WerdoxDev/Huginn/commit/cfd6a6af2bb1e075d0ee2bcfc5555b4f8cb184c8))
 
 ### Bug Fixes
 
-* **app:** betetr loading ui for media stuff ([7722008](https://github.com/WerdoxDev/Huginn/commit/772200853be92ec5c525c30dcdc02effd7396c42))
-* **app:** use semver-ts instead of semver ([86e8eca](https://github.com/WerdoxDev/Huginn/commit/86e8ecadbfcdcb19dc8de4ea76907bb8a8d066c3))
-* **app:** use shortened function for span error recording ([916f1a6](https://github.com/WerdoxDev/Huginn/commit/916f1a622bec7352d5f0c87c1b5451c66327f90e))
+- **app:** betetr loading ui for media stuff ([7722008](https://github.com/WerdoxDev/Huginn/commit/772200853be92ec5c525c30dcdc02effd7396c42))
+- **app:** use semver-ts instead of semver ([86e8eca](https://github.com/WerdoxDev/Huginn/commit/86e8ecadbfcdcb19dc8de4ea76907bb8a8d066c3))
+- **app:** use shortened function for span error recording ([916f1a6](https://github.com/WerdoxDev/Huginn/commit/916f1a622bec7352d5f0c87c1b5451c66327f90e))
 
 ## [0.71.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.71.0...app@v0.71.1) (2026-05-31)
 
-
 ### Bug Fixes
 
-* **app:** force an update ([d20918f](https://github.com/WerdoxDev/Huginn/commit/d20918fb2833e1d7174779f617772e746935000d))
+- **app:** force an update ([d20918f](https://github.com/WerdoxDev/Huginn/commit/d20918fb2833e1d7174779f617772e746935000d))
 
 ## [0.71.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.70.0...app@v0.71.0) (2026-05-31)
 
-
 ### Features
 
-* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
-* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
-
+- migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+- migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
 
 ### Bug Fixes
 
-* **app:** appropiate size for user avatars and channel icons ([fba9d2e](https://github.com/WerdoxDev/Huginn/commit/fba9d2ee549eca7bf1c4f41272625fc32304a2de))
-* **app:** banner loading shouldn't overflow ([e02aef2](https://github.com/WerdoxDev/Huginn/commit/e02aef216675f3078020ca4c9b6468e4e57a2521))
-* **app:** cert files are only needed when in https mode ([19ad9cc](https://github.com/WerdoxDev/Huginn/commit/19ad9ccab96fdc0c1e6f368da83864362f475641))
-* **app:** gifs shouldn't play when not focused to client ([7b5fecd](https://github.com/WerdoxDev/Huginn/commit/7b5fecdc345f17468e50711045c58f2c37e199f9))
-* **app:** incorrect size on channel icons + tooltip wrong arrow positioning ([e5c694c](https://github.com/WerdoxDev/Huginn/commit/e5c694c3d5b81c38d6fc39b59098ee677dde0b22))
-* **app:** pinned messages oveflow on mobile ([4ef8c31](https://github.com/WerdoxDev/Huginn/commit/4ef8c313d32bda9cfd15417c8a40bdd3ee723ed4))
-* **app:** profile gifs should only play when hovering over the repective context ([cbc90e1](https://github.com/WerdoxDev/Huginn/commit/cbc90e1be4c5ee00bbf43ab0c056f8887ff922f7))
-* **app:** reply renderer username wrapping ([3ea0632](https://github.com/WerdoxDev/Huginn/commit/3ea06320376356a2c8e56a564d37b5b92b041b52))
-* **app:** update progress bar fixed at 50% ([4cec510](https://github.com/WerdoxDev/Huginn/commit/4cec5103d396eeb0a270bdf6a93e89feb10e44c5))
-* **app:** wrong z-index on channe call border ([cc7e2ae](https://github.com/WerdoxDev/Huginn/commit/cc7e2aea389efa3901eb7283051a75e9a4479549))
-* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+- **app:** appropiate size for user avatars and channel icons ([fba9d2e](https://github.com/WerdoxDev/Huginn/commit/fba9d2ee549eca7bf1c4f41272625fc32304a2de))
+- **app:** banner loading shouldn't overflow ([e02aef2](https://github.com/WerdoxDev/Huginn/commit/e02aef216675f3078020ca4c9b6468e4e57a2521))
+- **app:** cert files are only needed when in https mode ([19ad9cc](https://github.com/WerdoxDev/Huginn/commit/19ad9ccab96fdc0c1e6f368da83864362f475641))
+- **app:** gifs shouldn't play when not focused to client ([7b5fecd](https://github.com/WerdoxDev/Huginn/commit/7b5fecdc345f17468e50711045c58f2c37e199f9))
+- **app:** incorrect size on channel icons + tooltip wrong arrow positioning ([e5c694c](https://github.com/WerdoxDev/Huginn/commit/e5c694c3d5b81c38d6fc39b59098ee677dde0b22))
+- **app:** pinned messages oveflow on mobile ([4ef8c31](https://github.com/WerdoxDev/Huginn/commit/4ef8c313d32bda9cfd15417c8a40bdd3ee723ed4))
+- **app:** profile gifs should only play when hovering over the repective context ([cbc90e1](https://github.com/WerdoxDev/Huginn/commit/cbc90e1be4c5ee00bbf43ab0c056f8887ff922f7))
+- **app:** reply renderer username wrapping ([3ea0632](https://github.com/WerdoxDev/Huginn/commit/3ea06320376356a2c8e56a564d37b5b92b041b52))
+- **app:** update progress bar fixed at 50% ([4cec510](https://github.com/WerdoxDev/Huginn/commit/4cec5103d396eeb0a270bdf6a93e89feb10e44c5))
+- **app:** wrong z-index on channe call border ([cc7e2ae](https://github.com/WerdoxDev/Huginn/commit/cc7e2aea389efa3901eb7283051a75e9a4479549))
+- dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
 
 ## [0.70.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.3...app@v0.70.0) (2026-05-28)
 
-
 ### Features
 
-* **app:** add delete pin message ([f85b858](https://github.com/WerdoxDev/Huginn/commit/f85b8583066c2cc306db4a6c734f6b9dd3f42e0c))
-* **app:** add much better message updating functionality + pins layout and updating ([1000726](https://github.com/WerdoxDev/Huginn/commit/1000726c9fdbb372983fc8233d9571c8ba946efb))
-
+- **app:** add delete pin message ([f85b858](https://github.com/WerdoxDev/Huginn/commit/f85b8583066c2cc306db4a6c734f6b9dd3f42e0c))
+- **app:** add much better message updating functionality + pins layout and updating ([1000726](https://github.com/WerdoxDev/Huginn/commit/1000726c9fdbb372983fc8233d9571c8ba946efb))
 
 ### Bug Fixes
 
-* **app:** clicking pinned message should jump to message ([6b7499a](https://github.com/WerdoxDev/Huginn/commit/6b7499ad350d949017c1c0f7d76e56f000c00f66))
-* **app:** remove double friends + component renames ([e520fb3](https://github.com/WerdoxDev/Huginn/commit/e520fb3bdbf1815911f8ff685ab3d5d7341c7a39))
+- **app:** clicking pinned message should jump to message ([6b7499a](https://github.com/WerdoxDev/Huginn/commit/6b7499ad350d949017c1c0f7d76e56f000c00f66))
+- **app:** remove double friends + component renames ([e520fb3](https://github.com/WerdoxDev/Huginn/commit/e520fb3bdbf1815911f8ff685ab3d5d7341c7a39))
 
 ## [0.69.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.2...app@v0.69.3) (2026-05-27)
 
-
 ### Bug Fixes
 
-* **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
-* **app:** fix desync issue when gateway is reset + clickable action message users ([92ad6ff](https://github.com/WerdoxDev/Huginn/commit/92ad6ffafd9df49965ec64462bec968b32a112ed))
-* **app:** message actions resetting when someone sends + multiple image uploads not working ([0f87a08](https://github.com/WerdoxDev/Huginn/commit/0f87a086604a942d9fdf6c8bb6081d074cd823ac))
-* **app:** multiline bio is not shown ([26c4f72](https://github.com/WerdoxDev/Huginn/commit/26c4f72c108b3148bd2f08f002330d3cd1d715e4))
-* **app:** safe navigation before deleting channel ([350ec15](https://github.com/WerdoxDev/Huginn/commit/350ec15b0699aa03bb765f81d7eddfd405e66046))
+- **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
+- **app:** fix desync issue when gateway is reset + clickable action message users ([92ad6ff](https://github.com/WerdoxDev/Huginn/commit/92ad6ffafd9df49965ec64462bec968b32a112ed))
+- **app:** message actions resetting when someone sends + multiple image uploads not working ([0f87a08](https://github.com/WerdoxDev/Huginn/commit/0f87a086604a942d9fdf6c8bb6081d074cd823ac))
+- **app:** multiline bio is not shown ([26c4f72](https://github.com/WerdoxDev/Huginn/commit/26c4f72c108b3148bd2f08f002330d3cd1d715e4))
+- **app:** safe navigation before deleting channel ([350ec15](https://github.com/WerdoxDev/Huginn/commit/350ec15b0699aa03bb765f81d7eddfd405e66046))
 
 ## [0.69.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.1...app@v0.69.2) (2026-05-26)
 
-
 ### Bug Fixes
 
-* attempt to fix release please ([d399a05](https://github.com/WerdoxDev/Huginn/commit/d399a051483c3d898d96a904dc8d0ad625798408))
-* attempt to fix release please ([dd2ba53](https://github.com/WerdoxDev/Huginn/commit/dd2ba53317d207b26eabeef1c6503e2e13ef7780))
-* attempt to fix release please [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([748aff0](https://github.com/WerdoxDev/Huginn/commit/748aff00c1c28af454c7ada9516da06a984ce49e))
+- attempt to fix release please ([d399a05](https://github.com/WerdoxDev/Huginn/commit/d399a051483c3d898d96a904dc8d0ad625798408))
+- attempt to fix release please ([dd2ba53](https://github.com/WerdoxDev/Huginn/commit/dd2ba53317d207b26eabeef1c6503e2e13ef7780))
+- attempt to fix release please [#2](https://github.com/WerdoxDev/Huginn/issues/2) ([748aff0](https://github.com/WerdoxDev/Huginn/commit/748aff00c1c28af454c7ada9516da06a984ce49e))
 
 ## [0.69.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.69.0...app@v0.69.1) (2026-05-26)
 
-
 ### Bug Fixes
 
-* **app:** changelog modal shouldn't be opened all the time ([96c0d7b](https://github.com/WerdoxDev/Huginn/commit/96c0d7bb2ecfe5a7ab566094818eb08ea0100b8c))
-* **app:** few fugs related new users appearing from message author or mentions + vercel skip build ([1c3226d](https://github.com/WerdoxDev/Huginn/commit/1c3226d16ac250bfd4b98d313ae442f211905e8b))
-* **app:** incorrect release branch name ([5e312c4](https://github.com/WerdoxDev/Huginn/commit/5e312c48a36e69f9e999c60db471e25431721e77))
-* **app:** incorrect release branch name ([f44be4d](https://github.com/WerdoxDev/Huginn/commit/f44be4d80a073f45895d51023e103b133ed2678e))
+- **app:** changelog modal shouldn't be opened all the time ([96c0d7b](https://github.com/WerdoxDev/Huginn/commit/96c0d7bb2ecfe5a7ab566094818eb08ea0100b8c))
+- **app:** few fugs related new users appearing from message author or mentions + vercel skip build ([1c3226d](https://github.com/WerdoxDev/Huginn/commit/1c3226d16ac250bfd4b98d313ae442f211905e8b))
+- **app:** incorrect release branch name ([5e312c4](https://github.com/WerdoxDev/Huginn/commit/5e312c48a36e69f9e999c60db471e25431721e77))
+- **app:** incorrect release branch name ([f44be4d](https://github.com/WerdoxDev/Huginn/commit/f44be4d80a073f45895d51023e103b133ed2678e))
 
 ## [0.69.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.1...app@v0.69.0) (2026-05-26)
 
-
 ### Features
 
-* **app:** implement changelog fetching and UI ([14b88e5](https://github.com/WerdoxDev/Huginn/commit/14b88e5c51a6c2ee1887c41ca2476f88c30130c2))
-
+- **app:** implement changelog fetching and UI ([14b88e5](https://github.com/WerdoxDev/Huginn/commit/14b88e5c51a6c2ee1887c41ca2476f88c30130c2))
 
 ### Bug Fixes
 
-* **app:** add experimental label on pins ([ba18b15](https://github.com/WerdoxDev/Huginn/commit/ba18b15775e624b03da6fc741245b7267601906f))
-* **app:** background svg cropped on mobile ([7d303ff](https://github.com/WerdoxDev/Huginn/commit/7d303ffde11e75474b176c521c3df7ec903a0c12))
-* **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
-* **app:** few read-state & scrolling & lastMessageId desync bugs ([9d3e2fa](https://github.com/WerdoxDev/Huginn/commit/9d3e2fa2a5ef2fcc4a2b332544950109aad2e25f))
-* **app:** fix delayed notifications + default user notification icon ([c77b3d9](https://github.com/WerdoxDev/Huginn/commit/c77b3d95d9c277478b91fc5e9688e735ccb174ee))
-* **app:** misstyped condition on getNextParams ([38c5d62](https://github.com/WerdoxDev/Huginn/commit/38c5d62cf310cdbc0792cd0509c19bc41a26a015))
-* **app:** much better message box editor focusing + overflowing placeholder text ([4384837](https://github.com/WerdoxDev/Huginn/commit/43848376a1f2bb5082b7a531768ed49ed8cacf8a))
+- **app:** add experimental label on pins ([ba18b15](https://github.com/WerdoxDev/Huginn/commit/ba18b15775e624b03da6fc741245b7267601906f))
+- **app:** background svg cropped on mobile ([7d303ff](https://github.com/WerdoxDev/Huginn/commit/7d303ffde11e75474b176c521c3df7ec903a0c12))
+- **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
+- **app:** few read-state & scrolling & lastMessageId desync bugs ([9d3e2fa](https://github.com/WerdoxDev/Huginn/commit/9d3e2fa2a5ef2fcc4a2b332544950109aad2e25f))
+- **app:** fix delayed notifications + default user notification icon ([c77b3d9](https://github.com/WerdoxDev/Huginn/commit/c77b3d95d9c277478b91fc5e9688e735ccb174ee))
+- **app:** misstyped condition on getNextParams ([38c5d62](https://github.com/WerdoxDev/Huginn/commit/38c5d62cf310cdbc0792cd0509c19bc41a26a015))
+- **app:** much better message box editor focusing + overflowing placeholder text ([4384837](https://github.com/WerdoxDev/Huginn/commit/43848376a1f2bb5082b7a531768ed49ed8cacf8a))
 
 ## [0.68.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.68.0...app@v0.68.1) (2026-05-21)
 
-
 ### Bug Fixes
 
-* **app:** electron should load with hash ([2628c23](https://github.com/WerdoxDev/Huginn/commit/2628c23542a3df17bf277526eed90937336bf079))
-* **app:** electron should load with hash ([79b6a61](https://github.com/WerdoxDev/Huginn/commit/79b6a616b1d043ba028166de91096bf4a9ff30e1))
+- **app:** electron should load with hash ([2628c23](https://github.com/WerdoxDev/Huginn/commit/2628c23542a3df17bf277526eed90937336bf079))
+- **app:** electron should load with hash ([79b6a61](https://github.com/WerdoxDev/Huginn/commit/79b6a616b1d043ba028166de91096bf4a9ff30e1))
 
 ## [0.68.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.67.0...app@v0.68.0) (2026-05-21)
 
-
 ### Features
 
-* **app:** a small indicator next to channels to indicate current selected channel ([309b858](https://github.com/WerdoxDev/Huginn/commit/309b858595436575520012f99c3587f39a9de4bd))
-* **app:** add ghost messages instead of loading text ([84b7107](https://github.com/WerdoxDev/Huginn/commit/84b7107786f41102d537bcdce1bb78461b5d5bb8))
-* **app:** add jumping to replied message + highlighting ([00c16a9](https://github.com/WerdoxDev/Huginn/commit/00c16a99ceb6d183d1141ef5631d85079560ea99))
-* **app:** add pinned channels with context menu ([5b058ca](https://github.com/WerdoxDev/Huginn/commit/5b058cae4c3d40f94f284fde08c9a540ca97901d))
-* **app:** add profile preview in context menu ([b9a975f](https://github.com/WerdoxDev/Huginn/commit/b9a975f520c0a6dfc39005b30e21ac916d2a7fe4))
-* **app:** backdrop blur for modals ([4cb01ba](https://github.com/WerdoxDev/Huginn/commit/4cb01ba0164df79d9ccb33a8b7a0b31b9da9cd87))
-* **app:** better magnified image modal ([f97d1d3](https://github.com/WerdoxDev/Huginn/commit/f97d1d3686d2ba9ffef139c0f92d59f08dd08f9a))
-* **app:** better settings profile redesign with banner color ([daf7abd](https://github.com/WerdoxDev/Huginn/commit/daf7abd38c3cc566552e658d5e893e29aba738e8))
-* **app:** changed font + settings advanced tab complete rework with presets ([4d4604a](https://github.com/WerdoxDev/Huginn/commit/4d4604a69de763f4298696d22f79933d8259578c))
-* **app:** cleaned up ChannelMessage & MessageBox + much better replying and editing UI design ([33f9ca3](https://github.com/WerdoxDev/Huginn/commit/33f9ca3fb54a43f429a6a5cbe071b73af3a1e627))
-* **app:** complete profile settings ([137769e](https://github.com/WerdoxDev/Huginn/commit/137769e9e8f465e44073140494032ece9fbbea92))
-* **app:** first wip implementation of user profile ui ([8ef3cb8](https://github.com/WerdoxDev/Huginn/commit/8ef3cb8d53f56fe05fe570abdd33feaae0c0e774))
-* **app:** handle login and register with email verification + changes on profile coloring ([ba5ce73](https://github.com/WerdoxDev/Huginn/commit/ba5ce737ec5c4e986d6f288a916c214bc85d1283))
-* **app:** improved modal design + wip profile settings ([958ca50](https://github.com/WerdoxDev/Huginn/commit/958ca50ba319a2e20614025ad82a0da6d23dd9cf))
-* **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
-* **app:** modify activity registration and submission layout ([c781f7b](https://github.com/WerdoxDev/Huginn/commit/c781f7b10f611cd996f4d35f899b3dc74124a804))
-* **app:** much better channel sidebar menu for both mobile and desktop ([140eabe](https://github.com/WerdoxDev/Huginn/commit/140eabe67d58a0af44139419f555033c1f275cf9))
-* **app:** progress on profile implementation ([8712e26](https://github.com/WerdoxDev/Huginn/commit/8712e261d42a6356b36c7d6eb354b3d89abc654c))
-* **app:** try new font + revert exact text box sizing ([1e9b778](https://github.com/WerdoxDev/Huginn/commit/1e9b7782fdd3e4162ecb8fe64aa3a329477cd7f1))
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-
+- **app:** a small indicator next to channels to indicate current selected channel ([309b858](https://github.com/WerdoxDev/Huginn/commit/309b858595436575520012f99c3587f39a9de4bd))
+- **app:** add ghost messages instead of loading text ([84b7107](https://github.com/WerdoxDev/Huginn/commit/84b7107786f41102d537bcdce1bb78461b5d5bb8))
+- **app:** add jumping to replied message + highlighting ([00c16a9](https://github.com/WerdoxDev/Huginn/commit/00c16a99ceb6d183d1141ef5631d85079560ea99))
+- **app:** add pinned channels with context menu ([5b058ca](https://github.com/WerdoxDev/Huginn/commit/5b058cae4c3d40f94f284fde08c9a540ca97901d))
+- **app:** add profile preview in context menu ([b9a975f](https://github.com/WerdoxDev/Huginn/commit/b9a975f520c0a6dfc39005b30e21ac916d2a7fe4))
+- **app:** backdrop blur for modals ([4cb01ba](https://github.com/WerdoxDev/Huginn/commit/4cb01ba0164df79d9ccb33a8b7a0b31b9da9cd87))
+- **app:** better magnified image modal ([f97d1d3](https://github.com/WerdoxDev/Huginn/commit/f97d1d3686d2ba9ffef139c0f92d59f08dd08f9a))
+- **app:** better settings profile redesign with banner color ([daf7abd](https://github.com/WerdoxDev/Huginn/commit/daf7abd38c3cc566552e658d5e893e29aba738e8))
+- **app:** changed font + settings advanced tab complete rework with presets ([4d4604a](https://github.com/WerdoxDev/Huginn/commit/4d4604a69de763f4298696d22f79933d8259578c))
+- **app:** cleaned up ChannelMessage & MessageBox + much better replying and editing UI design ([33f9ca3](https://github.com/WerdoxDev/Huginn/commit/33f9ca3fb54a43f429a6a5cbe071b73af3a1e627))
+- **app:** complete profile settings ([137769e](https://github.com/WerdoxDev/Huginn/commit/137769e9e8f465e44073140494032ece9fbbea92))
+- **app:** first wip implementation of user profile ui ([8ef3cb8](https://github.com/WerdoxDev/Huginn/commit/8ef3cb8d53f56fe05fe570abdd33feaae0c0e774))
+- **app:** handle login and register with email verification + changes on profile coloring ([ba5ce73](https://github.com/WerdoxDev/Huginn/commit/ba5ce737ec5c4e986d6f288a916c214bc85d1283))
+- **app:** improved modal design + wip profile settings ([958ca50](https://github.com/WerdoxDev/Huginn/commit/958ca50ba319a2e20614025ad82a0da6d23dd9cf))
+- **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
+- **app:** modify activity registration and submission layout ([c781f7b](https://github.com/WerdoxDev/Huginn/commit/c781f7b10f611cd996f4d35f899b3dc74124a804))
+- **app:** much better channel sidebar menu for both mobile and desktop ([140eabe](https://github.com/WerdoxDev/Huginn/commit/140eabe67d58a0af44139419f555033c1f275cf9))
+- **app:** progress on profile implementation ([8712e26](https://github.com/WerdoxDev/Huginn/commit/8712e261d42a6356b36c7d6eb354b3d89abc654c))
+- **app:** try new font + revert exact text box sizing ([1e9b778](https://github.com/WerdoxDev/Huginn/commit/1e9b7782fdd3e4162ecb8fe64aa3a329477cd7f1))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
 
 ### Bug Fixes
 
-* **app:** better edit and delete buttons for profile settings ([107b7e3](https://github.com/WerdoxDev/Huginn/commit/107b7e3181dbbc1677723a8bd31c0d5defaad304))
-* **app:** build issues related to tanstack router ([7d653e9](https://github.com/WerdoxDev/Huginn/commit/7d653e955d7ce4de41b1a914ad6943a8416c47e0))
-* **app:** change to empty channel causes bad scroll ([8528018](https://github.com/WerdoxDev/Huginn/commit/8528018ce9333d44fb01cde4cb83d268a837915f))
-* **app:** fix build errors ([25061ca](https://github.com/WerdoxDev/Huginn/commit/25061ca87e2c854e7198dcf4dda23521389c12f8))
-* **app:** fixes related to read state being unreliable ([6b587de](https://github.com/WerdoxDev/Huginn/commit/6b587de2f768cdf6fa0c4f28f2a8659d56d62a7c))
-* **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
-* **app:** image-size-issue ([#240](https://github.com/WerdoxDev/Huginn/issues/240)) ([5cabf19](https://github.com/WerdoxDev/Huginn/commit/5cabf1907eef07e7f380614af8d5437b743c089e))
-* **app:** leftover renames ([b3fcb0b](https://github.com/WerdoxDev/Huginn/commit/b3fcb0bf90cac47dba12a2d4669c2d21719b20ad))
-* **app:** margin issue on message new date indicator ([d343c72](https://github.com/WerdoxDev/Huginn/commit/d343c721d39d9aadae5229367f3d403f7939e20c))
-* **app:** more fixes on build ([47d6ca6](https://github.com/WerdoxDev/Huginn/commit/47d6ca68f904636201e71afd698e441ed3453c7d))
-* **app:** oauth redirect picker fix ([#245](https://github.com/WerdoxDev/Huginn/issues/245)) ([ac6e15b](https://github.com/WerdoxDev/Huginn/commit/ac6e15be6adb7a693857b1662a8b1da0cdd742f1))
-* **app:** performance problem with canvas + backdrop filter ([997f883](https://github.com/WerdoxDev/Huginn/commit/997f883e896528cbdf44eb4b2c62d5c868ab9656))
-* **app:** remove duplicated label usage + better HuginnButton + create channel and add member buttons ([0719f55](https://github.com/WerdoxDev/Huginn/commit/0719f55ba7428cd833b3633fb6d64464768836e1))
-* **app:** spacing issue on profile settings ([b82d6e1](https://github.com/WerdoxDev/Huginn/commit/b82d6e1616b86d58445f1013184cbb31dc7804af))
+- **app:** better edit and delete buttons for profile settings ([107b7e3](https://github.com/WerdoxDev/Huginn/commit/107b7e3181dbbc1677723a8bd31c0d5defaad304))
+- **app:** build issues related to tanstack router ([7d653e9](https://github.com/WerdoxDev/Huginn/commit/7d653e955d7ce4de41b1a914ad6943a8416c47e0))
+- **app:** change to empty channel causes bad scroll ([8528018](https://github.com/WerdoxDev/Huginn/commit/8528018ce9333d44fb01cde4cb83d268a837915f))
+- **app:** fix build errors ([25061ca](https://github.com/WerdoxDev/Huginn/commit/25061ca87e2c854e7198dcf4dda23521389c12f8))
+- **app:** fixes related to read state being unreliable ([6b587de](https://github.com/WerdoxDev/Huginn/commit/6b587de2f768cdf6fa0c4f28f2a8659d56d62a7c))
+- **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
+- **app:** image-size-issue ([#240](https://github.com/WerdoxDev/Huginn/issues/240)) ([5cabf19](https://github.com/WerdoxDev/Huginn/commit/5cabf1907eef07e7f380614af8d5437b743c089e))
+- **app:** leftover renames ([b3fcb0b](https://github.com/WerdoxDev/Huginn/commit/b3fcb0bf90cac47dba12a2d4669c2d21719b20ad))
+- **app:** margin issue on message new date indicator ([d343c72](https://github.com/WerdoxDev/Huginn/commit/d343c721d39d9aadae5229367f3d403f7939e20c))
+- **app:** more fixes on build ([47d6ca6](https://github.com/WerdoxDev/Huginn/commit/47d6ca68f904636201e71afd698e441ed3453c7d))
+- **app:** oauth redirect picker fix ([#245](https://github.com/WerdoxDev/Huginn/issues/245)) ([ac6e15b](https://github.com/WerdoxDev/Huginn/commit/ac6e15be6adb7a693857b1662a8b1da0cdd742f1))
+- **app:** performance problem with canvas + backdrop filter ([997f883](https://github.com/WerdoxDev/Huginn/commit/997f883e896528cbdf44eb4b2c62d5c868ab9656))
+- **app:** remove duplicated label usage + better HuginnButton + create channel and add member buttons ([0719f55](https://github.com/WerdoxDev/Huginn/commit/0719f55ba7428cd833b3633fb6d64464768836e1))
+- **app:** spacing issue on profile settings ([b82d6e1](https://github.com/WerdoxDev/Huginn/commit/b82d6e1616b86d58445f1013184cbb31dc7804af))
 
 ## [0.67.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.66.2...app@v0.67.0) (2026-01-24)
 

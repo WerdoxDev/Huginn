@@ -14,8 +14,8 @@ PostHog AI
 npm install @posthog/react posthog-node
 ```
 
--   `@posthog/react` - React package for our [JS Web SDK](/docs/libraries/js.md) for client-side usage
--   `posthog-node` - PostHog [Node.js SDK](/docs/libraries/node.md) for server-side event capture
+- `@posthog/react` - React package for our [JS Web SDK](/docs/libraries/js.md) for client-side usage
+- `posthog-node` - PostHog [Node.js SDK](/docs/libraries/node.md) for server-side event capture
 
 ## Identifying users
 
@@ -126,20 +126,17 @@ PostHog AI
 
 ```typescript
 // src/utils/posthog-server.ts
-import { PostHog } from 'posthog-node'
-let posthogClient: PostHog | null = null
+import { PostHog } from "posthog-node";
+let posthogClient: PostHog | null = null;
 export function getPostHogClient() {
-  if (!posthogClient) {
-    posthogClient = new PostHog(
-      '<ph_project_token>',
-      {
-        host: 'https://us.i.posthog.com',
-        flushAt: 1,
-        flushInterval: 0,
-      },
-    )
-  }
-  return posthogClient
+   if (!posthogClient) {
+      posthogClient = new PostHog("<ph_project_token>", {
+         host: "https://us.i.posthog.com",
+         flushAt: 1,
+         flushInterval: 0,
+      });
+   }
+   return posthogClient;
 }
 ```
 
@@ -153,29 +150,29 @@ PostHog AI
 
 ```typescript
 // src/routes/api/checkout.ts
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-import { getPostHogClient } from '../../utils/posthog-server'
-export const Route = createFileRoute('/api/checkout')({
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
-        const body = await request.json()
-        const posthog = getPostHogClient()
-        posthog.capture({
-          distinctId: body.userId,
-          event: 'item_purchased',
-          properties: {
-            item_id: body.itemId,
-            price: body.price,
-            source: 'api',
-          },
-        })
-        return json({ success: true })
+import { createFileRoute } from "@tanstack/react-router";
+import { json } from "@tanstack/react-start";
+import { getPostHogClient } from "../../utils/posthog-server";
+export const Route = createFileRoute("/api/checkout")({
+   server: {
+      handlers: {
+         POST: async ({ request }) => {
+            const body = await request.json();
+            const posthog = getPostHogClient();
+            posthog.capture({
+               distinctId: body.userId,
+               event: "item_purchased",
+               properties: {
+                  item_id: body.itemId,
+                  price: body.price,
+                  source: "api",
+               },
+            });
+            return json({ success: true });
+         },
       },
-    },
-  },
-})
+   },
+});
 ```
 
 The server-side `capture` call requires a `distinctId` (the user identifier), an `event` name, and optional `properties`.

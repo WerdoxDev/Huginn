@@ -12,11 +12,10 @@ import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 
 import type { AppUser } from "@/types";
-
-import { usePostHog } from "posthog-js/react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 

@@ -3,10 +3,7 @@
       "codepoint": "1f1ee-1f1f7",
       "svgPath": "1f1ee-1f1f7.svg",
       "pngPath": "1f1ee-1f1f7.png",
-      "slugs": [
-         ":iran:",
-         ":flag_ir:"
-      ],
+      "slugs": [":iran:", ":flag_ir:"],
       "group": 9,
       "unicode": "🇮🇷"
    },
@@ -14,10 +11,7 @@
       "codepoint": "1f1f0-1f1fa",
       "svgPath": "1f1f0-1f1fa.svg",
       "pngPath": "1f1f0-1f1fa.png",
-      "slugs": [
-         ":kurdistan:",
-         ":flag_ku:"
-      ],
+      "slugs": [":kurdistan:", ":flag_ku:"],
       "group": 9,
       "unicode": "🇰🇺"
    }

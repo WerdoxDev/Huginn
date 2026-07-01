@@ -1,29 +1,29 @@
 {
-  "project_info": {
-    "project_number": "414564338443",
-    "project_id": "werdox-huginn",
-    "storage_bucket": "werdox-huginn.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:414564338443:android:91a95546d2ff51ec77f00e",
-        "android_client_info": {
-          "package_name": "dev.huginn"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAhc-yvZNTUAWD7ipxk2KcD3VoJOlGu1gc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
+   "project_info": {
+      "project_number": "414564338443",
+      "project_id": "werdox-huginn",
+      "storage_bucket": "werdox-huginn.firebasestorage.app"
+   },
+   "client": [
+      {
+         "client_info": {
+            "mobilesdk_app_id": "1:414564338443:android:91a95546d2ff51ec77f00e",
+            "android_client_info": {
+               "package_name": "dev.huginn"
+            }
+         },
+         "oauth_client": [],
+         "api_key": [
+            {
+               "current_key": "AIzaSyAhc-yvZNTUAWD7ipxk2KcD3VoJOlGu1gc"
+            }
+         ],
+         "services": {
+            "appinvite_service": {
+               "other_platform_oauth_client": []
+            }
+         }
       }
-    }
-  ],
-  "configuration_version": "1"
+   ],
+   "configuration_version": "1"
 }
