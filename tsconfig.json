@@ -4,12 +4,7 @@
       "module": "ESNext",
       "moduleResolution": "bundler",
       "moduleDetection": "force",
-      "lib": [
-         "ESNext",
-         "DOM",
-         "DOM.Iterable",
-         "WebWorker"
-      ],
+      "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
       "forceConsistentCasingInFileNames": true,
       "declaration": true,
       "declarationMap": true,
@@ -18,6 +13,6 @@
       "strict": true,
       "skipLibCheck": true,
       "verbatimModuleSyntax": true,
-      "noEmit": true,
-   },
+      "noEmit": true
+   }
 }

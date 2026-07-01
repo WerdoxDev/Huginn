@@ -22,7 +22,7 @@ importers:
         version: 1.71.0
       release-please:
         specifier: ^16.18.0
-        version: 16.18.0(supports-color@10.2.2)
+        version: 16.18.0
       typescript:
         specifier: 7.0.1-rc
         version: 7.0.1-rc
@@ -95,7 +95,7 @@ importers:
         version: 0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.2)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
       '@svgr/core':
         specifier: ^8.1.0
-        version: 8.1.0(typescript@7.0.1-rc)
+        version: 8.1.0(typescript@5.9.3)
       '@tanstack/react-query':
         specifier: ^5.101.1
         version: 5.101.1(react@19.2.7)
@@ -113,7 +113,7 @@ importers:
         version: 4.5.0(three@0.177.0)
       application-loopback:
         specifier: 1.2.7
-        version: 1.2.7(typescript@7.0.1-rc)
+        version: 1.2.7(typescript@5.9.3)
       blobs:
         specifier: ^2.3.0-beta.2
         version: 2.3.0-beta.2
@@ -204,7 +204,7 @@ importers:
         version: 8.0.1(@babel/core@7.29.7)
       '@capacitor/assets':
         specifier: ^3.0.5
-        version: 3.0.5(@types/node@26.0.1)(supports-color@10.2.2)(typescript@7.0.1-rc)
+        version: 3.0.5(@types/node@26.0.1)(supports-color@10.2.2)(typescript@5.9.3)
       '@capacitor/cli':
         specifier: ^8.4.1
         version: 8.4.1(supports-color@10.2.2)
@@ -219,7 +219,7 @@ importers:
         version: 1.61.0
       '@svgr/plugin-jsx':
         specifier: ^8.1.0
-        version: 8.1.0(@svgr/core@8.1.0(typescript@7.0.1-rc))
+        version: 8.1.0(@svgr/core@8.1.0(typescript@5.9.3))
       '@tailwindcss/vite':
         specifier: ^4.3.1
         version: 4.3.1(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0))
@@ -276,13 +276,16 @@ importers:
         version: 4.3.1
       tsdown:
         specifier: ^0.22.3
-        version: 0.22.3(tsx@4.22.3)(typescript@7.0.1-rc)
+        version: 0.22.3(tsx@4.22.3)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
       unplugin-auto-import:
         specifier: ^21.0.0
         version: 21.0.0
       unplugin-icons:
         specifier: ^23.0.1
-        version: 23.0.1(@svgr/core@8.1.0(typescript@7.0.1-rc))
+        version: 23.0.1(@svgr/core@8.1.0(typescript@5.9.3))
       vite:
         specifier: ^8.1.0
         version: 8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.3)(yaml@2.9.0)
@@ -326,6 +329,9 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
+      '@prisma/adapter-neon':
+        specifier: ^7.8.0
+        version: 7.8.0
       '@prisma/adapter-pg':
         specifier: ^7.7.0
         version: 7.8.0
@@ -583,7 +589,7 @@ importers:
         version: 17.0.0(emojibase@17.0.0)
       file-type:
         specifier: ^22.0.1
-        version: 22.0.1
+        version: 22.0.1(supports-color@10.2.2)
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -668,31 +674,6 @@ importers:
       tsx:
         specifier: ^4.21.0
         version: 4.22.3
-
-  packages/huginn-voice-test:
-    dependencies:
-      '@huginn/api':
-        specifier: workspace:*
-        version: link:../huginn-api
-      '@huginn/shared':
-        specifier: workspace:*
-        version: link:../huginn-shared
-      react:
-        specifier: ^19
-        version: 19.2.6
-      react-dom:
-        specifier: ^19
-        version: 19.2.6(react@19.2.6)
-    devDependencies:
-      '@types/bun':
-        specifier: latest
-        version: 1.3.14
-      '@types/react':
-        specifier: ^19
-        version: 19.2.15
-      '@types/react-dom':
-        specifier: ^19
-        version: 19.2.3(@types/react@19.2.15)
 
   packages/huginn-website:
     dependencies:
@@ -4400,6 +4381,9 @@ packages:
 
   '@prettier/plugin-xml@2.2.0':
     resolution: {integrity: sha512-UWRmygBsyj4bVXvDiqSccwT1kmsorcwQwaIy30yVh8T+Gspx4OlC0shX1y+ZuwXZvgnafmpRYKks0bAu9urJew==}
+
+  '@prisma/adapter-neon@7.8.0':
+    resolution: {integrity: sha512-9MoOjRuY53sQNyji87u1NivsK0tIacoUE3PqTxdG95b7ORn1pzwribH2z83j4Vh3eb9nQ/UC+MTfVW7jCFnXlA==}
 
   '@prisma/adapter-pg@7.8.0':
     resolution: {integrity: sha512-ygb3UkerK3v8MDpXVgCISdRNDozpxh6+JVJgiIGbSr5KBgz10LLf5ejUskPGoXlsIjxsOu6nuy1JVQr2EKGSlg==}
@@ -10346,6 +10330,11 @@ packages:
     resolution: {integrity: sha512-phPGCwqr2+Qo0fwniCE8e4pKnGu/yFb5nD5Y8bf0EEeiI5GklnACYA9GFy/DrAeRrKHXvHn+1SUsOWgJp6RO+g==}
     engines: {node: '>= 0.4'}
 
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   typescript@7.0.1-rc:
     resolution: {integrity: sha512-drEP77wK7CCDlPfXZH4e008UUQOsw1DFmHmZOZjuNA+yoDLLnSNMZRXi90NbV/1LVo7SbNLq1bs3jjvk49TEqQ==}
     engines: {node: '>=16.20.0'}
@@ -12125,12 +12114,12 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.4.1
 
-  '@capacitor/assets@3.0.5(@types/node@26.0.1)(supports-color@10.2.2)(typescript@7.0.1-rc)':
+  '@capacitor/assets@3.0.5(@types/node@26.0.1)(supports-color@10.2.2)(typescript@5.9.3)':
     dependencies:
       '@capacitor/cli': 5.7.8(supports-color@10.2.2)
       '@ionic/utils-array': 2.1.6
       '@ionic/utils-fs': 3.1.7
-      '@trapezedev/project': 7.1.4(@types/node@26.0.1)(typescript@7.0.1-rc)
+      '@trapezedev/project': 7.1.4(@types/node@26.0.1)(typescript@5.9.3)
       commander: 8.3.0
       debug: 4.3.4
       fs-extra: 10.1.0
@@ -14785,6 +14774,12 @@ snapshots:
       '@xml-tools/parser': 1.0.11
       prettier: 3.8.3
 
+  '@prisma/adapter-neon@7.8.0':
+    dependencies:
+      '@neondatabase/serverless': 1.1.0
+      '@prisma/driver-adapter-utils': 7.8.0
+      postgres-array: 3.0.4
+
   '@prisma/adapter-pg@7.8.0':
     dependencies:
       '@prisma/driver-adapter-utils': 7.8.0
@@ -15323,12 +15318,12 @@ snapshots:
       '@svgr/babel-plugin-transform-react-native-svg': 8.1.0(@babel/core@7.29.7)
       '@svgr/babel-plugin-transform-svg-component': 8.0.0(@babel/core@7.29.7)
 
-  '@svgr/core@8.1.0(typescript@7.0.1-rc)':
+  '@svgr/core@8.1.0(typescript@5.9.3)':
     dependencies:
       '@babel/core': 7.29.7
       '@svgr/babel-preset': 8.1.0(@babel/core@7.29.7)
       camelcase: 6.3.0
-      cosmiconfig: 8.3.6(typescript@7.0.1-rc)
+      cosmiconfig: 8.3.6(typescript@5.9.3)
       snake-case: 3.0.4
     transitivePeerDependencies:
       - supports-color
@@ -15339,11 +15334,11 @@ snapshots:
       '@babel/types': 7.29.7
       entities: 4.5.0
 
-  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@7.0.1-rc))':
+  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.9.3))':
     dependencies:
       '@babel/core': 7.29.7
       '@svgr/babel-preset': 8.1.0(@babel/core@7.29.7)
-      '@svgr/core': 8.1.0(typescript@7.0.1-rc)
+      '@svgr/core': 8.1.0(typescript@5.9.3)
       '@svgr/hast-util-to-babel-ast': 8.0.0
       svg-parser: 2.0.4
     transitivePeerDependencies:
@@ -15640,7 +15635,7 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.162.0': {}
 
-  '@tokenizer/inflate@0.4.1':
+  '@tokenizer/inflate@0.4.1(supports-color@10.2.2)':
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
       token-types: 6.1.2
@@ -15654,7 +15649,7 @@ snapshots:
 
   '@trapezedev/gradle-parse@7.1.3': {}
 
-  '@trapezedev/project@7.1.4(@types/node@26.0.1)(typescript@7.0.1-rc)':
+  '@trapezedev/project@7.1.4(@types/node@26.0.1)(typescript@5.9.3)':
     dependencies:
       '@ionic/utils-fs': 3.1.7
       '@ionic/utils-subprocess': 2.1.14(supports-color@10.2.2)
@@ -15675,7 +15670,7 @@ snapshots:
       replace: 1.2.2
       tempy: 3.2.0
       tmp: 0.2.7
-      ts-node: 10.9.2(@types/node@26.0.1)(typescript@7.0.1-rc)
+      ts-node: 10.9.2(@types/node@26.0.1)(typescript@5.9.3)
       xcode: 3.0.1
       xml-js: 1.6.11
       xpath: 0.0.32
@@ -16020,7 +16015,7 @@ snapshots:
 
   add-stream@1.0.0: {}
 
-  agent-base@6.0.2:
+  agent-base@6.0.2(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
@@ -16113,9 +16108,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  application-loopback@1.2.7(typescript@7.0.1-rc):
+  application-loopback@1.2.7(typescript@5.9.3):
     dependencies:
-      typescript: 7.0.1-rc
+      typescript: 5.9.3
 
   aproba@2.1.0: {}
 
@@ -16220,11 +16215,11 @@ snapshots:
 
   aws4@1.13.2: {}
 
-  axios@1.16.1(debug@4.4.3(supports-color@10.2.2)):
+  axios@1.16.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       follow-redirects: 1.16.0(debug@4.4.3(supports-color@10.2.2))
       form-data: 4.0.5
-      https-proxy-agent: 5.0.1
+      https-proxy-agent: 5.0.1(supports-color@10.2.2)
       proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
@@ -16434,8 +16429,8 @@ snapshots:
       cross-spawn: 7.0.6
       debug: 4.4.3(supports-color@10.2.2)
       fs-extra: 10.1.0
-      http-proxy-agent: 7.0.2(supports-color@10.2.2)
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
       js-yaml: 4.3.0
       sanitize-filename: 1.6.4
       source-map-support: 0.5.21
@@ -16618,7 +16613,7 @@ snapshots:
 
   cmake-js@7.4.0(supports-color@10.2.2):
     dependencies:
-      axios: 1.16.1(debug@4.4.3(supports-color@10.2.2))
+      axios: 1.16.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       debug: 4.4.3(supports-color@10.2.2)
       fs-extra: 11.3.5
       memory-stream: 1.0.0
@@ -16861,14 +16856,14 @@ snapshots:
       object-assign: 4.1.1
       vary: 1.1.2
 
-  cosmiconfig@8.3.6(typescript@7.0.1-rc):
+  cosmiconfig@8.3.6(typescript@5.9.3):
     dependencies:
       import-fresh: 3.3.1
       js-yaml: 4.1.1
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
-      typescript: 7.0.1-rc
+      typescript: 5.9.3
 
   create-require@1.1.1: {}
 
@@ -17270,7 +17265,7 @@ snapshots:
       cookie: 1.1.1
       exact-mirror: 1.0.0
       fast-decode-uri-component: 1.0.1
-      file-type: 22.0.1
+      file-type: 22.0.1(supports-color@10.2.2)
       memoirist: 0.4.0
       openapi-types: 12.1.3
     optionalDependencies:
@@ -17702,9 +17697,9 @@ snapshots:
       strtok3: 6.3.0
       token-types: 4.2.1
 
-  file-type@22.0.1:
+  file-type@22.0.1(supports-color@10.2.2):
     dependencies:
-      '@tokenizer/inflate': 0.4.1
+      '@tokenizer/inflate': 0.4.1(supports-color@10.2.2)
       strtok3: 10.3.5
       token-types: 6.1.2
       uint8array-extras: 1.5.0
@@ -17883,7 +17878,7 @@ snapshots:
   gaxios@6.7.1:
     dependencies:
       extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6
       is-stream: 2.0.1
       node-fetch: 2.7.0
       uuid: 9.0.1
@@ -17895,7 +17890,7 @@ snapshots:
   gaxios@7.1.3:
     dependencies:
       extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
       rimraf: 5.0.10
     transitivePeerDependencies:
@@ -17905,7 +17900,7 @@ snapshots:
   gaxios@7.1.5:
     dependencies:
       extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
     transitivePeerDependencies:
       - supports-color
@@ -18301,13 +18296,13 @@ snapshots:
   http-proxy-agent@5.0.0:
     dependencies:
       '@tootallnate/once': 2.0.1
-      agent-base: 6.0.2
+      agent-base: 6.0.2(supports-color@10.2.2)
       debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
     optional: true
 
-  http-proxy-agent@7.0.2(supports-color@10.2.2):
+  http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.4
       debug: 4.4.3(supports-color@10.2.2)
@@ -18321,14 +18316,14 @@ snapshots:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
 
-  https-proxy-agent@5.0.1:
+  https-proxy-agent@5.0.1(supports-color@10.2.2):
     dependencies:
-      agent-base: 6.0.2
+      agent-base: 6.0.2(supports-color@10.2.2)
       debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.6(supports-color@10.2.2):
+  https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.4
       debug: 4.4.3(supports-color@10.2.2)
@@ -20125,7 +20120,7 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
-  release-please@16.18.0(supports-color@10.2.2):
+  release-please@16.18.0:
     dependencies:
       '@conventional-commits/parser': 0.4.1
       '@google-automations/git-file-utils': 2.0.0
@@ -20144,8 +20139,8 @@ snapshots:
       detect-indent: 6.1.0
       diff: 7.0.0
       figures: 3.2.0
-      http-proxy-agent: 7.0.2(supports-color@10.2.2)
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
       js-yaml: 4.1.1
       jsonpath-plus: 10.4.0
       node-html-parser: 6.1.13
@@ -20271,7 +20266,7 @@ snapshots:
       sprintf-js: 1.1.3
     optional: true
 
-  rolldown-plugin-dts@0.26.0(rolldown@1.1.2)(typescript@7.0.1-rc):
+  rolldown-plugin-dts@0.26.0(rolldown@1.1.2)(typescript@5.9.3):
     dependencies:
       '@babel/generator': 8.0.0
       '@babel/helper-validator-identifier': 8.0.2
@@ -20283,7 +20278,7 @@ snapshots:
       obug: 2.1.3
       rolldown: 1.1.2
     optionalDependencies:
-      typescript: 7.0.1-rc
+      typescript: 5.9.3
     transitivePeerDependencies:
       - oxc-resolver
 
@@ -21022,8 +21017,8 @@ snapshots:
 
   teeny-request@10.1.3:
     dependencies:
-      http-proxy-agent: 7.0.2(supports-color@10.2.2)
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
       stream-events: 1.0.5
     transitivePeerDependencies:
@@ -21033,7 +21028,7 @@ snapshots:
   teeny-request@9.0.0:
     dependencies:
       http-proxy-agent: 5.0.0
-      https-proxy-agent: 5.0.1
+      https-proxy-agent: 5.0.1(supports-color@10.2.2)
       node-fetch: 2.7.0
       stream-events: 1.0.5
       uuid: 9.0.1
@@ -21185,6 +21180,24 @@ snapshots:
     dependencies:
       utf8-byte-length: 1.0.5
 
+  ts-node@10.9.2(@types/node@26.0.1)(typescript@5.9.3):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.12
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 26.0.1
+      acorn: 8.16.0
+      acorn-walk: 8.3.5
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.4
+      make-error: 1.3.6
+      typescript: 5.9.3
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+
   ts-node@10.9.2(@types/node@26.0.1)(typescript@7.0.1-rc):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
@@ -21209,7 +21222,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.22.3(tsx@4.22.3)(typescript@7.0.1-rc):
+  tsdown@0.22.3(tsx@4.22.3)(typescript@5.9.3):
     dependencies:
       ansis: 4.3.1
       cac: 7.0.0
@@ -21220,7 +21233,7 @@ snapshots:
       obug: 2.1.3
       picomatch: 4.0.4
       rolldown: 1.1.2
-      rolldown-plugin-dts: 0.26.0(rolldown@1.1.2)(typescript@7.0.1-rc)
+      rolldown-plugin-dts: 0.26.0(rolldown@1.1.2)(typescript@5.9.3)
       semver: 7.8.5
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
@@ -21228,7 +21241,7 @@ snapshots:
       unconfig-core: 7.5.0
     optionalDependencies:
       tsx: 4.22.3
-      typescript: 7.0.1-rc
+      typescript: 5.9.3
     transitivePeerDependencies:
       - '@ts-macro/tsc'
       - '@typescript/native-preview'
@@ -21302,6 +21315,8 @@ snapshots:
       is-typed-array: 1.1.15
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
+
+  typescript@5.9.3: {}
 
   typescript@7.0.1-rc:
     optionalDependencies:
@@ -21438,7 +21453,7 @@ snapshots:
       unplugin: 2.3.11
       unplugin-utils: 0.3.1
 
-  unplugin-icons@23.0.1(@svgr/core@8.1.0(typescript@7.0.1-rc)):
+  unplugin-icons@23.0.1(@svgr/core@8.1.0(typescript@5.9.3)):
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@iconify/utils': 3.1.3
@@ -21446,7 +21461,7 @@ snapshots:
       obug: 2.1.1
       unplugin: 2.3.11
     optionalDependencies:
-      '@svgr/core': 8.1.0(typescript@7.0.1-rc)
+      '@svgr/core': 8.1.0(typescript@5.9.3)
 
   unplugin-utils@0.3.1:
     dependencies:

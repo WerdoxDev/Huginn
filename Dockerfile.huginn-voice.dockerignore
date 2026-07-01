@@ -4,6 +4,9 @@
 **/huginn-app
 **/huginn-bundler
 **/huginn-website
+**/huginn-tui
+**/huginn-assets
+**/transactional
 **/node_modules
 **/native-addon
 
