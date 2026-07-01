@@ -82,9 +82,7 @@ export default function Home() {
                      </p>
                   </div>
 
-                  <p className="mx-2 mt-8 text-center text-2xl md:mx-0 md:text-left">
-                     A fast, customizable chat app with a touch of Norse mythology.
-                  </p>
+                  <p className="mx-2 mt-8 text-center text-2xl md:mx-0 md:text-left">A fast, customizable chat app with a touch of Norse mythology.</p>
 
                   <div className="mt-12 flex w-full flex-row space-x-2">
                      <Link

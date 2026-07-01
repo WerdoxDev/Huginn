@@ -48,9 +48,7 @@ export default function App() {
          </div>
 
          <div
-            className={`fixed inset-0 z-40 bg-black/25 transition-opacity duration-250 ${
-               isMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
+            className={`fixed inset-0 z-40 bg-black/25 transition-opacity duration-250 ${isMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
             onClick={toggleMenu}
          />
 

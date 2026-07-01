@@ -90,9 +90,7 @@ export default function Redirect() {
                   </div>
                   {showSuccess ? (
                      <div className="text-text/80 mt-2 max-w-lg text-lg">
-                        <span>
-                           You can return to the application and safely close this window. If you are not redirected automatically, Please click
-                        </span>{" "}
+                        <span>You can return to the application and safely close this window. If you are not redirected automatically, Please click</span>{" "}
                         <a ref={linkRef} className="text-accent underline">
                            here
                         </a>
