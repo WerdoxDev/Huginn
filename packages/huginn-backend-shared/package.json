@@ -1,7 +1,9 @@
 {
    "name": "@huginn/backend-shared",
    "version": "0.28.1",
+   "private": true,
    "type": "module",
+   "module": "src/index.ts",
    "imports": {
       "#database": "./src/database/index.ts",
       "#*": "./src/*.ts",
@@ -17,6 +19,7 @@
    "dependencies": {
       "@huginn/shared": "workspace:*",
       "@neondatabase/serverless": "^1.1.0",
+      "@prisma/adapter-neon": "^7.8.0",
       "@prisma/adapter-pg": "^7.7.0",
       "@prisma/client": "7.8.0",
       "better-drizzle": "^0.1.1",
@@ -38,7 +41,5 @@
       "crossws": "^0.4.6",
       "elysia": "^1.4.29",
       "prisma": "7.8.0"
-   },
-   "module": "src/index.ts",
-   "private": true
+   }
 }

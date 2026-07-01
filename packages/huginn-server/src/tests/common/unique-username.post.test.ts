@@ -1,8 +1,9 @@
 import type { APIPostUniqueUsernameResult } from "@huginn/shared";
 
-import { createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
+
+import { createTestUsers } from "#tests/utils";
 
 describe("POST /unique-username", () => {
    test("should return a true taken property when the username is taken", async () => {

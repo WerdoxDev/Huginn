@@ -2,36 +2,31 @@
 
 ## [0.17.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.17.0...voice@v0.17.1) (2026-06-27)
 
-
 ### Bug Fixes
 
-* **voice:** migrate to new logging ([7f791af](https://github.com/WerdoxDev/Huginn/commit/7f791af56ed18d7f2d51796f4b2278c25ff90d03))
+- **voice:** migrate to new logging ([7f791af](https://github.com/WerdoxDev/Huginn/commit/7f791af56ed18d7f2d51796f4b2278c25ff90d03))
 
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.1...voice@v0.17.0) (2026-06-05)
 
-
 ### Features
 
-* **voice:** implement full OTel in voice websocket ([654f19e](https://github.com/WerdoxDev/Huginn/commit/654f19e0f526816de27ac3b812a523644d64ef41))
-
+- **voice:** implement full OTel in voice websocket ([654f19e](https://github.com/WerdoxDev/Huginn/commit/654f19e0f526816de27ac3b812a523644d64ef41))
 
 ### Bug Fixes
 
-* **voice:** use dotenv ([f61529f](https://github.com/WerdoxDev/Huginn/commit/f61529f4c2aae4c5ddfd8fa235ca5c31ee0de596))
+- **voice:** use dotenv ([f61529f](https://github.com/WerdoxDev/Huginn/commit/f61529f4c2aae4c5ddfd8fa235ca5c31ee0de596))
 
 ## [0.16.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.16.0...voice@v0.16.1) (2026-05-31)
 
-
 ### Bug Fixes
 
-* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+- dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
 
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.1...voice@v0.16.0) (2026-05-21)
 
-
 ### Features
 
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
 
 ## [0.15.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.15.0...voice@v0.15.1) (2026-01-24)
 

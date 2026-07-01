@@ -1,16 +1,16 @@
 packages:
-  - "packages/*"
+   - "packages/*"
 allowBuilds:
-  "@firebase/util": true
-  "@posthog/cli": true
-  "@prisma/engines": false
-  core-js: false
-  electron-winstaller: false
-  esbuild: false
-  mediasoup: true
-  prisma: true
-  protobufjs: true
-  sharp: true
+   "@firebase/util": true
+   "@posthog/cli": true
+   "@prisma/engines": false
+   core-js: false
+   electron-winstaller: false
+   esbuild: false
+   mediasoup: true
+   prisma: true
+   protobufjs: true
+   sharp: true
 minimumReleaseAge: 0
 overrides:
-  "typescript": "7.0.1-rc"
+   "typescript": "7.0.1-rc"

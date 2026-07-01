@@ -189,9 +189,7 @@ export function LogViewer(props: { clientFile: ClientFileWithUser }) {
 
       // Load all log files
       for (let i = 0; i < props.clientFile.numOfFiles; i++) {
-         const content: LogHeader[] = await Bun.file(
-            path.join(baseDir, props.clientFile.directory, `${props.clientFile.clientId}-${i + 1}.json`),
-         ).json();
+         const content: LogHeader[] = await Bun.file(path.join(baseDir, props.clientFile.directory, `${props.clientFile.clientId}-${i + 1}.json`)).json();
          logHeaders.push(...content);
       }
 
@@ -321,9 +319,7 @@ export function LogViewer(props: { clientFile: ClientFileWithUser }) {
                         <text style={{ fg: x.type === "log" ? "#76ff7a" : "#fa8072", flexShrink: 0 }}>{x.type}</text>
                         <text style={{ fg: "#00dabd", flexShrink: 0 }}>{x.section}</text>
                         {x.type === "log" && <text style={{ fg: "white", flexShrink: 0 }}>{x.level}</text>}
-                        <text style={{ fg: "#EBEBD3", wrapMode: "none" }}>
-                           {x.args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(" ")}
-                        </text>
+                        <text style={{ fg: "#EBEBD3", wrapMode: "none" }}>{x.args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(" ")}</text>
                      </box>
                   ))}
                </box>

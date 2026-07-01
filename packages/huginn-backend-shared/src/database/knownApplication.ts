@@ -26,8 +26,6 @@ export const knownApplicationExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -72,8 +70,6 @@ export const knownApplicationExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   assertExists(e, methodName, DBErrorType.NULL_USER, [options.contributorId!]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

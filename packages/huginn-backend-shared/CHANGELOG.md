@@ -2,104 +2,89 @@
 
 ## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.0...backend-shared@v0.28.1) (2026-06-27)
 
-
 ### Bug Fixes
 
-* **backend-shared:** pino logger needs required() to be instrumented ([5c3d083](https://github.com/WerdoxDev/Huginn/commit/5c3d083b250c0526b0f5d07a9b709ffaea2e6e35))
+- **backend-shared:** pino logger needs required() to be instrumented ([5c3d083](https://github.com/WerdoxDev/Huginn/commit/5c3d083b250c0526b0f5d07a9b709ffaea2e6e35))
 
 ## [0.28.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.1...backend-shared@v0.28.0) (2026-06-19)
 
-
 ### Features
 
-* **backend-shared:** add push notification db handlers ([e90f104](https://github.com/WerdoxDev/Huginn/commit/e90f1044e284c31a118c2a4f45b38b159588c124))
+- **backend-shared:** add push notification db handlers ([e90f104](https://github.com/WerdoxDev/Huginn/commit/e90f1044e284c31a118c2a4f45b38b159588c124))
 
 ## [0.27.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.27.0...backend-shared@v0.27.1) (2026-06-16)
 
-
 ### Bug Fixes
 
-* **server:** messageId is not always on message pin ([2381248](https://github.com/WerdoxDev/Huginn/commit/238124863dc75b2b125baf72662c691537399baf))
+- **server:** messageId is not always on message pin ([2381248](https://github.com/WerdoxDev/Huginn/commit/238124863dc75b2b125baf72662c691537399baf))
 
 ## [0.27.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.26.0...backend-shared@v0.27.0) (2026-06-05)
 
-
 ### Features
 
-* **backend-shared:** implement full OTel for all database operations ([fc0d273](https://github.com/WerdoxDev/Huginn/commit/fc0d2733155f3211f07295c7795e13b4f05efc0a))
-
+- **backend-shared:** implement full OTel for all database operations ([fc0d273](https://github.com/WerdoxDev/Huginn/commit/fc0d2733155f3211f07295c7795e13b4f05efc0a))
 
 ### Bug Fixes
 
-* **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
-* **backend-shared:** remove useless telemetry ([68e9ee7](https://github.com/WerdoxDev/Huginn/commit/68e9ee7ea8883a021f4baccd03e010e08cf5e831))
+- **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
+- **backend-shared:** remove useless telemetry ([68e9ee7](https://github.com/WerdoxDev/Huginn/commit/68e9ee7ea8883a021f4baccd03e010e08cf5e831))
 
 ## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.1...backend-shared@v0.26.0) (2026-05-31)
 
-
 ### Features
 
-* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
-* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
-
+- migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+- migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
 
 ### Bug Fixes
 
-* dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
+- dep updates and fixes ([a9db204](https://github.com/WerdoxDev/Huginn/commit/a9db204afcb781675209a7724ca1acd8f797121e))
 
 ## [0.25.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.25.0...backend-shared@v0.25.1) (2026-05-28)
 
-
 ### Bug Fixes
 
-* **backend-shared:** add other reference message type ([4aa64f5](https://github.com/WerdoxDev/Huginn/commit/4aa64f56931662ec2f1cde80efeb1c3209ea9e0b))
+- **backend-shared:** add other reference message type ([4aa64f5](https://github.com/WerdoxDev/Huginn/commit/4aa64f56931662ec2f1cde80efeb1c3209ea9e0b))
 
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.1...backend-shared@v0.25.0) (2026-05-27)
 
-
 ### Features
 
-* **backend-shared:** add permanentt channel delete function ([76a75be](https://github.com/WerdoxDev/Huginn/commit/76a75becfcc16f33f1602218e993cf683de5fcab))
-
+- **backend-shared:** add permanentt channel delete function ([76a75be](https://github.com/WerdoxDev/Huginn/commit/76a75becfcc16f33f1602218e993cf683de5fcab))
 
 ### Bug Fixes
 
-* **backend-shared:** never allow empty string for channel name ([cc9728f](https://github.com/WerdoxDev/Huginn/commit/cc9728f03e821f2916e8f0d80c3b6ba842150a41))
+- **backend-shared:** never allow empty string for channel name ([cc9728f](https://github.com/WerdoxDev/Huginn/commit/cc9728f03e821f2916e8f0d80c3b6ba842150a41))
 
 ## [0.24.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.24.0...backend-shared@v0.24.1) (2026-05-26)
 
-
 ### Bug Fixes
 
-* **backend-shared:** remove env() from prisma config ([b63ecdd](https://github.com/WerdoxDev/Huginn/commit/b63ecddd922ee953aab1f29d8ada14c2322c163d))
+- **backend-shared:** remove env() from prisma config ([b63ecdd](https://github.com/WerdoxDev/Huginn/commit/b63ecddd922ee953aab1f29d8ada14c2322c163d))
 
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.23.0...backend-shared@v0.24.0) (2026-05-26)
 
-
 ### Features
 
-* **backend-shared:** remove deletedTimestamp from channels ([fc561a1](https://github.com/WerdoxDev/Huginn/commit/fc561a1966e62d9ff66456acc25a4e0d79b5fff9))
-
+- **backend-shared:** remove deletedTimestamp from channels ([fc561a1](https://github.com/WerdoxDev/Huginn/commit/fc561a1966e62d9ff66456acc25a4e0d79b5fff9))
 
 ### Bug Fixes
 
-* **backend-shared:** channel last message id update newer id validation ([49e1594](https://github.com/WerdoxDev/Huginn/commit/49e15948a36521319b61fa8809ace31a04e0289d))
+- **backend-shared:** channel last message id update newer id validation ([49e1594](https://github.com/WerdoxDev/Huginn/commit/49e15948a36521319b61fa8809ace31a04e0289d))
 
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.2...backend-shared@v0.23.0) (2026-05-21)
 
-
 ### Features
 
-* **backend-shared:** add around message functionality ([c27f9b8](https://github.com/WerdoxDev/Huginn/commit/c27f9b8a7730440ed2fb2b8e591b8a560f6f2420))
-* **backend-shared:** add profile banner and bio to user table ([e01b9cf](https://github.com/WerdoxDev/Huginn/commit/e01b9cff42b74b18808705350b6b985f8d770614))
-* **backend-shared:** add purpose and date to email verification ([27498fc](https://github.com/WerdoxDev/Huginn/commit/27498fcdbdaeb42722f035e463432c792d3acadd))
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-
+- **backend-shared:** add around message functionality ([c27f9b8](https://github.com/WerdoxDev/Huginn/commit/c27f9b8a7730440ed2fb2b8e591b8a560f6f2420))
+- **backend-shared:** add profile banner and bio to user table ([e01b9cf](https://github.com/WerdoxDev/Huginn/commit/e01b9cff42b74b18808705350b6b985f8d770614))
+- **backend-shared:** add purpose and date to email verification ([27498fc](https://github.com/WerdoxDev/Huginn/commit/27498fcdbdaeb42722f035e463432c792d3acadd))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
 
 ### Bug Fixes
 
-* **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
-* **backend-shared:** singleError needs a Bad Request defautlt code ([ec6f115](https://github.com/WerdoxDev/Huginn/commit/ec6f11534828fca3f9618e65c73d1572d22e6b0b))
+- **app:** handle when replied message is deleted ([8065d1d](https://github.com/WerdoxDev/Huginn/commit/8065d1dd929f2645bf75259abd90c8f1c3758eb8))
+- **backend-shared:** singleError needs a Bad Request defautlt code ([ec6f115](https://github.com/WerdoxDev/Huginn/commit/ec6f11534828fca3f9618e65c73d1572d22e6b0b))
 
 ## [0.22.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.22.1...backend-shared@v0.22.2) (2026-01-24)
 

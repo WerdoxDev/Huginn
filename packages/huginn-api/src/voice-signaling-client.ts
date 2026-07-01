@@ -106,8 +106,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -123,8 +121,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -139,8 +135,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -179,8 +173,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -204,8 +196,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -420,8 +410,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -456,8 +444,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -493,8 +479,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -528,8 +512,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -567,8 +549,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -602,8 +582,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -637,8 +615,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -671,8 +647,6 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

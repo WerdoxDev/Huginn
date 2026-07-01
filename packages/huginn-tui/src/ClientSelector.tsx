@@ -61,11 +61,7 @@ export default function ClientSelector(props: { dateDirectory: DateDirectory; on
          clientFilesWithUsers.map((x) => ({
             name: x.clientId,
             value: x,
-            description: x.isLoading
-               ? "Loading user..."
-               : x.error
-                 ? `Error: ${x.error}`
-                 : `${x.username || "Unknown user"} • ${x.numOfFiles} file(s)`,
+            description: x.isLoading ? "Loading user..." : x.error ? `Error: ${x.error}` : `${x.username || "Unknown user"} • ${x.numOfFiles} file(s)`,
          })),
       [clientFilesWithUsers],
    );

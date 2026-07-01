@@ -1,7 +1,8 @@
-import { cdnUpload } from "#utils/server-request";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import { CDNRoutes, getFileHash, toArrayBuffer, type APIPostApplicationIconResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { cdnUpload } from "#utils/server-request";
 
 const schema = t.Object({ icon: t.String(), applicationId: t.Optional(t.Number()) });
 

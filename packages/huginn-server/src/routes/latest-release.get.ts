@@ -1,6 +1,7 @@
-import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
 import { type APIGetLatestReleaseResult } from "@huginn/shared";
 import Elysia from "elysia";
+
+import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
 
 export const getLatestRelease = new Elysia().get("/api/latest-release", async ({ status }) => {
    const releases = await getAllAppReleases();

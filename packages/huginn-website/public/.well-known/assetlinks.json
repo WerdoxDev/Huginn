@@ -1,14 +1,10 @@
 [
    {
-      "relation": [
-         "delegate_permission/common.handle_all_urls"
-      ],
+      "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
          "namespace": "android_app",
          "package_name": "dev.huginn",
-         "sha256_cert_fingerprints": [
-            "97:24:9B:17:1C:95:B9:9B:87:70:B9:D5:5E:D0:97:FA:F9:FD:9B:C0:1B:7B:D4:57:BB:36:88:A5:0E:F8:AE:BF"
-         ]
+         "sha256_cert_fingerprints": ["97:24:9B:17:1C:95:B9:9B:87:70:B9:D5:5E:D0:97:FA:F9:FD:9B:C0:1B:7B:D4:57:BB:36:88:A5:0E:F8:AE:BF"]
       }
    }
 ]

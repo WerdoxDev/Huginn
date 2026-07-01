@@ -1,6 +1,3 @@
-import { cdnUpload } from "#utils/server-request";
-// import { createTokens } from "#utils/token-factory";
-import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
 import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
@@ -18,6 +15,10 @@ import {
    type OAuthType,
 } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { cdnUpload } from "#utils/server-request";
+// import { createTokens } from "#utils/token-factory";
+import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
 
 const schema = t.Object({
    username: t.String(),
@@ -88,11 +89,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          { id: user.id, authType: result.providerType as OAuthType, lastAuthenticatedAt },
          CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
       );
-      const refreshToken = await createToken(
-         "user-refresh",
-         { id: user.id, authType: "password", lastAuthenticatedAt },
-         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-      );
+      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostOAuthConfirmResult = {
          ...user,

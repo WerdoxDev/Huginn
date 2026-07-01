@@ -2,57 +2,49 @@
 
 ## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.37.0...api@v0.38.0) (2026-06-19)
 
-
 ### Features
 
-* **api:** add route to send push notification token ([570769e](https://github.com/WerdoxDev/Huginn/commit/570769ee38f08a36d1b5fa206b636a443b671b4a))
+- **api:** add route to send push notification token ([570769e](https://github.com/WerdoxDev/Huginn/commit/570769ee38f08a36d1b5fa206b636a443b671b4a))
 
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.36.0...api@v0.37.0) (2026-06-10)
 
-
 ### Features
 
-* **api:** add get emoji route to cdn ([1cc9126](https://github.com/WerdoxDev/Huginn/commit/1cc9126e2fc10c289c8473841abd89e00bf6e221))
-
+- **api:** add get emoji route to cdn ([1cc9126](https://github.com/WerdoxDev/Huginn/commit/1cc9126e2fc10c289c8473841abd89e00bf6e221))
 
 ### Bug Fixes
 
-* **api:** remove spamming trace + bug with closing voice transports ([0acb73c](https://github.com/WerdoxDev/Huginn/commit/0acb73cb0965bf2dea029b63d7e8876cec7d195f))
+- **api:** remove spamming trace + bug with closing voice transports ([0acb73c](https://github.com/WerdoxDev/Huginn/commit/0acb73cb0965bf2dea029b63d7e8876cec7d195f))
 
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.35.0...api@v0.36.0) (2026-06-05)
 
-
 ### Features
 
-* **api:** implement OTel for all voice and gateway ([4470b76](https://github.com/WerdoxDev/Huginn/commit/4470b76f724bab4a3018d881f7b3889f74e78e24))
-
+- **api:** implement OTel for all voice and gateway ([4470b76](https://github.com/WerdoxDev/Huginn/commit/4470b76f724bab4a3018d881f7b3889f74e78e24))
 
 ### Bug Fixes
 
-* **api:** remove timeout from client initialization ([a556ac8](https://github.com/WerdoxDev/Huginn/commit/a556ac8797721cb556c0d3eb2ae75ec5f4df5972))
+- **api:** remove timeout from client initialization ([a556ac8](https://github.com/WerdoxDev/Huginn/commit/a556ac8797721cb556c0d3eb2ae75ec5f4df5972))
 
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.34.0...api@v0.35.0) (2026-05-26)
 
-
 ### Features
 
-* **api:** add changelog route to common api ([6dada5d](https://github.com/WerdoxDev/Huginn/commit/6dada5de627bde5ea4061139121d08b13f97add2))
+- **api:** add changelog route to common api ([6dada5d](https://github.com/WerdoxDev/Huginn/commit/6dada5de627bde5ea4061139121d08b13f97add2))
 
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.3...api@v0.34.0) (2026-05-21)
 
-
 ### Features
 
-* **api:** add around property to message fetching ([812f9d5](https://github.com/WerdoxDev/Huginn/commit/812f9d5d9322ec287b8e499d0b593968b63c4431))
-* **api:** new route for cdn banner image upload ([8541fe3](https://github.com/WerdoxDev/Huginn/commit/8541fe39cf6ef4a6d9e00af678a4000ade3d601a))
-* **api:** user profile endpoints ([895a709](https://github.com/WerdoxDev/Huginn/commit/895a709188cde1f3b01bc08bb70d1dd3ade588aa))
-* **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-
+- **api:** add around property to message fetching ([812f9d5](https://github.com/WerdoxDev/Huginn/commit/812f9d5d9322ec287b8e499d0b593968b63c4431))
+- **api:** new route for cdn banner image upload ([8541fe3](https://github.com/WerdoxDev/Huginn/commit/8541fe39cf6ef4a6d9e00af678a4000ade3d601a))
+- **api:** user profile endpoints ([895a709](https://github.com/WerdoxDev/Huginn/commit/895a709188cde1f3b01bc08bb70d1dd3ade588aa))
+- **app:** make text have exact visible height using new css property + ui info and index ui reworks ([50115cd](https://github.com/WerdoxDev/Huginn/commit/50115cde379e2bc5e3bc8e575ddfaa4ad79f304d))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
 
 ### Bug Fixes
 
-* **api:** handle login with pending email ([c6ad357](https://github.com/WerdoxDev/Huginn/commit/c6ad357879b3102097ff4f28650de54776fa17b4))
+- **api:** handle login with pending email ([c6ad357](https://github.com/WerdoxDev/Huginn/commit/c6ad357879b3102097ff4f28650de54776fa17b4))
 
 ## [0.33.3](https://github.com/WerdoxDev/Huginn/compare/api@v0.33.2...api@v0.33.3) (2026-01-24)
 

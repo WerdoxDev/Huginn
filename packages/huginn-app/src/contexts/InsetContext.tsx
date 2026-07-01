@@ -1,13 +1,14 @@
 import { useCapacitorListener } from "@hooks/useCapacitorListener";
 import Inset from "@lib/capacitor/inset-plugin";
 import { useHuginnWindow } from "@stores/windowStore";
-import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from "react";
 
 const InsetContext = createContext<{
    isKeyboardOpen: boolean;
    lastKeyboardHeight: number;
    lastNavBarHeight: number;
    shouldResizeWindow: boolean;
+   focusedElementRef?: RefObject<Element | null>;
 }>({
    isKeyboardOpen: false,
    lastKeyboardHeight: 0,
@@ -25,6 +26,7 @@ export function InsetProvider(props: { children: ReactNode }) {
    const [lastKeyboardHeight, setLastKeyboardHeight] = useState(Number(localStorage.getItem("cached-keyboard-height")) || 0);
    const [lastNavBarHeight, setLastNavBarHeight] = useState(Number(localStorage.getItem("cached-navBar-height")) || 0);
    const [shouldResizeWindow, setShouldResizeWindow] = useState(true);
+   const [isFocusedElementInRoot, setIsFocusedElementInRoot] = useState(false);
    const focusedElementRef = useRef<Element | null>(null);
 
    useEffect(() => {
@@ -45,6 +47,8 @@ export function InsetProvider(props: { children: ReactNode }) {
          (e) => {
             const target = e.target as Element;
             focusedElementRef.current = target;
+
+            setIsFocusedElementInRoot(!!target.closest("[data-keyboard-root]"));
 
             if (!isKeyboardOpen && elementSuppressesResize(target)) {
                setShouldResizeWindow(false);
@@ -84,12 +88,13 @@ export function InsetProvider(props: { children: ReactNode }) {
    useCapacitorListener(() => Inset.addListener("insetChange", handleInsetChange));
 
    return (
-      <InsetContext.Provider value={{ isKeyboardOpen, lastKeyboardHeight, shouldResizeWindow, lastNavBarHeight }}>
+      <InsetContext.Provider value={{ isKeyboardOpen, lastKeyboardHeight, shouldResizeWindow, lastNavBarHeight, focusedElementRef }}>
          <div
-            className="relative"
+            className="relative isolate"
+            data-keyboard-root
             style={{
                height:
-                  shouldResizeWindow && isKeyboardOpen
+                  shouldResizeWindow && isFocusedElementInRoot && isKeyboardOpen
                      ? `calc(100% - ${lastKeyboardHeight}px - ${lastNavBarHeight}px)`
                      : `calc(100% - ${lastNavBarHeight}px)`,
             }}

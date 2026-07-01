@@ -1,8 +1,9 @@
 import type { APIPostRefreshTokenResult } from "@huginn/shared";
 
-import { createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
+
+import { createTestUsers } from "#tests/utils";
 
 describe("POST /auth/refresh-token", () => {
    test("should return 'Unauthorized' when invalid token is passed", async () => {

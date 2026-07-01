@@ -178,8 +178,6 @@ export function initReadStateStore() {
             }
          } catch (e) {
             recordSpanError(e);
-         } finally {
-            span.end();
          }
       });
    });

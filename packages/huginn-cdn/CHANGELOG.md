@@ -2,44 +2,38 @@
 
 ## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.18.0...cdn@v0.19.0) (2026-06-27)
 
-
 ### Features
 
-* **cdn:** migrate out old logging to pino ([6f5aa62](https://github.com/WerdoxDev/Huginn/commit/6f5aa62213eb87814b7dec9a2ad06256477bef56))
+- **cdn:** migrate out old logging to pino ([6f5aa62](https://github.com/WerdoxDev/Huginn/commit/6f5aa62213eb87814b7dec9a2ad06256477bef56))
 
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.17.0...cdn@v0.18.0) (2026-06-10)
 
-
 ### Features
 
-* **cdn:** add get emoji route + script to upoad all emojis to cdn ([b30ac11](https://github.com/WerdoxDev/Huginn/commit/b30ac113716ebbad9bf72b0a795dc2dc33bd7923))
+- **cdn:** add get emoji route + script to upoad all emojis to cdn ([b30ac11](https://github.com/WerdoxDev/Huginn/commit/b30ac113716ebbad9bf72b0a795dc2dc33bd7923))
 
 ## [0.17.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.16.0...cdn@v0.17.0) (2026-06-05)
 
-
 ### Features
 
-* **cdn:** implement OTel at elysia level ([83f81de](https://github.com/WerdoxDev/Huginn/commit/83f81debfea208e0ea6f8a67295675106edbac0a))
+- **cdn:** implement OTel at elysia level ([83f81de](https://github.com/WerdoxDev/Huginn/commit/83f81debfea208e0ea6f8a67295675106edbac0a))
 
 ## [0.16.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.15.0...cdn@v0.16.0) (2026-05-31)
 
-
 ### Features
 
-* **cdn:** use bun's image class + cache control ([30c3d48](https://github.com/WerdoxDev/Huginn/commit/30c3d4802f2d0b61be36b0c80ac58471ada07ba0))
+- **cdn:** use bun's image class + cache control ([30c3d48](https://github.com/WerdoxDev/Huginn/commit/30c3d4802f2d0b61be36b0c80ac58471ada07ba0))
 
 ## [0.15.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.2...cdn@v0.15.0) (2026-05-21)
 
-
 ### Features
 
-* **cdn:** add banner image upload ([a121f00](https://github.com/WerdoxDev/Huginn/commit/a121f00d53a1a0d1ab994049497e5c987b384043))
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-
+- **cdn:** add banner image upload ([a121f00](https://github.com/WerdoxDev/Huginn/commit/a121f00d53a1a0d1ab994049497e5c987b384043))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
 
 ### Bug Fixes
 
-* **cdn:** new way of file schema handling ([3ca3ca7](https://github.com/WerdoxDev/Huginn/commit/3ca3ca7bce44316650162b82d5f67b07f3f555b8))
+- **cdn:** new way of file schema handling ([3ca3ca7](https://github.com/WerdoxDev/Huginn/commit/3ca3ca7bce44316650162b82d5f67b07f3f555b8))
 
 ## [0.14.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.14.1...cdn@v0.14.2) (2025-12-14)
 

@@ -41,8 +41,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -76,8 +74,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -166,8 +162,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -186,8 +180,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -252,8 +244,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -273,8 +263,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -291,8 +279,6 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

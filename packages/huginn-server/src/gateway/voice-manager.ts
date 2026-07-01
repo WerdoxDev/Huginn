@@ -34,8 +34,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -69,8 +67,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -95,8 +91,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -135,8 +129,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -185,10 +177,7 @@ export class VoiceManager {
             if (voiceState.channelId) {
                // The user is joining with a new session
                if (previousState && voiceState.sessionId !== previousState?.sessionId) {
-                  voiceLogger.info(
-                     { userId: options.userId, previousSessionId: previousState.sessionId },
-                     "session change - nulling previous session",
-                  );
+                  voiceLogger.info({ userId: options.userId, previousSessionId: previousState.sessionId }, "session change - nulling previous session");
                   dispatchToTopic(previousState.sessionId, "voice_state_update", {
                      ...previousState,
                      channelId: null,
@@ -221,8 +210,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -248,8 +235,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -275,8 +260,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -296,8 +279,6 @@ export class VoiceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

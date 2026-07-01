@@ -5,6 +5,9 @@
 **/huginn-bundler
 **/huginn-website
 **/node_modules
+**/huginn-tui
+**/huginn-assets
+**/transactional
 **/native-addon
 
 **/Dockerfile*

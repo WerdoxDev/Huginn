@@ -1,11 +1,12 @@
-import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
-import { cdnUpload } from "#utils/server-request";
-import { validateChannelName } from "#utils/validation";
 import { createErrorFactory, createHuginnError, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
 import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";
+import { cdnUpload } from "#utils/server-request";
+import { validateChannelName } from "#utils/validation";
 
 const schema = t.Object({
    name: t.Optional(t.Nullable(t.String())),

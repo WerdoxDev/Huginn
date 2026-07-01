@@ -1,8 +1,9 @@
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 import { globalPlugin, hRateLimit, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { CONSTANTS, Errors, type EmailVerificationPurpose } from "@huginn/shared";
 import Elysia from "elysia";
+
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 
 export const postResendVerificationEmail = new Elysia()
    .use(verifyJwt())

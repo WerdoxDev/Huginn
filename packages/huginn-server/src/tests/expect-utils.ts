@@ -347,3 +347,11 @@ export function expectSessionUpdateExactSchema(sessionUpdate: any, expectedSessi
 export function expectVoiceServerExactSchema(voiceServer: object) {
    expect(Object.keys(voiceServer).sort()).toStrictEqual(["token"].sort());
 }
+
+export function expectReactionExactSchema(emoji: any, options: { count: number; me: boolean; emoji: { id: string | null; name: string } }) {
+   expect(emoji).toStrictEqual({
+      count: options.count,
+      me: options.me,
+      emoji: options.emoji,
+   });
+}

@@ -2,79 +2,69 @@
 
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.38.0...shared@v0.39.0) (2026-06-27)
 
-
 ### Features
 
-* **shared:** new pino intrumentation and posthog log/trace sending ([ae3bb0d](https://github.com/WerdoxDev/Huginn/commit/ae3bb0de2d80782d70e3f88cb6191234bee87652))
+- **shared:** new pino intrumentation and posthog log/trace sending ([ae3bb0d](https://github.com/WerdoxDev/Huginn/commit/ae3bb0de2d80782d70e3f88cb6191234bee87652))
 
 ## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.37.0...shared@v0.38.0) (2026-06-19)
 
-
 ### Features
 
-* **shared:** add types for push notification token ([760c97e](https://github.com/WerdoxDev/Huginn/commit/760c97e7c8c86a7fbe5d304bbab77071ccf0b9d5))
+- **shared:** add types for push notification token ([760c97e](https://github.com/WerdoxDev/Huginn/commit/760c97e7c8c86a7fbe5d304bbab77071ccf0b9d5))
 
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.36.0...shared@v0.37.0) (2026-06-10)
 
-
 ### Features
 
-* **shared:** add helper functions for emoji processing ([8bb7015](https://github.com/WerdoxDev/Huginn/commit/8bb701500440058b4059e10e86d5ee91594a659a))
-* **shared:** add log exporter for web-analytics ([5c9b0b6](https://github.com/WerdoxDev/Huginn/commit/5c9b0b605ecec67431e98788a037c076070de1b6))
-* **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
-* **shared:** type changes for emojis ([bd0d76f](https://github.com/WerdoxDev/Huginn/commit/bd0d76fd5de4dc5c0c66dfb7e6448bf4d6d6b8eb))
+- **shared:** add helper functions for emoji processing ([8bb7015](https://github.com/WerdoxDev/Huginn/commit/8bb701500440058b4059e10e86d5ee91594a659a))
+- **shared:** add log exporter for web-analytics ([5c9b0b6](https://github.com/WerdoxDev/Huginn/commit/5c9b0b605ecec67431e98788a037c076070de1b6))
+- **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
+- **shared:** type changes for emojis ([bd0d76f](https://github.com/WerdoxDev/Huginn/commit/bd0d76fd5de4dc5c0c66dfb7e6448bf4d6d6b8eb))
 
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.35.0...shared@v0.36.0) (2026-06-05)
 
-
 ### Features
 
-* **shared:** add new analytics method to reset context ([94520e8](https://github.com/WerdoxDev/Huginn/commit/94520e873848705c3e439d23afa1ce70bb5ac15a))
-* **shared:** add new recordSpanError function ([17cb912](https://github.com/WerdoxDev/Huginn/commit/17cb91290cee4efbdfaaea5a7903f1c698f1290d))
-* **shared:** implement runtime and web opentelemetry ([26cf4ab](https://github.com/WerdoxDev/Huginn/commit/26cf4ab0d0b45394c53864cccc903b33282d4afe))
-
+- **shared:** add new analytics method to reset context ([94520e8](https://github.com/WerdoxDev/Huginn/commit/94520e873848705c3e439d23afa1ce70bb5ac15a))
+- **shared:** add new recordSpanError function ([17cb912](https://github.com/WerdoxDev/Huginn/commit/17cb91290cee4efbdfaaea5a7903f1c698f1290d))
+- **shared:** implement runtime and web opentelemetry ([26cf4ab](https://github.com/WerdoxDev/Huginn/commit/26cf4ab0d0b45394c53864cccc903b33282d4afe))
 
 ### Bug Fixes
 
-* **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
+- **backend-shared:** missing package ([1cec8af](https://github.com/WerdoxDev/Huginn/commit/1cec8af309c18453e0d40c7190e08fef159678f8))
 
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.34.1...shared@v0.35.0) (2026-05-31)
 
-
 ### Features
 
-* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
-* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
+- migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+- migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
 
 ## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.34.0...shared@v0.34.1) (2026-05-27)
 
-
 ### Bug Fixes
 
-* **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
+- **app:** better mobile friends tab layout + non nullable active preset + 3 letter username ([c8a4ac0](https://github.com/WerdoxDev/Huginn/commit/c8a4ac08b09be916d171f289ff18af807d0fb6fa))
 
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.33.0...shared@v0.34.0) (2026-05-26)
 
-
 ### Features
 
-* **shared:** add new changelog types ([174e98c](https://github.com/WerdoxDev/Huginn/commit/174e98cba042cad0e11086d41788194d8f949b68))
-
+- **shared:** add new changelog types ([174e98c](https://github.com/WerdoxDev/Huginn/commit/174e98cba042cad0e11086d41788194d8f949b68))
 
 ### Bug Fixes
 
-* **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
+- **app:** channel recipient and name bug fixes + vite 8 update ([bb8b04e](https://github.com/WerdoxDev/Huginn/commit/bb8b04e85d6571183e4b28dd7ce751a997fbefea))
 
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.32.0...shared@v0.33.0) (2026-05-21)
 
-
 ### Features
 
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-* **shared:** add bannerColor to types ([762be07](https://github.com/WerdoxDev/Huginn/commit/762be076965c669e299dddc223430370c9746454))
-* **shared:** add types for pinned channels ([35029fb](https://github.com/WerdoxDev/Huginn/commit/35029fb488d477f2c2d176babd0b0053a2c93804))
-* **shared:** new types and constants for badges and profile ([c1313aa](https://github.com/WerdoxDev/Huginn/commit/c1313aa656ff0d9246d3c52fa5e3291cc7c868c7))
-* **shared:** new types for banner image and bio ([280a02f](https://github.com/WerdoxDev/Huginn/commit/280a02fca0c451b0ed7b19b48cd5673fdac1d8ef))
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+- **shared:** add bannerColor to types ([762be07](https://github.com/WerdoxDev/Huginn/commit/762be076965c669e299dddc223430370c9746454))
+- **shared:** add types for pinned channels ([35029fb](https://github.com/WerdoxDev/Huginn/commit/35029fb488d477f2c2d176babd0b0053a2c93804))
+- **shared:** new types and constants for badges and profile ([c1313aa](https://github.com/WerdoxDev/Huginn/commit/c1313aa656ff0d9246d3c52fa5e3291cc7c868c7))
+- **shared:** new types for banner image and bio ([280a02f](https://github.com/WerdoxDev/Huginn/commit/280a02fca0c451b0ed7b19b48cd5673fdac1d8ef))
 
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.31.1...shared@v0.32.0) (2026-01-04)
 

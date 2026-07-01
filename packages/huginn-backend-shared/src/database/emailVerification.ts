@@ -24,8 +24,6 @@ export const emailVerificationExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -67,8 +65,6 @@ export const emailVerificationExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   assertExists(e, methodName, DBErrorType.NULL_USER, [options.userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

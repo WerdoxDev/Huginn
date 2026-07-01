@@ -84,6 +84,8 @@ const toneOptions: SelectItem<number>[] = [
    },
 ];
 
+const EMOJI_PER_ROW = 8;
+
 const groupIcons: Record<number, ReactNode> = {
    [RECENT_GROUP_ID]: <IconMingcuteHistoryAnticlockwiseFill className="size-6" />,
    0: <IconMingcuteEmoji2Fill className="size-6" />,
@@ -140,8 +142,8 @@ export default function EmojiPickerRawPanel(props: {
       const result: VirtualRow[] = [];
       for (const [groupId, emojis] of Object.entries(groupedEmojis).toSorted(([a], [b]) => Number(a) - Number(b))) {
          result.push({ type: "header", name: getGroupName(Number(groupId)), groupId: Number(groupId) });
-         for (let i = 0; i < emojis.length; i += 8) {
-            result.push({ type: "emojis", emojis: emojis.slice(i, i + 8) });
+         for (let i = 0; i < emojis.length; i += EMOJI_PER_ROW) {
+            result.push({ type: "emojis", emojis: emojis.slice(i, i + EMOJI_PER_ROW) });
          }
       }
       return result;
@@ -156,8 +158,8 @@ export default function EmojiPickerRawPanel(props: {
          .filter((e) => e.group !== RECENT_GROUP_ID && e.slugs.some((slug) => slug.includes(query)));
 
       const result: VirtualRow[] = [];
-      for (let i = 0; i < matched.length; i += 8) {
-         result.push({ type: "emojis", emojis: matched.slice(i, i + 8) });
+      for (let i = 0; i < matched.length; i += EMOJI_PER_ROW) {
+         result.push({ type: "emojis", emojis: matched.slice(i, i + EMOJI_PER_ROW) });
       }
       return result.length > 0 ? result : [];
    }, [allRows, groupedEmojis, values.search]);
@@ -241,12 +243,16 @@ export default function EmojiPickerRawPanel(props: {
    }, [activeGroupId]);
 
    return (
-      <div className="flex h-full flex-col overflow-hidden" data-ignore-swipe style={{ maxHeight: props.maxHeight }}>
-         <div className={clsx("flex w-full items-center gap-x-2 p-2", isMobile && "pt-0.5")}>
+      <div
+         className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "rounded-t-xl bg-zinc-900")}
+         data-ignore-swipe
+         style={{ maxHeight: props.maxHeight }}
+      >
+         <div className={clsx("flex w-full items-center gap-x-2 p-2")}>
             <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
                <HuginnInput.Wrapper>
                   <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
-                  <HuginnInput.Input />
+                  <HuginnInput.Input data-keyboard-no-close />
                </HuginnInput.Wrapper>
             </HuginnInput>
             <HuginnSelect selected={selectedTone} onChange={setSelectedTone} className="w-max">
@@ -266,7 +272,9 @@ export default function EmojiPickerRawPanel(props: {
          <div className="bg-surface h-px shrink-0" />
          <div className="flex flex-col overflow-hidden">
             <div
-               className="scroll-hidden flex h-13 w-full shrink-0 gap-x-1 overflow-x-auto overflow-y-hidden px-2 py-2"
+               className="scroll-hidden flex h-13 w-full shrink-0 touch-auto gap-x-1 overflow-x-auto overflow-y-hidden px-2 py-2"
+               onTouchStart={(e) => e.stopPropagation()}
+               // onScroll={(e) => {}}
                ref={categoryScrollRef}
                style={{ maxWidth: props.maxWidth }}
             >
@@ -296,7 +304,7 @@ export default function EmojiPickerRawPanel(props: {
             </div>
             <div className="bg-surface h-px w-full shrink-0" />
             {rows.length > 0 ? (
-               <div className="flex w-full flex-col overflow-hidden" style={{ maxWidth: props.maxWidth }}>
+               <div className="flex flex-col overflow-hidden" style={{ maxWidth: props.maxWidth }}>
                   <div ref={parentRef} className="scroll-thin relative h-full overflow-x-hidden overflow-y-scroll pb-2.5 pl-2.5 select-none">
                      <div style={{ height: virtualizer.getTotalSize() }} className={clsx("relative w-full", values.search && "first:mt-2.5")}>
                         {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -320,7 +328,7 @@ export default function EmojiPickerRawPanel(props: {
                                  }}
                               >
                                  {row.type === "header" ? (
-                                    <div className="bg-surface-deep flex items-center gap-x-2 pt-2.5 pb-2.5 text-white lg:bg-zinc-900">
+                                    <div className="flex items-center gap-x-2 bg-zinc-900 pt-2.5 pb-2.5 text-white">
                                        {groupIcons[row.groupId]}
                                        <div className="text-sm font-bold">{row.name}</div>
                                        <div className="bg-surface ml-auto rounded-sm p-1 text-xs">{groupedEmojis[row.groupId].length}</div>

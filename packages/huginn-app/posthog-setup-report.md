@@ -10,24 +10,24 @@ This session added the following:
 - **New event captures** — Seven additional events covering friend activity, message edits/deletes, DM closes, and display name changes.
 - **Cleanup** — Removed duplicate commented-out imports in `login.tsx`, `register.tsx`, and `useInitializeClient.ts`.
 
-| Event | Description | File |
-|-------|-------------|------|
-| `login:login_button_click` | User clicks the login button | `src/routes/_app/_start/login.tsx` |
-| `register:register_button_click` | User clicks the register button | `src/routes/_app/_start/register.tsx` |
-| `oauth:abort_button_click` | User aborts the OAuth confirm step | `src/routes/_app/_start/oauth-redirect.tsx` |
-| `oauth:confirm_button_click` | User confirms OAuth account creation | `src/routes/_app/_start/oauth-redirect.tsx` |
-| `friends:*_tab_view` | User switches between Friends tabs | `src/routes/_app/_main/_home/friends.tsx` |
-| `dm:channel_find_or_create` | User creates or opens a DM / group DM | `src/components/modal/CreateDMModal.tsx` |
-| `channel:recipient_added` | User adds a recipient to a group DM | `src/components/modal/AddRecipientModal.tsx` |
-| `message:send` | User sends a message (with attachment/reply metadata) | `src/hooks/useMessageBoxActions.ts` |
-| `message:edited` | User commits an edit to an existing message | `src/hooks/useMessageBoxActions.ts` |
-| `message:deleted` | User deletes a message | `src/hooks/mutations/useDeleteMessage.ts` |
-| `profile:username_changed` | User successfully changes their username | `src/components/modal/profile/ChangeUsernameModal.tsx` |
-| `profile:display_name_changed` | User successfully changes their display name | `src/components/modal/profile/ChangeDisplayNameModal.tsx` |
-| `voice:status_disconnect_button_click` | User disconnects from a voice channel | `src/components/voice/VoiceStatus.tsx` |
-| `friend:request_sent` | User submits a friend request by username | `src/components/friends/AddFriendTab.tsx` |
-| `friend:removed` | User removes a friend via context menu | `src/components/contextmenu/RelationshipContextMenu.tsx` |
-| `channel:dm_closed` | User closes/leaves a DM channel | `src/hooks/mutations/useDeleteDMChannel.ts` |
+| Event                                  | Description                                           | File                                                      |
+| -------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------- |
+| `login:login_button_click`             | User clicks the login button                          | `src/routes/_app/_start/login.tsx`                        |
+| `register:register_button_click`       | User clicks the register button                       | `src/routes/_app/_start/register.tsx`                     |
+| `oauth:abort_button_click`             | User aborts the OAuth confirm step                    | `src/routes/_app/_start/oauth-redirect.tsx`               |
+| `oauth:confirm_button_click`           | User confirms OAuth account creation                  | `src/routes/_app/_start/oauth-redirect.tsx`               |
+| `friends:*_tab_view`                   | User switches between Friends tabs                    | `src/routes/_app/_main/_home/friends.tsx`                 |
+| `dm:channel_find_or_create`            | User creates or opens a DM / group DM                 | `src/components/modal/CreateDMModal.tsx`                  |
+| `channel:recipient_added`              | User adds a recipient to a group DM                   | `src/components/modal/AddRecipientModal.tsx`              |
+| `message:send`                         | User sends a message (with attachment/reply metadata) | `src/hooks/useMessageBoxActions.ts`                       |
+| `message:edited`                       | User commits an edit to an existing message           | `src/hooks/useMessageBoxActions.ts`                       |
+| `message:deleted`                      | User deletes a message                                | `src/hooks/mutations/useDeleteMessage.ts`                 |
+| `profile:username_changed`             | User successfully changes their username              | `src/components/modal/profile/ChangeUsernameModal.tsx`    |
+| `profile:display_name_changed`         | User successfully changes their display name          | `src/components/modal/profile/ChangeDisplayNameModal.tsx` |
+| `voice:status_disconnect_button_click` | User disconnects from a voice channel                 | `src/components/voice/VoiceStatus.tsx`                    |
+| `friend:request_sent`                  | User submits a friend request by username             | `src/components/friends/AddFriendTab.tsx`                 |
+| `friend:removed`                       | User removes a friend via context menu                | `src/components/contextmenu/RelationshipContextMenu.tsx`  |
+| `channel:dm_closed`                    | User closes/leaves a DM channel                       | `src/hooks/mutations/useDeleteDMChannel.ts`               |
 
 ## Next steps
 

@@ -1,12 +1,4 @@
-import {
-   createErrorFactory,
-   createHuginnError,
-   globalPlugin,
-   invalidBody,
-   missingAccess,
-   missingPermission,
-   verifyJwt,
-} from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, globalPlugin, invalidBody, missingAccess, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginn/shared";
@@ -74,11 +66,7 @@ export const patchMessage = new Elysia()
 
          const processedEmbeds = await processEmbeds(body.embeds);
 
-         const dbMessage = await prisma.message.updateMessage(
-            messageId,
-            { content: body.content, embeds: processedEmbeds },
-            { select: selectAllMessage },
-         );
+         const dbMessage = await prisma.message.updateMessage(messageId, { content: body.content, embeds: processedEmbeds }, { select: selectAllMessage });
 
          const message: APIMessage = await filterMessage(dbMessage, { receiverId: tokenPayload.id });
          dispatchToTopic(channelId, "message_update", message);

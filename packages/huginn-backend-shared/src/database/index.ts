@@ -1,3 +1,4 @@
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
@@ -19,6 +20,7 @@ import { userExtension } from "./user";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });
+// const adapter = new PrismaNeon({ connectionString: process.env.POSTGRESQL_URL });
 // export const prismaBase = new PrismaClient({ adapter }).$extends(withOptimize({ apiKey: process.env.OPTIMIZE_API_KEY ?? "", enable: false }));
 export const prismaBase = new PrismaClient({ adapter });
 

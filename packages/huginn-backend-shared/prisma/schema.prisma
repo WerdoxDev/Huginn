@@ -1,6 +1,7 @@
 generator client {
-   provider = "prisma-client"
-   output   = "./generated"
+   provider        = "prisma-client"
+   output          = "./generated"
+   previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -122,8 +123,8 @@ model Reaction {
    userId    BigInt
    emojiKey  String
 
-   message Message @relation(fields: [messageId], references: [id])
-   user    User    @relation(fields: [userId], references: [id])
+   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
    @@id([channelId, messageId, userId, emojiKey])
    @@index([messageId, emojiKey])
@@ -134,7 +135,7 @@ model ReactionAggregate {
    emojiKey  String
    count     Int
 
-   message Message @relation(fields: [messageId], references: [id])
+   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
    @@id([messageId, emojiKey])
 }

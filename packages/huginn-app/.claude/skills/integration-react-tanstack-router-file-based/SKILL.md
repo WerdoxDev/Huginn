@@ -1,11 +1,11 @@
 ---
 name: integration-react-tanstack-router-file-based
 description: >-
-  PostHog integration for React applications using TanStack Router with
-  file-based routing
+   PostHog integration for React applications using TanStack Router with
+   file-based routing
 metadata:
-  author: PostHog
-  version: 1.21.1
+   author: PostHog
+   version: 1.21.1
 ---
 
 # PostHog integration for React with TanStack Router (file-based)
@@ -50,8 +50,8 @@ The example project shows the target implementation pattern. Consult the documen
 - To reset component state when a prop changes, pass the prop as the component's key instead of using useEffect
 - useEffect is ONLY for synchronizing with external systems (non-React widgets, browser APIs, network subscriptions)
 - Use TanStack Router's built-in navigation events for pageview tracking instead of useEffect
-- Use PostHogProvider in the root component defined in either the file-based convention (__root.tsx) or code-based convention (wherever createRootRoute() is called) so all child routes have access to the PostHog client
-- When a reverse proxy is configured, both /static/* AND /array/* must route to the assets origin (us-assets.i.posthog.com or eu-assets.i.posthog.com).
+- Use PostHogProvider in the root component defined in either the file-based convention (\_\_root.tsx) or code-based convention (wherever createRootRoute() is called) so all child routes have access to the PostHog client
+- When a reverse proxy is configured, both /static/_ AND /array/_ must route to the assets origin (us-assets.i.posthog.com or eu-assets.i.posthog.com).
 
 ## Identifying users
 

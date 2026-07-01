@@ -1,11 +1,4 @@
-import {
-   DEFAULT_SERVER_SETTINGS,
-   analytics,
-   recordSpanError,
-   type APIPatchUserSettingsJSONBody,
-   type Snowflake,
-   type UserSettings,
-} from "@huginn/shared";
+import { DEFAULT_SERVER_SETTINGS, analytics, recordSpanError, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginn/shared";
 
 import { assertExists, assertId, assertObj, prisma, Prisma } from "#database";
 import { DBErrorType } from "#types";
@@ -32,8 +25,6 @@ export const settingsExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -57,8 +48,6 @@ export const settingsExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId.toString()]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

@@ -37,16 +37,8 @@ export const postVerifyEmail = new Elysia().post(
 
       if (emailVerification.purpose === "registration") {
          const lastAuthenticatedAt = Date.now();
-         const accessToken = await createToken(
-            "user-access",
-            { id: userId, authType: "password", lastAuthenticatedAt },
-            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-         );
-         const refreshToken = await createToken(
-            "user-refresh",
-            { id: userId, authType: "password", lastAuthenticatedAt },
-            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-         );
+         const accessToken = await createToken("user-access", { id: userId, authType: "password", lastAuthenticatedAt }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
+         const refreshToken = await createToken("user-refresh", { id: userId, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
 
          const json: APIPostVerifyEmailResult = {
             ...updatedUser,

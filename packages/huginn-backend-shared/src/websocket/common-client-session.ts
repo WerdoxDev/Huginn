@@ -49,8 +49,6 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

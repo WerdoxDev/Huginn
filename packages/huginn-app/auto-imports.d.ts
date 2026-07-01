@@ -22,20 +22,17 @@ declare global {
   const IconMingcuteCatFill: typeof import('~icons/mingcute/cat-fill.jsx').default
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx').default
   const IconMingcuteChecksFill: typeof import('~icons/mingcute/checks-fill.jsx').default
-  const IconMingcuteClockwiseFill: typeof import('~icons/mingcute/clockwise-fill.jsx').default
   const IconMingcuteCloseFill: typeof import('~icons/mingcute/close-fill.jsx').default
   const IconMingcuteColorPickerFill: typeof import('~icons/mingcute/color-picker-fill.jsx').default
   const IconMingcuteCopy2Fill: typeof import('~icons/mingcute/copy2-fill.jsx').default
   const IconMingcuteCornerUpLeftFill: typeof import('~icons/mingcute/corner-up-left-fill.jsx').default
   const IconMingcuteCornerUpRightLine: typeof import('~icons/mingcute/corner-up-right-line.jsx').default
-  const IconMingcuteDelete2Fill: typeof import('~icons/mingcute/delete2-fill.jsx').default
   const IconMingcuteDelete3Fill: typeof import('~icons/mingcute/delete3-fill.jsx').default
   const IconMingcuteDiamondSquareFill: typeof import('~icons/mingcute/diamond-square-fill.jsx').default
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx').default
   const IconMingcuteDownload2Fill: typeof import('~icons/mingcute/download2-fill.jsx').default
   const IconMingcuteEdit2Fill: typeof import('~icons/mingcute/edit2-fill.jsx').default
   const IconMingcuteEmoji2Fill: typeof import('~icons/mingcute/emoji2-fill.jsx').default
-  const IconMingcuteEmojiSadFill: typeof import('~icons/mingcute/emoji-sad-fill.jsx').default
   const IconMingcuteEmptyBoxFill: typeof import('~icons/mingcute/empty-box-fill.jsx').default
   const IconMingcuteExitFill: typeof import('~icons/mingcute/exit-fill.jsx').default
   const IconMingcuteEye2Fill: typeof import('~icons/mingcute/eye2-fill.jsx').default
@@ -51,12 +48,9 @@ declare global {
   const IconMingcuteGame2Fill: typeof import('~icons/mingcute/game2-fill.jsx').default
   const IconMingcuteGroup2Fill: typeof import('~icons/mingcute/group2-fill.jsx').default
   const IconMingcuteHat2Fill: typeof import('~icons/mingcute/hat2-fill.jsx').default
-  const IconMingcuteHeartFill: typeof import('~icons/mingcute/heart-fill.jsx').default
   const IconMingcuteHistoryAnticlockwiseFill: typeof import('~icons/mingcute/history-anticlockwise-fill.jsx').default
-  const IconMingcuteHistoryAnticlockwiseLine: typeof import('~icons/mingcute/history-anticlockwise-line.jsx').default
   const IconMingcuteHotkeyFill: typeof import('~icons/mingcute/hotkey-fill.jsx').default
   const IconMingcuteIdcardFill: typeof import('~icons/mingcute/idcard-fill.jsx').default
-  const IconMingcuteInfoLine: typeof import('~icons/mingcute/info-line.jsx').default
   const IconMingcuteInformationFill: typeof import('~icons/mingcute/information-fill.jsx').default
   const IconMingcuteLeftFill: typeof import('~icons/mingcute/left-fill.jsx').default
   const IconMingcuteLink2Fill: typeof import('~icons/mingcute/link2-fill.jsx').default
@@ -80,10 +74,8 @@ declare global {
   const IconMingcutePic2Fill: typeof import('~icons/mingcute/pic2-fill.jsx').default
   const IconMingcutePinFill: typeof import('~icons/mingcute/pin-fill.jsx').default
   const IconMingcutePlayFill: typeof import('~icons/mingcute/play-fill.jsx').default
-  const IconMingcutePushpinFill: typeof import('~icons/mingcute/pushpin-fill.jsx').default
   const IconMingcuteRefresh3Fill: typeof import('~icons/mingcute/refresh3-fill.jsx').default
   const IconMingcuteRefreshAnticlockwise1Line: typeof import('~icons/mingcute/refresh-anticlockwise1-line.jsx').default
-  const IconMingcuteRefreshAnticlockwise1LineLine: typeof import('~icons/mingcute/refresh-anticlockwise1-line-line.jsx').default
   const IconMingcuteRightFill: typeof import('~icons/mingcute/right-fill.jsx').default
   const IconMingcuteRightLine: typeof import('~icons/mingcute/right-line.jsx').default
   const IconMingcuteSadFill: typeof import('~icons/mingcute/sad-fill.jsx').default

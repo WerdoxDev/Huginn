@@ -29,8 +29,6 @@ export class LocalStorage extends StorageAdapter {
                success: false,
                error: (e as Error).message,
             };
-         } finally {
-            span.end();
          }
       });
    }
@@ -44,8 +42,6 @@ export class LocalStorage extends StorageAdapter {
          } catch (e) {
             recordSpanError(e as Error, this.analytics);
             return { success: false, error: (e as Error).message };
-         } finally {
-            span.end();
          }
       });
    }

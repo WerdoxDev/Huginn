@@ -1,6 +1,7 @@
 import { testHandler } from "@huginn/backend-shared";
 import {
    type APIMessageReference,
+   type APIGetChannelMessagesResult,
    type APIPostMessageJSONBody,
    type APIPostMessageResult,
    type APIReferenceMessage,
@@ -11,7 +12,7 @@ import {
 import { describe, expect, test } from "bun:test";
 import { resolve } from "pathe";
 
-import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema } from "#tests/expect-utils";
+import { expectAttachmentExactSchema, expectEmbedExactSchema, expectMessageExactSchema, expectReactionExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestChannel, createTestMessages, createTestUsers, getReadyWebSocket, isCDNRunning, testIsDispatch } from "#tests/utils";
 
 describe("POST /api/channels/:channelId/messages", () => {
@@ -188,8 +189,6 @@ describe("POST /api/channels/:channelId/messages", () => {
       expect(result.attachments).toBeArray();
       expect(result.attachments).toHaveLength(1);
       expectAttachmentExactSchema(result.attachments[0], {
-         messageId: result.id,
-         channelId: result.channelId,
          filename: "pixel.png",
          width: 1,
          height: 1,
@@ -317,5 +316,30 @@ describe("POST /api/channels/:channelId/messages", () => {
       const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", body)) as APIReferenceMessage;
 
       expectMessageExactSchema(result, { type: MessageType.REPLY, channelId: channel.id, author: user, content: "test", messageReference: reference });
+   });
+
+   test("should return reactions in the channel messages payload after a reaction is added", async () => {
+      const [user, user2] = await createTestUsers(2);
+
+      const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
+      const result = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "POST", {
+         content: "test",
+      })) as APIPostMessageResult;
+
+      await testHandler(`/api/channels/${channel.id}/messages/${result.id}/reactions/${encodeURIComponent("😎")}/@me`, authHeader(user2.accessToken), "PUT");
+
+      const messages = (await testHandler(`/api/channels/${channel.id}/messages`, authHeader(user.accessToken), "GET")) as APIGetChannelMessagesResult;
+
+      expect(messages).toHaveLength(1);
+      const firstMessage = messages[0];
+      expect(firstMessage.id).toBe(result.id.toString());
+      expect(firstMessage.reactions).toBeArray();
+      expect(firstMessage.reactions).toHaveLength(1);
+      const firstReaction = firstMessage.reactions![0];
+      expectReactionExactSchema(firstReaction, {
+         count: 1,
+         me: false,
+         emoji: { id: null, name: "😎" },
+      });
    });
 });

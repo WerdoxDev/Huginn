@@ -1,2061 +1,1890 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.IdentityProvider": {
-      "name": "IdentityProvider",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "providerUserId": {
-          "name": "providerUserId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "completed": {
-          "name": "completed",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "providerType": {
-          "name": "providerType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refreshToken": {
-          "name": "refreshToken",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "IdentityProvider_providerUserId_key": {
-          "name": "IdentityProvider_providerUserId_key",
-          "columns": [
-            {
-              "expression": "providerUserId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "IdentityProvider_userId_fkey": {
-          "name": "IdentityProvider_userId_fkey",
-          "tableFrom": "IdentityProvider",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Embed": {
-      "name": "Embed",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "Embed_messageId_fkey": {
-          "name": "Embed_messageId_fkey",
-          "tableFrom": "Embed",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Thumbnail": {
-      "name": "Thumbnail",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "embedId": {
-          "name": "embedId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "Thumbnail_embedId_key": {
-          "name": "Thumbnail_embedId_key",
-          "columns": [
-            {
-              "expression": "embedId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Thumbnail_embedId_fkey": {
-          "name": "Thumbnail_embedId_fkey",
-          "tableFrom": "Thumbnail",
-          "tableTo": "Embed",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "embedId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Relationship": {
-      "name": "Relationship",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "nickname": {
-          "name": "nickname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "since": {
-          "name": "since",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ownerId": {
-          "name": "ownerId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "Relationship_ownerId_idx": {
-          "name": "Relationship_ownerId_idx",
-          "columns": [
-            {
-              "expression": "ownerId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Relationship_ownerId_fkey": {
-          "name": "Relationship_ownerId_fkey",
-          "tableFrom": "Relationship",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "Relationship_userId_fkey": {
-          "name": "Relationship_userId_fkey",
-          "tableFrom": "Relationship",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Message": {
-      "name": "Message",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "authorId": {
-          "name": "authorId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "channelId": {
-          "name": "channelId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "editedTimestamp": {
-          "name": "editedTimestamp",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pinned": {
-          "name": "pinned",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "flags": {
-          "name": "flags",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "Message_channelId_idx": {
-          "name": "Message_channelId_idx",
-          "columns": [
-            {
-              "expression": "channelId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Message_authorId_fkey": {
-          "name": "Message_authorId_fkey",
-          "tableFrom": "Message",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "authorId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "Message_channelId_fkey": {
-          "name": "Message_channelId_fkey",
-          "tableFrom": "Message",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "channelId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Channel": {
-      "name": "Channel",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lastMessageId": {
-          "name": "lastMessageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ownerId": {
-          "name": "ownerId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "type": {
-          "name": "type",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "Channel_type_idx": {
-          "name": "Channel_type_idx",
-          "columns": [
-            {
-              "expression": "type",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int4_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Channel_lastMessageId_fkey": {
-          "name": "Channel_lastMessageId_fkey",
-          "tableFrom": "Channel",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "lastMessageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "Channel_ownerId_fkey": {
-          "name": "Channel_ownerId_fkey",
-          "tableFrom": "Channel",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.EmailVerification": {
-      "name": "EmailVerification",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "expiresAt": {
-          "name": "expiresAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code": {
-          "name": "code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "purpose": {
-          "name": "purpose",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'email_change'"
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "EmailVerification_userId_key": {
-          "name": "EmailVerification_userId_key",
-          "columns": [
-            {
-              "expression": "userId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "EmailVerification_userId_fkey": {
-          "name": "EmailVerification_userId_fkey",
-          "tableFrom": "EmailVerification",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.User": {
-      "name": "User",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "displayName": {
-          "name": "displayName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "avatar": {
-          "name": "avatar",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "password": {
-          "name": "password",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "flags": {
-          "name": "flags",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "system": {
-          "name": "system",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bannerColor": {
-          "name": "bannerColor",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "banner": {
-          "name": "banner",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bio": {
-          "name": "bio",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "accentColor": {
-          "name": "accentColor",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "emailVerifiedAt": {
-          "name": "emailVerifiedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "User_email_key": {
-          "name": "User_email_key",
-          "columns": [
-            {
-              "expression": "email",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "User_username_key": {
-          "name": "User_username_key",
-          "columns": [
-            {
-              "expression": "username",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.MessagePin": {
-      "name": "MessagePin",
-      "schema": "",
-      "columns": {
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "channelId": {
-          "name": "channelId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pinnedById": {
-          "name": "pinnedById",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pinnedAt": {
-          "name": "pinnedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "MessagePin_channelId_idx": {
-          "name": "MessagePin_channelId_idx",
-          "columns": [
-            {
-              "expression": "channelId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "MessagePin_pinnedById_idx": {
-          "name": "MessagePin_pinnedById_idx",
-          "columns": [
-            {
-              "expression": "pinnedById",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "MessagePin_channelId_fkey": {
-          "name": "MessagePin_channelId_fkey",
-          "tableFrom": "MessagePin",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "channelId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "MessagePin_messageId_fkey": {
-          "name": "MessagePin_messageId_fkey",
-          "tableFrom": "MessagePin",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "MessagePin_pinnedById_fkey": {
-          "name": "MessagePin_pinnedById_fkey",
-          "tableFrom": "MessagePin",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "pinnedById"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Attachment": {
-      "name": "Attachment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "filename": {
-          "name": "filename",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "contentType": {
-          "name": "contentType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "flags": {
-          "name": "flags",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "Attachment_messageId_fkey": {
-          "name": "Attachment_messageId_fkey",
-          "tableFrom": "Attachment",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Video": {
-      "name": "Video",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "embedId": {
-          "name": "embedId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "Video_embedId_key": {
-          "name": "Video_embedId_key",
-          "columns": [
-            {
-              "expression": "embedId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Video_embedId_fkey": {
-          "name": "Video_embedId_fkey",
-          "tableFrom": "Video",
-          "tableTo": "Embed",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "embedId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.NotificationToken": {
-      "name": "NotificationToken",
-      "schema": "",
-      "columns": {
-        "token": {
-          "name": "token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "deviceId": {
-          "name": "deviceId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "NotificationToken_userId_fkey": {
-          "name": "NotificationToken_userId_fkey",
-          "tableFrom": "NotificationToken",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Call": {
-      "name": "Call",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "endedTimestamp": {
-          "name": "endedTimestamp",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "Call_messageId_key": {
-          "name": "Call_messageId_key",
-          "columns": [
-            {
-              "expression": "messageId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Call_messageId_fkey": {
-          "name": "Call_messageId_fkey",
-          "tableFrom": "Call",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Settings": {
-      "name": "Settings",
-      "schema": "",
-      "columns": {
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "json": {
-          "name": "json",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "Settings_userId_key": {
-          "name": "Settings_userId_key",
-          "columns": [
-            {
-              "expression": "userId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Settings_userId_fkey": {
-          "name": "Settings_userId_fkey",
-          "tableFrom": "Settings",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.KnownApplication": {
-      "name": "KnownApplication",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "names": {
-          "name": "names",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "exeName": {
-          "name": "exeName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "igdbId": {
-          "name": "igdbId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "contributorId": {
-          "name": "contributorId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deletedAt": {
-          "name": "deletedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "commandLinePatterns": {
-          "name": "commandLinePatterns",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "active": {
-          "name": "active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        }
-      },
-      "indexes": {
-        "KnownApplication_names_idx": {
-          "name": "KnownApplication_names_idx",
-          "columns": [
-            {
-              "expression": "names",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "array_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "KnownApplication_contributorId_fkey": {
-          "name": "KnownApplication_contributorId_fkey",
-          "tableFrom": "KnownApplication",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "contributorId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.MessageReference": {
-      "name": "MessageReference",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "referrerMessageId": {
-          "name": "referrerMessageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "channelId": {
-          "name": "channelId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "MessageReference_referrerMessageId_idx": {
-          "name": "MessageReference_referrerMessageId_idx",
-          "columns": [
-            {
-              "expression": "referrerMessageId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "MessageReference_referrerMessageId_key": {
-          "name": "MessageReference_referrerMessageId_key",
-          "columns": [
-            {
-              "expression": "referrerMessageId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "MessageReference_messageId_fkey": {
-          "name": "MessageReference_messageId_fkey",
-          "tableFrom": "MessageReference",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "MessageReference_channelId_fkey": {
-          "name": "MessageReference_channelId_fkey",
-          "tableFrom": "MessageReference",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "channelId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "MessageReference_referrerMessageId_fkey": {
-          "name": "MessageReference_referrerMessageId_fkey",
-          "tableFrom": "MessageReference",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "referrerMessageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public._channel_recipients": {
-      "name": "_channel_recipients",
-      "schema": "",
-      "columns": {
-        "A": {
-          "name": "A",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "B": {
-          "name": "B",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_channel_recipients_B_index": {
-          "name": "_channel_recipients_B_index",
-          "columns": [
-            {
-              "expression": "B",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_channel_recipients_A_fkey": {
-          "name": "_channel_recipients_A_fkey",
-          "tableFrom": "_channel_recipients",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "A"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "_channel_recipients_B_fkey": {
-          "name": "_channel_recipients_B_fkey",
-          "tableFrom": "_channel_recipients",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "B"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "_channel_recipients_AB_pkey": {
-          "name": "_channel_recipients_AB_pkey",
-          "columns": [
-            "A",
-            "B"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public._channel_temp_deleted": {
-      "name": "_channel_temp_deleted",
-      "schema": "",
-      "columns": {
-        "A": {
-          "name": "A",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "B": {
-          "name": "B",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_channel_temp_deleted_B_index": {
-          "name": "_channel_temp_deleted_B_index",
-          "columns": [
-            {
-              "expression": "B",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_channel_temp_deleted_A_fkey": {
-          "name": "_channel_temp_deleted_A_fkey",
-          "tableFrom": "_channel_temp_deleted",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "A"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "_channel_temp_deleted_B_fkey": {
-          "name": "_channel_temp_deleted_B_fkey",
-          "tableFrom": "_channel_temp_deleted",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "B"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "_channel_temp_deleted_AB_pkey": {
-          "name": "_channel_temp_deleted_AB_pkey",
-          "columns": [
-            "A",
-            "B"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public._message_mentions": {
-      "name": "_message_mentions",
-      "schema": "",
-      "columns": {
-        "A": {
-          "name": "A",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "B": {
-          "name": "B",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_message_mentions_B_index": {
-          "name": "_message_mentions_B_index",
-          "columns": [
-            {
-              "expression": "B",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_message_mentions_A_fkey": {
-          "name": "_message_mentions_A_fkey",
-          "tableFrom": "_message_mentions",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "A"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "_message_mentions_B_fkey": {
-          "name": "_message_mentions_B_fkey",
-          "tableFrom": "_message_mentions",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "B"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "_message_mentions_AB_pkey": {
-          "name": "_message_mentions_AB_pkey",
-          "columns": [
-            "A",
-            "B"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public._participated_calls": {
-      "name": "_participated_calls",
-      "schema": "",
-      "columns": {
-        "A": {
-          "name": "A",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "B": {
-          "name": "B",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "_participated_calls_B_index": {
-          "name": "_participated_calls_B_index",
-          "columns": [
-            {
-              "expression": "B",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "_participated_calls_A_fkey": {
-          "name": "_participated_calls_A_fkey",
-          "tableFrom": "_participated_calls",
-          "tableTo": "Call",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "A"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "_participated_calls_B_fkey": {
-          "name": "_participated_calls_B_fkey",
-          "tableFrom": "_participated_calls",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "B"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "_participated_calls_AB_pkey": {
-          "name": "_participated_calls_AB_pkey",
-          "columns": [
-            "A",
-            "B"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.ReadState": {
-      "name": "ReadState",
-      "schema": "",
-      "columns": {
-        "channelId": {
-          "name": "channelId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lastReadMessageId": {
-          "name": "lastReadMessageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "ReadState_channelId_fkey": {
-          "name": "ReadState_channelId_fkey",
-          "tableFrom": "ReadState",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "channelId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "ReadState_userId_fkey": {
-          "name": "ReadState_userId_fkey",
-          "tableFrom": "ReadState",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "ReadState_lastReadMessageId_fkey": {
-          "name": "ReadState_lastReadMessageId_fkey",
-          "tableFrom": "ReadState",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "lastReadMessageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "ReadState_pkey": {
-          "name": "ReadState_pkey",
-          "columns": [
-            "channelId",
-            "userId"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.ReactionAggregate": {
-      "name": "ReactionAggregate",
-      "schema": "",
-      "columns": {
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "emojiKey": {
-          "name": "emojiKey",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "count": {
-          "name": "count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "ReactionAggregate_messageId_fkey": {
-          "name": "ReactionAggregate_messageId_fkey",
-          "tableFrom": "ReactionAggregate",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "ReactionAggregate_pkey": {
-          "name": "ReactionAggregate_pkey",
-          "columns": [
-            "messageId",
-            "emojiKey"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.Reaction": {
-      "name": "Reaction",
-      "schema": "",
-      "columns": {
-        "channelId": {
-          "name": "channelId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "messageId": {
-          "name": "messageId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "emojiKey": {
-          "name": "emojiKey",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "Reaction_messageId_emojiKey_idx": {
-          "name": "Reaction_messageId_emojiKey_idx",
-          "columns": [
-            {
-              "expression": "messageId",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "int8_ops",
-              "isExpression": false
+   "id": "00000000-0000-0000-0000-000000000000",
+   "prevId": "",
+   "version": "7",
+   "dialect": "postgresql",
+   "tables": {
+      "public.IdentityProvider": {
+         "name": "IdentityProvider",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
             },
-            {
-              "expression": "emojiKey",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops",
-              "isExpression": false
+            "providerUserId": {
+               "name": "providerUserId",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "completed": {
+               "name": "completed",
+               "type": "boolean",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "providerType": {
+               "name": "providerType",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "refreshToken": {
+               "name": "refreshToken",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
             }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
+         },
+         "indexes": {
+            "IdentityProvider_providerUserId_key": {
+               "name": "IdentityProvider_providerUserId_key",
+               "columns": [
+                  {
+                     "expression": "providerUserId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "text_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "IdentityProvider_userId_fkey": {
+               "name": "IdentityProvider_userId_fkey",
+               "tableFrom": "IdentityProvider",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
       },
-      "foreignKeys": {
-        "Reaction_messageId_fkey": {
-          "name": "Reaction_messageId_fkey",
-          "tableFrom": "Reaction",
-          "tableTo": "Message",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "messageId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "Reaction_channelId_fkey": {
-          "name": "Reaction_channelId_fkey",
-          "tableFrom": "Reaction",
-          "tableTo": "Channel",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "channelId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "Reaction_userId_fkey": {
-          "name": "Reaction_userId_fkey",
-          "tableFrom": "Reaction",
-          "tableTo": "User",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        }
+      "public.Embed": {
+         "name": "Embed",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "title": {
+               "name": "title",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "type": {
+               "name": "type",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "description": {
+               "name": "description",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "url": {
+               "name": "url",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "timestamp": {
+               "name": "timestamp",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {},
+         "foreignKeys": {
+            "Embed_messageId_fkey": {
+               "name": "Embed_messageId_fkey",
+               "tableFrom": "Embed",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
       },
-      "compositePrimaryKeys": {
-        "Reaction_pkey": {
-          "name": "Reaction_pkey",
-          "columns": [
-            "channelId",
-            "messageId",
-            "userId",
-            "emojiKey"
-          ]
-        }
+      "public.Thumbnail": {
+         "name": "Thumbnail",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "width": {
+               "name": "width",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "height": {
+               "name": "height",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "url": {
+               "name": "url",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "embedId": {
+               "name": "embedId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "Thumbnail_embedId_key": {
+               "name": "Thumbnail_embedId_key",
+               "columns": [
+                  {
+                     "expression": "embedId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Thumbnail_embedId_fkey": {
+               "name": "Thumbnail_embedId_fkey",
+               "tableFrom": "Thumbnail",
+               "tableTo": "Embed",
+               "schemaTo": "public",
+               "columnsFrom": ["embedId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
       },
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    }
-  },
-  "enums": {},
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "views": {},
-  "_meta": {
-    "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
-    "tables": {
-      "KnownApplication": {
-        "columns": {
-          "names": {
-            "isArray": true,
-            "dimensions": 1,
-            "rawType": "text"
-          },
-          "commandLinePatterns": {
-            "isArray": true,
-            "dimensions": 1,
-            "rawType": "text"
-          }
-        }
+      "public.Relationship": {
+         "name": "Relationship",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "type": {
+               "name": "type",
+               "type": "smallint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "nickname": {
+               "name": "nickname",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "since": {
+               "name": "since",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "ownerId": {
+               "name": "ownerId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+               "name": "updatedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {
+            "Relationship_ownerId_idx": {
+               "name": "Relationship_ownerId_idx",
+               "columns": [
+                  {
+                     "expression": "ownerId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Relationship_ownerId_fkey": {
+               "name": "Relationship_ownerId_fkey",
+               "tableFrom": "Relationship",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["ownerId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "Relationship_userId_fkey": {
+               "name": "Relationship_userId_fkey",
+               "tableFrom": "Relationship",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Message": {
+         "name": "Message",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "authorId": {
+               "name": "authorId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "channelId": {
+               "name": "channelId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "content": {
+               "name": "content",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "timestamp": {
+               "name": "timestamp",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "editedTimestamp": {
+               "name": "editedTimestamp",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "pinned": {
+               "name": "pinned",
+               "type": "boolean",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "type": {
+               "name": "type",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "flags": {
+               "name": "flags",
+               "type": "smallint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "Message_channelId_idx": {
+               "name": "Message_channelId_idx",
+               "columns": [
+                  {
+                     "expression": "channelId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Message_authorId_fkey": {
+               "name": "Message_authorId_fkey",
+               "tableFrom": "Message",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["authorId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "Message_channelId_fkey": {
+               "name": "Message_channelId_fkey",
+               "tableFrom": "Message",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["channelId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Channel": {
+         "name": "Channel",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "icon": {
+               "name": "icon",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "lastMessageId": {
+               "name": "lastMessageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "name": {
+               "name": "name",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "ownerId": {
+               "name": "ownerId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "type": {
+               "name": "type",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+               "name": "updatedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {
+            "Channel_type_idx": {
+               "name": "Channel_type_idx",
+               "columns": [
+                  {
+                     "expression": "type",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int4_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Channel_lastMessageId_fkey": {
+               "name": "Channel_lastMessageId_fkey",
+               "tableFrom": "Channel",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["lastMessageId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            },
+            "Channel_ownerId_fkey": {
+               "name": "Channel_ownerId_fkey",
+               "tableFrom": "Channel",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["ownerId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.EmailVerification": {
+         "name": "EmailVerification",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "expiresAt": {
+               "name": "expiresAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "code": {
+               "name": "code",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "purpose": {
+               "name": "purpose",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "'email_change'"
+            },
+            "email": {
+               "name": "email",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "EmailVerification_userId_key": {
+               "name": "EmailVerification_userId_key",
+               "columns": [
+                  {
+                     "expression": "userId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "EmailVerification_userId_fkey": {
+               "name": "EmailVerification_userId_fkey",
+               "tableFrom": "EmailVerification",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.User": {
+         "name": "User",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "username": {
+               "name": "username",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "displayName": {
+               "name": "displayName",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "email": {
+               "name": "email",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "avatar": {
+               "name": "avatar",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "password": {
+               "name": "password",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "flags": {
+               "name": "flags",
+               "type": "smallint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "system": {
+               "name": "system",
+               "type": "boolean",
+               "primaryKey": false,
+               "notNull": true,
+               "default": false
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+               "name": "updatedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "bannerColor": {
+               "name": "bannerColor",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "banner": {
+               "name": "banner",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "bio": {
+               "name": "bio",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "accentColor": {
+               "name": "accentColor",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "emailVerifiedAt": {
+               "name": "emailVerifiedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {
+            "User_email_key": {
+               "name": "User_email_key",
+               "columns": [
+                  {
+                     "expression": "email",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "text_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            },
+            "User_username_key": {
+               "name": "User_username_key",
+               "columns": [
+                  {
+                     "expression": "username",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "text_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {},
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.MessagePin": {
+         "name": "MessagePin",
+         "schema": "",
+         "columns": {
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "channelId": {
+               "name": "channelId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "pinnedById": {
+               "name": "pinnedById",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "pinnedAt": {
+               "name": "pinnedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            }
+         },
+         "indexes": {
+            "MessagePin_channelId_idx": {
+               "name": "MessagePin_channelId_idx",
+               "columns": [
+                  {
+                     "expression": "channelId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            },
+            "MessagePin_pinnedById_idx": {
+               "name": "MessagePin_pinnedById_idx",
+               "columns": [
+                  {
+                     "expression": "pinnedById",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "MessagePin_channelId_fkey": {
+               "name": "MessagePin_channelId_fkey",
+               "tableFrom": "MessagePin",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["channelId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "MessagePin_messageId_fkey": {
+               "name": "MessagePin_messageId_fkey",
+               "tableFrom": "MessagePin",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "MessagePin_pinnedById_fkey": {
+               "name": "MessagePin_pinnedById_fkey",
+               "tableFrom": "MessagePin",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["pinnedById"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Attachment": {
+         "name": "Attachment",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "filename": {
+               "name": "filename",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "description": {
+               "name": "description",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "contentType": {
+               "name": "contentType",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "size": {
+               "name": "size",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "url": {
+               "name": "url",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "width": {
+               "name": "width",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "height": {
+               "name": "height",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "flags": {
+               "name": "flags",
+               "type": "smallint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {},
+         "foreignKeys": {
+            "Attachment_messageId_fkey": {
+               "name": "Attachment_messageId_fkey",
+               "tableFrom": "Attachment",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Video": {
+         "name": "Video",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "width": {
+               "name": "width",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "height": {
+               "name": "height",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "url": {
+               "name": "url",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "embedId": {
+               "name": "embedId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "Video_embedId_key": {
+               "name": "Video_embedId_key",
+               "columns": [
+                  {
+                     "expression": "embedId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Video_embedId_fkey": {
+               "name": "Video_embedId_fkey",
+               "tableFrom": "Video",
+               "tableTo": "Embed",
+               "schemaTo": "public",
+               "columnsFrom": ["embedId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.NotificationToken": {
+         "name": "NotificationToken",
+         "schema": "",
+         "columns": {
+            "token": {
+               "name": "token",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "deviceId": {
+               "name": "deviceId",
+               "type": "text",
+               "primaryKey": true,
+               "notNull": true
+            }
+         },
+         "indexes": {},
+         "foreignKeys": {
+            "NotificationToken_userId_fkey": {
+               "name": "NotificationToken_userId_fkey",
+               "tableFrom": "NotificationToken",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Call": {
+         "name": "Call",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "endedTimestamp": {
+               "name": "endedTimestamp",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {
+            "Call_messageId_key": {
+               "name": "Call_messageId_key",
+               "columns": [
+                  {
+                     "expression": "messageId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Call_messageId_fkey": {
+               "name": "Call_messageId_fkey",
+               "tableFrom": "Call",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Settings": {
+         "name": "Settings",
+         "schema": "",
+         "columns": {
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "json": {
+               "name": "json",
+               "type": "jsonb",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "Settings_userId_key": {
+               "name": "Settings_userId_key",
+               "columns": [
+                  {
+                     "expression": "userId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Settings_userId_fkey": {
+               "name": "Settings_userId_fkey",
+               "tableFrom": "Settings",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.KnownApplication": {
+         "name": "KnownApplication",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "serial",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "names": {
+               "name": "names",
+               "type": "text[]",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "exeName": {
+               "name": "exeName",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "igdbId": {
+               "name": "igdbId",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "contributorId": {
+               "name": "contributorId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "createdAt": {
+               "name": "createdAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": true,
+               "default": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+               "name": "updatedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "deletedAt": {
+               "name": "deletedAt",
+               "type": "timestamp(3)",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "commandLinePatterns": {
+               "name": "commandLinePatterns",
+               "type": "text[]",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "active": {
+               "name": "active",
+               "type": "boolean",
+               "primaryKey": false,
+               "notNull": true,
+               "default": false
+            }
+         },
+         "indexes": {
+            "KnownApplication_names_idx": {
+               "name": "KnownApplication_names_idx",
+               "columns": [
+                  {
+                     "expression": "names",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "array_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "KnownApplication_contributorId_fkey": {
+               "name": "KnownApplication_contributorId_fkey",
+               "tableFrom": "KnownApplication",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["contributorId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.MessageReference": {
+         "name": "MessageReference",
+         "schema": "",
+         "columns": {
+            "id": {
+               "name": "id",
+               "type": "bigint",
+               "primaryKey": true,
+               "notNull": true
+            },
+            "type": {
+               "name": "type",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "referrerMessageId": {
+               "name": "referrerMessageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            },
+            "channelId": {
+               "name": "channelId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "MessageReference_referrerMessageId_idx": {
+               "name": "MessageReference_referrerMessageId_idx",
+               "columns": [
+                  {
+                     "expression": "referrerMessageId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            },
+            "MessageReference_referrerMessageId_key": {
+               "name": "MessageReference_referrerMessageId_key",
+               "columns": [
+                  {
+                     "expression": "referrerMessageId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": true,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "MessageReference_messageId_fkey": {
+               "name": "MessageReference_messageId_fkey",
+               "tableFrom": "MessageReference",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            },
+            "MessageReference_channelId_fkey": {
+               "name": "MessageReference_channelId_fkey",
+               "tableFrom": "MessageReference",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["channelId"],
+               "columnsTo": ["id"],
+               "onDelete": "restrict",
+               "onUpdate": "cascade"
+            },
+            "MessageReference_referrerMessageId_fkey": {
+               "name": "MessageReference_referrerMessageId_fkey",
+               "tableFrom": "MessageReference",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["referrerMessageId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {},
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public._channel_recipients": {
+         "name": "_channel_recipients",
+         "schema": "",
+         "columns": {
+            "A": {
+               "name": "A",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "B": {
+               "name": "B",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "_channel_recipients_B_index": {
+               "name": "_channel_recipients_B_index",
+               "columns": [
+                  {
+                     "expression": "B",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "_channel_recipients_A_fkey": {
+               "name": "_channel_recipients_A_fkey",
+               "tableFrom": "_channel_recipients",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["A"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "_channel_recipients_B_fkey": {
+               "name": "_channel_recipients_B_fkey",
+               "tableFrom": "_channel_recipients",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["B"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "_channel_recipients_AB_pkey": {
+               "name": "_channel_recipients_AB_pkey",
+               "columns": ["A", "B"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public._channel_temp_deleted": {
+         "name": "_channel_temp_deleted",
+         "schema": "",
+         "columns": {
+            "A": {
+               "name": "A",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "B": {
+               "name": "B",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "_channel_temp_deleted_B_index": {
+               "name": "_channel_temp_deleted_B_index",
+               "columns": [
+                  {
+                     "expression": "B",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "_channel_temp_deleted_A_fkey": {
+               "name": "_channel_temp_deleted_A_fkey",
+               "tableFrom": "_channel_temp_deleted",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["A"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "_channel_temp_deleted_B_fkey": {
+               "name": "_channel_temp_deleted_B_fkey",
+               "tableFrom": "_channel_temp_deleted",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["B"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "_channel_temp_deleted_AB_pkey": {
+               "name": "_channel_temp_deleted_AB_pkey",
+               "columns": ["A", "B"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public._message_mentions": {
+         "name": "_message_mentions",
+         "schema": "",
+         "columns": {
+            "A": {
+               "name": "A",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "B": {
+               "name": "B",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "_message_mentions_B_index": {
+               "name": "_message_mentions_B_index",
+               "columns": [
+                  {
+                     "expression": "B",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "_message_mentions_A_fkey": {
+               "name": "_message_mentions_A_fkey",
+               "tableFrom": "_message_mentions",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["A"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "_message_mentions_B_fkey": {
+               "name": "_message_mentions_B_fkey",
+               "tableFrom": "_message_mentions",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["B"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "_message_mentions_AB_pkey": {
+               "name": "_message_mentions_AB_pkey",
+               "columns": ["A", "B"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public._participated_calls": {
+         "name": "_participated_calls",
+         "schema": "",
+         "columns": {
+            "A": {
+               "name": "A",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "B": {
+               "name": "B",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "_participated_calls_B_index": {
+               "name": "_participated_calls_B_index",
+               "columns": [
+                  {
+                     "expression": "B",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "_participated_calls_A_fkey": {
+               "name": "_participated_calls_A_fkey",
+               "tableFrom": "_participated_calls",
+               "tableTo": "Call",
+               "schemaTo": "public",
+               "columnsFrom": ["A"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "_participated_calls_B_fkey": {
+               "name": "_participated_calls_B_fkey",
+               "tableFrom": "_participated_calls",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["B"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "_participated_calls_AB_pkey": {
+               "name": "_participated_calls_AB_pkey",
+               "columns": ["A", "B"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.ReadState": {
+         "name": "ReadState",
+         "schema": "",
+         "columns": {
+            "channelId": {
+               "name": "channelId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "lastReadMessageId": {
+               "name": "lastReadMessageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": false
+            }
+         },
+         "indexes": {},
+         "foreignKeys": {
+            "ReadState_channelId_fkey": {
+               "name": "ReadState_channelId_fkey",
+               "tableFrom": "ReadState",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["channelId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "ReadState_userId_fkey": {
+               "name": "ReadState_userId_fkey",
+               "tableFrom": "ReadState",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "cascade",
+               "onUpdate": "cascade"
+            },
+            "ReadState_lastReadMessageId_fkey": {
+               "name": "ReadState_lastReadMessageId_fkey",
+               "tableFrom": "ReadState",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["lastReadMessageId"],
+               "columnsTo": ["id"],
+               "onDelete": "set null",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "ReadState_pkey": {
+               "name": "ReadState_pkey",
+               "columns": ["channelId", "userId"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.ReactionAggregate": {
+         "name": "ReactionAggregate",
+         "schema": "",
+         "columns": {
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "emojiKey": {
+               "name": "emojiKey",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "count": {
+               "name": "count",
+               "type": "integer",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {},
+         "foreignKeys": {
+            "ReactionAggregate_messageId_fkey": {
+               "name": "ReactionAggregate_messageId_fkey",
+               "tableFrom": "ReactionAggregate",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "restrict",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "ReactionAggregate_pkey": {
+               "name": "ReactionAggregate_pkey",
+               "columns": ["messageId", "emojiKey"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
+      },
+      "public.Reaction": {
+         "name": "Reaction",
+         "schema": "",
+         "columns": {
+            "channelId": {
+               "name": "channelId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "messageId": {
+               "name": "messageId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "userId": {
+               "name": "userId",
+               "type": "bigint",
+               "primaryKey": false,
+               "notNull": true
+            },
+            "emojiKey": {
+               "name": "emojiKey",
+               "type": "text",
+               "primaryKey": false,
+               "notNull": true
+            }
+         },
+         "indexes": {
+            "Reaction_messageId_emojiKey_idx": {
+               "name": "Reaction_messageId_emojiKey_idx",
+               "columns": [
+                  {
+                     "expression": "messageId",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "int8_ops",
+                     "isExpression": false
+                  },
+                  {
+                     "expression": "emojiKey",
+                     "asc": true,
+                     "nulls": "last",
+                     "opclass": "text_ops",
+                     "isExpression": false
+                  }
+               ],
+               "isUnique": false,
+               "concurrently": false,
+               "method": "btree",
+               "with": {}
+            }
+         },
+         "foreignKeys": {
+            "Reaction_messageId_fkey": {
+               "name": "Reaction_messageId_fkey",
+               "tableFrom": "Reaction",
+               "tableTo": "Message",
+               "schemaTo": "public",
+               "columnsFrom": ["messageId"],
+               "columnsTo": ["id"],
+               "onDelete": "restrict",
+               "onUpdate": "cascade"
+            },
+            "Reaction_channelId_fkey": {
+               "name": "Reaction_channelId_fkey",
+               "tableFrom": "Reaction",
+               "tableTo": "Channel",
+               "schemaTo": "public",
+               "columnsFrom": ["channelId"],
+               "columnsTo": ["id"],
+               "onDelete": "restrict",
+               "onUpdate": "cascade"
+            },
+            "Reaction_userId_fkey": {
+               "name": "Reaction_userId_fkey",
+               "tableFrom": "Reaction",
+               "tableTo": "User",
+               "schemaTo": "public",
+               "columnsFrom": ["userId"],
+               "columnsTo": ["id"],
+               "onDelete": "restrict",
+               "onUpdate": "cascade"
+            }
+         },
+         "compositePrimaryKeys": {
+            "Reaction_pkey": {
+               "name": "Reaction_pkey",
+               "columns": ["channelId", "messageId", "userId", "emojiKey"]
+            }
+         },
+         "uniqueConstraints": {},
+         "checkConstraints": {},
+         "policies": {},
+         "isRLSEnabled": false
       }
-    }
-  }
+   },
+   "enums": {},
+   "schemas": {},
+   "sequences": {},
+   "roles": {},
+   "policies": {},
+   "views": {},
+   "_meta": {
+      "schemas": {},
+      "tables": {},
+      "columns": {}
+   },
+   "internal": {
+      "tables": {
+         "KnownApplication": {
+            "columns": {
+               "names": {
+                  "isArray": true,
+                  "dimensions": 1,
+                  "rawType": "text"
+               },
+               "commandLinePatterns": {
+                  "isArray": true,
+                  "dimensions": 1,
+                  "rawType": "text"
+               }
+            }
+         }
+      }
+   }
 }

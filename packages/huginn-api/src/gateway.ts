@@ -121,8 +121,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -167,8 +165,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -218,8 +214,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -312,10 +306,7 @@ export class Gateway extends SharedWebsocket<Events> {
                ...voiceState,
             });
 
-            const [tokenResult, _voiceStateResult] = await Promise.allSettled([
-               this.waitForVoiceServerUpdate(),
-               this.waitForVoiceStateUpdate(channelId),
-            ]);
+            const [tokenResult, _voiceStateResult] = await Promise.allSettled([this.waitForVoiceServerUpdate(), this.waitForVoiceStateUpdate(channelId)]);
 
             span.setAttribute("token.result", tokenResult.status);
 
@@ -323,8 +314,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -347,8 +336,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -366,12 +353,8 @@ export class Gateway extends SharedWebsocket<Events> {
             "params.is_screen_sharing": !!options.isScreenSharing,
          });
 
-         try {
-            this.sendVoiceStateUpdate({ channelId, guildId, ...options });
-            return await this.waitForVoiceStateUpdate(channelId);
-         } finally {
-            span.end();
-         }
+         this.sendVoiceStateUpdate({ channelId, guildId, ...options });
+         return await this.waitForVoiceStateUpdate(channelId);
       });
    }
 
@@ -387,18 +370,14 @@ export class Gateway extends SharedWebsocket<Events> {
             "params.activities_count": options.activities.length,
          });
 
-         try {
-            if (this.status !== "authenticated") return;
+         if (this.status !== "authenticated") return;
 
-            const updatePresenceData: GatewayPayload = {
-               op: GatewayOperations.PRESENCE_UPDATE,
-               d: { status: options.status, activities: options.activities },
-            };
+         const updatePresenceData: GatewayPayload = {
+            op: GatewayOperations.PRESENCE_UPDATE,
+            d: { status: options.status, activities: options.activities },
+         };
 
-            this.send(updatePresenceData);
-         } finally {
-            span.end();
-         }
+         this.send(updatePresenceData);
       });
    }
 
@@ -448,8 +427,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -485,8 +462,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -568,8 +543,6 @@ export class Gateway extends SharedWebsocket<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

@@ -163,8 +163,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -202,8 +200,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -260,8 +256,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -300,8 +294,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -329,8 +321,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             return undefined;
-         } finally {
-            span.end();
          }
       });
    }
@@ -372,8 +362,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -407,8 +395,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -470,8 +456,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -511,8 +495,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -547,8 +529,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -610,8 +590,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -660,8 +638,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -682,8 +658,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -704,8 +678,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -726,8 +698,6 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
