@@ -28,8 +28,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -47,8 +45,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -65,8 +61,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -87,8 +81,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -106,8 +98,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -124,8 +114,6 @@ export class VoiceDeviceManager {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

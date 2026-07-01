@@ -175,8 +175,6 @@ export class VoiceManager<V extends Voice = Voice> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -192,8 +190,6 @@ export class VoiceManager<V extends Voice = Voice> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

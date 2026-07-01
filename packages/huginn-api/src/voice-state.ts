@@ -64,8 +64,6 @@ export class VoiceState extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

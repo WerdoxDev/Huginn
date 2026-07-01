@@ -29,16 +29,8 @@ export class VoiceStreamManager extends EventEmitter<Events> {
 
    public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceStream.openStream", async (span) => {
-         const maxVideoBitrate = clamp(
-            options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE,
-            CONSTANTS.MIN_VIDEO_BITRATE,
-            CONSTANTS.MAX_VIDEO_BITRATE,
-         );
-         const maxAudioBitrate = clamp(
-            options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE,
-            CONSTANTS.MIN_AUDIO_BITRATE,
-            CONSTANTS.MAX_AUDIO_BITRATE,
-         );
+         const maxVideoBitrate = clamp(options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
+         const maxAudioBitrate = clamp(options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
          const scalabilityMode = "L1T3";
          const useSimulcast = options?.useSimulcast ?? true;
 
@@ -76,8 +68,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -127,8 +117,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -172,8 +160,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -213,8 +199,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -246,8 +230,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -266,8 +248,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -286,8 +266,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -304,8 +282,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -322,8 +298,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -343,8 +317,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
