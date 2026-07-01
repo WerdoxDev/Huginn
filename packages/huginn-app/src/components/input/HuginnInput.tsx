@@ -72,8 +72,10 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
    const inputContext = useContext(InputContext);
    // const [cursor, setCursor] = useState<number | null>(null);
 
+   const { className, headless, lowercase, ...rest } = props;
+
    function onChange(e: ChangeEvent<HTMLInputElement>) {
-      if (props.lowercase) {
+      if (lowercase) {
          e.target.value = e.target.value.toLowerCase();
       }
       inputContext.onChange?.(e);
@@ -90,8 +92,8 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
          value={inputContext.value}
          ref={inputContext.ref}
          className={clsx(
-            !props.headless && "placeholder-text/60 w-full bg-transparent p-2 text-white outline-hidden disabled:cursor-not-allowed",
-            props.className,
+            !headless && "placeholder-text/60 w-full bg-transparent p-2 text-white outline-hidden disabled:cursor-not-allowed",
+            className,
          )}
          disabled={inputContext.disabled}
          type={inputContext.type ?? "text"}
@@ -102,6 +104,7 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
          onFocus={inputContext.onFocus}
          onBlur={inputContext.onBlur}
          name={inputContext.name}
+         {...rest}
       />
    );
 }

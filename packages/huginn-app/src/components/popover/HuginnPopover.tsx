@@ -4,6 +4,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
+import { usePopovers } from "@stores/popoverStore";
 import clsx from "clsx";
 import { createContext, type CSSProperties, type ReactNode, useContext, useMemo, useState } from "react";
 

@@ -2,6 +2,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
 import { MessageType, type Snowflake } from "@huginn/shared";
@@ -36,6 +37,7 @@ function shallowEqual(a: object, b: object) {
 export default function ChannelMessages(props: { messages: AppMessage[]; channel: AppDirectChannel }) {
    const client = useClient();
    const queryClient = useQueryClient();
+   const isMobile = useIsMobile();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
@@ -261,6 +263,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
                         lastMessage={processedMessages[i - 1]}
                         onVisibilityChanged={onMessageVisibilityChanged}
                         channelId={props.channel.id}
+                        options={{ hideActions: isMobile }}
                      />
                   ))}
                </ol>

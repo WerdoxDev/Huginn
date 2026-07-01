@@ -79,10 +79,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    const { toggle: toggleEmojiPicker } = usePopover("emoji_picker", { onEmojiSelect: insertEmoji });
 
-   const { isKeyboardOpen, lastKeyboardHeight } = useInset();
+   const { isKeyboardOpen, lastKeyboardHeight, focusedElementRef } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
 
-   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpen);
+   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || (isKeyboardOpen && ReactEditor.isFocused(editor)));
+   const isKeyboardOpenOnEditor = isKeyboardOpen && focusedElementRef?.current === editorRef.current;
 
    // Focus on the message box when we change channel
    useEffect(() => {
@@ -119,7 +120,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          "focusout",
          (e) => {
             if (
-               e.target === editorRef.current &&
+               // e.target === editorRef.current &&
                isKeyboardOpen &&
                (e.relatedTarget === null ||
                   (e.relatedTarget as HTMLElement).closest("[data-keyboard-no-close]") ||
@@ -135,11 +136,12 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => controller.abort();
    }, [isKeyboardOpen]);
 
-   useEffect(() => {
-      if (isKeyboardOpen) {
-         setActiveMobilePanel(null);
-      }
-   }, [isKeyboardOpen]);
+   // useEffect(() => {
+   //    console.log("CHANGE");
+   //    if (isKeyboardOpen) {
+   //       setActiveMobilePanel(null);
+   //    }
+   // }, [isKeyboardOpen]);
 
    useBackHandler("message-box", 100, () => {
       if (isKeyboardOpen || activeMobilePanel) {
@@ -153,6 +155,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       let newState = prevState === panel ? null : panel;
       if (!newState && !isKeyboardOpen) {
          ReactEditor.focus(editor);
+         return;
+      }
+      if (!newState && isKeyboardOpen) {
          return;
       }
       setActiveMobilePanel(newState);
@@ -188,7 +193,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         (isMobileEnvironment ? (
                            <FilePickerButton
                               onClick={() => handleMobilePanelClick("files")}
-                              isActive={activeMobilePanel === "files" && !isKeyboardOpen}
+                              isActive={activeMobilePanel === "files" && !isKeyboardOpenOnEditor}
                            />
                         ) : (
                            <Tooltip>
@@ -201,7 +206,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      {isMobileEnvironment && (
                         <EmojiPickerButton
                            onClick={() => handleMobilePanelClick("emoji")}
-                           isActive={activeMobilePanel === "emoji" && !isKeyboardOpen}
+                           isActive={activeMobilePanel === "emoji" && !isKeyboardOpenOnEditor}
                         />
                      )}
                   </div>
@@ -227,18 +232,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                   <div className="flex gap-x-2 p-2">
                      {!isMobileEnvironment && (
-                        <EmojiPickerButton onClick={toggleEmojiPicker} isActive={activeMobilePanel === "emoji" && !isKeyboardOpen} />
+                        <EmojiPickerButton onClick={toggleEmojiPicker} isActive={activeMobilePanel === "emoji" && !isKeyboardOpenOnEditor} />
                      )}
-                     {/* {!isMobileEnvironment && <EmojiPickerRawPanel onEmojiSelect={insertEmoji} />} */}
-                     {/* <HuginnButton
-                        color="primary"
-                        className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
-                        type="button"
-                        onClick={() => sendMessage(MessageFlags.NONE)}
-                        data-keyboard-no-close
-                     >
-                        <IconLetsIconsSendHorFill className="text-text size-full" />
-                     </HuginnButton> */}
                      <HuginnButton
                         color="primary"
                         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"

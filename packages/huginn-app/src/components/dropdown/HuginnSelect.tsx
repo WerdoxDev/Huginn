@@ -5,6 +5,7 @@ import HuginnLabel from "@components/HuginnLabel";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginn/shared";
+import { usePopovers } from "@stores/popoverStore";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";
 
@@ -109,12 +110,17 @@ function ItemsWrapper(props: {
    const context = useContext(SelectContext);
    const sideOffset = props.sideOffset ?? 4;
    const alignOffset = props.alignOffset ?? 0;
+   const popovers = usePopovers();
+
+   function isAnyPopoverOpen() {
+      return Object.values(popovers).some((popover) => popover && "isOpen" in popover && popover.isOpen);
+   }
 
    if (context.isMobile) {
       return (
          <Drawer.Root open={context.isDrawerOpen} onOpenChange={context.setIsDrawerOpen}>
             <Drawer.Portal>
-               <DrawerBackdrop forceRender />
+               {!isAnyPopoverOpen() && <DrawerBackdrop forceRender />}
                <DrawerPopup>
                   <div className={clsx("flex flex-col overflow-y-auto", props.className)}>{props.children}</div>
                </DrawerPopup>

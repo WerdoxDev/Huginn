@@ -31,9 +31,7 @@ export function PopoverProvider(props: { children?: ReactNode }) {
 export function usePopover<T extends keyof StoreType>(type: T, data?: NonNullable<StoreType[T]>["data"]) {
    const hookStore = useStore(store);
 
-   useEffect(() => {
-      console.log("popover state changed", type, hookStore[type]);
-   }, [hookStore[type]]);
+   useEffect(() => {}, [hookStore[type]]);
 
    function open(e: MouseEvent<HTMLElement>) {
       e.preventDefault();
@@ -66,4 +64,8 @@ export function usePopover<T extends keyof StoreType>(type: T, data?: NonNullabl
       toggle,
       popover: hookStore[type] as StoreType[T],
    };
+}
+
+export function usePopovers() {
+   return useStore(store);
 }
