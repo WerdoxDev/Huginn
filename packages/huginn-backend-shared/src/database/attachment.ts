@@ -45,8 +45,6 @@ export const attachmentExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

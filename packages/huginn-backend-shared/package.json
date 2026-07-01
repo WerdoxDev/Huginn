@@ -16,10 +16,12 @@
    },
    "dependencies": {
       "@huginn/shared": "workspace:*",
+      "@neondatabase/serverless": "^1.1.0",
       "@prisma/adapter-pg": "^7.7.0",
       "@prisma/client": "7.8.0",
       "better-drizzle": "^0.1.1",
       "dotenv": "^17.4.2",
+      "drizzle-kit": "^0.31.10",
       "drizzle-orm": "^0.45.2",
       "elysia-rate-limit": "^4.5.1",
       "jose": "^6.1.3",

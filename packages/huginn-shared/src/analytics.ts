@@ -13,7 +13,10 @@ export abstract class Analytics {
    abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void;
    abstract identify(id: string, properties?: Record<string, any>): void;
    abstract reset(): void;
-   abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F>;
+   // abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> | Promise<ReturnType<F>>;
+   abstract startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
+   abstract startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
+   abstract startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T>;
    abstract getActiveSpan(): Span | undefined;
    abstract withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F>;
    abstract getTraceparent(): string | undefined;
@@ -32,6 +35,9 @@ class AnalyticsShim extends Analytics {
          end: () => {},
       };
       return fn(spanShim as unknown as Span);
+   }
+   withTry(span: Span, fn: (span: Span) => any) {
+      return fn(span);
    }
    getActiveSpan() {
       return undefined;

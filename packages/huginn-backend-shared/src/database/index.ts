@@ -64,3 +64,4 @@ export const prisma = prismaBase
 export * from "./error";
 export * from "./common";
 export { Prisma, type Message, type EmailVerification };
+export { drizzle } from "./drizzle/db";
