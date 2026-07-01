@@ -62,11 +62,8 @@ export class RuntimeAnalytics extends Analytics {
       sdk.start();
    }
 
-   // Overload 1: async fn -> Promise<T>
    startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
-   // Overload 2: sync fn -> T
    startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
-   // Implementation signature (not visible to callers)
    startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
       const tracer = trace.getTracer(this.options.serviceName);
 

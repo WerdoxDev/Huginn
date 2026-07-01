@@ -163,9 +163,7 @@ export const Routes = {
       messageId: Snowflake,
       emojiKey: string,
       userId?: Snowflake,
-   ):
-      | `/channels/${string}/messages/${string}/reactions/${string}/@me`
-      | `/channels/${string}/messages/${string}/reactions/${string}/users/${string}` {
+   ): `/channels/${string}/messages/${string}/reactions/${string}/@me` | `/channels/${string}/messages/${string}/reactions/${string}/users/${string}` {
       return `/channels/${channelId}/messages/${messageId}/reactions/${emojiKey}/${userId ?? "@me"}` as const;
    },
 

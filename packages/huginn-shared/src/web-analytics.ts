@@ -100,8 +100,35 @@ export class WebAnalytics extends Analytics {
       posthog.identify(id, properties);
    }
 
-   startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> {
-      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, fn);
+   startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
+   startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
+   startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
+      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, (span: Span) => {
+         let result: T | Promise<T>;
+
+         try {
+            result = fn(span);
+         } catch (error) {
+            span.end();
+            throw error;
+         }
+
+         if (result instanceof Promise) {
+            return result.then(
+               (value) => {
+                  span.end();
+                  return value;
+               },
+               (error) => {
+                  span.end();
+                  throw error;
+               },
+            );
+         }
+
+         span.end();
+         return result;
+      });
    }
 
    withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {

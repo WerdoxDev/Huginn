@@ -47,13 +47,7 @@ export class HuginnAPIError extends Error {
       }
 
       for (const [otherKey, val] of Object.entries(obj)) {
-         const nextKey = otherKey.startsWith("_")
-            ? key
-            : key
-              ? Number.isNaN(Number(otherKey))
-                 ? `${key}.${otherKey}`
-                 : `${key}[${otherKey}]`
-              : otherKey;
+         const nextKey = otherKey.startsWith("_") ? key : key ? (Number.isNaN(Number(otherKey)) ? `${key}.${otherKey}` : `${key}[${otherKey}]`) : otherKey;
 
          if (typeof val === "string") {
             yield val;
