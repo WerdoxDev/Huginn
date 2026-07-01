@@ -9,7 +9,7 @@ import { NodeSDK } from "@opentelemetry/sdk-node";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { PostHog } from "posthog-node";
 
-import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
+import { Analytics, logLevelToSeverityNumber, recordSpanError, type LogLevel } from "#analytics";
 
 type Options = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: string; serviceName: string; clientId?: string };
 
@@ -62,9 +62,40 @@ export class RuntimeAnalytics extends Analytics {
       sdk.start();
    }
 
-   startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> {
+   // Overload 1: async fn -> Promise<T>
+   startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
+   // Overload 2: sync fn -> T
+   startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
+   // Implementation signature (not visible to callers)
+   startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
       const tracer = trace.getTracer(this.options.serviceName);
-      return tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes } }, fn);
+
+      return tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes } }, (span: Span) => {
+         let result: T | Promise<T>;
+
+         try {
+            result = fn(span);
+         } catch (error) {
+            span.end();
+            throw error;
+         }
+
+         if (result instanceof Promise) {
+            return result.then(
+               (value) => {
+                  span.end();
+                  return value;
+               },
+               (error) => {
+                  span.end();
+                  throw error;
+               },
+            );
+         }
+
+         span.end();
+         return result;
+      });
    }
 
    getActiveSpan(): Span | undefined {

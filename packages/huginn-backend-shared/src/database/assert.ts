@@ -129,10 +129,7 @@ export const assertExtension = Prisma.defineExtension({
          },
       },
       reaction: {
-         async assertReactionsExist(
-            methodName: string,
-            idPairs: { userId: Snowflake; messageId: Snowflake; channelId: Snowflake; emojiKey: string }[],
-         ) {
+         async assertReactionsExist(methodName: string, idPairs: { userId: Snowflake; messageId: Snowflake; channelId: Snowflake; emojiKey: string }[]) {
             return analytics.startActiveSpan("db.reaction.assertReactionsExist", async (span) => {
                span.setAttribute("query.reaction.count", idPairs.length);
                try {
@@ -195,12 +192,7 @@ export const assertExtension = Prisma.defineExtension({
                   const foundCount = await prisma.knownApplication.count({
                      where: { id: { in: knownApplicationIds } },
                   });
-                  assertCondition(
-                     methodName,
-                     foundCount !== knownApplicationIds.length,
-                     DBErrorType.NULL_KNOWN_APPLICATION,
-                     knownApplicationIds.join(","),
-                  );
+                  assertCondition(methodName, foundCount !== knownApplicationIds.length, DBErrorType.NULL_KNOWN_APPLICATION, knownApplicationIds.join(","));
                } catch (e) {
                   recordSpanError(e);
                   throw e;

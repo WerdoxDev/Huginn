@@ -71,11 +71,14 @@ export function useSendMessage() {
          const message = await client!.channels.createMessage(
             data.previewMessage.channelId,
             {
-               attachments: attachments?.map((x) => ({
-                  id: x.id,
-                  filename: x.filename,
-                  description: x.description,
-               })),
+               attachments:
+                  attachments && attachments.length > 0
+                     ? attachments?.map((x) => ({
+                          id: x.id,
+                          filename: x.filename,
+                          description: x.description,
+                       }))
+                     : undefined,
                content: data.previewMessage.content,
                flags: data.previewMessage.flags,
                nonce: previewMessage.nonce,
