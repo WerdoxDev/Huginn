@@ -52,8 +52,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -119,8 +117,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -186,8 +182,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -245,8 +239,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -388,8 +380,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -497,8 +487,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -556,8 +544,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -611,8 +597,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -670,8 +654,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -760,8 +742,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -846,8 +826,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                true,
                true,
             );
-         } finally {
-            span.end();
          }
       });
    }
@@ -938,8 +916,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -965,8 +941,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
