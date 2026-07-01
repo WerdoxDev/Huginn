@@ -1,19 +1,13 @@
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { type APIPatchUserSettingsResult } from "@huginn/shared";
 import Elysia, { t } from "elysia";
 
+import { dispatchToTopic } from "#utils/gateway-utils";
+
 const schema = t.Object({
    theme: t.Optional(
-      t.Union([
-         t.Literal("eggplant"),
-         t.Literal("cerulean"),
-         t.Literal("pine-green"),
-         t.Literal("coffee"),
-         t.Literal("charcoal"),
-         t.Literal("scarlet"),
-      ]),
+      t.Union([t.Literal("eggplant"), t.Literal("cerulean"), t.Literal("pine-green"), t.Literal("coffee"), t.Literal("charcoal"), t.Literal("scarlet")]),
    ),
    status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
    pinnedChannels: t.Optional(t.Array(t.String())),

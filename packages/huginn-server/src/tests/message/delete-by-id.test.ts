@@ -1,7 +1,8 @@
-import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { ChannelType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { authHeader, createTestChannel, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("DELETE /api/channels/:channelId/messages/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid or body constrains are not met", async () => {

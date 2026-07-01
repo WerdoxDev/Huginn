@@ -59,8 +59,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             session.peer.close(GatewayCode.UNKNOWN, "UNKNOWN");
-         } finally {
-            span.end();
          }
       });
    }
@@ -100,8 +98,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -156,8 +152,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -240,8 +234,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -277,8 +269,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -311,8 +301,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }
@@ -335,8 +323,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          } catch (e) {
             recordSpanError(e);
             throw e;
-         } finally {
-            span.end();
          }
       });
    }

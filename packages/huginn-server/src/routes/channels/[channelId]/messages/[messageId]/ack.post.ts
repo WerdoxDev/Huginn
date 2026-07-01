@@ -1,7 +1,8 @@
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import Elysia from "elysia";
+
+import { dispatchToTopic } from "#utils/gateway-utils";
 
 export const postAckMessage = new Elysia()
    .use(verifyJwt())

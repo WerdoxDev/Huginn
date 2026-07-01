@@ -1,6 +1,7 @@
-import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";
+
+import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";
 
 describe("DELETE /users/@me/relationships/:userId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {

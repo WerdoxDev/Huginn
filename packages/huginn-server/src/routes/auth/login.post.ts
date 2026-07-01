@@ -1,4 +1,3 @@
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 import { createToken, globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
@@ -6,6 +5,8 @@ import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
 import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
 import Elysia, { t } from "elysia";
+
+import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 
 export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
@@ -19,10 +20,7 @@ export const postLogin = new Elysia().use(globalPlugin).post(
       if (assertError(error, DBErrorType.NULL_USER)) {
          return status(
             "Bad Request",
-            createErrorFactory(Errors.invalidFormBody())
-               .addError("login", Fields.invalidLogin())
-               .addError("password", Fields.invalidLogin())
-               .toObject(),
+            createErrorFactory(Errors.invalidFormBody()).addError("login", Fields.invalidLogin()).addError("password", Fields.invalidLogin()).toObject(),
          );
       }
       if (error) {
@@ -51,16 +49,8 @@ export const postLogin = new Elysia().use(globalPlugin).post(
 
       const lastAuthenticatedAt = Date.now();
 
-      const accessToken = await createToken(
-         "user-access",
-         { id: user.id, authType: "password", lastAuthenticatedAt },
-         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-      );
-      const refreshToken = await createToken(
-         "user-refresh",
-         { id: user.id, authType: "password", lastAuthenticatedAt },
-         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-      );
+      const accessToken = await createToken("user-access", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
+      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
 
       const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
       return status(200, json);

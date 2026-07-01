@@ -2,121 +2,105 @@
 
 ## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.41.0...server@v0.42.0) (2026-06-27)
 
-
 ### Features
 
-* **server:** migrate out old logging to pino + analytics for presence and voice ([b8b6791](https://github.com/WerdoxDev/Huginn/commit/b8b679192b085fbbfb998f775453546fe2558640))
+- **server:** migrate out old logging to pino + analytics for presence and voice ([b8b6791](https://github.com/WerdoxDev/Huginn/commit/b8b679192b085fbbfb998f775453546fe2558640))
 
 ## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.40.0...server@v0.41.0) (2026-06-25)
 
-
 ### Features
 
-* **server:** add platform to changelogs ([de350c3](https://github.com/WerdoxDev/Huginn/commit/de350c3ff03e91da5209d0e3c3726ea4cfd967d4))
+- **server:** add platform to changelogs ([de350c3](https://github.com/WerdoxDev/Huginn/commit/de350c3ff03e91da5209d0e3c3726ea4cfd967d4))
 
 ## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.39.0...server@v0.40.0) (2026-06-19)
 
-
 ### Features
 
-* **server:** add push notification handling with firebase-admin ([828c8da](https://github.com/WerdoxDev/Huginn/commit/828c8da7df6a581384ba310f8cb3babef97b085c))
+- **server:** add push notification handling with firebase-admin ([828c8da](https://github.com/WerdoxDev/Huginn/commit/828c8da7df6a581384ba310f8cb3babef97b085c))
 
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.1...server@v0.39.0) (2026-06-16)
 
-
 ### Features
 
-* **server:** add android update endpoint ([7b534fc](https://github.com/WerdoxDev/Huginn/commit/7b534fc56afc827f45a21ef8848663ff40352409))
+- **server:** add android update endpoint ([7b534fc](https://github.com/WerdoxDev/Huginn/commit/7b534fc56afc827f45a21ef8848663ff40352409))
 
 ## [0.38.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.38.0...server@v0.38.1) (2026-06-12)
 
-
 ### Bug Fixes
 
-* **cdn:** cache storage wrong time ([46f2ebb](https://github.com/WerdoxDev/Huginn/commit/46f2ebb7638bca3fcd424dbb7909c1f2d7037822))
-* **server:** cache storage wrong time ([368cff1](https://github.com/WerdoxDev/Huginn/commit/368cff17e6b0841f3b1d3fb5096881cb224d4b5a))
+- **cdn:** cache storage wrong time ([46f2ebb](https://github.com/WerdoxDev/Huginn/commit/46f2ebb7638bca3fcd424dbb7909c1f2d7037822))
+- **server:** cache storage wrong time ([368cff1](https://github.com/WerdoxDev/Huginn/commit/368cff17e6b0841f3b1d3fb5096881cb224d4b5a))
 
 ## [0.38.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.37.0...server@v0.38.0) (2026-06-10)
 
-
 ### Features
 
-* **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
+- **shared:** implement getting traceparent in otel ([30a9287](https://github.com/WerdoxDev/Huginn/commit/30a92872e84c3f02f28b3715abd7f024dd5e1335))
 
 ## [0.37.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.36.0...server@v0.37.0) (2026-06-05)
 
-
 ### Features
 
-* **server:** add OTel to some gateway utilities ([9e2e909](https://github.com/WerdoxDev/Huginn/commit/9e2e90956fcc3029708031189ae4013b615a2a33))
-* **server:** implement OTel at elysia level ([91409a6](https://github.com/WerdoxDev/Huginn/commit/91409a69542a99b9568c7623e49337a5ae768f92))
-
+- **server:** add OTel to some gateway utilities ([9e2e909](https://github.com/WerdoxDev/Huginn/commit/9e2e90956fcc3029708031189ae4013b615a2a33))
+- **server:** implement OTel at elysia level ([91409a6](https://github.com/WerdoxDev/Huginn/commit/91409a69542a99b9568c7623e49337a5ae768f92))
 
 ### Bug Fixes
 
-* **server:** remove telemetry for some messages to avoid spam ([37ac8a9](https://github.com/WerdoxDev/Huginn/commit/37ac8a99f05fdec2cb26ff85ff248054a9e4b790))
+- **server:** remove telemetry for some messages to avoid spam ([37ac8a9](https://github.com/WerdoxDev/Huginn/commit/37ac8a99f05fdec2cb26ff85ff248054a9e4b790))
 
 ## [0.36.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.2...server@v0.36.0) (2026-05-31)
 
-
 ### Features
 
-* migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
-* migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
-
+- migrate package manager to pnpm ([8188033](https://github.com/WerdoxDev/Huginn/commit/8188033434162474b72cf4e446100b2f654c6514))
+- migrate package manager to pnpm ([36dd56b](https://github.com/WerdoxDev/Huginn/commit/36dd56b34d864e393992b7bd50130529ff314574))
 
 ### Bug Fixes
 
-* **server:** forgoten token lastAuthenticated ([7a68771](https://github.com/WerdoxDev/Huginn/commit/7a687714f605d7087494ae60787ccb7102e0e4ea))
+- **server:** forgoten token lastAuthenticated ([7a68771](https://github.com/WerdoxDev/Huginn/commit/7a687714f605d7087494ae60787ccb7102e0e4ea))
 
 ## [0.35.2](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.1...server@v0.35.2) (2026-05-28)
 
-
 ### Bug Fixes
 
-* **server:** send message when a message is pinned ([979b0a3](https://github.com/WerdoxDev/Huginn/commit/979b0a32af7319249b870c00a2879b8bf90605df))
+- **server:** send message when a message is pinned ([979b0a3](https://github.com/WerdoxDev/Huginn/commit/979b0a32af7319249b870c00a2879b8bf90605df))
 
 ## [0.35.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.35.0...server@v0.35.1) (2026-05-27)
 
-
 ### Bug Fixes
 
-* **server:** allow empty string again on channel name because it's handled on db level ([0a715ba](https://github.com/WerdoxDev/Huginn/commit/0a715ba0be7cb1204738703bb39cc66d3cc870a6))
-* **server:** use bun.cron + delete empty channel ([29554aa](https://github.com/WerdoxDev/Huginn/commit/29554aa42d43d8e0ab5f1647bf883b62acd2750f))
+- **server:** allow empty string again on channel name because it's handled on db level ([0a715ba](https://github.com/WerdoxDev/Huginn/commit/0a715ba0be7cb1204738703bb39cc66d3cc870a6))
+- **server:** use bun.cron + delete empty channel ([29554aa](https://github.com/WerdoxDev/Huginn/commit/29554aa42d43d8e0ab5f1647bf883b62acd2750f))
 
 ## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.34.0...server@v0.35.0) (2026-05-26)
 
-
 ### Features
 
-* initialize docs package + start website react rewrite ([aa5b1fa](https://github.com/WerdoxDev/Huginn/commit/aa5b1fad11159143c5f0514e651bc86474a7ec20))
-* **server:** add changelog route with notion renderer ([117fbe9](https://github.com/WerdoxDev/Huginn/commit/117fbe9ad936c9888ec580f2fa0ac0ea53beb2b1))
-* **server:** remove deletedTimestamp from messages ([ad68b3e](https://github.com/WerdoxDev/Huginn/commit/ad68b3eed882744bfbc0e6d671a644a9821a7af3))
-
+- initialize docs package + start website react rewrite ([aa5b1fa](https://github.com/WerdoxDev/Huginn/commit/aa5b1fad11159143c5f0514e651bc86474a7ec20))
+- **server:** add changelog route with notion renderer ([117fbe9](https://github.com/WerdoxDev/Huginn/commit/117fbe9ad936c9888ec580f2fa0ac0ea53beb2b1))
+- **server:** remove deletedTimestamp from messages ([ad68b3e](https://github.com/WerdoxDev/Huginn/commit/ad68b3eed882744bfbc0e6d671a644a9821a7af3))
 
 ### Bug Fixes
 
-* **server:** server shouldn't accept empty name for channel ([03a352b](https://github.com/WerdoxDev/Huginn/commit/03a352bb9417c825ff76130510bc17b90def46bb))
-* **server:** validate gateway update presence status ([ded7618](https://github.com/WerdoxDev/Huginn/commit/ded7618c87680d790a5dff26c005b148aca0485e))
+- **server:** server shouldn't accept empty name for channel ([03a352b](https://github.com/WerdoxDev/Huginn/commit/03a352bb9417c825ff76130510bc17b90def46bb))
+- **server:** validate gateway update presence status ([ded7618](https://github.com/WerdoxDev/Huginn/commit/ded7618c87680d790a5dff26c005b148aca0485e))
 
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.33.0...server@v0.34.0) (2026-05-21)
 
-
 ### Features
 
-* migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
-* **server:** add banner image upload ([db55706](https://github.com/WerdoxDev/Huginn/commit/db5570668b46240dd68f633db099a8180c26853d))
-* **server:** add bannerColor to server settings ([8bba25b](https://github.com/WerdoxDev/Huginn/commit/8bba25b9b8d1e281137b39dc01d2940f73f65d81))
-* **server:** add email verification requirement for login and register ([a834f60](https://github.com/WerdoxDev/Huginn/commit/a834f608e399d23e575d42235b63f93a5dc551c9))
-* **server:** add pinnedChannels to server settigns ([717ef87](https://github.com/WerdoxDev/Huginn/commit/717ef877964bf7387475180124cd7a5431895944))
-* **server:** add user profile route + constants var rename ([63bd096](https://github.com/WerdoxDev/Huginn/commit/63bd0968d557c51fe6b1be399f16e389e86fc1b7))
-
+- migrate prettier to oxfmt and full format ([#237](https://github.com/WerdoxDev/Huginn/issues/237)) ([62481be](https://github.com/WerdoxDev/Huginn/commit/62481beb58232bc373358338fa9bc19c889bddc8))
+- **server:** add banner image upload ([db55706](https://github.com/WerdoxDev/Huginn/commit/db5570668b46240dd68f633db099a8180c26853d))
+- **server:** add bannerColor to server settings ([8bba25b](https://github.com/WerdoxDev/Huginn/commit/8bba25b9b8d1e281137b39dc01d2940f73f65d81))
+- **server:** add email verification requirement for login and register ([a834f60](https://github.com/WerdoxDev/Huginn/commit/a834f608e399d23e575d42235b63f93a5dc551c9))
+- **server:** add pinnedChannels to server settigns ([717ef87](https://github.com/WerdoxDev/Huginn/commit/717ef877964bf7387475180124cd7a5431895944))
+- **server:** add user profile route + constants var rename ([63bd096](https://github.com/WerdoxDev/Huginn/commit/63bd0968d557c51fe6b1be399f16e389e86fc1b7))
 
 ### Bug Fixes
 
-* **server:** new file schema handling + avatar max size ([acc327f](https://github.com/WerdoxDev/Huginn/commit/acc327f1acd430992407b8299ef225635889713b))
-* **server:** set appropriate auth type for access and refresh token ([6944653](https://github.com/WerdoxDev/Huginn/commit/69446539b9a2cb361a81dc3592c5d8a982f85c33))
-* **server:** use optimized unread readstate calculation ([3293e5b](https://github.com/WerdoxDev/Huginn/commit/3293e5b698adb89eb8aa9ecb7ca4558f5a4a1fc0))
+- **server:** new file schema handling + avatar max size ([acc327f](https://github.com/WerdoxDev/Huginn/commit/acc327f1acd430992407b8299ef225635889713b))
+- **server:** set appropriate auth type for access and refresh token ([6944653](https://github.com/WerdoxDev/Huginn/commit/69446539b9a2cb361a81dc3592c5d8a982f85c33))
+- **server:** use optimized unread readstate calculation ([3293e5b](https://github.com/WerdoxDev/Huginn/commit/3293e5b698adb89eb8aa9ecb7ca4558f5a4a1fc0))
 
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.32.7...server@v0.33.0) (2026-01-24)
 

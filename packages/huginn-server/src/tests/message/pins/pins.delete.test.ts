@@ -1,8 +1,9 @@
-import { authHeader, createTestChannel, createTestMessagePin, createTestMessages, createTestUsers } from "#tests/utils";
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { ChannelType } from "@huginn/shared";
 import { describe, expect, test } from "bun:test";
+
+import { authHeader, createTestChannel, createTestMessagePin, createTestMessages, createTestUsers } from "#tests/utils";
 
 describe("DELETE /api/channels/:channelId/messages/pins/:messageId", () => {
    test("should return 'Invalid Form Body' when id is invalid", async () => {

@@ -1,7 +1,8 @@
-import { dispatchToTopic } from "#utils/gateway-utils";
 import { missingAccess, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import Elysia from "elysia";
+
+import { dispatchToTopic } from "#utils/gateway-utils";
 
 export const deleteMessage = new Elysia()
    .use(verifyJwt())
