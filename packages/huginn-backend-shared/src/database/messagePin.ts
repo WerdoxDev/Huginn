@@ -33,8 +33,6 @@ export const messagePinExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -56,8 +54,6 @@ export const messagePinExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE_PIN, [messageId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -105,8 +101,6 @@ export const messagePinExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [options.messageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [options.pinnedById]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -142,8 +136,6 @@ export const messagePinExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE_PIN, [messageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

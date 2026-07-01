@@ -1,17 +1,20 @@
 import { analytics, idFix, recordSpanError, type Snowflake } from "@huginn/shared";
 
-import { assertExists, assertId, assertObj, prisma, prisma, type ReactionArgs, type ReactionPayload } from "#database";
+import { assertExists, assertId, assertObj, prisma, type ReactionArgs, type ReactionPayload } from "#database";
 import { Prisma } from "#prisma/client";
 import { DBErrorType } from "#types";
 
 export const reactionExtension = Prisma.defineExtension({
    model: {
       reaction: {
-         async getById<Args extends ReactionArgs>(
-            options: { channelId: Snowflake; messageId: Snowflake; userId: Snowflake; emojiKey: string },
-            args?: Args,
-         ) {
+         async getById<Args extends ReactionArgs>(options: { channelId: Snowflake; messageId: Snowflake; userId: Snowflake; emojiKey: string }, args?: Args) {
             return analytics.startActiveSpan("db.reaction.getById", async (span) => {
+               span.setAttributes({
+                  "query.user.id": options.userId,
+                  "query.message.id": options.messageId,
+                  "query.channel.id": options.channelId,
+                  "query.emoji_key": options.emojiKey,
+               });
                const methodName = "reaction.getById";
                try {
                   assertId(methodName, options.messageId, options.userId, options.channelId);
@@ -36,8 +39,6 @@ export const reactionExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_EMOJI, [options.emojiKey]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -48,7 +49,7 @@ export const reactionExtension = Prisma.defineExtension({
                   "query.user.id": options.userId,
                   "query.message.id": options.messageId,
                   "query.channel.id": options.channelId,
-                  "query.emoji.key": options.emojiKey,
+                  "query.emoji_key": options.emojiKey,
                });
 
                try {
@@ -65,8 +66,6 @@ export const reactionExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -77,7 +76,7 @@ export const reactionExtension = Prisma.defineExtension({
                   "query.user.id": options.userId,
                   "query.message.id": options.messageId,
                   "query.channel.id": options.channelId,
-                  "query.emoji.key": options.emojiKey,
+                  "query.emoji_key": options.emojiKey,
                });
 
                try {
@@ -109,8 +108,6 @@ export const reactionExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [options.messageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.channelId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -121,7 +118,7 @@ export const reactionExtension = Prisma.defineExtension({
                   "query.user.id": options.userId,
                   "query.message.id": options.messageId,
                   "query.channel.id": options.channelId,
-                  "query.emoji.key": options.emojiKey,
+                  "query.emoji_key": options.emojiKey,
                });
 
                try {
@@ -162,12 +159,8 @@ export const reactionExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_REACTION, [
                      { channelId: options.channelId, messageId: options.messageId, userId: options.userId, emojiKey: options.emojiKey },
                   ]);
-                  await assertExists(e, methodName, DBErrorType.NULL_REACTION_AGGREGATE, [
-                     { messageId: options.messageId, emojiKey: options.emojiKey },
-                  ]);
+                  await assertExists(e, methodName, DBErrorType.NULL_REACTION_AGGREGATE, [{ messageId: options.messageId, emojiKey: options.emojiKey }]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

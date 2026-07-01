@@ -25,8 +25,6 @@ export const relationshipExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -49,8 +47,6 @@ export const relationshipExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -84,8 +80,6 @@ export const relationshipExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -163,8 +157,6 @@ export const relationshipExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [senderId, receiverId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

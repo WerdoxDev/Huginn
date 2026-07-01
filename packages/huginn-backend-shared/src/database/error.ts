@@ -59,7 +59,7 @@ export async function assertExists(
       | DBErrorType.NULL_MESSAGE_PIN
       | DBErrorType.NULL_RELATIONSHIP
       | DBErrorType.NULL_EMOJI,
-   ids: Snowflake[],
+   ids: (Snowflake | undefined)[],
 ): Promise<void>;
 
 export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_KNOWN_APPLICATION, ids: number[]): Promise<void>;
@@ -77,7 +77,7 @@ export async function assertExists(
    error: unknown,
    methodName: string,
    errorType: DBErrorType,
-   ids: Snowflake[] | number[] | ReadStateId[] | ReactionId[] | ReactionAggregateId[],
+   ids: Array<Snowflake | undefined> | number[] | ReadStateId[] | ReactionId[] | ReactionAggregateId[],
 ): Promise<void> {
    if (errorType === DBErrorType.NULL_USER) {
       await prisma.user.assertUsersExist(methodName, ids as Snowflake[]);

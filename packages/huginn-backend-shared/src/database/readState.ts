@@ -24,8 +24,6 @@ export const readStateExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -46,8 +44,6 @@ export const readStateExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -81,8 +77,6 @@ export const readStateExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -108,8 +102,6 @@ export const readStateExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -153,8 +145,6 @@ export const readStateExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [lastReadMessageId]);
                   await assertExists(e, methodName, DBErrorType.NULL_READ_STATE, [{ userId, channelId }]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -180,8 +170,6 @@ export const readStateExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -217,8 +205,6 @@ export const readStateExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

@@ -24,8 +24,6 @@ export const channelExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [id]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -50,8 +48,6 @@ export const channelExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -116,18 +112,10 @@ export const channelExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [initiatorId, ...recipients]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
-         async editDirect<Args extends ChannelArgs>(
-            channelId: Snowflake,
-            name?: string | null,
-            icon?: string | null,
-            owner?: Snowflake,
-            args?: Args,
-         ) {
+         async editDirect<Args extends ChannelArgs>(channelId: Snowflake, name?: string | null, icon?: string | null, owner?: Snowflake, args?: Args) {
             return analytics.startActiveSpan("db.channel.editDirect", async (span) => {
                const methodName = "channel.editDirect";
 
@@ -160,8 +148,6 @@ export const channelExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [owner]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -186,8 +172,6 @@ export const channelExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [recipientId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -212,8 +196,6 @@ export const channelExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [recipientId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -252,8 +234,6 @@ export const channelExtension = Prisma.defineExtension({
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -273,8 +253,6 @@ export const channelExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -295,8 +273,6 @@ export const channelExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [channelId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

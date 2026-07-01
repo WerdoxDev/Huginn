@@ -19,8 +19,6 @@ export const notificationTokenExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -48,8 +46,6 @@ export const notificationTokenExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   assertExists(e, methodName, DBErrorType.NULL_USER, [options.userId]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

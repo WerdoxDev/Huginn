@@ -32,8 +32,6 @@ export const userExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [id]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -48,8 +46,6 @@ export const userExtension = Prisma.defineExtension({
                   recordSpanError(e);
                   await assertExists(e, methodName, DBErrorType.NULL_USER, [username]);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -81,8 +77,6 @@ export const userExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -117,8 +111,6 @@ export const userExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -165,8 +157,6 @@ export const userExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },
@@ -188,8 +178,6 @@ export const userExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

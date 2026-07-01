@@ -7,15 +7,7 @@ import { Prisma, prisma } from "#database";
 export const embedExtension = Prisma.defineExtension({
    model: {
       embed: {
-         async createOne(
-            type: string,
-            title?: string,
-            description?: string,
-            url?: string,
-            timestamp?: string,
-            thumbnail?: DBThumbnail,
-            video?: DBVideo,
-         ) {
+         async createOne(type: string, title?: string, description?: string, url?: string, timestamp?: string, thumbnail?: DBThumbnail, video?: DBVideo) {
             return analytics.startActiveSpan("db.embed.createOne", async (span) => {
                span.setAttributes({
                   "query.type": type,
@@ -72,8 +64,6 @@ export const embedExtension = Prisma.defineExtension({
                } catch (e) {
                   recordSpanError(e);
                   throw e;
-               } finally {
-                  span.end();
                }
             });
          },

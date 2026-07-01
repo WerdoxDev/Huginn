@@ -93,11 +93,7 @@ export function fileNotFound(status: Context["status"]) {
    return createHuginnError(createErrorFactory(Errors.fileNotFound()), status, "Not Found");
 }
 
-export function singleError<Code extends keyof InvertedStatusMap | keyof StatusMap = "OK">(
-   error: [string, JsonCode],
-   status: Context["status"],
-   code?: Code,
-) {
+export function singleError<Code extends keyof InvertedStatusMap | keyof StatusMap = "OK">(error: [string, JsonCode], status: Context["status"], code?: Code) {
    return createHuginnError(createErrorFactory(error), status, code ?? "Bad Request") as ElysiaCustomStatusResponse<Code, HuginnErrorData>;
 }
 

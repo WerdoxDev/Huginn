@@ -1,3103 +1,2898 @@
 {
-  "dialect": "postgres",
-  "id": "bd6492d8-3cb5-4141-820e-539ebef61580",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "version": "8",
-  "ddl": [
-    {
-      "isRlsEnabled": false,
-      "name": "_channel_recipients",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "_channel_temp_deleted",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "_message_mentions",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "_participated_calls",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Attachment",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Call",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Channel",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "EmailVerification",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Embed",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "IdentityProvider",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "KnownApplication",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Message",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "MessagePin",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "MessageReference",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "NotificationToken",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Reaction",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "ReactionAggregate",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "ReadState",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Relationship",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Settings",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Thumbnail",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "User",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "Video",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "token",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Settings"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channelId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "A",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReactionAggregate"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "A",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "A",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channelId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "A",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "json",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Settings"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "icon",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 1,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "names",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "authorId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "username",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "providerUserId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "emojiKey",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReactionAggregate"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "width",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "B",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "B",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "B",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "filename",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channelId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "width",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "B",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "nickname",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "height",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "referrerMessageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channelId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "exeName",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "pinnedById",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "endedTimestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "displayName",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "count",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReactionAggregate"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "lastMessageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "lastReadMessageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "height",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "url",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "email",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "deviceId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "pinnedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "expiresAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "completed",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "igdbId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "contentType",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "emojiKey",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "url",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "since",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "embedId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "avatar",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "ownerId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "ownerId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "providerType",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "url",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "size",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "embedId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "contributorId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "channelId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "editedTimestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "refreshToken",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "url",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "password",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "userId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "width",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "flags",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "code",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updatedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "system",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updatedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updatedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "deletedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "height",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'email_change'",
-      "generated": null,
-      "identity": null,
-      "name": "purpose",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 1,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "commandLinePatterns",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "CURRENT_TIMESTAMP",
-      "generated": null,
-      "identity": null,
-      "name": "createdAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "flags",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "email",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "pinned",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "bigint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "messageId",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "updatedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "active",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "bannerColor",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "flags",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "banner",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "bio",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "accentColor",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "type": "timestamp(3)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "emailVerifiedAt",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "B"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "_channel_recipients_B_index",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "B"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "_channel_temp_deleted_B_index",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "B"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "_message_mentions_B_index",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "B"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "_participated_calls_B_index",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "messageId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Call_messageId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "type"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Channel_type_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "userId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "EmailVerification_userId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "providerUserId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "IdentityProvider_providerUserId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "names"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "KnownApplication_names_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "channelId"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Message_channelId_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "channelId"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "MessagePin_channelId_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "pinnedById"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "MessagePin_pinnedById_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "referrerMessageId"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "MessageReference_referrerMessageId_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "referrerMessageId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "MessageReference_referrerMessageId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "messageId"
-        },
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "emojiKey"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Reaction_messageId_emojiKey_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "ownerId"
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Relationship_ownerId_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "userId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Settings_userId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Settings"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "embedId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Thumbnail_embedId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "email"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "User_email_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "username"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "User_username_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null,
-          "isExpression": false,
-          "value": "embedId"
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "Video_embedId_key",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "lastMessageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "Channel_lastMessageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "ownerId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "Channel_ownerId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "authorId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Message_authorId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "channelId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Message_channelId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "ownerId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Relationship_ownerId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Relationship_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "IdentityProvider_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "channelId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "ReadState_channelId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "lastReadMessageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "ReadState_lastReadMessageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "ReadState_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Embed_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "embedId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Embed",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Thumbnail_embedId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "A"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_channel_recipients_A_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "B"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_channel_recipients_B_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "A"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_channel_temp_deleted_A_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "B"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_channel_temp_deleted_B_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "A"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_message_mentions_A_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "B"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_message_mentions_B_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Attachment_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "embedId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Embed",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Video_embedId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Call_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "A"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Call",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_participated_calls_A_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "B"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "_participated_calls_B_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "Settings_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Settings"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "contributorId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "KnownApplication_contributorId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "channelId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "RESTRICT",
-      "name": "MessageReference_channelId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "SET NULL",
-      "name": "MessageReference_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "referrerMessageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "MessageReference_referrerMessageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "EmailVerification_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "channelId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "MessagePin_channelId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "MessagePin_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "pinnedById"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "MessagePin_pinnedById_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "CASCADE",
-      "name": "NotificationToken_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "channelId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Channel",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "RESTRICT",
-      "name": "Reaction_channelId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "RESTRICT",
-      "name": "Reaction_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "userId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "User",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "RESTRICT",
-      "name": "Reaction_userId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "messageId"
-      ],
-      "schemaTo": "public",
-      "tableTo": "Message",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "CASCADE",
-      "onDelete": "RESTRICT",
-      "name": "ReactionAggregate_messageId_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "ReactionAggregate"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "User_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "User"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Channel_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Channel"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Message_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Message"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Relationship_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Relationship"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "IdentityProvider_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "IdentityProvider"
-    },
-    {
-      "columns": [
-        "channelId",
-        "userId"
-      ],
-      "nameExplicit": true,
-      "name": "ReadState_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "ReadState"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Embed_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Embed"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Thumbnail_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Thumbnail"
-    },
-    {
-      "columns": [
-        "A",
-        "B"
-      ],
-      "nameExplicit": true,
-      "name": "_channel_recipients_AB_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "_channel_recipients"
-    },
-    {
-      "columns": [
-        "A",
-        "B"
-      ],
-      "nameExplicit": true,
-      "name": "_channel_temp_deleted_AB_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "_channel_temp_deleted"
-    },
-    {
-      "columns": [
-        "A",
-        "B"
-      ],
-      "nameExplicit": true,
-      "name": "_message_mentions_AB_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "_message_mentions"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Attachment_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Attachment"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Video_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Video"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "Call_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Call"
-    },
-    {
-      "columns": [
-        "A",
-        "B"
-      ],
-      "nameExplicit": true,
-      "name": "_participated_calls_AB_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "_participated_calls"
-    },
-    {
-      "columns": [
-        "userId"
-      ],
-      "nameExplicit": true,
-      "name": "Settings_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Settings"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "KnownApplication_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "KnownApplication"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "MessageReference_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "MessageReference"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": true,
-      "name": "EmailVerification_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "EmailVerification"
-    },
-    {
-      "columns": [
-        "messageId"
-      ],
-      "nameExplicit": true,
-      "name": "MessagePin_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "MessagePin"
-    },
-    {
-      "columns": [
-        "deviceId"
-      ],
-      "nameExplicit": true,
-      "name": "NotificationToken_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "NotificationToken"
-    },
-    {
-      "columns": [
-        "channelId",
-        "messageId",
-        "userId",
-        "emojiKey"
-      ],
-      "nameExplicit": true,
-      "name": "Reaction_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "Reaction"
-    },
-    {
-      "columns": [
-        "messageId",
-        "emojiKey"
-      ],
-      "nameExplicit": true,
-      "name": "ReactionAggregate_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "ReactionAggregate"
-    }
-  ],
-  "renames": []
+   "dialect": "postgres",
+   "id": "bd6492d8-3cb5-4141-820e-539ebef61580",
+   "prevIds": ["00000000-0000-0000-0000-000000000000"],
+   "version": "8",
+   "ddl": [
+      {
+         "isRlsEnabled": false,
+         "name": "_channel_recipients",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "_channel_temp_deleted",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "_message_mentions",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "_participated_calls",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Attachment",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Call",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Channel",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "EmailVerification",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Embed",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "IdentityProvider",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "KnownApplication",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Message",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "MessagePin",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "MessageReference",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "NotificationToken",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Reaction",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "ReactionAggregate",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "ReadState",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Relationship",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Settings",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Thumbnail",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "User",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "isRlsEnabled": false,
+         "name": "Video",
+         "entityType": "tables",
+         "schema": "public"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "token",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Settings"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "channelId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "A",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReactionAggregate"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "serial",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "A",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "A",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "channelId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "A",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "id",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "jsonb",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "json",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Settings"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "icon",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "type",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 1,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "names",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "authorId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "type": "smallint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "type",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "username",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "providerUserId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "title",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "emojiKey",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReactionAggregate"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "width",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "B",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "B",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "B",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "filename",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "channelId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "width",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "B",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "nickname",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "height",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "referrerMessageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "type",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "channelId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "exeName",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "description",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "pinnedById",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "endedTimestamp",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "displayName",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "count",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReactionAggregate"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "lastMessageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "lastReadMessageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "height",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "url",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "email",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "deviceId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "pinnedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "expiresAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "boolean",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "completed",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "content",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "igdbId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "name",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "description",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "contentType",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "emojiKey",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "url",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "since",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "embedId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "avatar",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "ownerId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "timestamp",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "ownerId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "providerType",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "url",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "size",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "embedId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "contributorId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "channelId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "editedTimestamp",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "refreshToken",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "timestamp",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "url",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "password",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "userId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "type",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "width",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "smallint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "flags",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "code",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "updatedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "boolean",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "false",
+         "generated": null,
+         "identity": null,
+         "name": "system",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "updatedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "updatedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "deletedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "height",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "'email_change'",
+         "generated": null,
+         "identity": null,
+         "name": "purpose",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 1,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "commandLinePatterns",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "CURRENT_TIMESTAMP",
+         "generated": null,
+         "identity": null,
+         "name": "createdAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "smallint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "flags",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "email",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "type": "boolean",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "pinned",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "bigint",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "messageId",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "type": "integer",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "type",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "updatedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "boolean",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": "false",
+         "generated": null,
+         "identity": null,
+         "name": "active",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "bannerColor",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "smallint",
+         "typeSchema": null,
+         "notNull": true,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "flags",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "banner",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "bio",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "text",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "accentColor",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "type": "timestamp(3)",
+         "typeSchema": null,
+         "notNull": false,
+         "dimensions": 0,
+         "default": null,
+         "generated": null,
+         "identity": null,
+         "name": "emailVerifiedAt",
+         "entityType": "columns",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "B"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "_channel_recipients_B_index",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "B"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "_channel_temp_deleted_B_index",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "B"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "_message_mentions_B_index",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "B"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "_participated_calls_B_index",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "messageId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Call_messageId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "type"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Channel_type_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "userId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "EmailVerification_userId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "providerUserId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "IdentityProvider_providerUserId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "names"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "KnownApplication_names_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "channelId"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Message_channelId_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "channelId"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "MessagePin_channelId_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "pinnedById"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "MessagePin_pinnedById_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "referrerMessageId"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "MessageReference_referrerMessageId_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "referrerMessageId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "MessageReference_referrerMessageId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "messageId"
+            },
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "emojiKey"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Reaction_messageId_emojiKey_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "ownerId"
+            }
+         ],
+         "isUnique": false,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Relationship_ownerId_idx",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "userId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Settings_userId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Settings"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "embedId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Thumbnail_embedId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "email"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "User_email_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "username"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "User_username_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "nameExplicit": true,
+         "columns": [
+            {
+               "asc": true,
+               "nullsFirst": false,
+               "opclass": null,
+               "isExpression": false,
+               "value": "embedId"
+            }
+         ],
+         "isUnique": true,
+         "where": null,
+         "with": "",
+         "method": "btree",
+         "concurrently": false,
+         "name": "Video_embedId_key",
+         "entityType": "indexes",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["lastMessageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "Channel_lastMessageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["ownerId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "Channel_ownerId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["authorId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Message_authorId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["channelId"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Message_channelId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["ownerId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Relationship_ownerId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Relationship_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "IdentityProvider_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["channelId"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "ReadState_channelId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["lastReadMessageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "ReadState_lastReadMessageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "ReadState_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Embed_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["embedId"],
+         "schemaTo": "public",
+         "tableTo": "Embed",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Thumbnail_embedId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["A"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_channel_recipients_A_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["B"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_channel_recipients_B_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["A"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_channel_temp_deleted_A_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["B"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_channel_temp_deleted_B_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["A"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_message_mentions_A_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["B"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_message_mentions_B_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Attachment_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["embedId"],
+         "schemaTo": "public",
+         "tableTo": "Embed",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Video_embedId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Call_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["A"],
+         "schemaTo": "public",
+         "tableTo": "Call",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_participated_calls_A_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["B"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "_participated_calls_B_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "Settings_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Settings"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["contributorId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "KnownApplication_contributorId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["channelId"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "RESTRICT",
+         "name": "MessageReference_channelId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "SET NULL",
+         "name": "MessageReference_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["referrerMessageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "MessageReference_referrerMessageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "EmailVerification_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["channelId"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "MessagePin_channelId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "MessagePin_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["pinnedById"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "MessagePin_pinnedById_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "CASCADE",
+         "name": "NotificationToken_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["channelId"],
+         "schemaTo": "public",
+         "tableTo": "Channel",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "RESTRICT",
+         "name": "Reaction_channelId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "RESTRICT",
+         "name": "Reaction_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["userId"],
+         "schemaTo": "public",
+         "tableTo": "User",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "RESTRICT",
+         "name": "Reaction_userId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "nameExplicit": true,
+         "columns": ["messageId"],
+         "schemaTo": "public",
+         "tableTo": "Message",
+         "columnsTo": ["id"],
+         "onUpdate": "CASCADE",
+         "onDelete": "RESTRICT",
+         "name": "ReactionAggregate_messageId_fkey",
+         "entityType": "fks",
+         "schema": "public",
+         "table": "ReactionAggregate"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "User_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "User"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Channel_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Channel"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Message_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Message"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Relationship_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Relationship"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "IdentityProvider_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "IdentityProvider"
+      },
+      {
+         "columns": ["channelId", "userId"],
+         "nameExplicit": true,
+         "name": "ReadState_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "ReadState"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Embed_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Embed"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Thumbnail_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Thumbnail"
+      },
+      {
+         "columns": ["A", "B"],
+         "nameExplicit": true,
+         "name": "_channel_recipients_AB_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "_channel_recipients"
+      },
+      {
+         "columns": ["A", "B"],
+         "nameExplicit": true,
+         "name": "_channel_temp_deleted_AB_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "_channel_temp_deleted"
+      },
+      {
+         "columns": ["A", "B"],
+         "nameExplicit": true,
+         "name": "_message_mentions_AB_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "_message_mentions"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Attachment_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Attachment"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Video_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Video"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "Call_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Call"
+      },
+      {
+         "columns": ["A", "B"],
+         "nameExplicit": true,
+         "name": "_participated_calls_AB_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "_participated_calls"
+      },
+      {
+         "columns": ["userId"],
+         "nameExplicit": true,
+         "name": "Settings_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Settings"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "KnownApplication_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "KnownApplication"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "MessageReference_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "MessageReference"
+      },
+      {
+         "columns": ["id"],
+         "nameExplicit": true,
+         "name": "EmailVerification_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "EmailVerification"
+      },
+      {
+         "columns": ["messageId"],
+         "nameExplicit": true,
+         "name": "MessagePin_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "MessagePin"
+      },
+      {
+         "columns": ["deviceId"],
+         "nameExplicit": true,
+         "name": "NotificationToken_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "NotificationToken"
+      },
+      {
+         "columns": ["channelId", "messageId", "userId", "emojiKey"],
+         "nameExplicit": true,
+         "name": "Reaction_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "Reaction"
+      },
+      {
+         "columns": ["messageId", "emojiKey"],
+         "nameExplicit": true,
+         "name": "ReactionAggregate_pkey",
+         "entityType": "pks",
+         "schema": "public",
+         "table": "ReactionAggregate"
+      }
+   ],
+   "renames": []
 }

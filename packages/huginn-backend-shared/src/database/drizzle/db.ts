@@ -32,8 +32,6 @@ const db = drizzle({ client: sql, schema: mySchema });
 
 const client = better(db, { schema: mySchema });
 
-const messages = await client.message.findFirst({ where: { author: { is: { id: BigInt("266669721963729052") } } }, select: { author: true } });
-console.log(idFix(messages));
 // const pUser = await prisma.user.findFirst({ where: { id: BigInt("266669721963729052") }, select: { includedChannels: true } });
 // console.log(user);
 
