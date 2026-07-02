@@ -66,7 +66,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
 
    const {
-      sendMessage,
+      submitMessage,
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
@@ -77,7 +77,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       insertEmoji,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
 
-   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker", { onEmojiSelect: insertEmoji });
+   const { toggle: toggleEmojiPicker, popover: emojiPickerPopover } = usePopover("emoji_picker");
 
    const { isKeyboardOpen, lastKeyboardHeight, focusedElementRef } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
@@ -135,13 +135,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
       return () => controller.abort();
    }, [isKeyboardOpen]);
-
-   // useEffect(() => {
-   //    console.log("CHANGE");
-   //    if (isKeyboardOpen) {
-   //       setActiveMobilePanel(null);
-   //    }
-   // }, [isKeyboardOpen]);
 
    useBackHandler("message-box", 100, () => {
       if (isKeyboardOpen || activeMobilePanel) {
@@ -232,13 +225,17 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                   <div className="flex gap-x-2 p-2">
                      {!isMobileEnvironment && (
-                        <EmojiPickerButton onClick={toggleEmojiPicker} isActive={activeMobilePanel === "emoji" && !isKeyboardOpenOnEditor} />
+                        <EmojiPickerButton
+                           onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: insertEmoji })}
+                           // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
+                           isActive={emojiPickerPopover?.isOpen && !emojiPickerPopover.data?.messageId}
+                        />
                      )}
                      <HuginnButton
                         color="primary"
                         className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
                         type="button"
-                        onClick={() => sendMessage(MessageFlags.NONE)}
+                        onClick={() => submitMessage()}
                         data-keyboard-no-close
                      >
                         <IconLetsIconsSendHorFill className="text-text size-full" />
