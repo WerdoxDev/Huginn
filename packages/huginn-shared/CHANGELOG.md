@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.39.0...shared@v0.40.0) (2026-07-02)
+
+
+### Features
+
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([43b0564](https://github.com/WerdoxDev/Huginn/commit/43b0564e79c80e4e489521cd7d11066a73d32d75))
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([e98ef3b](https://github.com/WerdoxDev/Huginn/commit/e98ef3bc0ba906f0a592601760885bb8c5f04125))
+* **server:** better run method + bunch of test fixes / touchups ([b1f572a](https://github.com/WerdoxDev/Huginn/commit/b1f572a408c9ae75ef5519bb11caf46139d4c398))
+* **shared:** add reaction specific types ([b4e1fd7](https://github.com/WerdoxDev/Huginn/commit/b4e1fd77cb7e3f2062900871a02a6fdda13968ae))
+* **shared:** move emoji stuff to a new file ([169fe93](https://github.com/WerdoxDev/Huginn/commit/169fe93994e7ee03085642258313415a3ba9fe00))
+
+
+### Bug Fixes
+
+* **app:** revert emojis having id ([d85b6bd](https://github.com/WerdoxDev/Huginn/commit/d85b6bdf41a451e37be40ae38f10294353ea5ad0))
+* **assets:** get emoji codepoint from shared pacakge ([0ab4a64](https://github.com/WerdoxDev/Huginn/commit/0ab4a644da9960bcace23cd71034e767184efa7e))
+* **shared:** add console log to both analytic .log() ([db69d43](https://github.com/WerdoxDev/Huginn/commit/db69d43827c8c7d9af9d15069eb3df57b929d9e1))
+
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.38.0...shared@v0.39.0) (2026-06-27)
 
 ### Features

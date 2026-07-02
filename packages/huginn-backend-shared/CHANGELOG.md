@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.1...backend-shared@v0.29.0) (2026-07-02)
+
+
+### Features
+
+* **app:** make popover a controlled component ([f202a9a](https://github.com/WerdoxDev/Huginn/commit/f202a9a2f780fae1f414ff0d26e4f1c5b822ab3f))
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([43b0564](https://github.com/WerdoxDev/Huginn/commit/43b0564e79c80e4e489521cd7d11066a73d32d75))
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([e98ef3b](https://github.com/WerdoxDev/Huginn/commit/e98ef3bc0ba906f0a592601760885bb8c5f04125))
+* **backend-shared:** add reaction database handlers ([691cb26](https://github.com/WerdoxDev/Huginn/commit/691cb26388678c717767b621466f9e96ec9a0e48))
+* **shared:** move emoji stuff to a new file ([169fe93](https://github.com/WerdoxDev/Huginn/commit/169fe93994e7ee03085642258313415a3ba9fe00))
+
+
+### Bug Fixes
+
+* **app:** revert emojis having id ([d85b6bd](https://github.com/WerdoxDev/Huginn/commit/d85b6bdf41a451e37be40ae38f10294353ea5ad0))
+* **backend-shared:** few user db bug fixes ([2cd4175](https://github.com/WerdoxDev/Huginn/commit/2cd41756ce73fc049c6b6239941b5177855dfa50))
+
 ## [0.28.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.0...backend-shared@v0.28.1) (2026-06-27)
 
 ### Bug Fixes

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.42.0...server@v0.43.0) (2026-07-02)
+
+
+### Features
+
+* **server:** add reaction adding and removing routes ([f8d7e2b](https://github.com/WerdoxDev/Huginn/commit/f8d7e2bf5c237d5a355e6367c465bf84bfeac00f))
+* **server:** add reaction tests ([c668992](https://github.com/WerdoxDev/Huginn/commit/c668992c8578ba6c287a55299cf3b7c2acd6b13f))
+* **server:** better run method + bunch of test fixes / touchups ([b1f572a](https://github.com/WerdoxDev/Huginn/commit/b1f572a408c9ae75ef5519bb11caf46139d4c398))
+* **shared:** move emoji stuff to a new file ([169fe93](https://github.com/WerdoxDev/Huginn/commit/169fe93994e7ee03085642258313415a3ba9fe00))
+
+
+### Bug Fixes
+
+* **app:** revert emojis having id ([d85b6bd](https://github.com/WerdoxDev/Huginn/commit/d85b6bdf41a451e37be40ae38f10294353ea5ad0))
+
 ## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.41.0...server@v0.42.0) (2026-06-27)
 
 ### Features
