@@ -22,13 +22,13 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    private getDefaultAttributes() {
       return {
          "voice.transport.status": this.transport.status,
-         "voice.stream.has_audio": !!this.transport.getProducer("stream_audio"),
-         "voice.stream.has_video": !!this.transport.getProducer("stream_video"),
+         "voice.stream.has_audio_producer": !!this.transport.getProducer("stream_audio"),
+         "voice.stream.has_video_producer": !!this.transport.getProducer("stream_video"),
       };
    }
 
    public async openStream(videoTrack?: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.openStream", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.openStream", async (span) => {
          const maxVideoBitrate = clamp(options?.maxVideoBitrate ?? CONSTANTS.DEFAULT_VIDEO_BITRATE, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
          const maxAudioBitrate = clamp(options?.maxAudioBitrate ?? CONSTANTS.DEFAULT_AUDIO_BITRATE, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
          const scalabilityMode = "L1T3";
@@ -79,7 +79,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param frameRate - Target frame rate
     */
    public async updateVideoConstraints(width?: number, height?: number, frameRate?: number): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.updateVideoConstraints", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.updateVideoConstraints", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
          if (width) span.setAttribute("params.width", width);
          if (height) span.setAttribute("params.height", height);
@@ -126,7 +126,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param maxBitrate - Maximum bitrate in bps
     */
    public async updateVideoBitrate(maxBitrate: number): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.updateVideoBitrate", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.updateVideoBitrate", async (span) => {
          const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_VIDEO_BITRATE, CONSTANTS.MAX_VIDEO_BITRATE);
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -169,7 +169,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param maxBitrate - Maximum bitrate in bps
     */
    public async updateAudioBitrate(maxBitrate: number): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.updateAudioBitrate", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.updateAudioBitrate", async (span) => {
          const clampedBitrate = clamp(maxBitrate, CONSTANTS.MIN_AUDIO_BITRATE, CONSTANTS.MAX_AUDIO_BITRATE);
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -208,7 +208,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
     * @param options - Combined options for constraints and bitrate
     */
    public async updateVideoParameters(options: { width?: number; height?: number; frameRate?: number; maxBitrate?: number }): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.updateVideoParameters", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.updateVideoParameters", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
          if (options.width) span.setAttribute("params.width", options.width);
          if (options.height) span.setAttribute("params.height", options.height);
@@ -235,7 +235,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    }
 
    public async replaceStreamVideoTrack(track: MediaStreamTrack): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.replaceStreamVideoTrack", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.replaceStreamVideoTrack", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "voice.media.kind": "stream_video",
@@ -253,7 +253,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    }
 
    public async replaceStreamAudioTrack(track: MediaStreamTrack): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.replaceStreamAudioTrack", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.replaceStreamAudioTrack", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "voice.media.kind": "stream_audio",
@@ -271,7 +271,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    }
 
    public async closeStreamAudio(): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.closeStreamAudio", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.closeStreamAudio", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "voice.media.kind": "stream_audio",
@@ -287,7 +287,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    }
 
    public async closeStreamVideo(): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.closeStreamVideo", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.closeStreamVideo", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "voice.media.kind": "stream_video",
@@ -303,7 +303,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
    }
 
    public async closeStream(): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceStream.closeStream", async (span) => {
+      return await analytics.startActiveSpan("api.voiceStream.closeStream", async (span) => {
          const hasAudio = !!this.transport.getProducer("stream_audio");
          const hasVideo = !!this.transport.getProducer("stream_video");
          span.setAttributes({
