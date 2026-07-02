@@ -35,13 +35,13 @@ export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
       () => ({
          getBoundingClientRect: () =>
             DOMRect.fromRect({
-               x: props.popover?.anchor?.getBoundingClientRect().x ?? 0,
-               y: props.popover?.anchor?.getBoundingClientRect().y ?? 0,
+               x: props.popover?.position?.[0] ?? 0,
+               y: props.popover?.position?.[1] ?? 0,
                width: 0,
                height: 0,
             }),
       }),
-      [props.popover?.anchor],
+      [props.popover?.position],
    );
 
    const isOpen = props.popover?.isOpen ?? false;
@@ -51,7 +51,6 @@ export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
    }
 
    function handleOpenChange(newOpen: boolean) {
-      console.log(newOpen);
       // Opening is fully controlled by the `popover` prop now — this only ever fires on dismissal
       // (outside click, escape, etc).
       if (newOpen) return;

@@ -72,6 +72,15 @@ export function useMessageBoxActions(options: {
       });
    }
 
+   function submitMessage() {
+      if (currentEditingMessageId) {
+         editMessage();
+      } else {
+         const flags: MessageFlags = MessageFlags.NONE;
+         sendMessage(flags);
+      }
+   }
+
    function sendMessage(flags: MessageFlags) {
       if (isEditorEmpty() && options.attachments.length === 0) return;
 
@@ -384,12 +393,7 @@ export function useMessageBoxActions(options: {
          event.preventDefault();
       }
       if (!event.shiftKey && event.code === "Enter" && !isMobile) {
-         if (currentEditingMessageId) {
-            editMessage();
-         } else {
-            const flags: MessageFlags = event.ctrlKey ? MessageFlags.SUPPRESS_NOTIFICATIONS : MessageFlags.NONE;
-            sendMessage(flags);
-         }
+         submitMessage();
          event.preventDefault();
       }
       if (event.ctrlKey && event.key === "b" && options.editor.selection) toggleMarkAtSelection("bold");
@@ -456,7 +460,7 @@ export function useMessageBoxActions(options: {
    }, [currentReplyingMessageId]);
 
    return {
-      sendMessage,
+      submitMessage,
       insertEmoji,
       cancelEditMessage,
       cancelReplyMessage,

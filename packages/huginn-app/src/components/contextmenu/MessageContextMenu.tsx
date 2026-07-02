@@ -1,8 +1,10 @@
+import EmojiImg from "@components/EmojiImg";
 import { useAddReaction } from "@hooks/mutations/useAddReaction";
 import { useDeleteMessage } from "@hooks/mutations/useDeleteMessage";
 import { usePinMessage } from "@hooks/mutations/usePinMessage";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useOpen } from "@hooks/useOpen";
+import { useRecentEmojis } from "@hooks/useRecentEmojis";
 import { error } from "@huginn/shared";
 import { deleteAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
@@ -17,7 +19,7 @@ import ContextMenu from "./ContextMenu";
 
 export default function MessageContextMenu() {
    const { data, close } = useContextMenu("message");
-   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker", { onEmojiSelect: handleEmojiSelect });
+   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker");
    const { openUrl } = useOpen();
    const { showError } = useModals();
    const queryClient = useQueryClient();
@@ -27,6 +29,7 @@ export default function MessageContextMenu() {
    const pinMessageMutation = usePinMessage();
    const unpinMessageMutation = useUnpinMessage();
    const addReactionMutation = useAddReaction();
+   const { recentEmojis, addRecentEmoji } = useRecentEmojis();
 
    const isAuthor = useMemo(() => data?.message.authorId === user?.id, [user, data]);
    const isPinned = useMemo(() => data?.message.isPreview === false && data.message.pinned, [data]);
@@ -113,6 +116,8 @@ export default function MessageContextMenu() {
    async function handleEmojiSelect(slug: string, unicode?: string) {
       if (!unicode || !data) return;
 
+      close();
+      addRecentEmoji(slug);
       await addReactionMutation.mutateAsync({
          channelId: data.message.channelId,
          messageId: data.message.id,
@@ -125,18 +130,22 @@ export default function MessageContextMenu() {
 
    return (
       <>
-         {/* <HuginnPopover.Trigger asChild nativeButton={false} handle={emojiPickerHandle}> */}
-         <ContextMenu.Item label="Add Reaction" onClick={toggleEmojiPicker}>
+         {recentEmojis.length !== 0 && (
+            <div className="mb-2 flex w-full items-center justify-between">
+               {recentEmojis.slice(0, 6).map((emoji) => (
+                  <button
+                     key={emoji.slugs[0]}
+                     className="hover:bg-surface-alt active:bg-surface-alt bg-surface-deep shrink-0 cursor-pointer rounded p-3 lg:p-1.5"
+                     onClick={() => handleEmojiSelect(emoji.slugs[0], emoji.unicode)}
+                  >
+                     <EmojiImg unicode={emoji.unicode} className="size-6 lg:size-5.5" />
+                  </button>
+               ))}
+            </div>
+         )}
+         <ContextMenu.Item label="Add Reaction" onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: handleEmojiSelect })}>
             <IconMingcuteEmoji2Fill />
          </ContextMenu.Item>
-         {/* </HuginnPopover.Trigger> */}
-         {/* <HuginnPopover>
-            <HuginnPopover.Trigger asChild nativeButton={false}>
-            </HuginnPopover.Trigger>
-            <EmojiPickerPopoverPanel>
-               <EmojiPickerPanel maxHeight={420} maxWidth={360} />
-            </EmojiPickerPopoverPanel>
-         </HuginnPopover> */}
          {isAuthor && !data.message.isPreview && (
             <ContextMenu.Item label="Edit Message" onClick={() => setEditingMessageId(data.message.id)}>
                <IconMingcuteEdit2Fill />

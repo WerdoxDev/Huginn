@@ -59,7 +59,6 @@ export default function PinnedMessagesPanel() {
    const { requestJumpToMessage } = useChannelStore();
 
    const handleMessageClick = useEffectEvent((messageId: Snowflake) => {
-      console.log(popover?.data);
       if (!popover?.data) return;
       requestJumpToMessage(popover?.data?.channelId, messageId);
       close();

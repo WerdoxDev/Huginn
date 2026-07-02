@@ -187,7 +187,7 @@ export type ContextMenuMessage = {
 
 export type PopoverStateProps<T = unknown> = {
    isOpen?: boolean;
-   anchor?: HTMLElement;
+   position?: [number, number];
    data?: T;
 };
 

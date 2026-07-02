@@ -5,7 +5,8 @@ import HuginnInput from "@components/input/HuginnInput";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { type Emoji, getAllEmojis, getEmojiByCodepoint, getEmojiBySlug } from "@huginn/shared";
+import { useRecentEmojis } from "@hooks/useRecentEmojis";
+import { type Emoji, getAllEmojis, getEmojiByCodepoint } from "@huginn/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
 import emojiMessages from "emojibase-data/en/messages.json";
@@ -16,12 +17,7 @@ import type { SelectItem } from "@/types";
 import emojiSheet from "@/assets/emoji-sheet.webp";
 import emojiData from "@/assets/emojis.json";
 
-import HuginnPopover from "./HuginnPopover";
-
-const RECENT_MAX = 32;
 const RECENT_GROUP_ID = -1;
-
-const RECENT_EMOJIS_KEY = "recent-emojis";
 
 type HeaderRow = {
    type: "header";
@@ -39,17 +35,6 @@ type VirtualRow = HeaderRow | EmojiRow;
 type Input = {
    search: string;
 };
-
-function getRecentEmojis(): string[] {
-   const recent = JSON.parse(localStorage.getItem(RECENT_EMOJIS_KEY) ?? "[]") as string[];
-   return recent;
-}
-
-function saveRecentEmoji(id: string) {
-   const prev = getRecentEmojis();
-   const next = [id, ...prev.filter((h) => h !== id)].slice(0, RECENT_MAX);
-   localStorage.setItem(RECENT_EMOJIS_KEY, JSON.stringify(next));
-}
 
 const toneOptions: SelectItem<number>[] = [
    {
@@ -110,7 +95,7 @@ export default function EmojiPickerRawPanel(props: {
    const categoryScrollRef = useRef<HTMLDivElement>(null);
    const activeStickyIndexRef = useRef(0);
    const [activeGroupId, setActiveGroupId] = useState<number | null>(0);
-   const [recentEmojiSlugs, setRecentEmojiSlugs] = useState(getRecentEmojis());
+   const { recentEmojis, addRecentEmoji } = useRecentEmojis();
    const [selectedTone, setSelectedTone] = useState<SelectItem<number>>(toneOptions[0]);
    const isMobile = useIsMobile();
    const groupNames: Record<number, string> = useMemo(() => {
@@ -120,9 +105,8 @@ export default function EmojiPickerRawPanel(props: {
    const groupedEmojis = useMemo(() => {
       const groups: Record<number, Emoji[]> = {};
 
-      if (recentEmojiSlugs.length > 0) {
-         groups[RECENT_GROUP_ID] = recentEmojiSlugs.flatMap((slug) => {
-            const emoji = getEmojiBySlug(slug);
+      if (recentEmojis.length > 0) {
+         groups[RECENT_GROUP_ID] = recentEmojis.flatMap((emoji) => {
             return emoji ? [{ ...emoji, group: RECENT_GROUP_ID }] : [];
          });
       }
@@ -136,7 +120,7 @@ export default function EmojiPickerRawPanel(props: {
       }
 
       return groups;
-   }, [recentEmojiSlugs, selectedTone]);
+   }, [recentEmojis, selectedTone]);
 
    const allRows = useMemo<VirtualRow[]>(() => {
       const result: VirtualRow[] = [];
@@ -219,8 +203,7 @@ export default function EmojiPickerRawPanel(props: {
    }
 
    function handleEmojiClick(emoji: Emoji) {
-      saveRecentEmoji(emoji.slugs[0]);
-      setRecentEmojiSlugs(getRecentEmojis());
+      addRecentEmoji(emoji.slugs[0]);
       props.onEmojiSelect?.(emoji.slugs[0], emoji.unicode);
    }
 

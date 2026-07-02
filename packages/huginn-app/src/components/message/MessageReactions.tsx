@@ -1,8 +1,9 @@
+import EmojiImg from "@components/EmojiImg";
 import { useAddReaction } from "@hooks/mutations/useAddReaction";
 import { useRemoveReaction } from "@hooks/mutations/useRemoveReaction";
-import { clamp, getEmojiCodepoint, type APIReaction } from "@huginn/shared";
+import { clamp, type APIReaction } from "@huginn/shared";
 import { clsx } from "clsx";
-import { useMemo, type RefObject } from "react";
+import { type RefObject } from "react";
 
 import type { ProcessedAppMessage } from "@/types";
 
@@ -44,22 +45,12 @@ export default function MessageReactions(props: { message: ProcessedAppMessage; 
                className={clsx(
                   "flex cursor-pointer items-center gap-x-2 py-1.5 pr-2.5 pl-2",
                   x.me ? "bg-primary-800/50 hover:bg-primary-800!" : "bg-surface hover:bg-surface-deep",
-                  // i === 0 && props.message.reactions?.length !== 1 && "rounded-r-none",
-                  // i > 0 && i < (props.message.reactions?.length ?? 0) - 1 && "rounded-l-none rounded-r-none",
-                  // i === (props.message.reactions?.length ?? 0) - 1 && props.message.reactions?.length !== 1 && "rounded-l-none",
                )}
             >
-               <Emoji emoji={x.emoji} />
+               <EmojiImg unicode={x.emoji.name} className="size-5" />
                <div className="box-exact text-white">{x.count}</div>
             </button>
          ))}
       </div>
    );
-}
-
-function Emoji(props: { emoji: { name: string; id: string | null } }) {
-   const codepoint = useMemo(() => getEmojiCodepoint(props.emoji.name), [props.emoji]);
-   const src = useMemo(() => (codepoint ? `${import.meta.env.BASE_URL}emojis/${codepoint}.svg` : undefined), [codepoint]);
-
-   return <img src={src} draggable={false} alt={codepoint} className="size-5 object-contain" />;
 }

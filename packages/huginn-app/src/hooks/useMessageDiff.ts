@@ -6,7 +6,7 @@ import type { ProcessedMessage } from "@/types";
 
 import { usePrevious } from "./usePrevious";
 
-export type ChangeType = undefined | "edit" | "embed" | "attachment" | "content" | "call" | "preview";
+export type ChangeType = undefined | "edit" | "embed" | "attachment" | "content" | "call" | "preview" | "reaction";
 
 export function useMessageDiff(
    messages: ProcessedMessage[],
@@ -61,6 +61,7 @@ export function useMessageDiff(
             if (previousMessage.content !== message.content) changedType = "content";
             if (previousMessage.embeds.length !== message.embeds.length) changedType = "embed";
             if (previousMessage.attachments.length !== message.attachments.length) changedType = "attachment";
+            if (previousMessage.reactions?.length !== message.reactions?.length) changedType = "reaction";
 
             if (previousMessage.type === MessageType.CALL && message.type === MessageType.CALL) {
                if (previousMessage.call.endedTimestamp !== message.call.endedTimestamp) changedType = "call";

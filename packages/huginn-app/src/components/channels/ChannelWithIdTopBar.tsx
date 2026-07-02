@@ -20,7 +20,7 @@ export default function ChannelWithIdTopBar(props: {
 }) {
    const { isRightOpen, resetToCenter } = useMobileMenuStore();
    const isMobile = useIsMobile();
-   const { toggle } = usePopover("pinned_messages", { channelId: props.channel.id });
+   const { toggle } = usePopover("pinned_messages");
 
    function handleBack() {
       resetToCenter();
@@ -42,7 +42,7 @@ export default function ChannelWithIdTopBar(props: {
             <TopBarButton tooltip="Start Call" onClick={props.onCallClick}>
                <IconMingcutePhoneCallFill className="size-topbar-icon" />
             </TopBarButton>
-            <TopBarButton tooltip="Pinned Messages" onClick={toggle}>
+            <TopBarButton tooltip="Pinned Messages" onClick={(e) => toggle(e, { channelId: props.channel.id })}>
                <IconMingcutePinFill className="size-topbar-icon" />
             </TopBarButton>
             {props.channel.type === ChannelType.GROUP_DM && (

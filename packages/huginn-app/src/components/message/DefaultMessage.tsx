@@ -8,10 +8,11 @@ import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@hugi
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
+import { usePopover } from "@stores/popoverStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useMemo, useState, type RefObject } from "react";
+import { useContext, useEffect, useMemo, useState, type RefObject } from "react";
 
 import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types";
 
@@ -23,6 +24,7 @@ export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
    const { open, context: contextMenu } = useContextMenu("message");
+   const { popover } = usePopover("emoji_picker");
    const { updateModals } = useModals();
    const { rootRef, extrasRef, reactionsRef, widths } = useMessageWidths({
       idPrefix: context.options?.idPrefix,
@@ -32,7 +34,6 @@ export default function DefaultMessage() {
    });
 
    const [isHovering, setIsHovering] = useState(false);
-   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
 
    const formattedFullTime = useMemo(() => moment(context.message?.timestamp).format("DD.MM.YYYY HH:mm"), [context.message]);
    const formattedTime = useMemo(() => moment(context.message?.timestamp).format("HH:mm"), [context.message]);
@@ -69,13 +70,17 @@ export default function DefaultMessage() {
    const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
    const isUnread = context.message.isUnread;
 
+   const hasContext =
+      (contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id) ||
+      (popover?.isOpen && popover.data?.messageId === context.message.id);
+
    return (
       <div
          ref={rootRef}
          onMouseEnter={() => setIsHovering(true)}
          onMouseLeave={() => setIsHovering(false)}
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
-         data-context={isEmojiOpen || (contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id ? true : undefined)}
+         data-context={hasContext === true ? true : undefined}
          className={clsx(
             "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors duration-150",
             !context.options?.hideBackground &&
@@ -93,9 +98,7 @@ export default function DefaultMessage() {
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
       >
-         {!context.message.isPreview && !context.options?.hideActions && (
-            <MessageActions message={context.message} isEmojiOpen={isEmojiOpen} onEmojiOpenChange={setIsEmojiOpen} />
-         )}
+         {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[width]",
