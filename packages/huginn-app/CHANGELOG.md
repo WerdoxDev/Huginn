@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.78.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.1...app@v0.78.0) (2026-07-02)
+
+
+### Features
+
+* **app:** add experimental reaction adding, removing and rendering ([dcdfebb](https://github.com/WerdoxDev/Huginn/commit/dcdfebb953fdfba4677b22ccff890372048085eb))
+* **app:** add proxy settings + remove old unused logs ([b6a5f0c](https://github.com/WerdoxDev/Huginn/commit/b6a5f0c59280c30e1f808f869b6ad6755452e33c))
+* **app:** add recent emojis on context menu + some reaction bug fixes ([2cb32e0](https://github.com/WerdoxDev/Huginn/commit/2cb32e00e36baf14ebd793ca15b9ae873345b126))
+* **app:** make popover a controlled component ([f202a9a](https://github.com/WerdoxDev/Huginn/commit/f202a9a2f780fae1f414ff0d26e4f1c5b822ab3f))
+* **assets:** add assets project ([4667a6c](https://github.com/WerdoxDev/Huginn/commit/4667a6ce6faf05a4aca9ae07d2939b735fe7c507))
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([43b0564](https://github.com/WerdoxDev/Huginn/commit/43b0564e79c80e4e489521cd7d11066a73d32d75))
+* **backend-shared:** a failed but good attempt at using drizzle with better-drizzle ([e98ef3b](https://github.com/WerdoxDev/Huginn/commit/e98ef3bc0ba906f0a592601760885bb8c5f04125))
+* **shared:** move emoji stuff to a new file ([169fe93](https://github.com/WerdoxDev/Huginn/commit/169fe93994e7ee03085642258313415a3ba9fe00))
+
+
+### Bug Fixes
+
+* **app:** bunch of drawer fixes ([09f5ea0](https://github.com/WerdoxDev/Huginn/commit/09f5ea06ad5559c733fcea558640930b8b87d6e5))
+* **app:** bunch of emoji rendering bug fixes + add missing emojis ([4f9a2f2](https://github.com/WerdoxDev/Huginn/commit/4f9a2f232a8370e3465c0a6df1df45d0d88d6ca5))
+* **app:** revert emojis having id ([d85b6bd](https://github.com/WerdoxDev/Huginn/commit/d85b6bdf41a451e37be40ae38f10294353ea5ad0))
+* **assets:** get emoji codepoint from shared pacakge ([0ab4a64](https://github.com/WerdoxDev/Huginn/commit/0ab4a644da9960bcace23cd71034e767184efa7e))
+
 ## [0.77.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.0...app@v0.77.1) (2026-06-27)
 
 ### Bug Fixes
