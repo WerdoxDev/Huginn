@@ -1,5 +1,7 @@
 import type { Snowflake } from "./snowflake";
 
+export type ThemeType = "cerulean" | "pine-green" | "plum" | "coffee" | "violet" | "rose";
+
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
@@ -389,7 +391,7 @@ export type UserPresence = {
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
 export type UserSettings = {
-   theme?: "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
+   theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
 };
