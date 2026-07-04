@@ -1,34 +1,34 @@
+import type { ThemeType } from "@huginn/shared";
+
 import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 import { useMemo, type Ref } from "react";
 
-import type { ThemeType } from "@/types";
+import ceruleanOutlinedUrl from "@/assets/icons/cerulean/outline/outline-512.png";
+import ceruleanUrl from "@/assets/icons/cerulean/stacked/stacked-512.png";
+import coffeeOutlinedUrl from "@/assets/icons/coffee/outline/outline-512.png";
+import coffeeUrl from "@/assets/icons/coffee/stacked/stacked-512.png";
+import defaultOutlinedUrl from "@/assets/icons/default/outline/outline-512.png";
+import defaultUrl from "@/assets/icons/default/stacked/stacked-512.png";
+import pineGreenOutlinedUrl from "@/assets/icons/pine-green/outline/outline-512.png";
+import pineGreenUrl from "@/assets/icons/pine-green/stacked/stacked-512.png";
+import plumOutlinedUrl from "@/assets/icons/plum/outline/outline-512.png";
+import plumUrl from "@/assets/icons/plum/stacked/stacked-512.png";
+import roseOutlinedUrl from "@/assets/icons/rose/outline/outline-512.png";
+import roseUrl from "@/assets/icons/rose/stacked/stacked-512.png";
+import violetOutlinedUrl from "@/assets/icons/violet/outline/outline-512.png";
+import violetUrl from "@/assets/icons/violet/stacked/stacked-512.png";
 
-import ceruleanUrl from "@/assets/icons/cerulean.png";
-import ceruleanOutlinedUrl from "@/assets/icons/cerulean_outline.png";
-import charcoalUrl from "@/assets/icons/charcoal.png";
-import charcoalOutlinedUrl from "@/assets/icons/charcoal_outline.png";
-import coffeeUrl from "@/assets/icons/coffee.png";
-import coffeeOutlinedUrl from "@/assets/icons/coffee_outline.png";
-import eggplantUrl from "@/assets/icons/eggplant.png";
-import eggplantOutlinedUrl from "@/assets/icons/eggplant_outline.png";
-import pinegreenUrl from "@/assets/icons/pinegreen.png";
-import pinegreenOutlinedUrl from "@/assets/icons/pinegreen_outline.png";
-import scarletUrl from "@/assets/icons/scarlet.png";
-import scarletOutlinedUrl from "@/assets/icons/scarlet_outline.png";
-import textUrl from "@/assets/icons/text.png";
-import textOutlinedUrl from "@/assets/icons/text_outline.png";
-
-type ModifiedThemeType = ThemeType | "text";
+type ModifiedThemeType = ThemeType | "default";
 
 const iconSources: Record<ModifiedThemeType, string[]> = {
    cerulean: [ceruleanUrl, ceruleanOutlinedUrl],
-   "pine-green": [pinegreenUrl, pinegreenOutlinedUrl],
-   eggplant: [eggplantUrl, eggplantOutlinedUrl],
+   "pine-green": [pineGreenUrl, pineGreenOutlinedUrl],
+   plum: [plumUrl, plumOutlinedUrl],
    coffee: [coffeeUrl, coffeeOutlinedUrl],
-   charcoal: [charcoalUrl, charcoalOutlinedUrl],
-   scarlet: [scarletUrl, scarletOutlinedUrl],
-   text: [textUrl, textOutlinedUrl],
+   violet: [violetUrl, violetOutlinedUrl],
+   rose: [roseUrl, roseOutlinedUrl],
+   default: [defaultUrl, defaultOutlinedUrl],
 };
 
 export default function HuginnIcon(props: {

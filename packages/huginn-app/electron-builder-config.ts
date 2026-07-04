@@ -8,7 +8,7 @@ export default {
 
    win: {
       target: { target: "nsis", arch: ["x64"] },
-      icon: "electron-assets/icon.ico",
+      icon: "src/assets/icon/default/outline-thick/outline-thick.ico",
       publish: {
          provider: "generic",
          url: "https://midgard.huginn.dev/api/update/${os}",

@@ -130,7 +130,7 @@ function Item(
       "data-disabled:cursor-not-allowed",
       !props.color || props.color === "default"
          ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 disabled:text-white/50 data-disabled:text-white/50"
-         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50 disabled:text-negative-100/50",
+         : "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50 disabled:text-negative-300/50",
       props.className,
    );
 
@@ -186,7 +186,7 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
       "data-disabled:cursor-not-allowed data-disabled:text-white/50",
       !props.color || props.color === "default"
          ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 data-disabled:text-white/50"
-         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
+         : "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50",
    );
 
    useStackBackHandler(`context-menu-${id}`, () => setIsOpen(false), isOpen);

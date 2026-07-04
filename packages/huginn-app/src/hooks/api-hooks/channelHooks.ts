@@ -4,13 +4,14 @@ import { getChannelsOptions } from "@lib/queries";
 import { findChannel } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import type { AppUser } from "@/types";
 
-import { useUsers } from "./userHooks";
+import { useUser, useUsers } from "./userHooks";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
    const client = useClient();
@@ -23,9 +24,10 @@ export function useChannelNamePlaceholder(recipients: AppUser[]) {
    return useMemo(() => recipients.map((x) => x.displayName).join(", "), [recipients]);
 }
 
-export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake) {
+export function useChannelRecipients(channelId?: Snowflake, _guildId?: Snowflake, withThisUser?: boolean) {
+   const { user } = useThisUser();
    const channel = useChannel(channelId);
-   const recipients = useUsers(channel?.recipientIds);
+   const recipients = useUsers(withThisUser && user && channel?.recipientIds ? [...channel.recipientIds, user?.id] : channel?.recipientIds);
 
    return { recipients, ownerId: channel?.type === ChannelType.GROUP_DM ? channel?.ownerId : undefined };
 }

@@ -6,8 +6,8 @@ import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
+import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
-import { MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -15,7 +15,7 @@ import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Editable, Slate, ReactEditor, type RenderPlaceholderProps } from "slate-react";
 
-import type { AppMessage } from "@/types";
+import type { AppMessage, AutocompleteItem } from "@/types";
 
 import AttachmentsPreview from "./AttachmentsPreview";
 import EmojiPickerButton from "./button/EmojiPickerButton";
@@ -25,6 +25,7 @@ import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
+import { MessageAutocomplete } from "./MessageAutocomplete";
 import EmojiPickerRawPanel from "./popover/EmojiPickerRawPanel";
 // import EmojiPickerPanel from "./popover/EmojiPickerPanel";
 // import EmojiPickerPopover from "./popover/EmojiPickerPopover";
@@ -60,7 +61,20 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const isMobileEnvironment = huginnWindow.environment === "android";
    const isMobile = useIsMobile();
    const { setMessageBoxHeight } = useChannelStore();
-   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange } = usePreviewMessageRenderer();
+   const {
+      autocompleteKeyIntercept,
+      state: autocompleteState,
+      items: autocompleteItems,
+      handleSet,
+      handleClose,
+   } = useMessageBoxAutocomplete({
+      channelId: currentChannel?.id,
+      onSelect: tempHandleAutocompleteSelect,
+   });
+   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange, handleAutocompleteSelect } = usePreviewMessageRenderer({
+      onSetAutocomplete: handleSet,
+      onCloseAutocomplete: handleClose,
+   });
    const editorRef = useRef<HTMLDivElement | null>(null);
 
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
@@ -75,7 +89,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       channelId,
       resetState,
       insertEmoji,
-   } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
+   } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, autocompleteKeyIntercept });
 
    const { toggle: toggleEmojiPicker, popover: emojiPickerPopover } = usePopover("emoji_picker");
 
@@ -156,6 +170,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       setActiveMobilePanel(newState);
    }
 
+   function tempHandleAutocompleteSelect(item: AutocompleteItem) {
+      handleAutocompleteSelect(item);
+   }
+
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
@@ -165,6 +183,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          <ChannelTypingIndicator channelId={channelId!} />
          <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
+            <MessageAutocomplete state={autocompleteState} items={autocompleteItems} />
             <div
                className={clsx(
                   "bg-surface-alt border-surface mx-2 mb-2 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",

@@ -64,7 +64,7 @@ export default function StartBackground() {
       const centerY = height / 2;
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.max(width, height) / 2);
       gradient.addColorStop(0, t["primary-900"]);
-      gradient.addColorStop(1, interpolateColor(from, to, segmentProgress));
+      // gradient.addColorStop(1, interpolateColor(from, to, segmentProgress));
       ctx.fillStyle = gradient;
 
       ctx.fill(animation.renderFrame());

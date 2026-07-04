@@ -11,7 +11,7 @@ export default function LoadingBackground(props: { isLoaded: boolean; hasError: 
             )}
          >
             {/* {!props.hasError && <div className="h-full w-full" />} */}
-            {props.hasError && <IconMingcuteWarningFill className="text-negative-100 h-full max-h-16 w-full max-w-16" />}
+            {props.hasError && <IconMingcuteWarningFill className="text-negative-300 h-full max-h-16 w-full max-w-16" />}
          </div>
       </Transition>
       // <div className="absolute inset-0 z-10 animate-pulse rounded-md bg-black/50" />

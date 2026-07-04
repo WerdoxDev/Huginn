@@ -13,10 +13,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
    const channel = useChannel(props.channelId);
    const { recipients } = useChannelRecipients(channel?.id);
 
-   if (!channel) {
-      return null;
-   }
-
+   if (!channel) return null;
    return (
       <Tooltip>
          <Tooltip.Trigger asChild>
@@ -32,7 +29,7 @@ export default function UnreadChannel(props: { channelId: Snowflake; unreadCount
                   <ChannelIcon channelId={channel?.id} iconHash={channel?.icon} size={3} />
                )}
                {/* <div className="size-8 bg-white rounded-full"></div> */}
-               <AttentionIndicator className="right-0 bottom-0">{props.unreadCount}</AttentionIndicator>
+               <AttentionIndicator className="-right-1.5 -bottom-1.5">{props.unreadCount}</AttentionIndicator>
             </Link>
          </Tooltip.Trigger>
          <Tooltip.Content side="right">{channel.name}</Tooltip.Content>

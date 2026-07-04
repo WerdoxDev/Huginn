@@ -18,27 +18,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
       link: () => "[",
    };
 
-   function pushRange(
-      type: string,
-      options: {
-         mark: string | null;
-         line: number;
-         start: number;
-         end: number;
-         raw: string;
-         text?: string;
-         code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
-         link?: { href: string };
-         list?: { ordered: boolean; index: number; total: number };
-         emoji?: { id?: string; unicode?: string; slug: string; initial: "slug" | "emoji" };
-      },
-   ) {
-      // const existing = ranges.find((r) => r.line === line && r.start === start && r.end === end);
-      // if (existing) {
-      //    existing.type = type;
-      //    existing.mark = mark;
-      //    return;
-      // }
+   function pushRange(type: string, options: Omit<MarkedToken, "type">) {
       ranges.push({ type, ...options });
    }
 
@@ -84,7 +64,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
    }
 
    function handleList(token: Tokens.List, lineIndex: number) {
-      const total = token.items.length;
+      // const total = token.items.length;
 
       for (let i = 0; i < token.items.length; i++) {
          const item = token.items[i];
@@ -97,7 +77,8 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
             start: 0,
             end: item.raw.length,
             raw: item.raw,
-            list: { ordered: token.ordered, index: i, total },
+            // list: { ordered: token.ordered, index: i, total },
+            list: { ordered: token.ordered, index: i },
          });
 
          // Walk the item's inline tokens at offset = marker width + space (e.g. "- " or "1. ")
@@ -153,6 +134,33 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
             });
          } else if (token.type === "codespan") {
             pushRange("codespan", { mark: null, text: token.text, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
+         } else if (token.type === "user-id-mention") {
+            pushRange("internal-mention", {
+               mark: null,
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               internalMention: { text: token.text, type: "user" },
+            });
+         } else if (token.type === "user-everyone-mention") {
+            pushRange("internal-mention", {
+               mark: null,
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               internalMention: { text: token.text, type: "everyone" },
+            });
+         } else if (token.type === "user-mention") {
+            pushRange("mention", {
+               mark: null,
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               mention: { text: token.text, type: "user", queryIndex: token.queryIndex },
+            });
          } else {
             pushRange(token.type, { mark, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
          }

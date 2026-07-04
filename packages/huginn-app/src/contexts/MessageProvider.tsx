@@ -72,11 +72,11 @@ export function MessageProvider(props: MessageProviderProps) {
          {contextProps.message.isUnread && !contextProps.message.hasNewDate && (
             <li
                className={clsx(
-                  "bg-negative-300 pointer-events-none relative mr-10 flex h-px shrink-0 items-center justify-center",
+                  "bg-negative-500 pointer-events-none relative mr-10 flex h-px shrink-0 items-center justify-center",
                   contextProps.lastMessage ? "my-1" : "mb-1",
                )}
             >
-               <div className="bg-negative-300 absolute right-0 z-10 -mr-10 flex w-10 items-center justify-center rounded-l-md py-1 text-xs font-bold text-white uppercase">
+               <div className="bg-negative-500 absolute right-0 z-10 -mr-10 flex w-10 items-center justify-center rounded-l-md py-1 text-xs font-bold text-white uppercase">
                   new
                </div>
             </li>
@@ -86,12 +86,12 @@ export function MessageProvider(props: MessageProviderProps) {
                className={clsx(
                   "relative flex h-0 shrink-0 items-center justify-center border-t border-b text-center text-xs font-medium",
                   contextProps.lastMessage ? "my-5" : "mt-2 mb-5",
-                  contextProps.message.isUnread ? "border-negative-300 text-negative-100" : "border-text/25 text-text/70",
+                  contextProps.message.isUnread ? "border-negative-500 text-negative-500" : "border-text/25 text-text/70",
                )}
             >
                <span className="bg-surface-deep px-2">{moment(contextProps.message.timestamp).format("D MMMM YYYY")}</span>
                {contextProps.message.isUnread && (
-                  <div className="bg-negative-300 absolute right-0 flex w-10 items-center justify-center rounded-l-md py-1 text-xs font-bold text-white uppercase">
+                  <div className="bg-negative-500 absolute right-0 flex w-10 items-center justify-center rounded-l-md py-1 text-xs font-bold text-white uppercase">
                      new
                   </div>
                )}

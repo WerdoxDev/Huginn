@@ -1,11 +1,15 @@
 import EditorLeaf from "@components/editor/EditorLeaf";
 import PreviewEmojiElement from "@components/editor/PreviewEmojiElement";
+import PreviewMentionElement from "@components/editor/PreviewMentionElement";
 import { marked } from "@lib/marked";
 import { organizeMarkedTokens } from "@lib/marked-utils";
+import { getUser } from "@lib/query-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Point, type Descendant } from "slate";
 import { createEditor, Editor, Element, Node, Path, Range, Text } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
+
+import type { AutocompleteItem, AutocompleteType, MarkedToken } from "@/types";
 
 import type { EmojiElement } from "..";
 
@@ -24,6 +28,15 @@ function serializeFragments(nodes: Descendant[]): string {
          continue;
       }
 
+      if (Element.isElement(node) && node.type === "mention") {
+         if (node.mentionType === "everyone") text += "@" + node.usedText;
+         else if (node.mentionType === "user") {
+            const user = getUser(node.userId);
+            text += user ? "@" + user.displayName : "<@" + node.userId + ">";
+         }
+         continue;
+      }
+
       if (Element.isElement(node) && node.type === "paragraph") {
          text += children + "\n";
          continue;
@@ -37,11 +50,11 @@ function withHuginn(editor: Editor) {
    const { isInline, isVoid, setFragmentData } = editor;
 
    editor.isInline = (element) => {
-      return element.type === "emoji" || isInline(element);
+      return element.type === "emoji" || element.type === "mention" || isInline(element);
    };
 
    editor.isVoid = (element) => {
-      return element.type === "emoji" || isVoid(element);
+      return element.type === "emoji" || element.type === "mention" || isVoid(element);
    };
 
    editor.setFragmentData = (data) => {
@@ -59,7 +72,10 @@ function withHuginn(editor: Editor) {
    return editor;
 }
 
-export function usePreviewMessageRenderer() {
+export function usePreviewMessageRenderer(props: {
+   onSetAutocomplete: (type: AutocompleteType, query: string) => void;
+   onCloseAutocomplete: () => void;
+}) {
    const editor = useMemo(() => withHuginn(withReact(createEditor())), []);
    const cachedDecorations = useRef<Map<number, Range[]>>(new Map());
    const [decorateVersion, setDecorateVersion] = useState(0);
@@ -72,6 +88,8 @@ export function usePreviewMessageRenderer() {
       switch (props.element.type) {
          case "emoji":
             return <PreviewEmojiElement {...props} />;
+         case "mention":
+            return <PreviewMentionElement {...props} />;
          default:
             return <DefaultElement {...props} />;
       }
@@ -88,7 +106,7 @@ export function usePreviewMessageRenderer() {
 
             const children = serialize(node.children);
 
-            if (Element.isElement(node) && node.type === "emoji") {
+            if (Element.isElement(node) && (node.type === "emoji" || node.type === "mention")) {
                text += " ";
                continue;
             }
@@ -241,7 +259,13 @@ export function usePreviewMessageRenderer() {
       [decorateVersion],
    );
 
-   function convertEmojisToElements() {
+   function isVoidToken(token: MarkedToken) {
+      if (token.type === "emoji") return true;
+      if (token.type === "internal-mention") return true;
+      return false;
+   }
+
+   function convertVoidTokensToElements() {
       for (const [node, path] of Node.texts(editor)) {
          const text = node.text;
          if (!text) continue;
@@ -252,33 +276,27 @@ export function usePreviewMessageRenderer() {
          const tokens = marked.lexer(text);
          const organizedTokens = organizeMarkedTokens(tokens);
 
-         const emojiToken = organizedTokens.find((t) => t.type === "emoji");
-         if (!emojiToken) continue;
+         const voidToken = organizedTokens.find((t) => isVoidToken(t) === true);
+         if (!voidToken) continue;
 
          if (
             ranges?.some(
-               (x) => x.codespan && Range.includes(x, { path, offset: emojiToken.start }) && Range.includes(x, { path, offset: emojiToken.end }),
+               (x) => x.codespan && Range.includes(x, { path, offset: voidToken.start }) && Range.includes(x, { path, offset: voidToken.end }),
             )
          )
             continue;
 
          let deletePath = path;
 
-         if (emojiToken.start === 0) {
+         if (voidToken.start === 0) {
             editor.insertNode({ text: "\uFEFF", throwaway: true }, { at: { path, offset: 0 } });
             deletePath = editor.after(path, { unit: "offset" })!.path;
          }
 
-         editor.delete({ at: { anchor: { path: deletePath, offset: emojiToken.start }, focus: { path: deletePath, offset: emojiToken.end } } });
+         editor.delete({ at: { anchor: { path: deletePath, offset: voidToken.start }, focus: { path: deletePath, offset: voidToken.end } } });
 
-         const emojiElement: Element = {
-            type: "emoji",
-            slug: emojiToken.emoji!.slug,
-            unicode: emojiToken.emoji!.unicode,
-            id: emojiToken.emoji!.id,
-            children: [{ text: "" }],
-         };
-         editor.insertNodes(emojiElement, { at: { path, offset: emojiToken.start } });
+         const voidElement = buildVoidElement(voidToken);
+         editor.insertNodes(voidElement, { at: { path, offset: voidToken.start } });
 
          editor.removeNodes({
             at: { anchor: editor.start([]), focus: editor.end([]) },
@@ -286,13 +304,42 @@ export function usePreviewMessageRenderer() {
          });
 
          if (editor.selection?.anchor.path.length === 3) editor.move({ unit: "offset" });
-         if (editor.selection && Path.equals(editor.selection.anchor.path, path) && editor.selection.anchor.offset === emojiToken.start)
+         if (editor.selection && Path.equals(editor.selection.anchor.path, path) && editor.selection.anchor.offset === voidToken.start)
             editor.move({ distance: 2, unit: "offset" });
 
          return true;
       }
 
       return false;
+   }
+
+   function buildVoidElement(token: MarkedToken): Element {
+      if (token.type === "emoji") {
+         return {
+            type: "emoji",
+            slug: token.emoji!.slug,
+            unicode: token.emoji!.unicode,
+            id: token.emoji!.id,
+            children: [{ text: "" }],
+         };
+      } else if (token.type === "internal-mention") {
+         if (token.internalMention?.type === "user") {
+            return {
+               type: "mention",
+               mentionType: "user",
+               userId: token.internalMention!.text,
+               children: [{ text: "" }],
+            };
+         }
+         if (token.internalMention?.type === "everyone") {
+            return {
+               type: "mention",
+               mentionType: "everyone",
+               usedText: token.internalMention!.text,
+               children: [{ text: "" }],
+            };
+         } else throw new Error(`Unsupported internal mention type: ${token.internalMention?.type}`);
+      } else throw new Error(`Unsupported void token type: ${token.type}`);
    }
 
    function convertEmojisToSlugs() {
@@ -316,14 +363,68 @@ export function usePreviewMessageRenderer() {
       return false;
    }
 
+   const currentMentionRef = useRef<{ path: Path; token: ReturnType<typeof organizeMarkedTokens>[number] } | null>(null);
+
+   function checkAndShowAutocomplete() {
+      const { selection } = editor;
+      if (!selection || !Range.isCollapsed(selection)) {
+         props.onCloseAutocomplete();
+         return;
+      }
+
+      for (const [node, path] of Node.texts(editor)) {
+         if (path[0] !== selection.anchor.path[0]) continue;
+
+         const tokens = marked.lexer(node.text);
+         const organizedTokens = organizeMarkedTokens(tokens).filter((x) => x.mention);
+
+         const mentionToken = organizedTokens.find((t) =>
+            Range.includes({ anchor: { path, offset: t.start }, focus: { path, offset: t.end } }, selection.anchor),
+         );
+
+         if (!mentionToken || !mentionToken.mention || !mentionToken.mention) continue;
+
+         if (selection.anchor.offset >= mentionToken.start + mentionToken.mention.queryIndex) {
+            if (mentionToken.mention?.type === "user") {
+               currentMentionRef.current = { path, token: mentionToken };
+               props.onSetAutocomplete("user", mentionToken.mention.text);
+               return;
+            }
+         }
+      }
+
+      currentMentionRef.current = null;
+      props.onCloseAutocomplete();
+   }
+
+   function handleAutocompleteSelect(item: AutocompleteItem) {
+      const { selection } = editor;
+      if (!selection || !Range.isCollapsed(selection)) return;
+
+      const mention = currentMentionRef.current;
+      if (!mention) return;
+
+      const range: Range = { anchor: { path: mention.path, offset: mention.token.start }, focus: { path: mention.path, offset: mention.token.end } };
+
+      editor.select(range);
+      editor.delete();
+      if (item.type === "special") {
+         editor.insertText(`@${item.id} `);
+      } else {
+         editor.insertText(`<@${item.id}> `);
+      }
+   }
+
    async function handleEditorOnChange() {
       cachedDecorations.current = calculateAllDecorations(editor);
       setDecorateVersion((v) => v + 1);
 
       let hasChanges = false;
       do {
-         hasChanges = convertEmojisToElements();
+         hasChanges = convertVoidTokensToElements();
       } while (hasChanges);
+
+      checkAndShowAutocomplete();
 
       await Promise.resolve();
 
@@ -333,5 +434,5 @@ export function usePreviewMessageRenderer() {
       } while (hasChanges);
    }
 
-   return { decorate, editor, renderElement, renderLeaf, handleEditorOnChange };
+   return { decorate, editor, renderElement, renderLeaf, handleEditorOnChange, handleAutocompleteSelect };
 }

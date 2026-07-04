@@ -166,9 +166,9 @@ export function convertToAppPresence(presence: UserPresence): AppPresence {
 
 export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: string }> = {
    offline: { text: "Offline", color: "bg-white/50" },
-   dnd: { text: "Do Not Disturb", color: "bg-negative-100" },
-   idle: { text: "Idle", color: "bg-caution-100" },
-   online: { text: "Online", color: "bg-positive-100" },
+   dnd: { text: "Do Not Disturb", color: "bg-negative-300" },
+   idle: { text: "Idle", color: "bg-caution-300" },
+   online: { text: "Online", color: "bg-positive-300" },
 } as const;
 
 export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {

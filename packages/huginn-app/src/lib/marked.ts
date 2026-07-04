@@ -93,6 +93,60 @@ const emojiExtension: TokenizerExtension = {
    },
 };
 
-const modifiedMarked = marked.use({ extensions: [spoilerExtension, underlineExtension, emojiExtension] });
+const userIdMentionExtension: TokenizerExtension = {
+   name: "user-id-mention",
+   level: "inline",
+   start(src: string) {
+      return src.match(/<@/)?.index;
+   },
+   tokenizer(src: string) {
+      const match = /^<@(\d*)>/.exec(src);
+      if (match) {
+         return { type: "user-id-mention", raw: match[0], text: match[1] };
+      }
+   },
+};
+
+const userEveryoneMentionExtension: TokenizerExtension = {
+   name: "user-everyone-mention",
+   level: "inline",
+   start(src) {
+      return src.match(/@(everyone|all|leader)\b/i)?.index;
+   },
+   tokenizer(src) {
+      const match = /^@(everyone|all|leader)\b/i.exec(src);
+      if (match) {
+         return { type: "user-everyone-mention", raw: match[0], text: match[1] };
+      }
+   },
+};
+
+const userMentionExtension: TokenizerExtension = {
+   name: "user-mention",
+   level: "inline",
+   start(src) {
+      return src.indexOf("@");
+   },
+   tokenizer(src, tokens) {
+      if (src.startsWith("<@") || tokens.at(-1)?.raw.endsWith("<")) return;
+      const match = /^@([a-zA-Z0-9_]*)/.exec(src);
+      if (match) {
+         return {
+            type: "user-mention",
+            raw: match[0],
+            text: match[1],
+            queryIndex: 1, // the index at which the cursor must be placed to start the query for autocomplete. 1 means after the @ symbol.
+         };
+      }
+   },
+};
+
+const modifiedMarked = marked.use({
+   tokenizer: {
+      html: () => {},
+      tag: () => {},
+   },
+   extensions: [spoilerExtension, underlineExtension, emojiExtension, userMentionExtension, userEveryoneMentionExtension, userIdMentionExtension],
+});
 
 export { modifiedMarked as marked };

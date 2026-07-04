@@ -409,7 +409,7 @@ function PresetItem(props: { name: string; isSelected: boolean; isPending?: bool
       <div
          className={clsx(
             "transition-ring flex overflow-hidden rounded-md",
-            props.isSelected && (props.isPending ? "ring-caution-600 ring" : "ring-positive-600 ring"),
+            props.isSelected && (props.isPending ? "ring-caution-700 ring" : "ring-positive-700 ring"),
          )}
       >
          <HuginnButton

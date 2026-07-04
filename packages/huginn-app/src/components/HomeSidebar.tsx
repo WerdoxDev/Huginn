@@ -94,7 +94,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
                   Friends
                </RingLinkButton>
                {friendsNotificationsCount !== 0 && (
-                  <AttentionIndicator className="-right-2.5 -bottom-3">{friendsNotificationsCount}</AttentionIndicator>
+                  <AttentionIndicator className="bg-surface-alt -right-3.5 -bottom-3.5">{friendsNotificationsCount}</AttentionIndicator>
                )}
             </div>
          </div>

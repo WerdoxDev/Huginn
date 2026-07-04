@@ -16,49 +16,37 @@
 }
 
 @theme inline {
-   --color-surface: rgb(var(--tcolor-surface));
-   --color-surface-alt: rgb(var(--tcolor-surface-alt));
-   --color-surface-deep: rgb(var(--tcolor-surface-deep));
+   --color-surface: var(--tcolor-surface);
+   --color-surface-alt: var(--tcolor-surface-alt);
+   --color-surface-deep: var(--tcolor-surface-deep);
 
-   --color-primary-300: rgb(var(--tcolor-primary-300));
-   --color-primary-400: rgb(var(--tcolor-primary-400));
-   --color-primary-500: rgb(var(--tcolor-primary-500));
-   --color-primary-600: rgb(var(--tcolor-primary-600));
-   --color-primary-700: rgb(var(--tcolor-primary-700));
-   --color-primary-800: rgb(var(--tcolor-primary-800));
-   --color-primary-900: rgb(var(--tcolor-primary-900));
+   --color-primary-300: var(--tcolor-primary-300);
+   --color-primary-400: var(--tcolor-primary-400);
+   --color-primary-500: var(--tcolor-primary-500);
+   --color-primary-600: var(--tcolor-primary-600);
+   --color-primary-700: var(--tcolor-primary-700);
+   --color-primary-800: var(--tcolor-primary-800);
+   --color-primary-900: var(--tcolor-primary-900);
 
-   --color-positive-100: rgb(var(--tcolor-positive-100));
-   --color-positive-200: rgb(var(--tcolor-positive-200));
-   --color-positive-300: rgb(var(--tcolor-positive-300));
-   --color-positive-400: rgb(var(--tcolor-positive-400));
-   --color-positive-500: rgb(var(--tcolor-positive-500));
-   --color-positive-600: rgb(var(--tcolor-positive-600));
-   --color-positive-700: rgb(var(--tcolor-positive-700));
-   --color-positive-800: rgb(var(--tcolor-positive-800));
-   --color-positive-900: rgb(var(--tcolor-positive-900));
+   --color-positive-100: var(--tcolor-positive-100);
+   --color-positive-300: var(--tcolor-positive-300);
+   --color-positive-500: var(--tcolor-positive-500);
+   --color-positive-700: var(--tcolor-positive-700);
+   --color-positive-900: var(--tcolor-positive-900);
 
-   --color-negative-100: rgb(var(--tcolor-negative-100));
-   --color-negative-200: rgb(var(--tcolor-negative-200));
-   --color-negative-300: rgb(var(--tcolor-negative-300));
-   --color-negative-400: rgb(var(--tcolor-negative-400));
-   --color-negative-500: rgb(var(--tcolor-negative-500));
-   --color-negative-600: rgb(var(--tcolor-negative-600));
-   --color-negative-700: rgb(var(--tcolor-negative-700));
-   --color-negative-800: rgb(var(--tcolor-negative-800));
-   --color-negative-900: rgb(var(--tcolor-negative-900));
+   --color-negative-100: var(--tcolor-negative-100);
+   --color-negative-300: var(--tcolor-negative-300);
+   --color-negative-500: var(--tcolor-negative-500);
+   --color-negative-700: var(--tcolor-negative-700);
+   --color-negative-900: var(--tcolor-negative-900);
 
-   --color-caution-100: rgb(var(--tcolor-caution-100));
-   --color-caution-200: rgb(var(--tcolor-caution-200));
-   --color-caution-300: rgb(var(--tcolor-caution-300));
-   --color-caution-400: rgb(var(--tcolor-caution-400));
-   --color-caution-500: rgb(var(--tcolor-caution-500));
-   --color-caution-600: rgb(var(--tcolor-caution-600));
-   --color-caution-700: rgb(var(--tcolor-caution-700));
-   --color-caution-800: rgb(var(--tcolor-caution-800));
-   --color-caution-900: rgb(var(--tcolor-caution-900));
+   --color-caution-100: var(--tcolor-caution-100);
+   --color-caution-300: var(--tcolor-caution-300);
+   --color-caution-500: var(--tcolor-caution-500);
+   --color-caution-700: var(--tcolor-caution-700);
+   --color-caution-900: var(--tcolor-caution-900);
 
-   --color-text: rgb(var(--tcolor-text));
+   --color-text: var(--tcolor-text);
 }
 
 @utility box-exact {

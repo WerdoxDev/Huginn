@@ -7,6 +7,7 @@ import ListElement from "@components/editor/ListElement";
 import ListItemElement from "@components/editor/ListItemElement";
 import MessageEmojiElement from "@components/editor/MessageEmojiElement";
 import MessageLeaf from "@components/editor/MessageLeaf";
+import MessageMentionElement from "@components/editor/MessageMentionElement";
 import SpoilerElement from "@components/editor/SpoilerElement";
 import { CONSTANTS } from "@huginn/shared";
 import { marked } from "@lib/marked";
@@ -86,6 +87,10 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <ListItemElement key={key}>{children}</ListItemElement>;
             case "unordered-list":
                return <ListElement key={key}>{children}</ListElement>;
+            case "mention":
+               if (node.mentionType === "user") return <MessageMentionElement key={key} mentionType={node.mentionType} userId={node.userId} />;
+               else if (node.mentionType === "everyone")
+                  return <MessageMentionElement key={key} mentionType={node.mentionType} usedText={node.usedText} />;
          }
       } else if (Text.isText(node)) {
          return (
@@ -131,6 +136,11 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                big: isBigEmoji,
                children: [],
             });
+         } else if (token.type === "internal-mention") {
+            if (token.internalMention?.type === "user")
+               deepestNode.children.push({ type: "mention", mentionType: "user", userId: token.internalMention!.text!, children: [] });
+            else if (token.internalMention?.type === "everyone")
+               deepestNode.children.push({ type: "mention", mentionType: "everyone", usedText: token.internalMention!.text!, children: [] });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);

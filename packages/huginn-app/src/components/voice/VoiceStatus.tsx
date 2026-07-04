@@ -18,11 +18,11 @@ import { useEffect, useMemo, useState } from "react";
 import Tooltip from "../tooltip/Tooltip";
 
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
-   disconnected: { text: "Disconnected", color: "!text-negative-100" },
-   idle: { text: "Connecting...", color: "!text-caution-100" },
-   connecting: { text: "Connecting...", color: "!text-caution-100" },
+   disconnected: { text: "Disconnected", color: "!text-negative-300" },
+   idle: { text: "Connecting...", color: "!text-caution-300" },
+   connecting: { text: "Connecting...", color: "!text-caution-300" },
    ready: { text: "Connected" },
-   signaling: { text: "RTC Signalling...", color: "!text-caution-100" },
+   signaling: { text: "RTC Signalling...", color: "!text-caution-300" },
 };
 
 export default function VoiceStatus() {

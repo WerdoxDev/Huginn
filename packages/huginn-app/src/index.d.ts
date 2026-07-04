@@ -65,6 +65,22 @@ export type EmojiElement = {
    children: Descendant[];
 };
 
+export type UserMentionElement = {
+   mentionType: "user";
+   userId: Snowflake;
+} & MentionElementBase;
+
+export type EveryoneMentionElement = {
+   mentionType: "everyone";
+   usedText: string;
+} & MentionElementBase;
+
+type MentionElementBase = {
+   type: "mention";
+   children: Descendant[];
+};
+export type MentionElement = UserMentionElement | EveryoneMentionElement;
+
 type ListElement = {
    type: "unordered-list" | "ordered-list";
    children: Descendant[];
@@ -85,7 +101,8 @@ type CustomElement =
    | CodespanElement
    | EmojiElement
    | ListElement
-   | ListItemElement;
+   | ListItemElement
+   | MentionElement;
 
 type TextFormats = {
    bold?: boolean;

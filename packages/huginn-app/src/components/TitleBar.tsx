@@ -37,7 +37,7 @@ export default function TitleBar() {
                      <IconMingcuteFullscreenFill className="h-4 w-4 text-white opacity-80" />
                   )}
                </button>
-               <button type="button" className="hover:bg-negative-100 flex h-full w-10 cursor-pointer items-center justify-center" onClick={close}>
+               <button type="button" className="hover:bg-negative-300 flex h-full w-10 cursor-pointer items-center justify-center" onClick={close}>
                   <IconMingcuteCloseFill className="h-4 w-4 text-white opacity-80" />
                </button>
             </div>

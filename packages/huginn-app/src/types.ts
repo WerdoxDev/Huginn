@@ -1,4 +1,3 @@
-import type { Popover } from "@base-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -20,6 +19,7 @@ import type {
    Snowflake,
    UserPresence,
    MessageFlags,
+   ThemeType,
 } from "@huginn/shared";
 import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
@@ -104,6 +104,7 @@ export type ColorTheme = {
    surface: string;
    "surface-alt": string;
    "surface-deep": string;
+   text: string;
 
    "primary-300": string;
    "primary-400": string;
@@ -114,39 +115,23 @@ export type ColorTheme = {
    "primary-900": string;
 
    "positive-100": string;
-   "positive-200": string;
    "positive-300": string;
-   "positive-400": string;
    "positive-500": string;
-   "positive-600": string;
    "positive-700": string;
-   "positive-800": string;
    "positive-900": string;
 
    "negative-100": string;
-   "negative-200": string;
    "negative-300": string;
-   "negative-400": string;
    "negative-500": string;
-   "negative-600": string;
    "negative-700": string;
-   "negative-800": string;
    "negative-900": string;
 
    "caution-100": string;
-   "caution-200": string;
    "caution-300": string;
-   "caution-400": string;
    "caution-500": string;
-   "caution-600": string;
    "caution-700": string;
-   "caution-800": string;
    "caution-900": string;
-
-   text: string;
 };
-
-export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
 export type ContextMenuProps<T> = {
    // label?: string;
@@ -287,6 +272,8 @@ export type MarkedToken = {
    link?: { href: string };
    list?: { ordered: boolean; index?: number };
    emoji?: { id?: string; slug: string; unicode?: string; initial: "slug" | "emoji" };
+   mention?: { text: string; type: "user"; queryIndex: number };
+   internalMention?: { text: string; type: "user" | "everyone" };
 };
 
 export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
@@ -604,4 +591,27 @@ export type AnimatedMode = "hover" | "always" | "never";
 
 export type UpdateInfo = {
    version: string;
+};
+
+type AutocompleteUserItem = {
+   type: "user";
+   id: Snowflake;
+   name: string;
+   avatarHash?: string | null;
+};
+
+type AutocompleteSpecialItem = {
+   type: "special";
+   id: string;
+   label: string;
+   description: string;
+};
+
+export type AutocompleteItem = AutocompleteUserItem | AutocompleteSpecialItem;
+export type AutocompleteType = AutocompleteItem["type"];
+export type AutocompleteState = {
+   isOpen: boolean;
+   type: AutocompleteType | null;
+   query: string;
+   selectedIndex: number;
 };

@@ -20,6 +20,8 @@ import type { AppMessage, AppAttachment } from "@/types";
 
 import { useIsMobile } from "./useIsMobile";
 
+const INTERCEPT_ELEMENT_TYPES = ["emoji", "mention"];
+
 function serialize(nodes: Descendant[]) {
    let text = "";
    for (const node of nodes) {
@@ -32,6 +34,12 @@ function serialize(nodes: Descendant[]) {
 
       if (Element.isElement(node) && node.type === "emoji") {
          text += node.unicode || node.slug;
+         continue;
+      }
+
+      if (Element.isElement(node) && node.type === "mention") {
+         if (node.mentionType === "everyone") text += "@" + node.usedText;
+         else if (node.mentionType === "user") text += "<@" + node.userId + ">";
          continue;
       }
 
@@ -50,6 +58,7 @@ export function useMessageBoxActions(options: {
    messages: AppMessage[];
    attachments: AppAttachment[];
    clearAttachments: () => void;
+   autocompleteKeyIntercept: (event: KeyboardEvent) => boolean;
 }) {
    const params = useParams({ strict: false });
    const queryClient = useQueryClient();
@@ -168,7 +177,7 @@ export function useMessageBoxActions(options: {
       const editorNodes = [
          ...options.editor.nodes({
             at: { anchor: options.editor.start([]), focus: options.editor.end([]) },
-            match: (x) => (Text.isText(x) && x.text !== "") || (Element.isElement(x) && x.type === "emoji"),
+            match: (x) => (Text.isText(x) && x.text !== "") || (Element.isElement(x) && INTERCEPT_ELEMENT_TYPES.includes(x.type)),
          }),
       ];
 
@@ -234,7 +243,7 @@ export function useMessageBoxActions(options: {
       return isRTL;
    }
 
-   function resolveEmojiNavigation(
+   function resolveInterceptNavigation(
       event: KeyboardEvent,
       requireShift?: boolean,
    ): { targetPoint: Point; isExtendingLeft: boolean; selection: BaseSelection } | null {
@@ -256,14 +265,14 @@ export function useMessageBoxActions(options: {
 
       try {
          const [parentNode, parentPath] = Editor.parent(options.editor, path);
-         if (Element.isElement(parentNode) && parentNode.type === "emoji") {
-            // Verify the cursor is immediately adjacent to the emoji boundary,
+         if (Element.isElement(parentNode) && INTERCEPT_ELEMENT_TYPES.includes(parentNode.type)) {
+            // Verify the cursor is immediately adjacent to the intercept boundary,
             // not somewhere further away inside the same block.
-            const emojiEdgePoint = isExtendingLeft
+            const interceptEdgePoint = isExtendingLeft
                ? Editor.after(options.editor, parentPath, { unit: "block" })
                : Editor.before(options.editor, parentPath, { unit: "block" });
 
-            if (!emojiEdgePoint || !Point.equals(selection.focus, emojiEdgePoint)) {
+            if (!interceptEdgePoint || !Point.equals(selection.focus, interceptEdgePoint)) {
                return null;
             }
 
@@ -282,80 +291,80 @@ export function useMessageBoxActions(options: {
       return null;
    }
 
-   function skipEmojiElementOnArrowNavigation(event: KeyboardEvent) {
+   function skipInterceptElementOnArrowNavigation(event: KeyboardEvent) {
       if (event.shiftKey) return; // let the other handler take shift+arrow
-      const result = resolveEmojiNavigation(event);
+      const result = resolveInterceptNavigation(event);
       if (!result) return;
 
       event.preventDefault();
       Transforms.select(options.editor, result.targetPoint); // collapses to target
    }
 
-   function isEmoji(editor: Editor, node: any) {
-      return Element.isElement(node) && editor.isVoid(node) && node.type === "emoji";
+   function isIntercept(editor: Editor, node: any) {
+      return Element.isElement(node) && editor.isVoid(node) && INTERCEPT_ELEMENT_TYPES.includes(node.type);
    }
 
    function getNextBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
       let nextWord = Editor.after(options.editor, from, { unit });
       if (nextWord) {
          const [parentNode] = Editor.parent(options.editor, nextWord);
-         if (isEmoji(editor, parentNode)) nextWord = Editor.after(options.editor, nextWord, { unit });
+         if (isIntercept(editor, parentNode)) nextWord = Editor.after(options.editor, nextWord, { unit });
       }
 
-      const nextEmojiEntry = Editor.nodes(options.editor, {
+      const nextInterceptEntry = Editor.nodes(options.editor, {
          at: [],
-         match: (n) => Element.isElement(n) && n.type === "emoji",
+         match: (n) => Element.isElement(n) && INTERCEPT_ELEMENT_TYPES.includes(n.type),
       });
 
-      let nearestEmojiStart: Point | null = null;
+      let nearestInterceptStart: Point | null = null;
 
-      for (const [, path] of nextEmojiEntry) {
+      for (const [, path] of nextInterceptEntry) {
          const before = Editor.before(options.editor, path);
          if (!before) continue;
 
          if (Point.isAfter(before, from)) {
-            nearestEmojiStart = before;
+            nearestInterceptStart = before;
             break;
          }
       }
 
-      if (!nearestEmojiStart) return nextWord;
-      if (!nextWord) return nearestEmojiStart;
+      if (!nearestInterceptStart) return nextWord;
+      if (!nextWord) return nearestInterceptStart;
 
-      return Point.isBefore(nearestEmojiStart, nextWord) ? nearestEmojiStart : nextWord;
+      return Point.isBefore(nearestInterceptStart, nextWord) ? nearestInterceptStart : nextWord;
    }
 
    function getPreviousBoundary(editor: Editor, from: Point, unit: TextUnitAdjustment): Point | undefined {
       let previousWord = Editor.before(options.editor, from, { unit });
       if (previousWord) {
          const [parentNode] = Editor.parent(options.editor, previousWord);
-         if (isEmoji(editor, parentNode)) {
+         if (isIntercept(editor, parentNode)) {
             previousWord = Editor.before(options.editor, previousWord, { unit });
          }
       }
 
-      const previousEmojiEntry = Editor.nodes(options.editor, {
+      const previousInterceptEntry = Editor.nodes(options.editor, {
          at: [],
-         match: (n) => Element.isElement(n) && n.type === "emoji",
+         match: (n) => Element.isElement(n) && INTERCEPT_ELEMENT_TYPES.includes(n.type),
          reverse: true,
       });
 
-      let nearestEmojiEnd: Point | null = null;
+      let nearestInterceptEnd: Point | null = null;
 
-      for (const [, path] of previousEmojiEntry) {
+      for (const [, path] of previousInterceptEntry) {
          const after = Editor.after(options.editor, path);
          if (!after) continue;
 
          if (Point.isBefore(after, from)) {
-            nearestEmojiEnd = after;
+            nearestInterceptEnd = after;
             break;
          }
       }
 
-      if (!nearestEmojiEnd) return previousWord;
-      if (!previousWord) return nearestEmojiEnd;
+      if (!nearestInterceptEnd) return previousWord;
+      if (!previousWord) return nearestInterceptEnd;
 
-      return Point.isAfter(nearestEmojiEnd, previousWord) ? nearestEmojiEnd : previousWord;
+      return Point.isAfter(nearestInterceptEnd, previousWord) ? nearestInterceptEnd : previousWord;
    }
 
    function interceptArrowNavigation(event: KeyboardEvent, unit: TextUnitAdjustment) {
@@ -384,7 +393,12 @@ export function useMessageBoxActions(options: {
       if (event.ctrlKey) {
          interceptArrowNavigation(event, "word");
       } else if (event.shiftKey) interceptArrowNavigation(event, "character");
-      else if (options.editor.selection && Range.isCollapsed(options.editor.selection)) skipEmojiElementOnArrowNavigation(event);
+      else if (options.editor.selection && Range.isCollapsed(options.editor.selection)) skipInterceptElementOnArrowNavigation(event);
+
+      if (options.autocompleteKeyIntercept(event) === true) {
+         event.preventDefault();
+         return;
+      }
 
       // Edit last message on ArrowUp with empty editor
       if (event.key === "ArrowUp" && isEditorEmpty()) {

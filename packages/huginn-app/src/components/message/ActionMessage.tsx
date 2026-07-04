@@ -71,10 +71,10 @@ export default function ActionMessage() {
          )}
       >
          {type === MessageType.RECIPIENT_REMOVE && (
-            <IconMingcuteArrowLeftFill className="text-negative-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+            <IconMingcuteArrowLeftFill className="text-negative-300 mr-1.5 inline-block size-5 shrink-0 align-middle" />
          )}
          {type === MessageType.RECIPIENT_ADD && (
-            <IconMingcuteArrowRightFill className="text-positive-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+            <IconMingcuteArrowRightFill className="text-positive-300 mr-1.5 inline-block size-5 shrink-0 align-middle" />
          )}
          {type === MessageType.CHANNEL_NAME_CHANGED && (
             <IconMingcuteEdit2Fill className="text-text/80 mr-1.5 inline-block size-5 shrink-0 align-middle" />
