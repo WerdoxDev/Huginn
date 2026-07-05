@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.79.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.78.0...app@v0.79.0) (2026-07-05)
+
+
+### Features
+
+* **app:** finish mention ui implementation + new token replacement methods ([4bd8b69](https://github.com/WerdoxDev/Huginn/commit/4bd8b6907b181d4d83108261a7fafbe55e8f29d8))
+* **app:** implement mentions on ui + updated all color themes to use oklch ([72d3141](https://github.com/WerdoxDev/Huginn/commit/72d31412cf03717926ab120549f284fb00143036))
+
+
+### Bug Fixes
+
+* wrong package overrides ([c00d7dd](https://github.com/WerdoxDev/Huginn/commit/c00d7dd6f10c8eec6561996da849eb96334d98b9))
+
 ## [0.78.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.1...app@v0.78.0) (2026-07-02)
 
 

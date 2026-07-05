@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.1.0...assets@v0.2.0) (2026-07-05)
+
+
+### Features
+
+* **assets:** add icon and palette generator ([e2cacb7](https://github.com/WerdoxDev/Huginn/commit/e2cacb7c5db6f8b02a8ed600741da9c039dc896f))
+
 ## 0.1.0 (2026-07-02)
 
 
