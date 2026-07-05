@@ -12,28 +12,28 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 // import { usePostHog } from "posthog-js/react";
 
 const innerColorMap: Record<string, string> = {
-   info: "bg-caution-200!",
-   error: "bg-negative-200!",
-   success: "bg-positive-400!",
+   info: "bg-caution-500!",
+   error: "bg-negative-500!",
+   success: "bg-positive-500!",
 };
 
 const backgroundColorMap: Record<string, string> = {
-   info: "bg-caution-600!",
-   error: "bg-negative-600!",
-   success: "bg-positive-800!",
+   info: "bg-caution-700!",
+   error: "bg-negative-700!",
+   success: "bg-positive-700!",
 };
 
 const borderColorMap: Record<string, string> = {
    info: "border-caution-300!",
    error: "border-negative-300!",
-   success: "border-positive-500!",
+   success: "border-positive-300!",
 };
 
 const glowShadowMap: Record<string, string> = {
-   info: "0 0 16px 2px color-mix(in srgb, var(--color-caution-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-caution-600) 8%, transparent)",
-   error: "0 0 16px 2px color-mix(in srgb, var(--color-negative-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-negative-600) 8%, transparent)",
+   info: "0 0 16px 2px color-mix(in srgb, var(--color-caution-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-caution-500) 8%, transparent)",
+   error: "0 0 16px 2px color-mix(in srgb, var(--color-negative-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-negative-500) 8%, transparent)",
    success:
-      "0 0 16px 2px color-mix(in srgb, var(--color-positive-400) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-positive-700) 8%, transparent)",
+      "0 0 16px 2px color-mix(in srgb, var(--color-positive-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-positive-700) 8%, transparent)",
 };
 
 export default function InfoModal() {
@@ -129,11 +129,6 @@ export default function InfoModal() {
                render={() => (
                   <div ref={descRef} style={{ opacity: 0 }} className="text-text/80 text-center">
                      {isPlainBodyText ? <div>{modal.text}</div> : modal.text}
-                     {/* {errorCode && (
-                     <div className="bg-negative-700/50 border-negative-400 mt-2 inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-sm font-medium text-white/80">
-                        {errorCode}
-                     </div>
-                  )} */}
                      {errorCode && (
                         <div className="text-text/60 mt-3.5 text-center text-xs">
                            <span className="uppercase">reason:</span>

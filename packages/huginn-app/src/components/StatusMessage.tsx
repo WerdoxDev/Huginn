@@ -6,8 +6,8 @@ import type { StatusType } from "@/types";
 const STATUS_TEXT_COLORS: Record<StatusType, string> = {
    none: "",
    default: "text-text/80",
-   error: "text-negative-100",
-   success: "text-positive-100",
+   error: "text-negative-300",
+   success: "text-positive-300",
 };
 
 export default function StatusMessage(props: { className?: string; status: StatusType; visible: boolean; text: string }) {

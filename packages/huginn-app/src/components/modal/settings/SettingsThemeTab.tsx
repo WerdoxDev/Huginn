@@ -1,22 +1,22 @@
 import HuginnIcon from "@components/HuginnIcon";
 import HuginnLabel from "@components/HuginnLabel";
-import { hexToRgb } from "@huginn/shared";
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, scarletTheme, useTheme } from "@stores/themeStore";
+import { parseOklchToRgb, type ThemeType } from "@huginn/shared";
+import { mappedColorThemes, useTheme } from "@stores/themeStore";
 import { animate, createDraggable, createScope, Draggable, utils, type Scope } from "animejs";
 import clsx from "clsx";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
-import type { SettingsTabProps, ThemeType } from "@/types";
+import type { ColorTheme, SettingsTabProps } from "@/types";
 
 const primaryCorners = ["primary-300", "primary-700", "primary-500", "primary-900"] as const;
 
-const themeOptions = [
-   { type: "pine-green" as ThemeType, label: "Pine Green", theme: pineGreenTheme },
-   { type: "cerulean" as ThemeType, label: "Cerulean", theme: ceruleanTheme },
-   { type: "eggplant" as ThemeType, label: "Eggplant", theme: eggplantTheme },
-   { type: "coffee" as ThemeType, label: "Coffee", theme: coffeeTheme },
-   { type: "charcoal" as ThemeType, label: "Charcoal", theme: charcoalTheme },
-   { type: "scarlet" as ThemeType, label: "Scarlet", theme: scarletTheme },
+const themeOptions: { type: ThemeType; label: string; theme: ColorTheme }[] = [
+   { type: "pine-green", label: "Pine Green", theme: mappedColorThemes["pine-green"] },
+   { type: "cerulean", label: "Cerulean", theme: mappedColorThemes["cerulean"] },
+   { type: "plum", label: "Plum", theme: mappedColorThemes["plum"] },
+   { type: "coffee", label: "Coffee", theme: mappedColorThemes["coffee"] },
+   { type: "violet", label: "Violet", theme: mappedColorThemes["violet"] },
+   { type: "rose", label: "Rose", theme: mappedColorThemes["rose"] },
 ] as const;
 
 export default function SettingsThemeTab(props: SettingsTabProps) {
@@ -35,16 +35,16 @@ export default function SettingsThemeTab(props: SettingsTabProps) {
    // Canvas renders the hovered preview theme, or the current theme
    const canvasTheme = previewThemeType ? themeOptions.find((t) => t.type === previewThemeType)!.theme : activeTheme;
 
-   const canvasTl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[0]]), [canvasTheme]);
-   const canvasTr = useMemo(() => hexToRgb(canvasTheme[primaryCorners[1]]), [canvasTheme]);
-   const canvasBl = useMemo(() => hexToRgb(canvasTheme[primaryCorners[2]]), [canvasTheme]);
-   const canvasBr = useMemo(() => hexToRgb(canvasTheme[primaryCorners[3]]), [canvasTheme]);
+   const canvasTl = useMemo(() => parseOklchToRgb(canvasTheme[primaryCorners[0]]) ?? [], [canvasTheme]);
+   const canvasTr = useMemo(() => parseOklchToRgb(canvasTheme[primaryCorners[1]]) ?? [], [canvasTheme]);
+   const canvasBl = useMemo(() => parseOklchToRgb(canvasTheme[primaryCorners[2]]) ?? [], [canvasTheme]);
+   const canvasBr = useMemo(() => parseOklchToRgb(canvasTheme[primaryCorners[3]]) ?? [], [canvasTheme]);
 
    // Draggable glow tracks the current theme
-   const tl = useMemo(() => hexToRgb(activeTheme[primaryCorners[0]]), [activeTheme]);
-   const tr = useMemo(() => hexToRgb(activeTheme[primaryCorners[1]]), [activeTheme]);
-   const bl = useMemo(() => hexToRgb(activeTheme[primaryCorners[2]]), [activeTheme]);
-   const br = useMemo(() => hexToRgb(activeTheme[primaryCorners[3]]), [activeTheme]);
+   const tl = useMemo(() => parseOklchToRgb(activeTheme[primaryCorners[0]]) ?? [], [activeTheme]);
+   const tr = useMemo(() => parseOklchToRgb(activeTheme[primaryCorners[1]]) ?? [], [activeTheme]);
+   const bl = useMemo(() => parseOklchToRgb(activeTheme[primaryCorners[2]]) ?? [], [activeTheme]);
+   const br = useMemo(() => parseOklchToRgb(activeTheme[primaryCorners[3]]) ?? [], [activeTheme]);
 
    // Render 2D gradient to canvas (updates on preview hover too)
    useEffect(() => {

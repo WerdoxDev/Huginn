@@ -69,6 +69,7 @@ export default function DefaultMessage() {
 
    const isNewDate = context.message.hasNewDate || !context.lastMessage || context.message.hasNewDate;
    const isUnread = context.message.isUnread;
+   const isMentioned = context.message.isMentioned;
 
    const hasContext =
       (contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id) ||
@@ -86,9 +87,12 @@ export default function DefaultMessage() {
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing
-                     ? "bg-positive-800/30"
-                     : "bg-primary-800/30"
-                  : "hover:bg-surface-alt active:bg-surface-alt data-context:bg-surface-alt"),
+                     ? "bg-positive-900/30"
+                     : // : "bg-primary-900/30"
+                       "bg-caution-900/30"
+                  : isMentioned
+                    ? "bg-primary-900/30 hover:bg-primary-900/50"
+                    : "hover:bg-surface-alt active:bg-surface-alt data-context:bg-surface-alt"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
@@ -102,8 +106,10 @@ export default function DefaultMessage() {
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[width]",
-               isEditing || isReplying || isJumpHighlighted ? "w-1" : "w-0",
-               isEditing ? "bg-positive-400" : isReplying || isJumpHighlighted ? "bg-primary-400" : undefined,
+               isEditing || isReplying || isJumpHighlighted || isMentioned ? "w-1" : "w-0",
+               isEditing && "bg-positive-500",
+               (isReplying || isJumpHighlighted) && "bg-caution-500",
+               isMentioned && "bg-primary-500",
             )}
          ></div>
          {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
@@ -252,7 +258,7 @@ function DefaultRenderer(props: {
                      props.error === undefined && props.isPreview
                         ? "bg-surface"
                         : props.error !== undefined
-                          ? "bg-negative-600"
+                          ? "bg-negative-700"
                           : props.isSelf
                             ? "bg-primary-800"
                             : "bg-surface",
@@ -273,7 +279,7 @@ function DefaultRenderer(props: {
                            className={clsx(
                               "h-full w-full overflow-hidden transition-all duration-1000",
                               props.error !== undefined
-                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-negative-600))]"
+                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-negative-700))]"
                                  : props.isSelf
                                    ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
                                    : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
@@ -294,7 +300,7 @@ function DefaultRenderer(props: {
                         className={clsx(
                            "h-full w-full overflow-hidden transition-all duration-1000",
                            props.error !== undefined
-                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-negative-600))]"
+                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-negative-700))]"
                               : props.isSelf
                                 ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
                                 : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
@@ -315,7 +321,7 @@ function DefaultRenderer(props: {
                      <div className="flex h-full items-center justify-center">
                         <Tooltip>
                            <Tooltip.Trigger
-                              className="bg-caution-500 hover:bg-caution-600 active:bg-caution-700 rounded-md p-1 transition-colors"
+                              className="bg-caution-500 hover:bg-caution-700 active:bg-caution-700 rounded-md p-1 transition-colors"
                               onClick={handleRetry}
                            >
                               <IconMingcuteRefreshAnticlockwise1Line className="size-5" />
@@ -328,9 +334,9 @@ function DefaultRenderer(props: {
                   {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
                      <div className="flex shrink-0 items-center gap-x-1">
                         {context.message.isEditing ? (
-                           <IconMingcuteEdit2Fill className="text-positive-100 size-4" />
+                           <IconMingcuteEdit2Fill className="text-positive-300 size-4" />
                         ) : context.message.isReplying ? (
-                           <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4" />
+                           <IconMingcuteCornerUpLeftFill className="text-caution-300 size-4" />
                         ) : null}
                         {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
                      </div>

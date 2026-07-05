@@ -18,7 +18,7 @@ export default function LinkElement(props: { children?: ReactNode; url?: string;
       >
          <div
             className={clsx(
-               "text text-positive-300 inline-block w-full hover:[&_span]:underline",
+               "decoration-primary-500 inline-block w-full rounded px-1 underline text-shadow-lg hover:decoration-2",
                props.noWrapping && "overflow-clip text-ellipsis whitespace-nowrap",
             )}
          >

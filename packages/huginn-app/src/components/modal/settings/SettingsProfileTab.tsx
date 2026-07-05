@@ -289,7 +289,7 @@ export default function SettingsProfileTab() {
                      <ProfileAboutMe
                         accentColor={accentColor}
                         headerRight={
-                           <span className={clsx("text-xs", bio.length > CONSTANTS.BIO_MAX_LENGTH ? "text-negative-100" : "text-text/40")}>
+                           <span className={clsx("text-xs", bio.length > CONSTANTS.BIO_MAX_LENGTH ? "text-negative-300" : "text-text/40")}>
                               {bio.length}/{CONSTANTS.BIO_MAX_LENGTH}
                            </span>
                         }

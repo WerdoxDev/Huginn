@@ -37,7 +37,7 @@ function ReplyingContent(props: { channelId: Snowflake; messageId: Snowflake; on
 
    return (
       <>
-         <IconMingcuteCornerUpLeftFill className="text-primary-400 size-4 shrink-0" />
+         <IconMingcuteCornerUpLeftFill className="text-caution-300 size-4 shrink-0" />
          <span className="text-white/80">
             Replying to <span className="font-semibold">{author?.displayName}</span>
          </span>

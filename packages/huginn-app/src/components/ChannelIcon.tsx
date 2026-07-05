@@ -76,7 +76,7 @@ export default function ChannelIcon(props: {
                className="h-full w-full rounded-full object-cover"
             />
          ) : hasError ? (
-            <div className="bg-negative-400 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
+            <div className="bg-negative-500 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
          ) : (
             <div className="bg-primary-700 h-full w-full rounded-full" />
          )}

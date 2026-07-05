@@ -10,7 +10,6 @@ import { join } from "path";
 import extras from "./emoji-extras/extras.json" with { type: "json" };
 import { generateEmojiSprite } from "./generate-emoji-sheet";
 
-const PREFIX = "twemoji/";
 const TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = "jdecked";
 const REPO = "twemoji";

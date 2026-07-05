@@ -11,6 +11,7 @@ import {
    CDNRoutes,
    CacheStorage,
    FLAG_BADGE_MAP,
+   type MarkedToken,
    type Snowflake,
    type Unpacked,
    UserFlags,
@@ -18,11 +19,12 @@ import {
    hasFlag,
    isImageMediaType,
    isVideoMediaType,
+   marked,
+   organizeMarkedTokens,
    recordSpanError,
 } from "@huginn/shared";
 import { getMessaging } from "firebase-admin/messaging";
 import { JSDOM } from "jsdom";
-import markdownit from "markdown-it";
 import * as semver from "semver";
 
 import { octokit, resend } from "#server";
@@ -93,23 +95,29 @@ export async function getReleaseByTag(tag: string) {
    return release;
 }
 
-export function extractLinks(input?: string): string[] {
-   const md = new markdownit({ linkify: true });
-   const tokens = md.parse(input ?? "", {});
-   const links: string[] = [];
-
-   for (const token of tokens) {
-      if (token.type === "inline" && token.children) {
-         for (const childToken of token.children) {
-            if (childToken.type === "link_open") {
-               links.push(childToken.attrs?.[0]?.[1] ?? "");
-            }
-         }
-      }
-   }
-
-   return links;
+export function getMessageTokens(content: string): MarkedToken[] {
+   const tokens = marked.lexer(content);
+   const organizedTokens = organizeMarkedTokens(tokens);
+   return organizedTokens;
 }
+
+// export function extractLinks(input?: string): string[] {
+//    const md = new markdownit({ linkify: true });
+//    const tokens = md.parse(input ?? "", {});
+//    const links: string[] = [];
+
+//    for (const token of tokens) {
+//       if (token.type === "inline" && token.children) {
+//          for (const childToken of token.children) {
+//             if (childToken.type === "link_open") {
+//                links.push(childToken.attrs?.[0]?.[1] ?? "");
+//             }
+//          }
+//       }
+//    }
+
+//    return links;
+// }
 
 export async function extractData(url: string) {
    const response = await fetch(url, { headers: { "accept-language": "en" } });
@@ -192,11 +200,11 @@ export function getAttachmentUrl(url: string) {
    return url;
 }
 
-export async function generateEmbedsFromContent(content?: string) {
+export async function generateEmbedsFromContent(tokens: MarkedToken[]) {
    const embeds: DBEmbed[] = [];
-   const links = extractLinks(content);
-   for (const link of links) {
-      const { contentType, response } = await extractData(link);
+   const linkTokens = tokens.filter((token) => token.type === "link" && token.link?.href);
+   for (const token of linkTokens) {
+      const { contentType, response } = await extractData(token.link!.href);
 
       if (contentType && isImageMediaType(contentType)) {
          const thumbnailData = await getImageData(await response.arrayBuffer());
@@ -328,6 +336,35 @@ export async function processAttachments(
    }
 
    return processedAttachments;
+}
+
+export async function processMentions(tokens: MarkedToken[]) {
+   const userMentionTexts = tokens
+      .filter((x) => x.type === "internal-mention" && x.internalMention?.type === "user")
+      .map((x) => x.internalMention?.text)
+      .filter((x): x is string => !!x);
+
+   const existsFlags = await Promise.all(
+      userMentionTexts.map(async (x) => {
+         const exists = await prisma.user.exists({ id: BigInt(x) });
+         console.log(`User mention ${x} exists: ${exists}`);
+         return exists === true;
+      }),
+   );
+
+   const userMentions = userMentionTexts.filter((_, i) => existsFlags[i]);
+
+   const everyoneMentions = tokens
+      .filter((x) => x.type === "internal-mention" && x.internalMention?.type === "everyone")
+      .map((x) => x.internalMention?.text)
+      .filter((x): x is string => !!x);
+
+   const ownerMentions = tokens
+      .filter((x) => x.type === "internal-mention" && x.internalMention?.type === "owner")
+      .map((x) => x.internalMention?.text)
+      .filter((x): x is string => !!x);
+
+   return { userMentions, everyoneMentions, ownerMentions };
 }
 
 export function generateVerificationCode() {

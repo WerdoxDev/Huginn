@@ -23,7 +23,7 @@ export function ImagePickerDeleteButton(props: { onClick?: () => void; className
    return (
       <button
          onClick={props.onClick}
-         className={clsx("bg-negative-500 hover:bg-negative-600 cursor-pointer rounded-full! p-2 shadow-md", props.className)}
+         className={clsx("bg-negative-500 hover:bg-negative-700 cursor-pointer rounded-full! p-2 shadow-md", props.className)}
          type="button"
       >
          <IconMingcuteDelete3Fill className="size-4 text-white" />

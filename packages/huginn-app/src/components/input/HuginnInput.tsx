@@ -112,8 +112,8 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
 const STATUS_RING_COLORS: Record<StatusType, string> = {
    none: "",
    default: "ring-primary-700",
-   error: "ring-negative-100",
-   success: "ring-positive-100",
+   error: "ring-negative-300",
+   success: "ring-positive-300",
 };
 
 function Wrapper(props: { className?: string; headless?: boolean; children?: ReactNode }) {
@@ -137,7 +137,7 @@ function Label(props: { children?: ReactNode; className?: string }) {
    return (
       <HuginnLabel htmlFor={inputContext.id} className={props.className}>
          {props.children}
-         {inputContext.required && <span className="text-negative-100 pl-0.5">*</span>}
+         {inputContext.required && <span className="text-negative-300 pl-0.5">*</span>}
       </HuginnLabel>
    );
 }

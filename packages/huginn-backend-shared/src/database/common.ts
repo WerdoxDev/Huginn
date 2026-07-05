@@ -135,6 +135,8 @@ export const selectMessageDefaults = {
    pinned: true,
    id: true,
    flags: true,
+   mentionEveryone: true,
+   mentionOwner: true,
 } satisfies Prisma.MessageSelect;
 
 export const selectMessageReactions = {

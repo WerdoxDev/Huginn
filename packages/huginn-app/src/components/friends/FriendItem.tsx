@@ -99,7 +99,7 @@ export default function FriendItem(props: {
                   )}
                   <Tooltip>
                      <Tooltip.Trigger
-                        className="bg-surface/50 text-text/80 group-hover:bg-surface hover:text-negative-100 rounded-full p-2"
+                        className="bg-surface/50 text-text/80 group-hover:bg-surface hover:text-negative-300 rounded-full p-2"
                         onClick={() => props.onDenyOrCancel?.(props.user.id)}
                      >
                         <IconMingcuteCloseFill className="size-5" />

@@ -7,17 +7,16 @@ import ListElement from "@components/editor/ListElement";
 import ListItemElement from "@components/editor/ListItemElement";
 import MessageEmojiElement from "@components/editor/MessageEmojiElement";
 import MessageLeaf from "@components/editor/MessageLeaf";
+import MessageMentionElement from "@components/editor/MessageMentionElement";
+import ParagraphElement from "@components/editor/ParagraphElement";
 import SpoilerElement from "@components/editor/SpoilerElement";
-import { CONSTANTS } from "@huginn/shared";
-import { marked } from "@lib/marked";
-import { organizeMarkedTokens } from "@lib/marked-utils";
-import clsx from "clsx";
+import { CONSTANTS, marked, organizeMarkedTokens, type MarkedToken } from "@huginn/shared";
 import { useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type { AppMessage, MarkedToken } from "@/types";
+import type { AppMessage } from "@/types";
 
-import type { CustomElement, ListItemElement as SlateListItemElement, ParagraphElement } from "..";
+import type { CustomElement, ListItemElement as SlateListItemElement, ParagraphElement as SlateParagraphElement } from "..";
 
 export function useMessageRenderer(message: AppMessage, excludeElements?: CustomElement["type"][], noWrapping?: boolean, smallEmojis?: boolean) {
    function getNodeByPath(rootNode: CustomElement, path: number[]) {
@@ -48,15 +47,9 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          switch (node.type) {
             case "paragraph":
                return (
-                  <div
-                     key={key}
-                     className={clsx(
-                        "leading-5.5 [text-box-edge:text_text]!",
-                        noWrapping ? "w-full overflow-hidden text-ellipsis whitespace-nowrap" : "w-fit",
-                     )}
-                  >
+                  <ParagraphElement key={key} noWrapping={noWrapping}>
                      {children}
-                  </div>
+                  </ParagraphElement>
                );
             case "spoiler":
                return <SpoilerElement key={key}>{children}</SpoilerElement>;
@@ -86,6 +79,12 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <ListItemElement key={key}>{children}</ListItemElement>;
             case "unordered-list":
                return <ListElement key={key}>{children}</ListElement>;
+            case "mention":
+               if (node.mentionType === "user") return <MessageMentionElement key={key} mentionType={node.mentionType} userId={node.userId} />;
+               else if (node.mentionType === "everyone")
+                  return <MessageMentionElement key={key} mentionType={node.mentionType} usedText={node.usedText} />;
+               else if (node.mentionType === "owner")
+                  return <MessageMentionElement key={key} mentionType={node.mentionType} usedText={node.usedText} channelId={message.channelId} />;
          }
       } else if (Text.isText(node)) {
          return (
@@ -131,13 +130,22 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                big: isBigEmoji,
                children: [],
             });
+         } else if (token.type === "internal-mention") {
+            if (token.internalMention?.type === "user")
+               deepestNode.children.push({ type: "mention", mentionType: "user", userId: token.internalMention!.text!, children: [] });
+            else if (token.internalMention?.type === "everyone")
+               deepestNode.children.push({ type: "mention", mentionType: "everyone", usedText: token.internalMention!.text!, children: [] });
+            else if (token.internalMention?.type === "owner")
+               deepestNode.children.push({ type: "mention", mentionType: "owner", usedText: token.internalMention!.text!, children: [] });
          } else if (token.type === "link") {
             deepestNode.children.push({ type: "link", url: token.link?.href, children: [] });
             currentPath.push(deepestNode.children.length - 1);
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          } else if (token.type === "codespan" && token.text) {
             deepestNode.children.push({ type: "codespan", children: [{ text: token.text }] });
-         } else if (token.type === "text") {
+         }
+         // Mention here means a mention which is not finished
+         else if (token.type === "text" || token.type === "mention") {
             deepestNode.children.push({
                text: token.raw,
                bold: currentTokens.some((t) => t.type === "strong"),
@@ -145,6 +153,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                underline: currentTokens.some((t) => t.type === "underline"),
                strikethrough: currentTokens.some((t) => t.type === "del"),
             });
+         } else if (token.type === "escape") {
+            deepestNode.children.push({ text: token.raw.slice(-1) });
          } else {
             currentTokens.push({ start: token.start, end: token.end, type: token.type });
          }
@@ -173,7 +183,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          }
       }
 
-      function flushLine(lineElement: ParagraphElement, lineIndex: number, targetLine: number) {
+      function flushLine(lineElement: SlateParagraphElement, lineIndex: number, targetLine: number) {
          if (lineElement.children.length) {
             nodes.push(lineElement);
          }
@@ -183,7 +193,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       }
 
       let lineIndex = 0;
-      let lineElement: ParagraphElement = { type: "paragraph", children: [] };
+      let lineElement: SlateParagraphElement = { type: "paragraph", children: [] };
 
       let i = 0;
       while (i < organizedTokens.length) {

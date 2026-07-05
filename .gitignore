@@ -14,6 +14,7 @@ target
 certs
 
 emoji-out
+icon-out
 
 *.env
 

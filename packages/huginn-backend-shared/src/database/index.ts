@@ -1,4 +1,3 @@
-import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { Prisma, PrismaClient, type Message, type EmailVerification } from "#prisma/client";
@@ -30,7 +29,6 @@ export const prisma = prismaBase
          $allModels: {
             async exists<T>(this: T, where: Prisma.Args<T, "findFirst">["where"]) {
                const context = Prisma.getExtensionContext(this);
-
                const result = await (context as any).count({ where });
                return result !== 0;
             },
