@@ -20,6 +20,7 @@ import type {
    UserPresence,
    MessageFlags,
    ThemeType,
+   ChannelType,
 } from "@huginn/shared";
 import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
@@ -186,6 +187,7 @@ export type ProcessedMessage = AppMessage & {
    isEditing: boolean;
    isReplying: boolean;
    isJumpHighlighted: boolean;
+   isMentioned: boolean;
 };
 
 export type MutationKinds = {
@@ -259,24 +261,6 @@ export type AppAttachment = {
    contentType: string;
    description?: string;
 };
-
-export type MarkedToken = {
-   type: string;
-   mark?: string | null;
-   text?: string;
-   start: number;
-   end: number;
-   line: number;
-   raw: string;
-   code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
-   link?: { href: string };
-   list?: { ordered: boolean; index?: number };
-   emoji?: { id?: string; slug: string; unicode?: string; initial: "slug" | "emoji" };
-   mention?: { text: string; type: "user"; queryIndex: number };
-   internalMention?: { text: string; type: "user" | "everyone" };
-};
-
-export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
 
 // export type AppAttachment = {
 //    id: number;
@@ -596,13 +580,15 @@ export type UpdateInfo = {
 type AutocompleteUserItem = {
    type: "user";
    id: Snowflake;
-   name: string;
+   username: string;
+   displayName?: string | null;
    avatarHash?: string | null;
 };
 
-type AutocompleteSpecialItem = {
+export type AutocompleteSpecialItem = {
    type: "special";
-   id: string;
+   ids: string[];
+   channelType: ChannelType;
    label: string;
    description: string;
 };

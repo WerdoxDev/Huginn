@@ -75,11 +75,16 @@ export type EveryoneMentionElement = {
    usedText: string;
 } & MentionElementBase;
 
+export type OwnerMentionElement = {
+   mentionType: "owner";
+   usedText: string;
+} & MentionElementBase;
+
 type MentionElementBase = {
    type: "mention";
    children: Descendant[];
 };
-export type MentionElement = UserMentionElement | EveryoneMentionElement;
+export type MentionElement = UserMentionElement | EveryoneMentionElement | OwnerMentionElement;
 
 type ListElement = {
    type: "unordered-list" | "ordered-list";
@@ -117,6 +122,7 @@ type TextFormats = {
    codeLanguage?: boolean;
    list?: boolean;
    throwaway?: boolean;
+   escape?: boolean;
 };
 export type FormattedText = { text: string } & TextFormats;
 

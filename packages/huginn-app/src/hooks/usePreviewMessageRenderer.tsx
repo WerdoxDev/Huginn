@@ -1,17 +1,15 @@
 import EditorLeaf from "@components/editor/EditorLeaf";
 import PreviewEmojiElement from "@components/editor/PreviewEmojiElement";
 import PreviewMentionElement from "@components/editor/PreviewMentionElement";
-import { marked } from "@lib/marked";
-import { organizeMarkedTokens } from "@lib/marked-utils";
+import { marked, organizeMarkedTokens, type MarkedToken } from "@huginn/shared";
 import { getUser } from "@lib/query-utils";
+import { serializeSlate } from "@lib/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Point, type Descendant } from "slate";
 import { createEditor, Editor, Element, Node, Path, Range, Text } from "slate";
 import { DefaultElement, withReact, type RenderElementProps, type RenderLeafProps } from "slate-react";
 
-import type { AutocompleteItem, AutocompleteType, MarkedToken } from "@/types";
-
-import type { EmojiElement } from "..";
+import type { AutocompleteItem, AutocompleteType } from "@/types";
 
 function serializeFragments(nodes: Descendant[]): string {
    let text = "";
@@ -29,7 +27,7 @@ function serializeFragments(nodes: Descendant[]): string {
       }
 
       if (Element.isElement(node) && node.type === "mention") {
-         if (node.mentionType === "everyone") text += "@" + node.usedText;
+         if (node.mentionType === "everyone" || node.mentionType === "owner") text += "@" + node.usedText;
          else if (node.mentionType === "user") {
             const user = getUser(node.userId);
             text += user ? "@" + user.displayName : "<@" + node.userId + ">";
@@ -122,7 +120,7 @@ export function usePreviewMessageRenderer(props: {
       [editor],
    );
 
-   function lineOffsetToPoint(editor: Editor, lineIndex: number, charOffset: number, startIndex: number = 0): Point {
+   function collapsedLineOffsetToPoint(editor: Editor, lineIndex: number, charOffset: number, startIndex: number = 0): Point {
       const lineNode = editor.children[lineIndex] as Element;
 
       let remaining = charOffset;
@@ -155,6 +153,46 @@ export function usePreviewMessageRenderer(props: {
       };
    }
 
+   function getNodeAfterOffset(editor: Editor, lineIndex: number, charOffset: number, startIndex: number = 0): Point | undefined {
+      const lineNode = editor.children[lineIndex] as Element;
+
+      let remaining = charOffset;
+
+      for (let i = startIndex; i < lineNode.children.length; i++) {
+         const child = lineNode.children[i];
+         const childPath = [lineIndex, i];
+
+         if (Editor.isVoid(editor, child as Element)) {
+            // each void gets its own length - don't reuse a constant,
+            // different void types serialize to different widths
+            const voidLen = serializeSlate([child], { emojiAsSlug: true }).length;
+
+            if (remaining <= voidLen) {
+               // distance here is 2 because we have to get out of the void element and then move once more for the next node
+               return editor.after({ path: childPath, offset: 0 }, { distance: 2 });
+            }
+
+            remaining -= voidLen;
+            continue;
+         }
+
+         const textLen = Node.string(child).length;
+
+         if (remaining <= textLen) {
+            return editor.after({ path: childPath, offset: remaining });
+         }
+
+         remaining -= textLen;
+      }
+
+      const lastIndex = lineNode.children.length - 1;
+      const lastChild = lineNode.children[lastIndex];
+      return {
+         path: [lineIndex, lastIndex],
+         offset: Node.string(lastChild).length,
+      };
+   }
+
    function calculateAllDecorations(editor: Editor): Map<number, Range[]> {
       const result = new Map<number, Range[]>();
       const text = serialize(editor.children);
@@ -165,7 +203,7 @@ export function usePreviewMessageRenderer(props: {
       for (const [, path] of Node.children(editor, [])) {
          const lineIndex = path[0];
          const filteredTokens = organizedTokens.filter((t) => t.line === lineIndex);
-         const toPoint = (offset: number) => lineOffsetToPoint(editor, lineIndex, offset);
+         const toPoint = (offset: number) => collapsedLineOffsetToPoint(editor, lineIndex, offset);
 
          const decorations: Range[] = [];
          let currentTokens: Array<{ start: number; end: number; type: string }> = [];
@@ -173,7 +211,8 @@ export function usePreviewMessageRenderer(props: {
          for (const token of filteredTokens) {
             currentTokens = currentTokens.filter((t) => t.end > token.start);
 
-            if (token.type !== "text") {
+            // Mention means an unfinished mention token
+            if (token.type !== "text" && token.type !== "mention") {
                currentTokens.push({ start: token.start, end: token.end, type: token.type });
 
                if (token.mark && token.type !== "link") {
@@ -229,6 +268,15 @@ export function usePreviewMessageRenderer(props: {
                      codespan: true,
                   });
                }
+
+               if (token.type === "escape") {
+                  decorations.push({
+                     anchor: toPoint(token.start),
+                     focus: toPoint(token.end - 1),
+                     mark: true,
+                     escape: true,
+                  });
+               }
             } else {
                decorations.push({
                   anchor: toPoint(token.start),
@@ -262,6 +310,12 @@ export function usePreviewMessageRenderer(props: {
    function isVoidToken(token: MarkedToken) {
       if (token.type === "emoji") return true;
       if (token.type === "internal-mention") return true;
+      return false;
+   }
+
+   function isVoidElement(element: Element) {
+      if (element.type === "emoji") return true;
+      if (element.type === "mention") return true;
       return false;
    }
 
@@ -338,26 +392,47 @@ export function usePreviewMessageRenderer(props: {
                usedText: token.internalMention!.text,
                children: [{ text: "" }],
             };
+         }
+         if (token.internalMention?.type === "owner") {
+            return {
+               type: "mention",
+               mentionType: "owner",
+               usedText: token.internalMention!.text,
+               children: [{ text: "" }],
+            };
          } else throw new Error(`Unsupported internal mention type: ${token.internalMention?.type}`);
       } else throw new Error(`Unsupported void token type: ${token.type}`);
    }
 
-   function convertEmojisToSlugs() {
+   function convertVoidsToText() {
+      const text = serializeSlate(editor.children, { emojiAsSlug: true });
+      const tokens = organizeMarkedTokens(marked.lexer(text));
+
+      const voidTokenByPath: Array<{ path: Path; token: MarkedToken }> = [];
+      for (const token of tokens.filter(isVoidToken)) {
+         const line = token.line;
+         const point = getNodeAfterOffset(editor, line, token.start);
+         if (!point) continue;
+         voidTokenByPath.push({ path: point.path.slice(0, 2), token });
+      }
+
       for (const [node, path] of Node.elements(editor)) {
-         if ((node as Element).type !== "emoji") continue;
+         if (!isVoidElement(node)) continue;
 
-         const slug = (node as EmojiElement).slug;
-         const lineIndex = path[0];
+         const line = path[0];
+         const token = voidTokenByPath.find((v) => v.token.line === line && v.path[1] === path[1])?.token;
 
-         const ranges = cachedDecorations.current.get(lineIndex);
-         if (ranges?.every((x) => !x.codeToken && (!x.codespan || path[1] >= x.focus.path[1] || path[1] <= x.anchor.path[1]))) continue;
+         const text = serializeSlate([node], { emojiAsSlug: true });
 
-         editor.withoutNormalizing(() => {
-            editor.delete({ at: path });
-            editor.insertNodes({ text: slug }, { at: path });
-         });
+         // No longer a token
+         if (!token) {
+            editor.withoutNormalizing(() => {
+               editor.delete({ at: path });
+               editor.insertNodes({ text: text }, { at: path });
+            });
 
-         return true;
+            return true;
+         }
       }
 
       return false;
@@ -409,13 +484,17 @@ export function usePreviewMessageRenderer(props: {
       editor.select(range);
       editor.delete();
       if (item.type === "special") {
-         editor.insertText(`@${item.id} `);
+         editor.insertText(`@${item.ids[0]} `);
       } else {
          editor.insertText(`<@${item.id}> `);
       }
    }
 
-   async function handleEditorOnChange() {
+   function handleEditorClick() {
+      checkAndShowAutocomplete();
+   }
+
+   async function handleEditorChange() {
       cachedDecorations.current = calculateAllDecorations(editor);
       setDecorateVersion((v) => v + 1);
 
@@ -430,9 +509,9 @@ export function usePreviewMessageRenderer(props: {
 
       hasChanges = false;
       do {
-         hasChanges = convertEmojisToSlugs();
+         hasChanges = convertVoidsToText();
       } while (hasChanges);
    }
 
-   return { decorate, editor, renderElement, renderLeaf, handleEditorOnChange, handleAutocompleteSelect };
+   return { decorate, editor, renderElement, renderLeaf, handleEditorChange, handleEditorClick, handleAutocompleteSelect };
 }

@@ -100,7 +100,7 @@ export default function HomeSidebar(props: { channels?: AppDirectChannel[] }) {
          </div>
          <div className="bg-surface h-0.5 shrink-0" />
          <div className="relative flex h-full overflow-hidden">
-            <ul className="scroll-super-thin relative flex h-full flex-col overflow-x-hidden overflow-y-scroll">
+            <ul className="scroll-super-thin relative flex h-full w-full flex-col overflow-x-hidden overflow-y-scroll">
                <div ref={indicator} className={clsx("bg-primary-600 pointer-events-none absolute left-0 w-1 origin-center rounded-r")} />
                <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Direct Messages</div>
                <HuginnButton

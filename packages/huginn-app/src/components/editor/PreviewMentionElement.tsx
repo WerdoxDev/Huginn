@@ -16,7 +16,7 @@ export default function PreviewMentionElement(props: RenderElementProps) {
          className="ring-primary-500 inline-block rounded px-1 align-baseline text-white ring-1 [&>span]:hidden"
       >
          {element.mentionType === "user" && "@" + (user?.displayName ?? "unknown-user")}
-         {element.mentionType === "everyone" && "@" + element.usedText}
+         {(element.mentionType === "everyone" || element.mentionType === "owner") && "@" + element.usedText}
          {props.children}
       </span>
    );

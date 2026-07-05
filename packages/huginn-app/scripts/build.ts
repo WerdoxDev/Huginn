@@ -14,6 +14,7 @@ const noExternal = [
    "moment",
    "posthog-node",
    "unicode-emoji-json",
+   "highlight.js",
 ];
 
 await build({

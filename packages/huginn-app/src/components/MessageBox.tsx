@@ -65,16 +65,21 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       autocompleteKeyIntercept,
       state: autocompleteState,
       items: autocompleteItems,
+      containerRef: autocompleteContainerRef,
       handleSet,
       handleClose,
+      handleSelectIndex,
+      handleSelect,
    } = useMessageBoxAutocomplete({
       channelId: currentChannel?.id,
       onSelect: tempHandleAutocompleteSelect,
    });
-   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange, handleAutocompleteSelect } = usePreviewMessageRenderer({
-      onSetAutocomplete: handleSet,
-      onCloseAutocomplete: handleClose,
-   });
+   const { decorate, editor, renderElement, renderLeaf, handleEditorChange, handleEditorClick, handleAutocompleteSelect } = usePreviewMessageRenderer(
+      {
+         onSetAutocomplete: handleSet,
+         onCloseAutocomplete: handleClose,
+      },
+   );
    const editorRef = useRef<HTMLDivElement | null>(null);
 
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
@@ -96,8 +101,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const { isKeyboardOpen, lastKeyboardHeight, focusedElementRef } = useInset();
    const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
 
-   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || (isKeyboardOpen && ReactEditor.isFocused(editor)));
    const isKeyboardOpenOnEditor = isKeyboardOpen && focusedElementRef?.current === editorRef.current;
+   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpenOnEditor);
 
    // Focus on the message box when we change channel
    useEffect(() => {
@@ -140,8 +145,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   (e.relatedTarget as HTMLElement).closest("[data-keyboard-no-close]") ||
                   (e.relatedTarget as HTMLElement)?.hasAttribute("data-keyboard-no-close"))
             ) {
-               ReactEditor.focus(editor);
                e.preventDefault();
+               ReactEditor.focus(editor);
             }
          },
          { signal: controller.signal },
@@ -183,7 +188,15 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          <ChannelTypingIndicator channelId={channelId!} />
          <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
-            <MessageAutocomplete state={autocompleteState} items={autocompleteItems} />
+            <MessageAutocomplete
+               state={autocompleteState}
+               items={autocompleteItems}
+               onSelectIndex={handleSelectIndex}
+               onSelect={handleSelect}
+               onClose={handleClose}
+               editorRef={editorRef}
+               containerRef={autocompleteContainerRef}
+            />
             <div
                className={clsx(
                   "bg-surface-alt border-surface mx-2 mb-2 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
@@ -199,7 +212,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   show={!!currentReplyingMessageId}
                />
                <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
-               <div className="flex h-full items-start">
+               <div className="flex h-full items-end lg:items-start">
                   <div className="flex gap-x-2 py-2 pl-2">
                      {!currentEditingMessageId &&
                         (isMobileEnvironment ? (
@@ -223,15 +236,16 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      )}
                   </div>
                   <div className="h-full w-full overflow-hidden">
-                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
+                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange}>
                         <Editable
                            ref={editorRef}
                            onPaste={onPaste}
                            placeholder={`Message ${currentChannel?.name}`}
                            className={clsx(
-                              "h-full shrink-0 py-4.25 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
+                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
                               currentEditingMessageId && "pl-2.25",
                            )}
+                           onClick={handleEditorClick}
                            renderLeaf={renderLeaf}
                            renderElement={renderElement}
                            decorate={decorate}
@@ -242,7 +256,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         />
                      </Slate>
                   </div>
-                  <div className="flex gap-x-2 p-2">
+                  <div className="flex gap-x-2 p-2 pl-1">
                      {!isMobileEnvironment && (
                         <EmojiPickerButton
                            onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: insertEmoji })}

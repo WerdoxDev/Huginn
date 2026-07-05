@@ -1,23 +1,24 @@
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import LoadingIcon from "@components/LoadingIcon";
+import { marked } from "@huginn/shared";
 import { getChangelogOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQuery } from "@tanstack/react-query";
-import markdownit from "markdown-it";
+// import markdownit from "markdown-it";
 import moment from "moment";
 import { useMemo } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const PLATFORM_TO_HUGINN_ENV_MAP = {
-   windows: "desktop",
-   macos: "desktop",
-   linux: "desktop",
-   android: "android",
-} as const;
+   windows: ["browser", "desktop"],
+   macos: ["browser", "desktop"],
+   linux: ["browser", "desktop"],
+   android: ["android"],
+};
 
 export default function NewsModal() {
    const huginnWindow = useHuginnWindow();
@@ -27,12 +28,11 @@ export default function NewsModal() {
 
    const changelogs = useMemo(() => {
       if (!data || data.length === 0) return;
-      const md = new markdownit("default");
       return data
-         .filter((x) => PLATFORM_TO_HUGINN_ENV_MAP[x.platform as keyof typeof PLATFORM_TO_HUGINN_ENV_MAP] === huginnWindow.environment)
+         .filter((x) => PLATFORM_TO_HUGINN_ENV_MAP[x.platform as keyof typeof PLATFORM_TO_HUGINN_ENV_MAP].includes(huginnWindow.environment))
          .reduce(
             (acc, item) => {
-               acc[item.version] = { html: md.render(item.content), date: item.date, title: item.title };
+               acc[item.version] = { html: marked.parse(item.content) as string, date: item.date, title: item.title };
                return acc;
             },
             {} as Record<string, { html: string; date: string; title: string }>,

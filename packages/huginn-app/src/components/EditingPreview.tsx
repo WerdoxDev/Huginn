@@ -11,7 +11,7 @@ export default function EditingPreview(props: { onCancel: () => void; show: bool
                transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
                className="border-surface flex items-center gap-x-2 pr-2 pl-4 text-sm"
             >
-               <IconMingcuteEdit2Fill className="text-positive-100 size-4 shrink-0" />
+               <IconMingcuteEdit2Fill className="text-positive-300 size-4 shrink-0" />
                <span className="text-white/80">Editing message</span>
                <span className="text-xs text-white/30 italic">escape to cancel</span>
                <button

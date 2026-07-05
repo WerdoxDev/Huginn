@@ -23,6 +23,7 @@ import {
 } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { Children, isValidElement } from "react";
+import { Element, Text, type Descendant } from "slate";
 
 import type { AppAttachment, AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
@@ -80,7 +81,7 @@ export function getFirstChildClosestToBottom<E extends HTMLElement>(container: E
    const containerRect = container.getBoundingClientRect();
    const containerBottom = containerRect.bottom;
 
-   let closestChild: Element | null = null;
+   let closestChild: globalThis.Element | null = null;
    let smallestDistance = Number.POSITIVE_INFINITY;
 
    for (const child of container.children) {
@@ -274,4 +275,35 @@ export function getSolidColorDataURL(color: string, size: number, circle = true)
    }
 
    return canvas.toDataURL("image/png");
+}
+
+export function serializeSlate(nodes: Descendant[], options?: { emojiAsSlug?: boolean }) {
+   let text = "";
+   for (const node of nodes) {
+      if (Text.isText(node)) {
+         text += node.text;
+         continue;
+      }
+
+      const children = serializeSlate(node.children, options);
+
+      if (Element.isElement(node) && node.type === "emoji") {
+         if (options?.emojiAsSlug) text += node.slug;
+         else text += node.unicode || node.slug;
+         continue;
+      }
+
+      if (Element.isElement(node) && node.type === "mention") {
+         if (node.mentionType === "everyone" || node.mentionType === "owner") text += "@" + node.usedText;
+         else if (node.mentionType === "user") text += "<@" + node.userId + ">";
+         continue;
+      }
+
+      if (Element.isElement(node) && node.type === "paragraph") {
+         text += children + "\n";
+         continue;
+      }
+   }
+
+   return text;
 }

@@ -5,7 +5,7 @@ import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { MessageFlags, MessageReferenceType, MessageType } from "@huginn/shared";
-import { createPreviewMessage } from "@lib/utils";
+import { createPreviewMessage, serializeSlate } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
-import { type Descendant, Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
+import { Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
 import { ReactEditor } from "slate-react";
 
 import type { AppMessage, AppAttachment } from "@/types";
@@ -22,34 +22,11 @@ import { useIsMobile } from "./useIsMobile";
 
 const INTERCEPT_ELEMENT_TYPES = ["emoji", "mention"];
 
-function serialize(nodes: Descendant[]) {
-   let text = "";
-   for (const node of nodes) {
-      if (Text.isText(node)) {
-         text += node.text;
-         continue;
-      }
-
-      const children = serialize(node.children);
-
-      if (Element.isElement(node) && node.type === "emoji") {
-         text += node.unicode || node.slug;
-         continue;
-      }
-
-      if (Element.isElement(node) && node.type === "mention") {
-         if (node.mentionType === "everyone") text += "@" + node.usedText;
-         else if (node.mentionType === "user") text += "<@" + node.userId + ">";
-         continue;
-      }
-
-      if (Element.isElement(node) && node.type === "paragraph") {
-         text += children + "\n";
-         continue;
-      }
+function isWorthyKeyEvent(event: globalThis.KeyboardEvent) {
+   if (event.key.includes("Shift") || event.key.includes("Control") || event.key.includes("Alt") || event.key.includes("Meta")) {
+      return false;
    }
-
-   return text;
+   return true;
 }
 
 export function useMessageBoxActions(options: {
@@ -93,7 +70,7 @@ export function useMessageBoxActions(options: {
    function sendMessage(flags: MessageFlags) {
       if (isEditorEmpty() && options.attachments.length === 0) return;
 
-      const content = serialize(options.editor.children).trim();
+      const content = serializeSlate(options.editor.children).trim();
       const channelId = params.channelId;
 
       if (!content && !options.attachments.length) return;
@@ -145,7 +122,7 @@ export function useMessageBoxActions(options: {
    }
 
    function editMessage() {
-      const content = serialize(options.editor.children).trim();
+      const content = serializeSlate(options.editor.children).trim();
       if (!content || !currentEditingMessageId || isEditorEmpty()) return;
 
       posthog.capture("message:edited");
@@ -432,7 +409,8 @@ export function useMessageBoxActions(options: {
             const isPortalOpen = !!document.querySelector("[data-base-ui-portal]");
             const isInputFocused = document.activeElement && ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName);
 
-            if (!isInputFocused && !isPortalOpen && !ReactEditor.isFocused(options.editor) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+            console.log(e);
+            if (!isInputFocused && !isPortalOpen && !ReactEditor.isFocused(options.editor) && isWorthyKeyEvent(e)) {
                options.editor.select(options.editor.end([]));
                ReactEditor.focus(options.editor);
             }
