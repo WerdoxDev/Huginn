@@ -141,6 +141,8 @@ export const messagesExtension = Prisma.defineExtension({
                flags?: number;
                call?: DBCall;
                timestamp?: Date;
+               mentionEveryone?: boolean;
+               mentionOwner?: boolean;
             },
             args?: Args,
          ) {
@@ -215,6 +217,8 @@ export const messagesExtension = Prisma.defineExtension({
                         pinned: false,
                         reactions: undefined,
                         flags: options.flags ?? 0,
+                        mentionEveryone: options.mentionEveryone ?? false,
+                        mentionOwner: options.mentionOwner ?? false,
                         call:
                            participantsConnect && participantsConnect.length !== 0 && options.type === MessageType.CALL
                               ? {
@@ -260,6 +264,9 @@ export const messagesExtension = Prisma.defineExtension({
                   if (options.messageReference) {
                      await assertExists(e, methodName, DBErrorType.NULL_CHANNEL, [options.messageReference.channelId]);
                      await assertExists(e, methodName, DBErrorType.NULL_MESSAGE, [options.messageReference.messageId]);
+                  }
+                  if (options.mentions) {
+                     await assertExists(e, methodName, DBErrorType.NULL_USER, options.mentions);
                   }
                   throw e;
                }
