@@ -228,6 +228,9 @@ type APIBaseMessage = {
    embeds: APIEmbed[];
    pinned: boolean;
    mentions: APIMessageUser[];
+   mentionEveryone: boolean;
+   mentionOwner: boolean;
+   call?: APIMessageCall;
    flags?: MessageFlags | null;
    nonce?: string;
    reactions?: APIReaction[];

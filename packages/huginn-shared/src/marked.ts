@@ -80,11 +80,11 @@ const emojiExtension: TokenizerExtension = {
 
       let unicode = unicodeMatch?.[0];
       let slug = slugMatch?.[0];
-      const raw = unicode ?? slug!;
       const codepoint = unicode ? getEmojiCodepoint(unicode) : undefined;
 
       if (unicode && codepoint && !slug) slug = getEmojiSlugsFromCodepoint(codepoint)?.[0];
       if (slug && !unicode) unicode = getEmojiUnicodeFromSlug(slug);
+      const raw = slug!;
 
       if (unicode && slug) {
          // TODO: Id is to be used later for custom emojis
@@ -121,6 +121,20 @@ const userEveryoneMentionExtension: TokenizerExtension = {
    },
 };
 
+const userOwnerMentionExtension: TokenizerExtension = {
+   name: "user-owner-mention",
+   level: "inline",
+   start(src) {
+      return src.match(/@(owner|leader)\b/i)?.index;
+   },
+   tokenizer(src) {
+      const match = /^@(owner|leader)\b/i.exec(src);
+      if (match) {
+         return { type: "user-owner-mention", raw: match[0], text: match[1] };
+      }
+   },
+};
+
 const userMentionExtension: TokenizerExtension = {
    name: "user-mention",
    level: "inline",
@@ -141,12 +155,20 @@ const userMentionExtension: TokenizerExtension = {
    },
 };
 
-const modifiedMarked = marked.use({
+const modifiedMarked: typeof marked = marked.use({
    tokenizer: {
       html: () => {},
       tag: () => {},
    },
-   extensions: [spoilerExtension, underlineExtension, emojiExtension, userMentionExtension, userEveryoneMentionExtension, userIdMentionExtension],
+   extensions: [
+      spoilerExtension,
+      underlineExtension,
+      emojiExtension,
+      userMentionExtension,
+      userEveryoneMentionExtension,
+      userOwnerMentionExtension,
+      userIdMentionExtension,
+   ],
 });
 
 export { modifiedMarked as marked };

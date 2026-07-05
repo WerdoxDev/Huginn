@@ -19,3 +19,5 @@ export * from "./event-emitter";
 export * from "./analytics";
 export * from "./emoji";
 export * from "./oklch";
+export * from "./marked";
+export * from "./marked-utils";

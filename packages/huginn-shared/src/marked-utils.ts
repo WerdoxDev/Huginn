@@ -1,9 +1,24 @@
-// import type Token from "markdown-it/lib/token.mjs";
 import type { Token, Tokens, TokensList } from "marked";
 
 import hljs from "highlight.js";
 
-import type { MarkedCodeToken, MarkedToken } from "@/types";
+export type MarkedToken = {
+   type: string;
+   mark?: string | null;
+   text?: string;
+   start: number;
+   end: number;
+   line: number;
+   raw: string;
+   code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
+   link?: { href: string };
+   list?: { ordered: boolean; index?: number };
+   emoji?: { id?: string; slug: string; unicode?: string; initial: "slug" | "emoji" };
+   mention?: { text: string; type: "user"; queryIndex: number };
+   internalMention?: { text: string; type: "user" | "everyone" | "owner" };
+};
+
+export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
 
 export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
    const ranges: Array<MarkedToken> = [];
@@ -104,7 +119,6 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
                if (part.length > 0) {
                   pushRange("text", { mark: null, line: lineIndex, start: offset, end: offset + part.length, raw: part });
                   offset += part.length;
-                  // }
                }
                if (i < parts.length - 1) {
                   lineIndex += 1;
@@ -133,7 +147,25 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
                emoji: { id: token.id, slug: token.slug, unicode: token.unicode, initial: token.initial },
             });
          } else if (token.type === "codespan") {
-            pushRange("codespan", { mark: null, text: token.text, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
+            if (token.raw.includes("\n")) {
+               const parts = token.raw.split("\n");
+               const mark = parts[0];
+               for (let i = 0; i < parts.length; i++) {
+                  const part = parts[i].replace(mark, "");
+                  if (part.length > 0) {
+                     pushRange("codespan", { mark: null, text: part, line: lineIndex, start: offset, end: offset + part.length, raw: part });
+                     offset += part.length;
+                  } else {
+                     pushRange("codespan", { mark: mark, line: lineIndex, start: offset, end: offset + mark.length, raw: mark });
+                  }
+                  if (i < parts.length - 1) {
+                     lineIndex += 1;
+                     offset = 0;
+                  }
+               }
+            } else {
+               pushRange("codespan", { mark: null, text: token.text, line: lineIndex, start: offset, end: offset + token.raw.length, raw: token.raw });
+            }
          } else if (token.type === "user-id-mention") {
             pushRange("internal-mention", {
                mark: null,
@@ -151,6 +183,15 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
                end: offset + token.raw.length,
                raw: token.raw,
                internalMention: { text: token.text, type: "everyone" },
+            });
+         } else if (token.type === "user-owner-mention") {
+            pushRange("internal-mention", {
+               mark: null,
+               line: lineIndex,
+               start: offset,
+               end: offset + token.raw.length,
+               raw: token.raw,
+               internalMention: { text: token.text, type: "owner" },
             });
          } else if (token.type === "user-mention") {
             pushRange("mention", {
@@ -204,7 +245,7 @@ export function organizeMarkedTokens(tokens: TokensList): Array<MarkedToken> {
    return ranges;
 }
 
-export function getCodeLanguage(language: string) {
+export function getCodeLanguage(language: string): string {
    switch (language) {
       case "javascript":
       case "js":
@@ -230,6 +271,8 @@ export function getCodeLanguage(language: string) {
 
 function tokenizeHighlightJS(code: string, language: string): Array<MarkedCodeToken> {
    const highlighted = hljs.highlight(code, { language }).value;
+
+   if (typeof DOMParser === "undefined") return [];
 
    const parser = new DOMParser();
    const doc = parser.parseFromString(highlighted, "text/html");

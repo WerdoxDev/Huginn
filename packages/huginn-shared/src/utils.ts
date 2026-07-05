@@ -8,6 +8,7 @@ import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
 
 import { fileTypes } from "./cdn-types";
+import { parseOklchToRgb } from "./oklch";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;
@@ -437,8 +438,12 @@ export function rgbToHex(r: number, g: number, b: number): string {
 }
 
 export function interpolateColor(color1: string, color2: string, progress: number): string {
-   const [r1, g1, b1] = hexToRgb(color1);
-   const [r2, g2, b2] = hexToRgb(color2);
+   const rgb1 = parseOklchToRgb(color1);
+   const rgb2 = parseOklchToRgb(color2);
+   if (!rgb1 || !rgb2) return "#000000"; // Fallback to black if parsing fails
+
+   const [r1, g1, b1] = rgb1;
+   const [r2, g2, b2] = rgb2;
    const r = r1 + (r2 - r1) * progress;
    const g = g1 + (g2 - g1) * progress;
    const b = b1 + (b2 - b1) * progress;
