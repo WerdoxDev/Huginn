@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.29.0...backend-shared@v0.30.0) (2026-07-05)
+
+
+### Features
+
+* **backend-shared:** add new mention properties in prisma schema ([1972418](https://github.com/WerdoxDev/Huginn/commit/197241892cdf8b98251530985036cd98e1f6ebd3))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.1...backend-shared@v0.29.0) (2026-07-02)
 
 

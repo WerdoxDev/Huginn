@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.43.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.0...server@v0.43.1) (2026-07-05)
+
+
+### Bug Fixes
+
+* **server:** only accept new theme types ([c900932](https://github.com/WerdoxDev/Huginn/commit/c900932ee932a92e8ca946da351b9997b91a9c0b))
+* **server:** unknown users shouldn't return 404 in mentions ([4fbbd20](https://github.com/WerdoxDev/Huginn/commit/4fbbd203913bfba743c91698d4af537a716848b7))
+
 ## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.42.0...server@v0.43.0) (2026-07-02)
 
 

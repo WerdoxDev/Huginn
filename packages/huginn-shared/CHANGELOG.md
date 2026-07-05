@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.40.0...shared@v0.41.0) (2026-07-05)
+
+
+### Features
+
+* **shared:** add theme types + oklch utilities ([13c84cb](https://github.com/WerdoxDev/Huginn/commit/13c84cbd9b03b98d528b4352b4e0332227e67f5b))
+
 ## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.39.0...shared@v0.40.0) (2026-07-02)
 
 
