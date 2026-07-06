@@ -3,6 +3,8 @@
 #include <iostream>
 #include <map>
 #include "file_util.h"
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Management.Deployment.h>
 
 #if _WIN32
 #include "window_util.h"
@@ -35,29 +37,6 @@ Napi::Value GetFileSHA256(const Napi::CallbackInfo &info)
 }
 
 #if _WIN32
-Napi::Value GetExeIconBase64(const Napi::CallbackInfo &info)
-{
-   Napi::Env env = info.Env();
-
-   if (info.Length() != 1)
-   {
-      Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
-      return env.Null();
-   }
-
-   if (!info[0].IsString())
-   {
-      Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-      return env.Null();
-   }
-
-   const std::u16string exePath_u16 = info[0].As<Napi::String>().Utf16Value();
-   std::wstring exePath(exePath_u16.begin(), exePath_u16.end());
-
-   std::string base64 = icon_util::GetExeIconBase64(exePath);
-
-   return Napi::String::New(env, base64);
-}
 
 Napi::Value GetProcessIconBase64(const Napi::CallbackInfo &info)
 {
@@ -77,9 +56,17 @@ Napi::Value GetProcessIconBase64(const Napi::CallbackInfo &info)
 
    DWORD processId = info[0].As<Napi::Number>().Uint32Value();
 
-   std::string base64 = icon_util::GetProcessIconBase64(processId);
+   std::string base64;
 
-   return Napi::String::New(env, base64);
+   if (icon_util::GetProcessIconBase64(processId, base64))
+   {
+      std::string dataUrl = "data:image/png;base64," + base64;
+      return Napi::String::New(env, dataUrl);
+   }
+   else
+   {
+      return env.Null();
+   }
 }
 
 Napi::Value GetOpenApplications(const Napi::CallbackInfo &info)
@@ -106,7 +93,7 @@ Napi::Value GetOpenApplications(const Napi::CallbackInfo &info)
    return result;
 }
 
-Napi::Value GetPackagePath(const Napi::CallbackInfo &info)
+Napi::Value GetPackageDisplayName(const Napi::CallbackInfo &info)
 {
    Napi::Env env = info.Env();
 
@@ -124,13 +111,13 @@ Napi::Value GetPackagePath(const Napi::CallbackInfo &info)
 
    DWORD processId = info[0].As<Napi::Number>().Uint32Value();
 
-   HANDLE hProcess = window_util::GetHandle(processId);
-   std::wstring packagePath = window_util::GetPackagePath(hProcess);
+   winrt::hstring displayName = window_util::GetPackageDisplayName(processId);
+   std::string narrow = winrt::to_string(displayName);
 
-   return Napi::String::New(env, window_util::WideToUtf8(packagePath));
+   return Napi::String::New(env, narrow);
 }
 
-Napi::Value GetPngFileBase64(const Napi::CallbackInfo &info)
+Napi::Value GetApplicationInfo(const Napi::CallbackInfo &info)
 {
    Napi::Env env = info.Env();
 
@@ -140,30 +127,43 @@ Napi::Value GetPngFileBase64(const Napi::CallbackInfo &info)
       return env.Null();
    }
 
-   if (!info[0].IsString())
+   if (!info[0].IsNumber())
    {
       Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
       return env.Null();
    }
 
-   const std::u16string pngPath_u16 = info[0].As<Napi::String>().Utf16Value();
-   std::wstring pngPath(pngPath_u16.begin(), pngPath_u16.end());
+   DWORD processId = info[0].As<Napi::Number>().Uint32Value();
 
-   std::string base64 = icon_util::GetPngFileBase64(pngPath);
+   winrt::hstring displayName = window_util::GetPackageDisplayName(processId);
+   std::string narrow = winrt::to_string(displayName);
 
-   return Napi::String::New(env, base64);
+   std::string base64;
+
+   if (icon_util::GetProcessIconBase64(processId, base64))
+   {
+      std::string dataUrl = "data:image/png;base64," + base64;
+      Napi::Object object = Napi::Object::New(env);
+      object.Set("displayName", Napi::String::New(env, narrow));
+      object.Set("icon", Napi::String::New(env, dataUrl));
+      return object;
+   }
+   else
+   {
+      return env.Null();
+   }
 }
+
 #endif
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
    exports.Set(Napi::String::New(env, "getFileSha256"), Napi::Function::New(env, GetFileSHA256));
 #if _WIN32
-   exports.Set(Napi::String::New(env, "getExeIconBase64"), Napi::Function::New(env, GetExeIconBase64));
    exports.Set(Napi::String::New(env, "getProcessIconBase64"), Napi::Function::New(env, GetProcessIconBase64));
    exports.Set(Napi::String::New(env, "getOpenApplications"), Napi::Function::New(env, GetOpenApplications));
-   exports.Set(Napi::String::New(env, "getPackagePath"), Napi::Function::New(env, GetPackagePath));
-   exports.Set(Napi::String::New(env, "getPngFileBase64"), Napi::Function::New(env, GetPngFileBase64));
+   exports.Set(Napi::String::New(env, "getPackageDisplayName"), Napi::Function::New(env, GetPackageDisplayName));
+   exports.Set(Napi::String::New(env, "getApplicationInfo"), Napi::Function::New(env, GetApplicationInfo));
 #endif
    return exports;
 }
