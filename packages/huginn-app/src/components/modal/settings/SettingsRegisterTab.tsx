@@ -61,7 +61,8 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
    async function fetchOpenApplications() {
       const applications: OpenApplication[] = await window.electronAPI.getOpenApplications();
       for (const application of applications) {
-         const info = await window.electronAPI.getApplicationInfo(application.exePath, application.processId);
+         const info = await window.electronAPI.getApplicationInfo(application.processId);
+         if (!info) continue;
          application.displayName = info.displayName;
          application.icon = info.icon;
       }

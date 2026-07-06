@@ -86,8 +86,7 @@ export const electronAPI = {
 
    // Native
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ProcessInfo[]>,
-   getApplicationInfo: (exePath: string, processId: number) =>
-      ipcRenderer.invoke("native:get-application-info", exePath, processId) as Promise<AppInfo>,
+   getApplicationInfo: (processId: number) => ipcRenderer.invoke("native:get-application-info", processId) as Promise<AppInfo | null>,
 
    // Voice debug
    openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),

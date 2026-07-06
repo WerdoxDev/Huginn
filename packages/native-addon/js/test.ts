@@ -1,3 +1,5 @@
+import Bun from "bun";
+
 import addon from "./index";
 
 const t0 = performance.now();
@@ -10,12 +12,25 @@ const path5 =
 const path6 = "C:\\Program Files\\WindowsApps\\SpotifyAB.SpotifyMusic_1.272.438.0_x64__zpdnekdrzrea0\\Spotify.exe";
 const path7 = "D:\\Xbox\\Forza Horizon 6\\Content\\forzahorizon6.exe";
 
-// const hash = addon.getFileSha256(path);
+// const info = addon.getApplicationInfo(41764).then((x) => {
+//    const t1 = performance.now();
+//    console.log(t1 - t0, x);
+// });
 
-// const apps = addon.getOpenApplications();
-// console.log(apps);
-const info = addon.getApplicationInfo(path7, 6512).then((x) => {
-   const t1 = performance.now();
-   console.log(t1 - t0, x);
-});
-// // console.log(addon.enumerateOpenApplications());
+const applications = addon.getOpenApplications();
+console.log(applications.length);
+
+let index = 0;
+for (const application of applications) {
+   const processId = application.processId;
+   const info = addon.getApplicationInfo(processId);
+   if (!info) continue;
+   console.log(info.displayName ? info.displayName : application.windowTitle);
+   const name = index.toString();
+   if (!info.icon) {
+      console.warn("No icon for", name, processId);
+      continue;
+   }
+   await new Bun.Image(info.icon).png().write("./test-out/" + name + ".png");
+   index++;
+}

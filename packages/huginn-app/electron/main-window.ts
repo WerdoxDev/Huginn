@@ -285,9 +285,9 @@ export class MainWindow extends BaseWindow {
          return applications;
       });
 
-      const applicationIconCache = new CacheStorage<number, AppInfo>(600);
-      ipcMain.handle("native:get-application-info", async (_, exePath: string, processId: number) => {
-         const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
+      const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
+      ipcMain.handle("native:get-application-info", async (_, processId: number) => {
+         const info = await applicationIconCache.cacheOrGet(processId, () => native.getApplicationInfo(processId));
          return info;
       });
    }

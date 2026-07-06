@@ -3,6 +3,11 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Management.Deployment.h>
+
+using namespace winrt::Windows::ApplicationModel;
+using namespace winrt::Windows::Management::Deployment;
 
 namespace window_util
 {
@@ -16,8 +21,8 @@ namespace window_util
 
    std::string WideToUtf8(const std::wstring &wide);
    std::wstring GetExecutablePath(HANDLE hProcess);
-   std::wstring GetPackagePath(HANDLE hProcess);
+   winrt::hstring GetPackageDisplayName(DWORD processId);
+   bool IsCloaked(HWND hwnd);
    HANDLE GetHandle(DWORD processId);
-   std::vector<wchar_t> GetFullName(HANDLE hProcess);
    std::map<DWORD, ProcessInfo> EnumerateApplications();
 }

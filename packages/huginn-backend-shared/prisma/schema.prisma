@@ -104,8 +104,8 @@ model Message {
    lastMessageChannels Channel[]    @relation("channel_last_message")
    pin                 MessagePin?
 
-   mentionEveryone Boolean
-   mentionOwner    Boolean
+   mentionEveryone Boolean @default(false)
+   mentionOwner    Boolean @default(false)
 
    reactions          Reaction[]
    reactionAggregates ReactionAggregate[]

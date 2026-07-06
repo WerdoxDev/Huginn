@@ -4,10 +4,17 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <winrt/Windows.ApplicationModel.h>
+#include <winrt/Windows.Management.Deployment.h>
 #include <appmodel.h>
 #include <iostream>
 #include <winternl.h>
+#include <dwmapi.h>
 
+using namespace winrt::Windows::ApplicationModel;
+using namespace winrt::Windows::Management::Deployment;
+
+#pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "psapi.lib")
 
 namespace window_util
@@ -23,76 +30,42 @@ namespace window_util
       return result;
    }
 
-   std::vector<wchar_t> GetFullName(HANDLE hProcess)
+   winrt::hstring GetPackageDisplayName(DWORD processId)
    {
+      HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+      if (!hProcess)
+      {
+         throw std::runtime_error("OpenProcess failed");
+      }
+
       UINT32 length = 0;
       LONG rc = GetPackageFullName(hProcess, &length, nullptr);
-
-      std::vector<wchar_t> packageName(length);
-      rc = GetPackageFullName(hProcess, &length, packageName.data());
-      return packageName;
-   }
-
-   std::wstring GetPackagePath(HANDLE hProcess)
-   {
-      std::wstring packagePath = L"";
-      // Get process ID
-      DWORD processId = GetProcessId(hProcess);
-      if (processId == 0)
+      if (rc != ERROR_INSUFFICIENT_BUFFER)
       {
-         return packagePath;
-      }
-
-      // Get package full name from process
-      UINT32 packageFullNameLength = 0;
-      LONG ret = GetPackageFullName(hProcess, &packageFullNameLength, nullptr);
-
-      if (ret != ERROR_INSUFFICIENT_BUFFER)
-      {
-         return packagePath;
-      }
-
-      auto packageFullName = std::make_unique<wchar_t[]>(packageFullNameLength);
-      ret = GetPackageFullName(hProcess, &packageFullNameLength, packageFullName.get());
-
-      if (ret != ERROR_SUCCESS)
-      {
-         return packagePath;
-      }
-
-      // Get package info
-      PACKAGE_INFO_REFERENCE packageInfoRef;
-      ret = OpenPackageInfoByFullName(packageFullName.get(), 0, &packageInfoRef);
-
-      if (ret != ERROR_SUCCESS)
-      {
-         return packagePath;
-      }
-
-      UINT32 bufferLength = 0;
-      UINT32 count = 0;
-
-      // Get buffer size
-      ret = GetPackageInfo(packageInfoRef, PACKAGE_FILTER_HEAD, &bufferLength, nullptr, &count);
-
-      if (ret == ERROR_INSUFFICIENT_BUFFER && bufferLength > 0)
-      {
-         auto buffer = std::make_unique<BYTE[]>(bufferLength);
-         ret = GetPackageInfo(packageInfoRef, PACKAGE_FILTER_HEAD, &bufferLength, buffer.get(), &count);
-
-         if (ret == ERROR_SUCCESS && count > 0)
+         CloseHandle(hProcess);
+         if (rc == APPMODEL_ERROR_NO_PACKAGE)
          {
-            PACKAGE_INFO *packageInfo = reinterpret_cast<PACKAGE_INFO *>(buffer.get());
-
-            if (packageInfo[0].path)
-            {
-               packagePath = packageInfo[0].path;
-            }
+            return L""; // not a packaged process (plain Win32 exe)
          }
+         throw std::runtime_error("GetPackageFullName failed");
       }
 
-      ClosePackageInfo(packageInfoRef);
-      return packagePath;
+      std::wstring fullName(length, L'\0');
+      rc = GetPackageFullName(hProcess, &length, fullName.data());
+      CloseHandle(hProcess);
+      if (rc != ERROR_SUCCESS)
+      {
+         throw std::runtime_error("GetPackageFullName failed (2nd call)");
+      }
+      fullName.resize(wcslen(fullName.c_str())); // trim to actual length
+
+      PackageManager packageManager;
+      auto package = packageManager.FindPackageForUser(L"", fullName);
+      if (!package)
+      {
+         return L"";
+      }
+      return package.DisplayName();
    }
 
    HANDLE GetHandle(DWORD processId)
@@ -157,11 +130,23 @@ namespace window_util
       return cmdLine;
    }
 
+   bool IsCloaked(HWND hwnd)
+   {
+      int cloaked = 0;
+      HRESULT hr = DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
+      return SUCCEEDED(hr) && cloaked != 0;
+   }
+
    BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
    {
       std::vector<ProcessInfo> *apps = reinterpret_cast<std::vector<ProcessInfo> *>(lParam);
 
       if (!IsWindowVisible(hwnd))
+      {
+         return TRUE;
+      }
+
+      if (IsCloaked(hwnd))
       {
          return TRUE;
       }
@@ -203,9 +188,6 @@ namespace window_util
       }
 
       std::wstring cmdLine = GetProcessCommandLine(processId);
-
-      // std::cout << WideToUtf8(cmdLine) << std::endl;
-      // std::this_thread::sleep_for(std::chrono::milliseconds(250));
 
       ProcessInfo app;
       app.exePath = exePath;
