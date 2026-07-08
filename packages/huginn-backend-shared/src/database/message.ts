@@ -279,6 +279,7 @@ export const messagesExtension = Prisma.defineExtension({
                embeds?: DBEmbed[];
                attachments?: DBAttachment[];
                call?: { participants: Snowflake[]; setEndedTimestamp: boolean };
+               setEditedTimestamp?: boolean;
             },
             args?: Args,
          ) {
@@ -315,7 +316,7 @@ export const messagesExtension = Prisma.defineExtension({
                      data: {
                         content: options.content,
                         embeds: options.embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
-                        editedTimestamp: new Date(),
+                        editedTimestamp: options.setEditedTimestamp ? new Date() : undefined,
                         call: options.call
                            ? {
                                 update: {

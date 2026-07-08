@@ -40,7 +40,7 @@ export const userExtension = Prisma.defineExtension({
                span.setAttribute("query.username.length", username.length);
                const methodName = "user.getByUsername";
                try {
-                  const user = await prisma.user.findUniqueOrThrow({ where: { username: username }, ...args });
+                  const user = await prisma.user.findFirstOrThrow({ where: { username: username }, ...args });
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
