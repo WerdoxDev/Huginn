@@ -49,6 +49,7 @@ export const DEFAULT_SERVER_SETTINGS: UserSettings = {
    status: "online",
    theme: undefined,
    pinnedChannels: [],
+   favoriteGifs: [],
 };
 
 export const FLAG_BADGE_MAP: { [key in UserFlags]?: BadgeType } = {

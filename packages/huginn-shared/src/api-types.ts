@@ -293,7 +293,7 @@ export type APIMessageReference = {
 
 export type APIEmbed = {
    title?: string;
-   type: "rich" | "video" | "image" | (string & {});
+   type: "rich" | "video" | "image" | "gifv" | (string & {});
    description?: string;
    url?: string;
    timestamp?: string;
@@ -393,10 +393,13 @@ export type UserPresence = {
 
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
+export type FavoriteGif = { url: string; src: string; width: number; height: number };
+
 export type UserSettings = {
    theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
+   favoriteGifs?: FavoriteGif[];
 };
 
 export type ActiveSession = {
@@ -512,3 +515,21 @@ export type APIReaction = {
    emoji: APIEmoji;
    me: boolean;
 };
+
+export type APIGif = {
+   id: number;
+   title: string;
+   url: string;
+   src: string;
+   width: number;
+   height: number;
+   preview: string;
+};
+
+export type APIGetGifCategoriesResult = {
+   categories: Array<{ name: string; src: string }>;
+   trendingGif: APIGif;
+};
+
+export type APIGetTrendingGifsResult = APIGif[];
+export type APIGetSearchGifsResult = APIGif[];
