@@ -30,6 +30,7 @@ import * as semver from "semver";
 import { octokit, resend } from "#server";
 import { env } from "#setup";
 
+import { fetchGifItems, filterGifs } from "./klipy";
 import { cdnUpload } from "./server-request";
 
 export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
@@ -203,7 +204,24 @@ export function getAttachmentUrl(url: string) {
 export async function generateEmbedsFromContent(tokens: MarkedToken[]) {
    const embeds: DBEmbed[] = [];
    const linkTokens = tokens.filter((token) => token.type === "link" && token.link?.href);
+
    for (const token of linkTokens) {
+      // handle gifs from klipy.com
+      if (token.link?.href.startsWith("https://klipy.com/gifs/")) {
+         const slug = token.link.href.split("/").pop();
+         const gif = filterGifs((await fetchGifItems([slug!])).data, { format: "webm", quality: "md" })[0];
+
+         embeds.push({
+            type: "gifv",
+            title: gif.title,
+            url: gif.url,
+            video: { url: gif.src, width: gif.width, height: gif.height },
+
+            // thumbnail: { url: gif.preview, width: gif.width, height: gif.height },
+         });
+         continue;
+      }
+
       const { contentType, response } = await extractData(token.link!.href);
 
       if (contentType && isImageMediaType(contentType)) {

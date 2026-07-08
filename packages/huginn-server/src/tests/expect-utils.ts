@@ -150,7 +150,22 @@ export function expectMessageExactSchema(
       content: options.content ?? expect.any(String),
    });
 
-   const keys = ["id", "type", "author", "channelId", "content", "timestamp", "editedTimestamp", "embeds", "attachments", "pinned", "mentions", "flags"];
+   const keys = [
+      "id",
+      "type",
+      "author",
+      "channelId",
+      "content",
+      "timestamp",
+      "editedTimestamp",
+      "embeds",
+      "attachments",
+      "pinned",
+      "mentions",
+      "flags",
+      "mentionEveryone",
+      "mentionOwner",
+   ];
 
    if (options.type === MessageType.REPLY) keys.push("messageReference", "referencedMessage");
    if (options.type === MessageType.CALL) keys.push("call");

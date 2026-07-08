@@ -44,6 +44,9 @@ import { deleteChannelRecipient } from "#routes/channels/[channelId]/recipients/
 import { putChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].put";
 import { postTyping } from "#routes/channels/[channelId]/typing.post";
 import { ws } from "#routes/gateway";
+import { getGifCategories } from "#routes/gifs/categories.get";
+import { getSearchGifs } from "#routes/gifs/search.get";
+import { getTrendingGifs } from "#routes/gifs/trending.get";
 import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
@@ -210,4 +213,9 @@ export const app = new Elysia({
    .use(postAndroidUpdate)
    .use(postLog)
    .use(getIndex)
-   .use(getChangelog);
+   .use(getChangelog)
+
+   // gifs
+   .use(getGifCategories)
+   .use(getTrendingGifs)
+   .use(getSearchGifs);

@@ -74,7 +74,6 @@ export const postChannelMessage = new Elysia()
          const processedAttachments = await processAttachments(body.attachments, body.files, channelId, messageId.toString());
          const processedEmbeds = await processEmbeds(body.embeds);
          const processedMentions = await processMentions(tokens);
-         console.log("Processed Mentions:", processedMentions);
 
          const dbMessage = await prisma.message.createOne(
             {

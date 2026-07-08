@@ -6,7 +6,7 @@ import Elysia, { t } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { filterMessage } from "#utils/helpers";
-import { generateEmbedsFromContent, processEmbeds } from "#utils/route-utils";
+import { generateEmbedsFromContent, getMessageTokens, processEmbeds } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
@@ -66,14 +66,19 @@ export const patchMessage = new Elysia()
 
          const processedEmbeds = await processEmbeds(body.embeds);
 
-         const dbMessage = await prisma.message.updateMessage(messageId, { content: body.content, embeds: processedEmbeds }, { select: selectAllMessage });
+         const tokens = body.content ? getMessageTokens(body.content) : [];
+         const dbMessage = await prisma.message.updateMessage(
+            messageId,
+            { content: body.content, embeds: processedEmbeds, setEditedTimestamp: true },
+            { select: selectAllMessage },
+         );
 
          const message: APIMessage = await filterMessage(dbMessage, { receiverId: tokenPayload.id });
          dispatchToTopic(channelId, "message_update", message);
 
          global.waitUntil(async () => {
             // Embed generation from urls inside the message content
-            const embeds = await generateEmbedsFromContent(body.content);
+            const embeds = await generateEmbedsFromContent(tokens);
 
             if (!embeds?.length) {
                return;

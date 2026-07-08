@@ -9,6 +9,7 @@ const schema = t.Object({
    theme: t.Optional(t.Union([t.Literal("plum"), t.Literal("cerulean"), t.Literal("pine-green"), t.Literal("coffee"), t.Literal("violet"), t.Literal("rose")])),
    status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
    pinnedChannels: t.Optional(t.Array(t.String())),
+   favoriteGifs: t.Optional(t.Array(t.Object({ url: t.String(), src: t.String(), width: t.Number(), height: t.Number() }))),
 });
 
 export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
