@@ -83,8 +83,10 @@ declare global {
   const IconMingcuteServerFill: typeof import('~icons/mingcute/server-fill.jsx').default
   const IconMingcuteSettings5Fill: typeof import('~icons/mingcute/settings5-fill.jsx').default
   const IconMingcuteSpeakerFill: typeof import('~icons/mingcute/speaker-fill.jsx').default
+  const IconMingcuteStarFill: typeof import('~icons/mingcute/star-fill.jsx').default
   const IconMingcuteText2Fill: typeof import('~icons/mingcute/text2-fill.jsx').default
   const IconMingcuteTransfer3Fill: typeof import('~icons/mingcute/transfer3-fill.jsx').default
+  const IconMingcuteTrendingUpFill: typeof import('~icons/mingcute/trending-up-fill.jsx').default
   const IconMingcuteUpFill: typeof import('~icons/mingcute/up-fill.jsx').default
   const IconMingcuteUser3Fill: typeof import('~icons/mingcute/user3-fill.jsx').default
   const IconMingcuteUserAdd2Fill: typeof import('~icons/mingcute/user-add2-fill.jsx').default

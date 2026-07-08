@@ -24,35 +24,9 @@ function processMessages(messages: AppMessage[]): ProcessedMessage[] {
       isEditing: false,
       isReplying: false,
       isJumpHighlighted: false,
+      isMentioned: false,
    }));
 }
-
-// export default function PinnedMessagesPopover(props: { channelId: Snowflake }) {
-//    const [isOpen, setIsOpen] = useState(false);
-//    const { requestJumpToMessage } = useChannelStore();
-
-//    const handleMessageClick = useCallback(
-//       (messageId: Snowflake) => {
-//          requestJumpToMessage(props.channelId, messageId);
-//          setIsOpen(false);
-//       },
-//       [props.channelId, requestJumpToMessage],
-//    );
-
-//    return (
-//       <HuginnPopover open={isOpen} onOpenChange={setIsOpen} modal>
-//          <Tooltip hideOnMobile>
-//             <Tooltip.Trigger asChild>
-//                <HuginnPopover.Trigger className="text-text/80 hover:text-text h-full">
-//                   <IconMingcutePinFill className="size-topbar-icon" />
-//                </HuginnPopover.Trigger>
-//             </Tooltip.Trigger>
-//             <Tooltip.Content>Pinned Messages</Tooltip.Content>
-//          </Tooltip>
-//          <PinnedMessagesPanel channelId={props.channelId} isOpen={isOpen} onMessageClick={handleMessageClick} />
-//       </HuginnPopover>
-//    );
-// }
 
 export default function PinnedMessagesPanel() {
    const { popover, close } = usePopover("pinned_messages");

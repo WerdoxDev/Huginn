@@ -24,7 +24,7 @@ export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
    const { open, context: contextMenu } = useContextMenu("message");
-   const { popover } = usePopover("emoji_picker");
+   const { popover } = usePopover("expression");
    const { updateModals } = useModals();
    const { rootRef, extrasRef, reactionsRef, widths } = useMessageWidths({
       idPrefix: context.options?.idPrefix,

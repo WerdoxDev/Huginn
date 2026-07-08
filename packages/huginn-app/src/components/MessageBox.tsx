@@ -26,7 +26,7 @@ import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import { MessageAutocomplete } from "./MessageAutocomplete";
-import EmojiPickerRawPanel from "./popover/EmojiPickerRawPanel";
+import { ExpressionRawPanel } from "./popover/ExpressionRawPanel";
 // import EmojiPickerPanel from "./popover/EmojiPickerPanel";
 // import EmojiPickerPopover from "./popover/EmojiPickerPopover";
 import ReplyingPreview from "./ReplyingPreview";
@@ -94,12 +94,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       channelId,
       resetState,
       insertEmoji,
+      sendGif,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, autocompleteKeyIntercept });
 
-   const { toggle: toggleEmojiPicker, popover: emojiPickerPopover } = usePopover("emoji_picker");
+   const { toggle: toggleExpression, popover: expressionPopover } = usePopover("expression");
 
    const { isKeyboardOpen, lastKeyboardHeight, focusedElementRef } = useInset();
-   const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
+   const [activeMobilePanel, setActiveMobilePanel] = useState<"expression" | "files" | null>(null);
 
    const isKeyboardOpenOnEditor = isKeyboardOpen && focusedElementRef?.current === editorRef.current;
    const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpenOnEditor);
@@ -162,7 +163,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       }
    });
 
-   function handleMobilePanelClick(panel: "emoji" | "files") {
+   function handleMobilePanelClick(panel: "expression" | "files") {
       const prevState = activeMobilePanel;
       let newState = prevState === panel ? null : panel;
       if (!newState && !isKeyboardOpen) {
@@ -230,8 +231,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         ))}
                      {isMobileEnvironment && (
                         <EmojiPickerButton
-                           onClick={() => handleMobilePanelClick("emoji")}
-                           isActive={activeMobilePanel === "emoji" && !isKeyboardOpenOnEditor}
+                           onClick={() => handleMobilePanelClick("expression")}
+                           isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
                         />
                      )}
                   </div>
@@ -259,9 +260,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   <div className="flex gap-x-2 p-2 pl-1">
                      {!isMobileEnvironment && (
                         <EmojiPickerButton
-                           onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: insertEmoji })}
+                           onClick={(e) => toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: sendGif })}
                            // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
-                           isActive={emojiPickerPopover?.isOpen && !emojiPickerPopover.data?.messageId}
+                           isActive={expressionPopover?.isOpen && !expressionPopover.data?.messageId}
                         />
                      )}
                      <HuginnButton
@@ -277,7 +278,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
             </div>
             <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
-               {activeMobilePanel === "emoji" && <EmojiPickerRawPanel onEmojiSelect={insertEmoji} />}
+               {activeMobilePanel === "expression" && <ExpressionRawPanel onEmojiSelect={insertEmoji} onGifSelect={sendGif} />}
             </div>
             <FilePickerDrawer
                attachments={attachments}

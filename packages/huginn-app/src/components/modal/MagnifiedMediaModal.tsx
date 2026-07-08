@@ -1,14 +1,12 @@
 import HuginnButton from "@components/button/HuginnButton";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import LoadingBackground from "@components/LoadingBackground";
-import { Transition } from "@headlessui/react";
 import { useOpen } from "@hooks/useOpen";
 import { clamp, constrainImageSize } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState, type TouchEvent, type WheelEvent, type MouseEvent, type Touch } from "react";
+import { useEffect, useMemo, useRef, useState, type TouchEvent, type WheelEvent, type MouseEvent, type Touch, type RefObject } from "react";
 
-import LoadingIcon from "../LoadingIcon";
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const MIN_SCALE = 1;
@@ -19,13 +17,13 @@ function getTouchDistance(touchA: Touch, touchB: Touch) {
    return Math.hypot(touchA.clientX - touchB.clientX, touchA.clientY - touchB.clientY);
 }
 
-export default function MagnifiedImageModal() {
-   const { magnifiedImage: modal, updateModals } = useModals();
+export default function MagnifiedMediaModal() {
+   const { magnifiedMedia: modal, updateModals } = useModals();
    const [isLoaded, setIsLoaded] = useState(false);
    const [scale, setScale] = useState(MIN_SCALE);
    const [offset, setOffset] = useState({ x: 0, y: 0 });
    const [isDragging, setIsDragging] = useState(false);
-   const imgRef = useRef<HTMLImageElement>(null);
+   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
    const stageRef = useRef<HTMLDivElement>(null);
    const dragStartRef = useRef<{ x: number; y: number } | null>(null);
    const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -44,7 +42,7 @@ export default function MagnifiedImageModal() {
    }, [modal.width, modal.height, viewportHeight, viewportWidth]);
 
    function close() {
-      updateModals({ magnifiedImage: { isOpen: false } });
+      updateModals({ magnifiedMedia: { isOpen: false } });
    }
 
    function clampOffset(nextScale: number, nextOffset: { x: number; y: number }) {
@@ -207,7 +205,10 @@ export default function MagnifiedImageModal() {
       stopDragging();
       pinchStartRef.current = null;
 
-      if (imgRef.current?.complete) {
+      if (
+         mediaRef.current &&
+         (("complete" in mediaRef.current && mediaRef.current.complete) || ("readyState" in mediaRef.current && mediaRef.current.readyState >= 2))
+      ) {
          setIsLoaded(true);
       }
    }, [modal.url]);
@@ -254,14 +255,27 @@ export default function MagnifiedImageModal() {
                }}
                onClick={handleImageClick}
             >
-               <img
-                  src={modal.url}
-                  ref={imgRef}
-                  onLoad={() => setIsLoaded(true)}
-                  draggable={false}
-                  className="h-full w-full object-contain"
-                  alt={modal.filename}
-               />
+               {modal.type === "image" ? (
+                  <img
+                     src={modal.url}
+                     ref={mediaRef as RefObject<HTMLImageElement>}
+                     onLoad={() => setIsLoaded(true)}
+                     draggable={false}
+                     className="h-full w-full object-contain"
+                     alt={modal.filename}
+                  />
+               ) : (
+                  <video
+                     src={modal.url}
+                     ref={mediaRef as RefObject<HTMLVideoElement>}
+                     onLoadedData={() => setIsLoaded(true)}
+                     draggable={false}
+                     className="h-full w-full object-contain"
+                     autoPlay
+                     muted
+                     loop
+                  />
+               )}
                <LoadingBackground isLoaded={isLoaded} hasError={false} />
             </div>
          </div>

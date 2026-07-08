@@ -1,16 +1,16 @@
 import { usePopover } from "@stores/popoverStore";
 
-import EmojiPickerPanel from "./EmojiPickerPanel";
+import ExpressionPanel from "./ExpressionPanel";
 import HuginnPopover from "./HuginnPopover";
 import PinnedMessagesPanel from "./PinnedMessagesPanel";
 
 export default function PopoverRenderer() {
-   const { popover: emojiPickerPopover, close: closeEmojiPicker } = usePopover("emoji_picker");
+   const { popover: expressionPopover, close: closeExpression } = usePopover("expression");
    const { popover: pinnedMessagesPopover, close: closePinnedMessages } = usePopover("pinned_messages");
 
    return (
       <>
-         <HuginnPopover popover={emojiPickerPopover} onClose={closeEmojiPicker} sideGap={12} renderChildren={<EmojiPickerPanel />} />
+         <HuginnPopover popover={expressionPopover} onClose={closeExpression} sideGap={12} renderChildren={<ExpressionPanel />} />
          <HuginnPopover
             popover={pinnedMessagesPopover}
             align="end"

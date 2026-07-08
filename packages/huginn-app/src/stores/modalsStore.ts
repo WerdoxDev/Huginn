@@ -44,11 +44,12 @@ const initialStore = () => ({
    createDM: { isOpen: false } as DefaultModal,
    editGroup: { isOpen: false } as DefaultModal & { channel?: AppDirectChannel },
    addRecipient: { isOpen: false, channelId: "" } as DefaultModal & { channelId: Snowflake },
-   magnifiedImage: { isOpen: false, url: "", filename: "", width: 0, height: 0 } as DefaultModal & {
+   magnifiedMedia: { isOpen: false, url: "", filename: "", width: 0, height: 0, type: "image" } as DefaultModal & {
       url: string;
       width: number;
       height: number;
       filename?: string;
+      type: "image" | "video";
    },
    news: { isOpen: false, lastVersion: undefined } as DefaultModal & { lastVersion?: string },
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {

@@ -278,9 +278,15 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
 
       if (message.isPreview) return nodes;
 
+      // Only render the embeds if the message content is exactly the embed url
+      if (message.embeds.length === 1 && message.content.startsWith(message.embeds[0].url ?? "")) {
+         nodes = [];
+      }
+
       for (const embed of message.embeds) {
          nodes.push({
             type: "embed",
+            embedType: embed.type,
             thumbnail: embed.thumbnail,
             video: embed.video,
             url: embed.url,

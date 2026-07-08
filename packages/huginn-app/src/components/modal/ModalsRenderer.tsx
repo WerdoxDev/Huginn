@@ -11,7 +11,7 @@ const ImageCropModal = lazy(() => import("./ImageCropModal"));
 const EditGroupModal = lazy(() => import("./EditGroupModal"));
 const AddRecipientModal = lazy(() => import("./AddRecipientModal"));
 const InfoModal = lazy(() => import("./InfoModal"));
-const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
+const MagnifiedImageModal = lazy(() => import("./MagnifiedMediaModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
@@ -31,7 +31,7 @@ export default function ModalsRenderer() {
       imageCrop,
       info,
       settings,
-      magnifiedImage,
+      magnifiedMedia,
       news,
       screenShare,
       streamAudio,
@@ -54,8 +54,8 @@ export default function ModalsRenderer() {
          <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
             renderChildren={<MagnifiedImageModal />}
-            modal={magnifiedImage}
-            onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
+            modal={magnifiedMedia}
+            onClose={() => updateModals({ magnifiedMedia: { isOpen: false } })}
             backgroundClassName="bg-black/70"
             headless
          />
