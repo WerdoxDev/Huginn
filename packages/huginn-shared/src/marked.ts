@@ -157,8 +157,8 @@ const userMentionExtension: TokenizerExtension = {
 
 const modifiedMarked: typeof marked = marked.use({
    tokenizer: {
-      html: () => {},
-      tag: () => {},
+      html: () => undefined,
+      tag: () => undefined,
    },
    extensions: [
       spoilerExtension,
