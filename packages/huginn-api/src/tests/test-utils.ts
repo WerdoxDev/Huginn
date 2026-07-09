@@ -1,6 +1,6 @@
 import type { GatewayReadyData } from "@huginn/shared";
 
-import { expect } from "bun:test";
+import { expect } from "vitest";
 
 import { HuginnClient } from "../huginn-client";
 
@@ -34,7 +34,7 @@ export async function connectVoice(client: HuginnClient, readyData?: GatewayRead
    expect(channel).toBeDefined();
 
    const result = await client.voiceManager.connectVoice(null, channel!.id);
-   expect(result).toBeTrue();
+   expect(result).toBe(true);
 }
 
 export async function getConnectedClient(login: boolean): Promise<HuginnClient> {
@@ -45,7 +45,7 @@ export async function getConnectedClient(login: boolean): Promise<HuginnClient> 
    }
 
    client.gateway.connect();
-   await client.gateway.waitForEvents(["hello"]);
+   await client.gateway.waitForAnyEvents(["hello"]);
 
    expect(client.gateway.status).toBe("connected");
 

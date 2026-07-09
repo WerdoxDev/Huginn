@@ -1,471 +1,599 @@
-import { GatewayOperations, GatewayCode } from "@huginn/shared";
-import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
+/**
+ * Tests for `Gateway` using MSW's native WebSocket interception (`ws.link`).
+ *
+ * Assumptions made about the surrounding codebase (adjust the two import
+ * paths below if your file layout differs):
+ *   - This file lives next to `gateway.ts`, e.g. `src/gateway.test.ts`.
+ *   - `HuginnClient` is exported from the package's `index.ts` (`./`).
+ *   - `GatewayOperations` / `GatewayCode` are the same runtime enums used
+ *     inside `gateway.ts`, imported from `@huginn/shared` — the tests use
+ *     the real values instead of hard-coding numbers so they stay correct
+ *     if the enum changes.
+ *
+ * Requirements:
+ *   - `msw` >= 2.6 (first version with `ws` support).
+ *   - A global `WebSocket` implementation. Node >= 21 ships one natively;
+ *     on older runtimes, polyfill it (e.g. via `undici`) *before* MSW's
+ *     server starts listening, since the interceptor patches whatever
+ *     `globalThis.WebSocket` currently points to.
+ */
 
-import type { HuginnClient } from "../";
-import type { GatewayOptions } from "../types";
+import type { GatewayPayload } from "@huginn/shared";
+
+import { GatewayCode, GatewayOperations } from "@huginn/shared";
+import { ws, type WebSocketHandlerConnection } from "msw";
+// import type { WebSocketClientConnection } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Gateway } from "../gateway";
+import { makeClient } from "./ws-test-utils";
 
-// Mock WebSocket
-class MockWebSocket {
-   public readyState: number = WebSocket.CONNECTING;
-   public onopen?: () => void;
-   public onclose?: (e: CloseEvent) => void;
-   public onmessage?: (e: MessageEvent) => void;
-   public onerror?: (e: Event) => void;
+// ============================================================
+// Test fixtures & helpers
+// ============================================================
 
-   public sentMessages: string[] = [];
+const GATEWAY_URL = "wss://gateway.test/";
+const link = ws.link(GATEWAY_URL);
+const server = setupServer();
 
-   constructor(public url: string) {}
-
-   send(data: string) {
-      this.sentMessages.push(data);
-   }
-
-   close(code?: number) {
-      this.readyState = WebSocket.CLOSED;
-      const event = new CloseEvent("close", { code: code || 1000 });
-      this.onclose?.(event);
-   }
-
-   simulateOpen() {
-      this.readyState = WebSocket.OPEN;
-      this.onopen?.();
-   }
-
-   simulateMessage(data: any) {
-      const event = new MessageEvent("message", { data: JSON.stringify(data) });
-      this.onmessage?.(event);
-   }
+function helloPayload(sessionId: string, heartbeatInterval = 30_000): string {
+   return JSON.stringify({
+      op: GatewayOperations.HELLO,
+      d: { heartbeatInterval, sessionId },
+   });
 }
 
-// Mock client
-const createMockClient = (): HuginnClient =>
-   ({
-      tokenHandler: {
-         token: "test-token-123",
-      },
-   }) as any;
+function dispatchPayload(t: string, d: unknown, s: number): string {
+   return JSON.stringify({ op: GatewayOperations.DISPATCH, t, d, s });
+}
 
-describe("Gateway", () => {
-   let gateway: Gateway;
-   let mockClient: HuginnClient;
-   let mockSocket: MockWebSocket;
-   let createSocketMock: any;
+function parse(event: MessageEvent): GatewayPayload {
+   return JSON.parse(event.data as string);
+}
 
-   beforeEach(() => {
-      mockClient = createMockClient();
-      createSocketMock = mock((url: string) => {
-         mockSocket = new MockWebSocket(url);
-         return mockSocket as any;
-      });
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+afterAll(() => server.close());
 
-      const options: Partial<GatewayOptions> = {
-         url: "wss://test.gateway.com",
-         createSocket: createSocketMock,
-         intents: 123,
-      };
+let gateway: Gateway;
 
-      gateway = new Gateway(mockClient, options);
+beforeEach(() => {
+   gateway = new Gateway(makeClient(), {
+      url: GATEWAY_URL,
+      intents: 0,
+      createSocket: (url: string) => new WebSocket(url),
+   });
+});
+
+afterEach(async () => {
+   gateway.close();
+   // Let any pending close/open events flush before the next test starts.
+   await new Promise((resolve) => setTimeout(resolve, 0));
+   server.resetHandlers();
+   vi.useRealTimers();
+});
+
+// ============================================================
+// Connection lifecycle
+// ============================================================
+
+describe("connection lifecycle", () => {
+   it("starts idle", () => {
+      expect(gateway.status).toBe("idle");
+      expect(gateway.isConnected).toBe(false);
+      expect(gateway.isAuthenticated).toBe(false);
    });
 
-   afterEach(() => {
+   it("moves from connecting to connected once the socket opens", async () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.send(helloPayload("session-123", 30_000));
+         }),
+      );
+
+      void gateway.connect();
+      expect(gateway.status).toBe("connecting");
+
+      await vi.waitFor(() => expect(gateway.status).toBe("helloed"));
+   });
+
+   it("throws if connect() is called while already connecting or connected", async () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.send(helloPayload("session-123", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      expect(gateway.status).toBe("helloed");
+
+      await expect(gateway.connect()).rejects.toThrow();
+   });
+
+   it("moves to disconnected if the socket closes before HELLO arrives", async () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.close(1006, "dropped");
+         }),
+      );
+
+      const result = await gateway.connect();
+      expect(result).toBe(false);
+      expect(gateway.status).toBe("disconnected");
+   });
+
+   it("processes HELLO, stores the session id, and moves to helloed", async () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.send(helloPayload("session-123", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+
+      expect(gateway.status).toBe("helloed");
+      expect(gateway.sessionId).toBe("session-123");
+   });
+});
+
+// ============================================================
+// Heartbeat
+// ============================================================
+
+describe("heartbeat", () => {
+   it("sends periodic heartbeats using the interval from HELLO", async () => {
+      const received: GatewayPayload[] = [];
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => received.push(parse(event)));
+            client.send(helloPayload("session-hb", 50));
+         }),
+      );
+
+      await gateway.connect();
+
+      // Let a couple of 50ms heartbeat ticks fire on real timers.
+      await new Promise((resolve) => setTimeout(resolve, 170));
+
+      const heartbeats = received.filter((p) => p.op === GatewayOperations.HEARTBEAT);
+      expect(heartbeats.length).toBeGreaterThanOrEqual(2);
+   }, 8000);
+});
+
+// ============================================================
+// Authentication
+// ============================================================
+
+describe("authenticate()", () => {
+   it("identifies with the client token and resolves once ready is dispatched", async () => {
+      const received: GatewayPayload[] = [];
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               received.push(payload);
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.send(dispatchPayload("ready", { user: { id: "u1", username: "tester" } }, 1));
+               }
+            });
+            client.send(helloPayload("session-auth", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      const result = await gateway.authenticate();
+
+      expect(result).toEqual({ authenticated: true, retryable: true, status: "success" });
+      expect(gateway.isAuthenticated).toBe(true);
+      expect(gateway.user?.id).toBe("u1");
+
+      const identify = received.find((p) => p.op === GatewayOperations.IDENTIFY);
+      expect(identify).toBeDefined();
+      expect((identify?.d as { token?: string })?.token).toBe("test-token");
+   });
+
+   it("resolves immediately if already authenticated", async () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.send(dispatchPayload("ready", { user: { id: "u1" } }, 1));
+               }
+            });
+            client.send(helloPayload("session-auth-2", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      await gateway.authenticate();
+      const second = await gateway.authenticate();
+
+      expect(second).toEqual({ authenticated: true, retryable: true, status: "success" });
+   });
+
+   it("reports authentication_failed when the server rejects identify", async () => {
+      const received: GatewayPayload[] = [];
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               received.push(payload);
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.close(GatewayCode.AUTHENTICATION_FAILED, "bad token");
+               }
+            });
+            client.send(helloPayload("session-fail", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      const result = await gateway.authenticate();
+
+      expect(result).toEqual({ authenticated: false, retryable: false, status: "authentication_failed" });
+      expect(gateway.isAuthenticated).toBe(false);
+      // AUTHENTICATION_FAILED is a reset code, so the session should be cleared.
+      expect(gateway.sessionId).toBeUndefined();
+   });
+
+   it("reports a retryable network_error if disconnected before ready arrives", async () => {
+      let currentClient: WebSocketHandlerConnection["client"] | undefined;
+      const received: GatewayPayload[] = [];
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            currentClient = client;
+            client.addEventListener("message", (event) => received.push(parse(event)));
+            client.send(helloPayload("session-net-error", 30_000));
+            // Deliberately never responds with `ready`.
+         }),
+      );
+
+      await gateway.connect();
+
+      const authPromise = gateway.authenticate();
+      await vi.waitFor(() => expect(received.some((p) => p.op === GatewayOperations.IDENTIFY)).toBe(true));
+
+      currentClient?.close(1006, "dropped");
+
+      const result = await authPromise;
+      expect(result).toEqual({ authenticated: false, retryable: true, status: "network_error" });
+   });
+
+   it("reports a retryable not_connected if the socket is not connected when authenticate() is called", async () => {
+      const result = await gateway.authenticate();
+      expect(result).toEqual({ authenticated: false, retryable: true, status: "not_connected" });
+   });
+
+   it("throws an error if sendResume or sendIdentify were to be called in a bad state", async () => {
+      gateway = new Gateway(makeClient(""), {
+         url: GATEWAY_URL,
+         intents: 0,
+         createSocket: (url: string) => new WebSocket(url),
+      });
+
+      expect(() => gateway["sendResume"]()).toThrow();
+      expect(() => gateway["sendIdentify"]()).toThrow();
+   });
+});
+
+// ============================================================
+// Reconnection & resume
+// ============================================================
+
+describe("reconnection", () => {
+   it("intentionally closing does not schedule a reconnect and resets the session", async () => {
+      let connectionCount = 0;
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            connectionCount += 1;
+            client.send(helloPayload("session-close", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+
       gateway.close();
+      await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
+      expect(gateway.sessionId).toBeUndefined();
+
+      // The reconnect delay is hardcoded to 2s; wait past it and confirm
+      // no second connection was ever opened.
+      await new Promise((resolve) => setTimeout(resolve, 2200));
+      expect(connectionCount).toBe(1);
+   }, 8000);
+
+   it("automatically reconnects after an unintentional close", async () => {
+      let connectionCount = 0;
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            connectionCount += 1;
+            client.send(helloPayload(`session-${connectionCount}`, 30_000));
+         }),
+      );
+
+      await gateway.connect();
+
+      // Simulate an unintentional drop by closing the underlying socket
+      // directly (bypassing Gateway.close(), so `intentionalClose` stays false).
+      gateway.socket?.close();
+
+      await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
+      await vi.waitFor(() => expect(connectionCount).toBe(2), { timeout: 4000 });
+   }, 8000);
+
+   it("resumes an existing session (instead of re-identifying) after reconnecting once authenticated", async () => {
+      let currentClient: WebSocketHandlerConnection["client"] | undefined;
+      let connectionCount = 0;
+      const opsPerConnection: number[][] = [];
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            connectionCount += 1;
+            currentClient = client;
+            const ops: number[] = [];
+            opsPerConnection.push(ops);
+
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               ops.push(payload.op);
+
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.send(dispatchPayload("ready", { user: { id: "u1" } }, 1));
+               }
+               if (payload.op === GatewayOperations.RESUME) {
+                  client.send(dispatchPayload("resumed", {}, 2));
+               }
+            });
+
+            client.send(helloPayload("session-resume", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      await gateway.authenticate();
+      expect(connectionCount).toBe(1);
+      expect(gateway.isAuthenticated).toBe(true);
+
+      // Drop the connection with a code that does NOT reset the session
+      // (anything other than INVALID_SESSION / AUTHENTICATION_FAILED).
+      currentClient?.close(1006, "abnormal");
+
+      await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
+      expect(gateway.canResume).toBe(true);
+
+      // The gateway re-authenticates itself automatically on reconnect
+      // because it still has a `user` from the previous session.
+      await vi.waitFor(() => expect(gateway.isAuthenticated).toBe(true), { timeout: 4000 });
+
+      expect(connectionCount).toBe(2);
+      expect(opsPerConnection[1]).toContain(GatewayOperations.RESUME);
+      expect(opsPerConnection[1]).not.toContain(GatewayOperations.IDENTIFY);
+   }, 8000);
+});
+
+// ============================================================
+// Voice state
+// ============================================================
+
+describe("voice state", () => {
+   async function authenticateWithUser(userId: string, extra?: (client: WebSocketHandlerConnection["client"], payload: GatewayPayload) => void) {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.send(dispatchPayload("ready", { user: { id: userId } }, 1));
+               }
+               extra?.(client, payload);
+            });
+            client.send(helloPayload("session-voice", 30_000));
+         }),
+      );
+
+      await gateway.connect();
+      return gateway.authenticate();
+   }
+
+   it("getVoiceToken resolves once voice_server_update and voice_state_update both arrive", async () => {
+      const userId = "u1";
+      const guildId = "g1";
+      const channelId = "c1";
+      const voiceToken = "voice-token-xyz";
+      let seq = 1;
+
+      await authenticateWithUser(userId, (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE) {
+            client.send(dispatchPayload("voice_server_update", { token: voiceToken }, ++seq));
+            client.send(dispatchPayload("voice_state_update", { userId, channelId, guildId }, ++seq));
+         }
+      });
+
+      const token = await gateway.getVoiceToken(guildId, channelId);
+      expect(token).toBe(voiceToken);
    });
 
-   describe("connect()", () => {
-      test("should establish websocket connection", () => {
-         gateway.connect();
+   it("sendDefaultVoiceState sends a null channel/guild update and resolves on confirmation", async () => {
+      const userId = "u1";
+      let seq = 1;
 
-         expect(createSocketMock).toHaveBeenCalledWith("wss://test.gateway.com");
-         expect(gateway.status).toBe("connecting");
-         expect(gateway.socket).toBeDefined();
+      await authenticateWithUser(userId, (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === null) {
+            client.send(dispatchPayload("voice_state_update", { userId, channelId: null, guildId: null }, ++seq));
+         }
       });
 
-      test("should throw error if already connecting", () => {
-         gateway.connect();
-
-         expect(() => gateway.connect()).toThrow("Socket is already connected or is connecting");
-      });
-
-      test("should emit connected event on websocket open", () => {
-         const connectedSpy = mock(() => {});
-         gateway.listen("connected", connectedSpy);
-
-         gateway.connect();
-         mockSocket.simulateOpen();
-
-         expect(connectedSpy).toHaveBeenCalled();
-         expect(gateway.status).toBe("connected");
-      });
+      await expect(gateway.sendDefaultVoiceState()).resolves.toBeUndefined();
    });
 
-   describe("close()", () => {
-      test("should close websocket with intentional close code", () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
+   it("updateVoiceState resolves with the confirmed voice state", async () => {
+      const userId = "u1";
+      const guildId = "g1";
+      const channelId = "c1";
+      let seq = 1;
 
-         const closeSpy = mock((code: number) => {});
-         gateway.listen("disconnected", closeSpy);
-
-         gateway.close();
-
-         expect(closeSpy).toHaveBeenCalledWith(GatewayCode.INTENTIONAL_CLOSE);
-         expect(gateway.status).toBe("disconnected");
+      await authenticateWithUser(userId, (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
+            client.send(
+               dispatchPayload(
+                  "voice_state_update",
+                  {
+                     userId,
+                     channelId,
+                     guildId,
+                     isCameraOn: true,
+                     isAudioMuted: false,
+                     isAudioDeafened: false,
+                     isAudioStreaming: false,
+                     isScreenSharing: false,
+                  },
+                  ++seq,
+               ),
+            );
+         }
       });
+
+      const state = await gateway.updateVoiceState(
+         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         channelId,
+         guildId,
+      );
+
+      expect(state.channelId).toBe(channelId);
+      expect(state.userId).toBe(userId);
    });
 
-   describe("authenticate()", () => {
-      test("should send identify when no session exists", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
+   it("updateVoiceState should only resolve when the voice state update for the current user arrives", async () => {
+      const userId1 = "u1";
+      const userId2 = "u2";
+      const guildId = "g1";
+      const channelId = "c1";
+      let seq = 1;
 
-         const authPromise = gateway.authenticate();
+      await authenticateWithUser(userId1, async (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
+            client.send(
+               dispatchPayload(
+                  "voice_state_update",
+                  {
+                     userId: userId2,
+                     channelId,
+                     guildId,
+                     isCameraOn: true,
+                     isAudioMuted: false,
+                     isAudioDeafened: false,
+                     isAudioStreaming: false,
+                     isScreenSharing: false,
+                  },
+                  ++seq,
+               ),
+            );
 
-         // Wait for identify to be sent
-         await new Promise((resolve) => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
-         const identifyMessage = JSON.parse(mockSocket.sentMessages[0]);
-         expect(identifyMessage.op).toBe(GatewayOperations.IDENTIFY);
-         expect(identifyMessage.d.token).toBe("test-token-123");
-
-         // Simulate ready event
-         mockSocket.simulateMessage({
-            op: GatewayOperations.DISPATCH,
-            t: "ready",
-            s: 1,
-            d: { user: { id: "user-123", username: "testuser" } },
-         });
-
-         const result = await authPromise;
-         expect(result.authenticated).toBe(true);
-         expect(gateway.isAuthenticated).toBe(true);
+            client.send(
+               dispatchPayload(
+                  "voice_state_update",
+                  {
+                     userId: userId1,
+                     channelId,
+                     guildId,
+                     isCameraOn: true,
+                     isAudioMuted: false,
+                     isAudioDeafened: false,
+                     isAudioStreaming: false,
+                     isScreenSharing: false,
+                  },
+                  ++seq,
+               ),
+            );
+         }
       });
 
-      test("should send resume when session exists", async () => {
-         // Set up existing session
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
+      const state = await gateway.updateVoiceState(
+         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         channelId,
+         guildId,
+      );
 
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 5,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         // Disconnect
-         gateway.socket?.close();
-
-         // Reconnect and authenticate
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-
-         const authPromise = gateway.authenticate();
-         await new Promise((resolve) => setTimeout(resolve, 10));
-
-         const resumeMessage = JSON.parse(mockSocket.sentMessages[mockSocket.sentMessages.length - 1]);
-         expect(resumeMessage.op).toBe(GatewayOperations.RESUME);
-         expect(resumeMessage.d.sessionId).toBe("session-123");
-         expect(resumeMessage.d.seq).toBe(5);
-
-         mockSocket.simulateMessage({
-            op: GatewayOperations.DISPATCH,
-            t: "resumed",
-            s: 5,
-         });
-
-         const result = await authPromise;
-
-         expect(result.authenticated).toBe(true);
-      });
-
-      test("should return false if authentication fails", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-
-         const authPromise = gateway.authenticate();
-         await new Promise((resolve) => setTimeout(resolve, 10));
-
-         // Simulate authentication failure
-         mockSocket.close(GatewayCode.AUTHENTICATION_FAILED);
-
-         const result = await authPromise;
-         expect(result.authenticated).toBe(false);
-         expect(result.retryable).toBe(false);
-      });
+      expect(state.channelId).toBe(channelId);
+      expect(state.userId).toBe(userId1);
    });
 
-   describe("getVoiceToken()", () => {
-      test("should request voice token and return it", async () => {
-         // Setup authenticated gateway
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
+   it("should throw if disconnected while waiting for the voice state update", async () => {
+      const userId = "u1";
+      const channelId = "c1";
 
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         const tokenPromise = gateway.getVoiceToken("guild-123", "channel-456");
-
-         // Simulate voice server update
-         mockSocket.simulateMessage({
-            op: GatewayOperations.DISPATCH,
-            t: "voice_server_update",
-            s: 2,
-            d: { token: "voice-token-789", guildId: "guild-123" },
-         });
-
-         // Simulate voice state update
-         mockSocket.simulateMessage({
-            op: GatewayOperations.DISPATCH,
-            t: "voice_state_update",
-            s: 3,
-            d: {
-               userId: "user-123",
-               channelId: "channel-456",
-               guildId: "guild-123",
-            },
-         });
-
-         const token = await tokenPromise;
-         expect(token).toBe("voice-token-789");
+      await authenticateWithUser(userId, (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
+            client.close(1006, "dropped");
+         }
       });
+
+      await expect(
+         gateway.updateVoiceState(
+            { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+            channelId,
+            null,
+         ),
+      ).rejects.toThrow();
    });
 
-   describe("sendDefaultVoiceState()", () => {
-      test("should send voice state update with null channel", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
+   it("getVoiceToken should return null if disconnected while waiting for the voice server update and voice state update", async () => {
+      const userId = "u1";
+      const channelId = "c1";
 
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         mockSocket.sentMessages = [];
-         await gateway.sendDefaultVoiceState();
-
-         const message = JSON.parse(mockSocket.sentMessages[0]);
-         expect(message.op).toBe(GatewayOperations.VOICE_STATE_UPDATE);
-         expect(message.d.channelId).toBeNull();
-         expect(message.d.guildId).toBeNull();
+      await authenticateWithUser(userId, (client, payload) => {
+         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
+            client.close(1006, "dropped");
+         }
       });
+
+      const result = await gateway.getVoiceToken(null, channelId);
+      expect(result).toBeNull();
    });
+});
 
-   describe("updateVoiceState()", () => {
-      test("should update voice state flags", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
+// ============================================================
+// Presence
+// ============================================================
 
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
+describe("updatePresence()", () => {
+   it("does nothing until authenticated, then sends the presence payload", async () => {
+      const received: GatewayPayload[] = [];
 
-         mockSocket.sentMessages = [];
-         const updatePromise = gateway.updateVoiceState(
-            {
-               isAudioMuted: true,
-               isAudioDeafened: false,
-               isAudioStreaming: false,
-               isCameraOn: false,
-               isScreenSharing: false,
-            },
-            "channel-456",
-            "guild-123",
-         );
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", (event) => received.push(parse(event)));
+            client.addEventListener("message", (event) => {
+               const payload = parse(event);
+               if (payload.op === GatewayOperations.IDENTIFY) {
+                  client.send(dispatchPayload("ready", { user: { id: "u1" } }, 1));
+               }
+            });
+            client.send(helloPayload("session-presence", 30_000));
+         }),
+      );
 
-         const message = JSON.parse(mockSocket.sentMessages[0]);
-         expect(message.op).toBe(GatewayOperations.VOICE_STATE_UPDATE);
-         expect(message.d.isAudioMuted).toBe(true);
-         expect(message.d.channelId).toBe("channel-456");
+      // Not connected yet: should be a silent no-op.
+      gateway.updatePresence({ status: "online", activities: [] } as never);
+      expect(received.some((p) => p.op === GatewayOperations.PRESENCE_UPDATE)).toBe(false);
 
-         // Simulate voice state update response
-         mockSocket.simulateMessage({
-            op: GatewayOperations.DISPATCH,
-            t: "voice_state_update",
-            s: 2,
-            d: {
-               userId: "user-123",
-               channelId: "channel-456",
-               guildId: "guild-123",
-               isAudioMuted: true,
-            },
-         });
+      await gateway.connect();
+      await gateway.authenticate();
+      gateway.updatePresence({ status: "online", activities: [] } as never);
 
-         const result = await updatePromise;
-         expect(result.isAudioMuted).toBe(true);
-      });
+      await vi.waitFor(() => expect(received.some((p) => p.op === GatewayOperations.PRESENCE_UPDATE)).toBe(true));
    });
+});
 
-   describe("updatePresence()", () => {
-      test("should send presence update when authenticated", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         mockSocket.sentMessages = [];
-         gateway.updatePresence({
-            status: "online",
-            activities: [{ name: "Testing", type: 0, createdAt: new Date().getTime() }],
-         });
-
-         const message = JSON.parse(mockSocket.sentMessages[0]);
-         expect(message.op).toBe(GatewayOperations.PRESENCE_UPDATE);
-         expect(message.d.status).toBe("online");
-         expect(message.d.activities).toHaveLength(1);
-      });
-
-      test("should not send presence update when not authenticated", () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-
-         mockSocket.sentMessages = [];
-         gateway.updatePresence({ status: "online", activities: [] });
-
-         expect(mockSocket.sentMessages).toHaveLength(0);
-      });
-   });
-
-   describe("status getters", () => {
-      test("isConnected should return true when helloed or authenticated", async () => {
-         expect(gateway.isConnected).toBe(false);
-
-         gateway.connect();
-         mockSocket.simulateOpen();
-         expect(gateway.isConnected).toBe(false);
-
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-         expect(gateway.isConnected).toBe(true);
-
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         expect(gateway.isConnected).toBe(true);
-      });
-
-      test("isAuthenticated should return true only when authenticated", async () => {
-         expect(gateway.isAuthenticated).toBe(false);
-
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-         expect(gateway.isAuthenticated).toBe(false);
-
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         expect(gateway.isAuthenticated).toBe(true);
-      });
-   });
-
-   describe("user getter", () => {
-      test("should return undefined before authentication", () => {
-         expect(gateway.user).toBeUndefined();
-      });
-
-      test("should return user after authentication", async () => {
-         gateway.connect();
-         mockSocket.simulateOpen();
-         mockSocket.simulateMessage({
-            op: GatewayOperations.HELLO,
-            d: { heartbeatInterval: 30000, sessionId: "session-123" },
-         });
-
-         await Promise.allSettled([
-            gateway.authenticate(),
-            mockSocket.simulateMessage({
-               op: GatewayOperations.DISPATCH,
-               t: "ready",
-               s: 1,
-               d: { user: { id: "user-123", username: "testuser" } },
-            }),
-         ]);
-
-         expect(gateway.user).toBeDefined();
-         expect(gateway.user?.id).toBe("user-123");
-         expect(gateway.user?.username).toBe("testuser");
-      });
+describe("send()", () => {
+   it("does nothing if the socket is not connected", () => {
+      expect(() => gateway["send"]({ op: GatewayOperations.HEARTBEAT, d: 0 })).not.toThrow();
    });
 });

@@ -416,7 +416,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             const createResult = await new Promise<VoiceConsumeResult>((res) => {
                this.emit("create_consumer", {
                   producerId: remoteProducer.producerId,
-                  rtpCapabilities: this.device.rtpCapabilities,
+                  rtpCapabilities: this.device.recvRtpCapabilities,
                   transportId: this.recvTransport.id,
                   callback: res,
                });
