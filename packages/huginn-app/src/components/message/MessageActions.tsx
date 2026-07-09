@@ -12,7 +12,7 @@ const iconClassName = "text-text/80 group-hover/button:text-text size-5 ";
 
 export function MessageActions(props: { message: ProcessedAppMessage }) {
    const { setReplyingMessageId, setEditingMessageId } = useChannelStore();
-   const { toggle } = usePopover("emoji_picker");
+   const { toggle } = usePopover("expression");
    const addMutation = useAddReaction();
    const { user } = useThisUser();
 
@@ -43,7 +43,10 @@ export function MessageActions(props: { message: ProcessedAppMessage }) {
             "pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg bg-zinc-900 p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
          )}
       >
-         <ActionButton tooltip="Add Reaction" onClick={(e) => toggle(e, { onEmojiSelect: handleEmojiSelect, messageId: props.message.id })}>
+         <ActionButton
+            tooltip="Add Reaction"
+            onClick={(e) => toggle(e, { type: "emoji", onEmojiSelect: handleEmojiSelect, messageId: props.message.id })}
+         >
             <IconMingcuteEmoji2Fill className={iconClassName} />
          </ActionButton>
          {isAuthor && (

@@ -9,7 +9,14 @@ import type { PopoverStateProps } from "@/types";
 type StoreType = ReturnType<typeof initialStore>;
 
 const initialStore = () => ({
-   emoji_picker: undefined as PopoverStateProps<{ onEmojiSelect: (slug: string, unicode?: string) => void; messageId?: Snowflake }> | undefined,
+   expression: undefined as
+      | PopoverStateProps<{
+           type: "full" | "emoji";
+           onEmojiSelect?: (slug: string, unicode?: string) => void;
+           onGifSelect?: (url: string) => void;
+           messageId?: Snowflake;
+        }>
+      | undefined,
    pinned_messages: undefined as PopoverStateProps<{ channelId: Snowflake }> | undefined,
 });
 

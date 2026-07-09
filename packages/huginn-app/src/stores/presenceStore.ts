@@ -179,6 +179,8 @@ function startCheckingForActivity() {
          );
 
          const info = await window.electronAPI.getApplicationInfo(match.detected.processId);
+         if (!info) return;
+
          let iconHash;
          if (info.icon) {
             iconHash = await client.applications.uploadIcon({ icon: info.icon });

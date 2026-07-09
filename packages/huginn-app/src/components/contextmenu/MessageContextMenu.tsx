@@ -19,7 +19,7 @@ import ContextMenu from "./ContextMenu";
 
 export default function MessageContextMenu() {
    const { data, close } = useContextMenu("message");
-   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker");
+   const { toggle: toggleExpression } = usePopover("expression");
    const { openUrl } = useOpen();
    const { showError } = useModals();
    const queryClient = useQueryClient();
@@ -143,7 +143,7 @@ export default function MessageContextMenu() {
                ))}
             </div>
          )}
-         <ContextMenu.Item label="Add Reaction" onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: handleEmojiSelect })}>
+         <ContextMenu.Item label="Add Reaction" onClick={(e) => toggleExpression(e, { type: "emoji", onEmojiSelect: handleEmojiSelect })}>
             <IconMingcuteEmoji2Fill />
          </ContextMenu.Item>
          {isAuthor && !data.message.isPreview && (

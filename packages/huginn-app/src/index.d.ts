@@ -36,6 +36,7 @@ type CodespanElement = {
 
 type EmbedElement = {
    type: "embed";
+   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
    thumbnail?: { url: string; width?: number; height?: number };
    video?: { url: string; width?: number; height?: number };
    title?: string;

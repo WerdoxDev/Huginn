@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import HuginnButton from "@components/button/HuginnButton";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import LoadingBackground from "@components/LoadingBackground";
+import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
 import {
@@ -76,6 +77,7 @@ function FilePickerPanel(props: {
    const { updateModals } = useModals();
    const [permissionState, setPermissionState] = useState<MediaPermissionState | null>(null);
    const scrollRef = useRef<HTMLDivElement>(null);
+   useClearQueryData(["mobile-files"], { keepFirstPage: true, clearOnUnmount: true });
 
    const attachmentsLookup = useLookup(props.attachments, (attachment) => attachment.key);
 
@@ -127,12 +129,6 @@ function FilePickerPanel(props: {
    //    // thumbnails intentionally omitted — we only want to run this when pages change
    //    // eslint-disable-next-line react-hooks/exhaustive-deps
    // }, [mediaResult]);
-
-   useEffect(() => {
-      return () => {
-         queryClient.removeQueries({ queryKey: ["mobile-files"] });
-      };
-   }, [queryClient]);
 
    const handleScroll = useCallback(
       async (event: React.UIEvent<HTMLDivElement>) => {

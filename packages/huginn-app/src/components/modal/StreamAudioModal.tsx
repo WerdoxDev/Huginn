@@ -76,7 +76,7 @@ export default function StreamAudioModal() {
             </div>
          </DialogBody>
          <DialogActions>
-            <LoadingButton className="h-10 w-24" color="surface" onClick={refetch} isLoading={isFetching}>
+            <LoadingButton className="h-10 w-24" color="surface" onClick={() => refetch({})} isLoading={isFetching}>
                Refresh
             </LoadingButton>
             <HuginnButton className="ml-auto h-10 w-20 decoration-white hover:underline" onClick={close}>

@@ -70,9 +70,9 @@ function withHuginn(editor: Editor) {
    return editor;
 }
 
-export function usePreviewMessageRenderer(props: {
-   onSetAutocomplete: (type: AutocompleteType, query: string) => void;
-   onCloseAutocomplete: () => void;
+export function usePreviewMessageRenderer(options?: {
+   onSetAutocomplete?: (type: AutocompleteType, query: string) => void;
+   onCloseAutocomplete?: () => void;
 }) {
    const editor = useMemo(() => withHuginn(withReact(createEditor())), []);
    const cachedDecorations = useRef<Map<number, Range[]>>(new Map());
@@ -443,7 +443,7 @@ export function usePreviewMessageRenderer(props: {
    function checkAndShowAutocomplete() {
       const { selection } = editor;
       if (!selection || !Range.isCollapsed(selection)) {
-         props.onCloseAutocomplete();
+         options?.onCloseAutocomplete?.();
          return;
       }
 
@@ -462,14 +462,14 @@ export function usePreviewMessageRenderer(props: {
          if (selection.anchor.offset >= mentionToken.start + mentionToken.mention.queryIndex) {
             if (mentionToken.mention?.type === "user") {
                currentMentionRef.current = { path, token: mentionToken };
-               props.onSetAutocomplete("user", mentionToken.mention.text);
+               options?.onSetAutocomplete?.("user", mentionToken.mention.text);
                return;
             }
          }
       }
 
       currentMentionRef.current = null;
-      props.onCloseAutocomplete();
+      options?.onCloseAutocomplete?.();
    }
 
    function handleAutocompleteSelect(item: AutocompleteItem) {

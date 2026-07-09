@@ -1,4 +1,3 @@
-import { Transition } from "@headlessui/react";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { formatSeconds } from "@huginn/shared";
 import clsx from "clsx";
@@ -6,7 +5,6 @@ import { type MouseEvent, useEffect, useRef, useState } from "react";
 
 import HuginnMediaSlider from "./HuginnMediaSlider";
 import LoadingBackground from "./LoadingBackground";
-import LoadingIcon from "./LoadingIcon";
 import VolumeSlider from "./VolumeSlider";
 
 const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;

@@ -5,9 +5,16 @@ import { createContext, type ReactNode, useContext } from "react";
 const TabContext = createContext<string | undefined>("");
 const TabPanelContext = createContext<string | undefined>("");
 
-export default function HuginnTab(props: { children?: ReactNode; onChange?: (value: string) => void; defaultTab?: string; className?: string }) {
+export default function HuginnTab(props: {
+   children?: ReactNode;
+   onChange?: (value: string) => void;
+   defaultTab?: string;
+   className?: string;
+   style?: React.CSSProperties;
+   value?: string;
+}) {
    return (
-      <Tabs.Root onValueChange={props.onChange} className={props.className} defaultValue={props.defaultTab}>
+      <Tabs.Root onValueChange={props.onChange} value={props.value} className={props.className} defaultValue={props.defaultTab} style={props.style}>
          {props.children}
       </Tabs.Root>
    );
@@ -40,18 +47,20 @@ function Tab(props: { className?: string; children?: ReactNode; value: string })
    );
 }
 
-function TabPanels(props: { className?: string; children?: ReactNode; panelClassName?: string }) {
+function TabPanels(props: { className?: string; children?: ReactNode; panelClassName?: string; style?: React.CSSProperties }) {
    return (
       <TabPanelContext.Provider value={props.panelClassName}>
-         <div className={clsx(props.className)}>{props.children}</div>
+         <div className={clsx(props.className)} style={props.style}>
+            {props.children}
+         </div>
       </TabPanelContext.Provider>
    );
 }
 
-function TabPanel(props: { className?: string; children?: ReactNode; value: string }) {
+function TabPanel(props: { className?: string; children?: ReactNode; value: string; style?: React.CSSProperties }) {
    const panelClassName = useContext(TabPanelContext);
    return (
-      <Tabs.Panel className={clsx(panelClassName, props.className)} value={props.value}>
+      <Tabs.Panel className={clsx(panelClassName, props.className)} value={props.value} style={props.style}>
          {props.children}
       </Tabs.Panel>
    );

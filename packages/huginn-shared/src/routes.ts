@@ -164,7 +164,9 @@ export const Routes = {
       emojiKey: string,
       userId?: Snowflake,
    ): `/channels/${string}/messages/${string}/reactions/${string}/@me` | `/channels/${string}/messages/${string}/reactions/${string}/users/${string}` {
-      return `/channels/${channelId}/messages/${messageId}/reactions/${emojiKey}/${userId ?? "@me"}` as const;
+      return userId
+         ? (`/channels/${channelId}/messages/${messageId}/reactions/${emojiKey}/users/${userId}` as const)
+         : (`/channels/${channelId}/messages/${messageId}/reactions/${emojiKey}/@me` as const);
    },
 
    /**
@@ -247,6 +249,30 @@ export const Routes = {
     */
    changelog() {
       return "/changelog" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/gifs/categories'
+    */
+   gifCategories() {
+      return "/gifs/categories" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/gifs/trending'
+    */
+   trendingGifs() {
+      return "/gifs/trending" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/gifs/search'
+    */
+   searchGifs() {
+      return "/gifs/search" as const;
    },
 };
 

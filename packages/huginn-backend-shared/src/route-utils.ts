@@ -3,7 +3,6 @@ import { error, type OAuthTokenPayload, type UserTokenPayload } from "@huginn/sh
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
-import sharp from "sharp";
 
 import type { ImageData, VideoData } from "#types";
 
@@ -27,7 +26,7 @@ export async function getImageData(source: string | ArrayBuffer): Promise<ImageD
          arrayBuffer = source;
       }
 
-      const metadata = await sharp(arrayBuffer).metadata();
+      const metadata = await new Bun.Image(arrayBuffer).metadata();
 
       return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
    } catch (e) {
@@ -41,7 +40,7 @@ export async function getVideoData(source: ArrayBuffer): Promise<VideoData | und
       const input = new Input({ source: new BufferSource(source), formats: ALL_FORMATS });
       const video = await input.getPrimaryVideoTrack();
 
-      return { width: video?.displayWidth ?? 0, height: video?.displayHeight ?? 0 };
+      return { width: (await video?.getDisplayWidth()) ?? 0, height: (await video?.getDisplayHeight()) ?? 0 };
    } catch (e) {
       error("backend-shared:route-utils", "Getting video data failed:", e);
       return undefined;

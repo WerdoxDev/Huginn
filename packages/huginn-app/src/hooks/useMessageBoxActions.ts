@@ -67,6 +67,41 @@ export function useMessageBoxActions(options: {
       }
    }
 
+   function sendGif(gifUrl: string) {
+      const channelId = params.channelId;
+      if (!user || !channelId || !client) return;
+
+      const messageReference = currentReplyingMessageId
+         ? {
+              messageId: currentReplyingMessageId,
+              channelId: channelId,
+              type: MessageReferenceType.DEFAULT,
+           }
+         : undefined;
+
+      const nonce = client.generateNonce();
+      const previewMessage = createPreviewMessage(queryClient, {
+         authorId: user.id,
+         channelId,
+         content: gifUrl,
+         nonce,
+         flags: MessageFlags.NONE,
+         messageReference,
+      });
+
+      sendMessageMutation.mutate({
+         previewMessage,
+      });
+
+      if (currentReplyingMessageId) {
+         setReplyingMessageId(undefined);
+      }
+
+      resetTyping();
+      options.clearAttachments();
+      clearEditor();
+   }
+
    function sendMessage(flags: MessageFlags) {
       if (isEditorEmpty() && options.attachments.length === 0) return;
 
@@ -409,7 +444,6 @@ export function useMessageBoxActions(options: {
             const isPortalOpen = !!document.querySelector("[data-base-ui-portal]");
             const isInputFocused = document.activeElement && ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName);
 
-            console.log(e);
             if (!isInputFocused && !isPortalOpen && !ReactEditor.isFocused(options.editor) && isWorthyKeyEvent(e)) {
                options.editor.select(options.editor.end([]));
                ReactEditor.focus(options.editor);
@@ -452,6 +486,7 @@ export function useMessageBoxActions(options: {
    }, [currentReplyingMessageId]);
 
    return {
+      sendGif,
       submitMessage,
       insertEmoji,
       cancelEditMessage,

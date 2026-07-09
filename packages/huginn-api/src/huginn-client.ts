@@ -12,6 +12,7 @@ import { ApplicationAPI } from "./rest-apis/application";
 import { AuthAPI } from "./rest-apis/auth";
 import { ChannelAPI } from "./rest-apis/channel";
 import { CommonAPI } from "./rest-apis/common";
+import { GifAPI } from "./rest-apis/gif";
 import { MessageAPI } from "./rest-apis/message";
 import { OAuthAPI } from "./rest-apis/oauth";
 import { RelationshipAPI } from "./rest-apis/relationship";
@@ -51,6 +52,7 @@ export class HuginnClient<V extends Voice = Voice> {
    public readonly oauth: OAuthAPI;
    public readonly applications: ApplicationAPI;
    public readonly common: CommonAPI;
+   public readonly gifs: GifAPI;
 
    private _user?: APIUser;
 
@@ -75,6 +77,7 @@ export class HuginnClient<V extends Voice = Voice> {
       this.messages = new MessageAPI(this.rest);
       this.relationships = new RelationshipAPI(this.rest);
       this.applications = new ApplicationAPI(this.rest);
+      this.gifs = new GifAPI(this.rest);
       this.common = new CommonAPI(this.rest);
       this.oauth = new OAuthAPI(this.rest, this.gateway);
 

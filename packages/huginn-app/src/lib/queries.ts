@@ -204,3 +204,34 @@ export function getMobileFilesOptions(limit: number) {
       },
    });
 }
+
+export function getGifCategoriesOptions(client: HuginnClient) {
+   return queryOptions({
+      queryKey: ["gif-categories"],
+      queryFn: async () => await client.gifs.getCategories(),
+   });
+}
+
+export function getTrendingGifsOptions(client: HuginnClient, limit = 25) {
+   return infiniteQueryOptions({
+      queryKey: ["trending-gifs"],
+      queryFn: async ({ pageParam }) => await client.gifs.getTrending(limit, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _allPages, lastParams) => {
+         if (lastPage.length < limit) return undefined;
+         return lastParams + 1;
+      },
+   });
+}
+
+export function getSearchGifsOptions(client: HuginnClient, query: string, limit = 25) {
+   return infiniteQueryOptions({
+      queryKey: ["search-gifs", query],
+      queryFn: async ({ pageParam }) => await client.gifs.search(query, limit, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _allPages, lastParams) => {
+         if (lastPage.length < limit) return undefined;
+         return lastParams + 1;
+      },
+   });
+}

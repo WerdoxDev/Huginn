@@ -236,7 +236,7 @@ export default function ScreenShareModal() {
             <LoadingButton
                className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
                color="primary"
-               onClick={refetch}
+               onClick={() => refetch()}
                isLoading={isFetching}
             >
                <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
