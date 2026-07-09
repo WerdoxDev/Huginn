@@ -63,12 +63,13 @@ beforeEach(() => {
       intents: 0,
       createSocket: (url: string) => new WebSocket(url),
    });
+   vi.useFakeTimers();
 });
 
 afterEach(async () => {
    gateway.close();
    // Let any pending close/open events flush before the next test starts.
-   await new Promise((resolve) => setTimeout(resolve, 0));
+   // await new Promise((resolve) => setTimeout(resolve, 0));
    server.resetHandlers();
    vi.useRealTimers();
 });
@@ -154,7 +155,8 @@ describe("heartbeat", () => {
       await gateway.connect();
 
       // Let a couple of 50ms heartbeat ticks fire on real timers.
-      await new Promise((resolve) => setTimeout(resolve, 170));
+      // await new Promise((resolve) => setTimeout(resolve, 170));
+      await vi.advanceTimersByTimeAsync(200);
 
       const heartbeats = received.filter((p) => p.op === GatewayOperations.HEARTBEAT);
       expect(heartbeats.length).toBeGreaterThanOrEqual(2);
@@ -171,6 +173,7 @@ describe("authenticate()", () => {
 
       server.use(
          link.addEventListener("connection", ({ client }) => {
+            client.send(helloPayload("session-auth", 30_000));
             client.addEventListener("message", (event) => {
                const payload = parse(event);
                received.push(payload);
@@ -178,7 +181,6 @@ describe("authenticate()", () => {
                   client.send(dispatchPayload("ready", { user: { id: "u1", username: "tester" } }, 1));
                }
             });
-            client.send(helloPayload("session-auth", 30_000));
          }),
       );
 
@@ -303,7 +305,8 @@ describe("reconnection", () => {
 
       // The reconnect delay is hardcoded to 2s; wait past it and confirm
       // no second connection was ever opened.
-      await new Promise((resolve) => setTimeout(resolve, 2200));
+      await vi.advanceTimersByTimeAsync(2200);
+      // await new Promise((resolve) => setTimeout(resolve, 2200));
       expect(connectionCount).toBe(1);
    }, 8000);
 
@@ -324,6 +327,7 @@ describe("reconnection", () => {
       gateway.socket?.close();
 
       await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
+      await vi.advanceTimersByTimeAsync(2200);
       await vi.waitFor(() => expect(connectionCount).toBe(2), { timeout: 4000 });
    }, 8000);
 
@@ -494,8 +498,6 @@ describe("voice state", () => {
                ),
             );
 
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
             client.send(
                dispatchPayload(
                   "voice_state_update",
@@ -594,6 +596,11 @@ describe("updatePresence()", () => {
 
 describe("send()", () => {
    it("does nothing if the socket is not connected", () => {
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            client.addEventListener("message", () => {});
+         }),
+      );
       expect(() => gateway["send"]({ op: GatewayOperations.HEARTBEAT, d: 0 })).not.toThrow();
    });
 });

@@ -4,5 +4,6 @@ export function makeClient(token: string | undefined = "test-token"): HuginnClie
    return {
       currentUser: { id: "u-test" },
       tokenHandler: { token },
+      generateNonce: () => "test-nonce",
    } as HuginnClient;
 }

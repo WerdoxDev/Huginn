@@ -120,10 +120,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
             const result = await this.waitForAnyEvents(["hello", "disconnected"]);
 
-            if (result.event === "disconnected") {
-               return false;
-            }
-
+            if (result.event === "disconnected") return false;
             return true;
          } catch (e) {
             recordSpanError(e);
@@ -442,10 +439,12 @@ export class Gateway extends SharedWebsocket<Events> {
 
    private async waitForVoiceStateUpdate(targetChannelId: Snowflake | null): Promise<GatewayVoiceState> {
       while (true) {
-         const result = await this.waitForAnyEvents(["voice_state_update", "disconnected"]);
-         if (result.event === "disconnected") {
-            throw new Error("Disconnected while waiting for voice state update");
-         }
+         const result = await this.waitForAnyEventUntil(["voice_state_update", "disconnected"], (event, data) => {
+            if (event === "disconnected") return true;
+            if (event === "voice_state_update" && typeof data !== "number" && data?.userId === this.user?.id && data.channelId === targetChannelId) return true;
+            return false;
+         });
+         if (result.event === "disconnected") throw new Error("Disconnected while waiting for voice state update");
 
          const data = result.data as GatewayVoiceState;
          if (data.userId === this.user?.id && data.channelId === targetChannelId) {

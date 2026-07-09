@@ -28,20 +28,26 @@ export class SharedWebsocket<Events> extends EventEmitter<Events> {
       );
 
       return result as { event: K; data: Events[K] };
-      // }
+   }
 
-      // const results = await Promise.all(
-      //    events.map(
-      //       (event) =>
-      //          new Promise<{ event: K; data: Events[K] }>((resolve) => {
-      //             const unlisten = this.listen(event, (data: Events[K]) => {
-      //                unlisten();
-      //                resolve({ event, data });
-      //             });
-      //          }),
-      //    ),
-      // );
+   public async waitForAnyEventUntil<K extends keyof Events>(
+      events: K[],
+      predicate: (event: K, data: Events[K]) => boolean,
+   ): Promise<{ event: K; data: Events[K] }> {
+      return new Promise((resolve) => {
+         const unlistenFns: Array<() => void> = [];
+         const cleanup = () => unlistenFns.forEach((fn) => fn());
 
-      // return results as WaitForAny extends true ? { event: K; data: Events[K] } : Array<{ event: K; data: Events[K] }>;
+         for (const event of events) {
+            const unlisten = this.listen(event, (data: Events[K]) => {
+               if (predicate(event, data)) {
+                  cleanup();
+                  resolve({ event, data });
+               }
+               // no match -> listener stays attached, nothing is missed
+            });
+            unlistenFns.push(unlisten);
+         }
+      });
    }
 }
