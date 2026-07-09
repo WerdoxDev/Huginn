@@ -41,7 +41,6 @@ export class AudioLevelChecker {
       this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
       source.connect(this.volumeNode).connect(this.audioContext.destination);
 
-      const random = Math.random();
       let last = 0;
 
       this.messageHandler = (event: MessageEvent<number>) => {

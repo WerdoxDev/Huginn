@@ -13,7 +13,7 @@ export function useLogout() {
    const logoutMutation = useHuginnMutation({
       async mutationFn() {
          await client?.logout();
-         await client?.gateway.waitForEvents(["disconnected"]);
+         await client?.gateway.waitForAnyEvents(["disconnected"]);
          client?.gateway.connect();
       },
    });

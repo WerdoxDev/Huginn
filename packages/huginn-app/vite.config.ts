@@ -3,6 +3,7 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import { set } from "animejs";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
@@ -140,6 +141,19 @@ export default defineConfig(({ mode }) => {
          // sourcemap: true,
          target: "esnext",
          outDir: "./dist",
+      },
+      test: {
+         globals: false,
+         include: ["src/**/*.test.{ts,tsx}"],
+         exclude: ["tests/**"],
+         environment: "jsdom",
+         environmentOptions: {
+            jsdom: {
+               url: "http://localhost:3000",
+            },
+         },
+         setupFiles: ["./vitest.setup.ts"],
+         // browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
       },
    };
 });

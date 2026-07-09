@@ -124,6 +124,7 @@ function registerChangeHandlers() {
    store.subscribe(
       (state) => state.cache,
       async (state, prevState) => {
+         if (!window.electronAPI) return;
          if (state.settings.useProxy !== prevState.settings?.useProxy) {
             await window.electronAPI.setProxy(state.settings.useProxy);
          }
