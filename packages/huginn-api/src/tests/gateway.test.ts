@@ -300,7 +300,7 @@ describe("reconnection", () => {
       await gateway.connect();
 
       gateway.close();
-      await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
+      await vi.waitFor(() => expect(gateway.status).toBe("idle"));
       expect(gateway.sessionId).toBeUndefined();
 
       // The reconnect delay is hardcoded to 2s; wait past it and confirm
@@ -371,6 +371,7 @@ describe("reconnection", () => {
       await vi.waitFor(() => expect(gateway.status).toBe("disconnected"));
       expect(gateway.canResume).toBe(true);
 
+      await vi.advanceTimersByTimeAsync(2000);
       // The gateway re-authenticates itself automatically on reconnect
       // because it still has a `user` from the previous session.
       await vi.waitFor(() => expect(gateway.isAuthenticated).toBe(true), { timeout: 4000 });
@@ -544,6 +545,21 @@ describe("voice state", () => {
             null,
          ),
       ).rejects.toThrow();
+   });
+
+   it("should throw if intentionally closed while waiting for the voice state update", async () => {
+      const userId = "u1";
+      const channelId = "c1";
+
+      await authenticateWithUser(userId);
+      const pending = gateway.updateVoiceState(
+         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         channelId,
+         null,
+      );
+
+      gateway.close();
+      await expect(pending).rejects.toThrow();
    });
 
    it("getVoiceToken should return null if disconnected while waiting for the voice server update and voice state update", async () => {

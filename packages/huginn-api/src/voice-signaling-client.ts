@@ -353,10 +353,8 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    }
 
    private setStatus(newStatus: SignalingClientStatus) {
-      if (this._status !== newStatus) {
-         this._status = newStatus;
-         this.emit("status_changed", newStatus);
-      }
+      this._status = newStatus;
+      this.emit("status_changed", newStatus);
    }
 
    private send(data: VoicePayload): void {
@@ -618,7 +616,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       });
 
       if (result.event === "disconnected" || result.event === "reset") {
-         throw new Error(`Voice signaling closed while waiting for ${String(resultEvent)}`);
+         throw new Error(`Voice signaling closed while waiting for ${resultEvent}`);
       }
 
       return result.data as VoiceWebsocketEvents[K];

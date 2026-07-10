@@ -9,6 +9,7 @@ import type {
    TransportOptions,
    RtpEncodingParameters,
    ConnectionState,
+   DeviceOptions,
 } from "mediasoup-client/types";
 
 import {
@@ -27,7 +28,6 @@ import {
    type VoiceCloseProducerResult,
    type VoiceConnectTransportResult,
    type VoiceConsumeResult,
-   type VoiceConsumeResultData,
    type VoiceProduceResult,
    type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
@@ -63,7 +63,7 @@ type Events = {
       producerId: string;
       transportId: string;
       rtpCapabilities: RtpCapabilities;
-      callback: (d: VoiceConsumeResultData) => void;
+      callback: (d: VoiceConsumeResult) => void;
       // errback: (d: VoiceConsumeResultData) => void;
    };
    resume_consumer: { id: string; callback: (d: VoiceResumeConsumerResult) => void };
@@ -81,15 +81,20 @@ type Events = {
 
 type TransportManagerStatus = "idle" | "disconnected" | "ready" | "restarting";
 
+type Options = {
+   deviceOptions?: DeviceOptions;
+};
+
 export class VoiceTransportManager extends EventEmitter<Events> {
    private client: HuginnClient;
    public device?: mediasoupClient.Device;
-   public sendTransport?: Transport<MediasoupAppData>;
+   public sendTransport?: Transport;
    public recvTransport?: Transport;
    public remoteProducers: Map<string, ProducerData> = new Map();
    public remoteConsumers: Map<string, ConsumerData> = new Map();
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
+   private options?: Options;
 
    private pendingRemoteProducers = new Map<string, ProducerData>();
 
@@ -98,9 +103,10 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return this._status;
    }
 
-   public constructor(client: HuginnClient) {
+   public constructor(client: HuginnClient, options?: Options) {
       super();
       this.client = client;
+      this.options = options;
    }
 
    private getDefaultAttributes() {
@@ -139,7 +145,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       }
    }
 
-   private async onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
+   private async onTransportStateChanged(state: ConnectionState, _direction: "send" | "recv") {
       if ((state === "disconnected" || state === "failed") && this.status !== "restarting") {
          this.setStatus("disconnected");
       } else {
@@ -152,7 +158,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            this.checkTransports();
+            this.checkRecvTransport();
+            this.checkSendTransport();
             const sendStatus = this.sendTransport.connectionState;
             const recvStatus = this.recvTransport.connectionState;
 
@@ -179,15 +186,20 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       }
    }
 
-   public checkTransports(): asserts this is this & {
+   public checkSendTransport(): asserts this is this & {
       device: mediasoupClient.Device;
       sendTransport: Transport<MediasoupAppData>;
+   } {
+      this.checkDevice();
+      if (!this.sendTransport) throw new Error("Transport manager's send transport is not initialized");
+   }
+
+   public checkRecvTransport(): asserts this is this & {
+      device: mediasoupClient.Device;
       recvTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.sendTransport || !this.recvTransport) {
-         throw new Error("Transport manager's transports are not initialized");
-      }
+      if (!this.recvTransport) throw new Error("Transport manager's recv transport is not initialized");
    }
 
    public async initializeDevice(rtpCapabilities: RtpCapabilities): Promise<void> {
@@ -195,7 +207,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            this.device = new mediasoupClient.Device();
+            this.device = new mediasoupClient.Device(this.options?.deviceOptions);
             await this.device.load({ routerRtpCapabilities: rtpCapabilities });
          } catch (e) {
             recordSpanError(e);
@@ -204,7 +216,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createSendTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
+   public async createSendTransport(options: TransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createSendTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -260,7 +272,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createRecvTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
+   public async createRecvTransport(options: TransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createRecvTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -271,7 +283,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const iceServers = await this.fetchTurnCredentials();
-            const transport = this.device.createRecvTransport({ ...options, iceServers });
+            const finalOptions = { ...options, iceServers };
+            const transport = this.device.createRecvTransport(finalOptions);
             this.recvTransport = transport;
             this.emit("recv_transport_ready", undefined);
 
@@ -303,21 +316,21 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            const id = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
-            const token = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
+            const id = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
+            const token = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
             span.setAttributes({
                "turn.has_id": !!id,
                "turn.has_token": !!token,
             });
-            const data = { ttl: 86400 };
 
+            const data = { ttl: 86400 };
             const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                body: JSON.stringify(data),
                method: "POST",
             });
-
-            return (await response.json()).iceServers;
+            const json = await response.json();
+            return json.iceServers;
          } catch (e) {
             recordSpanError(e);
             return undefined;
@@ -329,7 +342,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       kind: HMediaKind,
       track: MediaStreamTrack,
       options?: { codecOptions?: ProducerCodecOptions; encodings?: RtpEncodingParameters[] },
-   ): Promise<Producer<MediasoupAppData> | undefined> {
+   ): Promise<Producer<MediasoupAppData>> {
       return await analytics.startActiveSpan("apiVoiceTransport.createProducer", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -339,7 +352,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            this.checkSendTransport();
 
             if (this.producers.has(kind)) throw new Error(`Producer with kind ${kind} already exists`);
 
@@ -408,7 +421,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            this.checkRecvTransport();
 
             const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
             if (!remoteProducer) throw new Error(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
@@ -507,13 +520,17 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            if (direction === "send") {
+               this.checkSendTransport();
+            } else {
+               this.checkRecvTransport();
+            }
 
             // It could happen that restarting a transport causes the other one to also reconnect
             this.checkAndSetStatus();
             if (this.status === "ready") return;
 
-            const transport = direction === "send" ? this.sendTransport : this.recvTransport;
+            const transport = (direction === "send" ? this.sendTransport : this.recvTransport)!;
 
             this.setStatus("restarting");
 
@@ -537,21 +554,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       const micProducer = this.producers.get("microphone");
 
       if (micProducer) {
-         // If state is paused, mic is not paused, pause mic
-         if (localVoiceState.isAudioPaused === true && !micProducer?.paused) {
-            micProducer.pause();
-         }
-         // If state is not paused, state is not muted, mic is paused, resume mic
-         else if (localVoiceState.isAudioPaused === false && !gatewayVoiceState?.isAudioMuted && micProducer.paused) {
-            micProducer.resume();
-         }
+         const shouldBePaused = localVoiceState.isAudioPaused === true || gatewayVoiceState.isAudioMuted === true;
 
-         // If state is muted, mic is not paused, pause mic
-         if (gatewayVoiceState.isAudioMuted === true && !micProducer.paused) {
+         if (shouldBePaused && !micProducer.paused) {
             micProducer.pause();
-         }
-         // If state is not muted, state is not paused, mic is paused, resume mic
-         else if (gatewayVoiceState.isAudioMuted === false && !localVoiceState.isAudioPaused && micProducer.paused) {
+         } else if (!shouldBePaused && micProducer.paused) {
             micProducer.resume();
          }
       }
@@ -627,18 +634,13 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.user.id": producer.userId,
          });
 
-         try {
-            if (!this.recvTransport) {
-               this.pendingRemoteProducers?.set(producer.producerId, producer);
-               return;
-            }
-
-            this.remoteProducers.set(producer.producerId, producer);
-            this.emit("remote_producer_created", producer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+         if (!this.recvTransport) {
+            this.pendingRemoteProducers?.set(producer.producerId, producer);
+            return;
          }
+
+         this.remoteProducers.set(producer.producerId, producer);
+         this.emit("remote_producer_created", producer);
       });
    }
 
@@ -652,13 +654,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.user.id": consumer.userId,
          });
 
-         try {
-            this.remoteConsumers.set(consumer.consumerId, consumer);
-            this.emit("remote_consumer_created", consumer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteConsumers.set(consumer.consumerId, consumer);
+         this.emit("remote_consumer_created", consumer);
       });
    }
 
@@ -669,16 +666,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.producer.id": producerId,
          });
 
-         try {
-            const producer = this.remoteProducers.get(producerId);
-            if (!producer) return;
+         const producer = this.remoteProducers.get(producerId);
+         if (!producer) return;
 
-            this.remoteProducers.delete(producerId);
-            this.emit("remote_producer_closed", producer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteProducers.delete(producerId);
+         this.emit("remote_producer_closed", producer);
       });
    }
 
@@ -689,16 +681,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.consumer.id": consumerId,
          });
 
-         try {
-            const consumer = this.remoteConsumers.get(consumerId);
-            if (!consumer) return;
+         const consumer = this.remoteConsumers.get(consumerId);
+         if (!consumer) return;
 
-            this.remoteConsumers.delete(consumerId);
-            this.emit("remote_consumer_closed", consumer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteConsumers.delete(consumerId);
+         this.emit("remote_consumer_closed", consumer);
       });
    }
 
@@ -706,26 +693,21 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       analytics.startActiveSpan("apiVoiceTransport.reset", (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
-         try {
-            this.sendTransport?.close();
-            this.recvTransport?.close();
-         } catch (e) {
-            recordSpanError(e);
-         } finally {
-            this.device = undefined;
-            this.sendTransport = undefined;
-            this.recvTransport = undefined;
+         this.sendTransport?.close();
+         this.recvTransport?.close();
 
-            this.remoteProducers.clear();
-            this.remoteConsumers.clear();
+         this.device = undefined;
+         this.sendTransport = undefined;
+         this.recvTransport = undefined;
 
-            this.producers.clear();
-            this.consumers.clear();
+         this.remoteProducers.clear();
+         this.remoteConsumers.clear();
 
-            this.setStatus("idle");
-            this.emit("reset", undefined);
-            span.end();
-         }
+         this.producers.clear();
+         this.consumers.clear();
+
+         this.setStatus("idle");
+         this.emit("reset", undefined);
       });
    }
 }

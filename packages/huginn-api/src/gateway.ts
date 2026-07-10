@@ -37,6 +37,7 @@ type AuthenticationResult = {
 
 type Events = {
    reconnected: undefined;
+   reset: undefined;
    message: GatewayPayload;
    send: GatewayPayload;
    connected: undefined;
@@ -118,9 +119,9 @@ export class Gateway extends SharedWebsocket<Events> {
             this.socket.onclose = (e) => this.onClose(e);
             this.socket.onmessage = (e) => this.onMessage(e);
 
-            const result = await this.waitForAnyEvents(["hello", "disconnected"]);
+            const result = await this.waitForAnyEvents(["hello", "disconnected", "reset"]);
 
-            if (result.event === "disconnected") return false;
+            if (result.event === "disconnected" || result.event === "reset") return false;
             return true;
          } catch (e) {
             recordSpanError(e);
@@ -187,17 +188,17 @@ export class Gateway extends SharedWebsocket<Events> {
          });
 
          this.cleanup();
-         this.setStatus("disconnected");
-         this.emit("disconnected", e.code);
-
-         span.setAttribute("gateway.intentional_close", this.intentionalClose);
-         span.setAttribute("gateway.can_resume", this.canResume);
 
          const shouldReset = this.shouldReset(e.code);
-         span.setAttribute("gateway.should_reset", shouldReset);
+
+         span.setAttributes({ "gateway.intentional_close": this.intentionalClose, "gateway.can_resume": this.canResume, "gateway.should_reset": shouldReset });
+
          // Completely reset if it was intentionally closed or session was invalid
          if (shouldReset) {
             this.reset();
+         } else {
+            this.setStatus("disconnected");
+            this.emit("disconnected", e.code);
          }
 
          // Don't reconnect if it was intentionally closed
@@ -363,20 +364,21 @@ export class Gateway extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiGateway.waitForAuthentication", async (span): Promise<AuthenticationResult> => {
          span.setAttributes(this.getDefaultAttributes());
 
-         const result = await this.waitForAnyEvents(["ready", "resumed", "disconnected"]);
+         const result = await this.waitForAnyEvents(["ready", "resumed", "disconnected", "reset"]);
 
          span.setAttribute("auth.event", result.event);
          switch (result.event) {
             case "ready":
             case "resumed":
                return { authenticated: true, retryable: true, status: "success" };
+            case "reset":
             case "disconnected":
-               span.setAttribute("auth.data", result.data as GatewayCode);
+               span.setAttributes({ "auth.data": (result.data as GatewayCode | undefined) ?? "null", "auth.event": result.event });
                span.setStatus({ code: SpanStatusCode.ERROR, message: "Disconnected while waiting for authentication" });
                return {
                   authenticated: false,
-                  retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED,
-                  status: result.data !== GatewayCode.AUTHENTICATION_FAILED ? "network_error" : "authentication_failed",
+                  retryable: result.data !== GatewayCode.AUTHENTICATION_FAILED && !!result.data,
+                  status: result.data !== GatewayCode.AUTHENTICATION_FAILED && result.data ? "network_error" : "authentication_failed",
                };
          }
       });
@@ -428,8 +430,8 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private async waitForVoiceServerUpdate(): Promise<string> {
-      const result = await this.waitForAnyEvents(["voice_server_update", "disconnected"]);
-      if (result.event === "disconnected") {
+      const result = await this.waitForAnyEvents(["voice_server_update", "disconnected", "reset"]);
+      if (result.event === "disconnected" || result.event === "reset") {
          throw new Error("Disconnected while waiting for voice server update");
       }
 
@@ -438,19 +440,15 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private async waitForVoiceStateUpdate(targetChannelId: Snowflake | null): Promise<GatewayVoiceState> {
-      while (true) {
-         const result = await this.waitForAnyEventUntil(["voice_state_update", "disconnected"], (event, data) => {
-            if (event === "disconnected") return true;
-            if (event === "voice_state_update" && typeof data !== "number" && data?.userId === this.user?.id && data.channelId === targetChannelId) return true;
-            return false;
-         });
-         if (result.event === "disconnected") throw new Error("Disconnected while waiting for voice state update");
+      const result = await this.waitForAnyEventUntil(["voice_state_update", "disconnected", "reset"], (event, data) => {
+         if (event === "disconnected" || event === "reset") return true;
+         if (event === "voice_state_update" && typeof data !== "number" && data?.userId === this.user?.id && data?.channelId === targetChannelId) return true;
+         return false;
+      });
+      if (result.event === "disconnected" || result.event === "reset") throw new Error("Disconnected while waiting for voice state update");
 
-         const data = result.data as GatewayVoiceState;
-         if (data.userId === this.user?.id && data.channelId === targetChannelId) {
-            return data;
-         }
-      }
+      const data = result.data as GatewayVoiceState;
+      return data;
    }
 
    // ============================================================
@@ -487,10 +485,6 @@ export class Gateway extends SharedWebsocket<Events> {
    private async attemptReconnect() {
       return analytics.startActiveSpan("apiGateway.attemptReconnect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
-         if (this.intentionalClose) {
-            this.intentionalClose = false;
-            return;
-         }
 
          await this.connect();
 
@@ -526,6 +520,8 @@ export class Gateway extends SharedWebsocket<Events> {
    public reset(): void {
       this.sequence = undefined;
       this.sessionId = undefined;
+      this.setStatus("idle");
+      this.emit("reset", undefined);
    }
 
    private shouldReset(closeCode: number): boolean {

@@ -9,8 +9,8 @@ import {
 import { Device } from "mediasoup-client";
 import * as fakeParameters from "mediasoup-client/fakeParameters";
 import { FakeHandler } from "mediasoup-client/handlers/FakeHandler";
-import { Transport, type Consumer, type RtpCapabilities, type RtpParameters } from "mediasoup-client/types";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type Transport, type Consumer, type RtpCapabilities, type RtpParameters } from "mediasoup-client/types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VoiceSignalingClient } from "../voice-signaling-client";
 import type { VoiceTransportManager } from "../voice-transport-manager";

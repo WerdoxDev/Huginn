@@ -1,5 +1,5 @@
 import { CONSTANTS, GatewayCode, VoiceOperations, type VoicePayload, type VoiceWebsocketEvents } from "@huginn/shared";
-import { ws } from "msw";
+import { ws, type WebSocketHandlerConnection } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -26,7 +26,7 @@ function parse(event: MessageEvent): VoicePayload {
    return JSON.parse(event.data as string);
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterAll(() => server.close());
 
 let signaling: VoiceSignalingClient;
@@ -373,7 +373,9 @@ describe("status guards", () => {
    });
 });
 
-async function connectAndAuthenticate(): Promise<{ received: VoicePayload[]; serverClient: any; findSent: (t: string) => any[] }> {
+async function connectAndAuthenticate(
+   extra?: (client: WebSocketHandlerConnection["client"], payload: VoicePayload) => void,
+): Promise<{ received: VoicePayload[]; serverClient: any; findSent: (t: string) => any[] }> {
    const received: VoicePayload[] = [];
    let serverClient: any;
 
@@ -387,6 +389,7 @@ async function connectAndAuthenticate(): Promise<{ received: VoicePayload[]; ser
             if (payload.op === VoiceOperations.IDENTIFY) {
                client.send(dispatchPayload("ready", { rtpCapabilities: {}, consumers: [], producers: [] }, 1));
             }
+            extra?.(client, payload);
          });
       }),
    );
@@ -401,7 +404,7 @@ async function connectAndAuthenticate(): Promise<{ received: VoicePayload[]; ser
 
 describe("send helpers", () => {
    describe("bad states", () => {
-      it("rejects sendCreateTransport when client is not initialized or socket disconnects", async () => {
+      it("rejects sendCreateTransport when client is not initialized or signaling intentionally closed", async () => {
          await expect(signaling.sendCreateTransport("send")).rejects.toThrow();
 
          await connectAndAuthenticate();
@@ -410,34 +413,34 @@ describe("send helpers", () => {
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendConnectTransport when client is not initialized or socket disconnects", async () => {
-         await expect(signaling.sendConnectTransport("transport-1", { fingerprints: [] } as never)).rejects.toThrow();
+      it("rejects sendConnectTransport when client is not initialized or signaling intentionally closed", async () => {
+         await expect(signaling.sendConnectTransport("transport-1", { fingerprints: [] })).rejects.toThrow();
 
          await connectAndAuthenticate();
-         const pending = signaling.sendConnectTransport("transport-1", { fingerprints: [] } as never);
+         const pending = signaling.sendConnectTransport("transport-1", { fingerprints: [] });
          signaling.close();
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendCreateProducer when client is not initialized or socket disconnects", async () => {
-         await expect(signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] } as never)).rejects.toThrow();
+      it("rejects sendCreateProducer when client is not initialized or signaling intentionally closed", async () => {
+         await expect(signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] })).rejects.toThrow();
 
          await connectAndAuthenticate();
-         const pending = signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] } as never);
+         const pending = signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] });
          signaling.close();
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendCloseProducer when client is not initialized or socket disconnects", async () => {
+      it("rejects sendCloseProducer when client is not initialized or signaling intentionally closed", async () => {
          await expect(signaling.sendCloseProducer("producer-1")).rejects.toThrow();
 
          await connectAndAuthenticate();
-         const pending = signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] } as never);
+         const pending = signaling.sendCloseProducer("microphone");
          signaling.close();
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendRestartIce when client is not initialized or socket disconnects", async () => {
+      it("rejects sendRestartIce when client is not initialized or signaling intentionally closed", async () => {
          await expect(signaling.sendRestartIce("send-transport")).rejects.toThrow();
 
          await connectAndAuthenticate();
@@ -446,16 +449,16 @@ describe("send helpers", () => {
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendCreateConsumer when client is not initialized or socket disconnects", async () => {
-         await expect(signaling.sendCreateConsumer("producer-1", "recv-transport", {} as never)).rejects.toThrow();
+      it("rejects sendCreateConsumer when client is not initialized or signaling intentionally closed", async () => {
+         await expect(signaling.sendCreateConsumer("producer-1", "recv-transport", {})).rejects.toThrow();
 
          await connectAndAuthenticate();
-         const pending = signaling.sendCreateConsumer("producer-1", "recv-transport", {} as never);
+         const pending = signaling.sendCreateConsumer("producer-1", "recv-transport", {});
          signaling.close();
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendResumeConsumer when client is not initialized or socket disconnects", async () => {
+      it("rejects sendResumeConsumer when client is not initialized or signaling intentionally closed", async () => {
          await expect(signaling.sendResumeConsumer("consumer-1")).rejects.toThrow();
 
          await connectAndAuthenticate();
@@ -464,13 +467,77 @@ describe("send helpers", () => {
          await expect(pending).rejects.toThrow();
       });
 
-      it("rejects sendCloseConsumer when client is not initialized or socket disconnects", async () => {
+      it("rejects sendCloseConsumer when client is not initialized or signaling intentionally closed", async () => {
          await expect(signaling.sendCloseConsumer("consumer-1")).rejects.toThrow();
 
          await connectAndAuthenticate();
          const pending = signaling.sendCloseConsumer("consumer-1");
          signaling.close();
          await expect(pending).rejects.toThrow();
+      });
+
+      it("rejects sendCreateTransport when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "create_transport") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendCreateTransport("send")).rejects.toThrow();
+      });
+
+      it("rejects sendConnectTransport when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "connect_transport") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendConnectTransport("transport-1", { fingerprints: [] })).rejects.toThrow();
+      });
+
+      it("rejects sendCreateProducer when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "produce") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendCreateProducer("microphone", "transport-1", { codecs: [] })).rejects.toThrow();
+      });
+
+      it("rejects sendCloseProducer when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "close_producer") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendCloseProducer("microphone")).rejects.toThrow();
+      });
+
+      it("rejects sendRestartIce when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "restart_ice") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendRestartIce("transport-1")).rejects.toThrow();
+      });
+
+      it("rejects sendCreateConsumer when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "consume") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendCreateConsumer("producer-1", "recv-transport", {})).rejects.toThrow();
+      });
+
+      it("rejects sendResumeConsumer when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "resume_consumer") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendResumeConsumer("consumer-1")).rejects.toThrow();
+      });
+
+      it("rejects sendCloseConsumer when client is not initialized or socket closed", async () => {
+         await connectAndAuthenticate((e, p) => {
+            if (p.op === VoiceOperations.DISPATCH && p.t === "close_consumer") e.close(1006, "dropped");
+         });
+
+         await expect(signaling.sendCloseConsumer("consumer-1")).rejects.toThrow();
       });
    });
 
@@ -496,7 +563,7 @@ describe("send helpers", () => {
       it("sendConnectTransport resolves with the connect result", async () => {
          const { serverClient, findSent } = await connectAndAuthenticate();
 
-         const connectTransportPromise = signaling.sendConnectTransport("send-transport", { fingerprint: "abc" } as never);
+         const connectTransportPromise = signaling.sendConnectTransport("send-transport", { fingerprint: "abc" });
          await vi.waitFor(() => expect(findSent("connect_transport").length).toBe(1));
          const connectTransportPayload = findSent("connect_transport")[0] as any;
          expect(connectTransportPayload).toMatchObject({ op: VoiceOperations.DISPATCH, t: "connect_transport" });
@@ -526,7 +593,7 @@ describe("send helpers", () => {
       it("sendCreateProducer resolves with the producer result", async () => {
          const { serverClient, findSent } = await connectAndAuthenticate();
 
-         const createProducerPromise = signaling.sendCreateProducer("microphone", "send-transport", { codecs: [] } as never);
+         const createProducerPromise = signaling.sendCreateProducer("microphone", "send-transport", { codecs: [] });
          await vi.waitFor(() => expect(findSent("produce").length).toBe(1));
          const createProducerPayload = findSent("produce")[0] as any;
          expect(createProducerPayload).toMatchObject({ op: VoiceOperations.DISPATCH, t: "produce" });
@@ -563,7 +630,7 @@ describe("send helpers", () => {
       it("sendCreateConsumer resolves with the consumer result", async () => {
          const { serverClient, findSent } = await connectAndAuthenticate();
 
-         const createConsumerPromise = signaling.sendCreateConsumer("producer-1", "recv-transport", {} as never);
+         const createConsumerPromise = signaling.sendCreateConsumer("producer-1", "recv-transport", {});
          await vi.waitFor(() => expect(findSent("consume").length).toBe(1));
          const createConsumerPayload = findSent("consume")[0] as any;
          expect(createConsumerPayload).toMatchObject({ op: VoiceOperations.DISPATCH, t: "consume" });
@@ -597,7 +664,7 @@ describe("send helpers", () => {
       it("sendCreateConsumer rejects when the server returns an error", async () => {
          const { serverClient, findSent } = await connectAndAuthenticate();
 
-         const errorPromise = signaling.sendCreateConsumer("producer-2", "recv-transport", {} as never);
+         const errorPromise = signaling.sendCreateConsumer("producer-2", "recv-transport", {});
          await vi.waitFor(() => expect(findSent("consume").length).toBe(1));
          const errorPayload = findSent("consume")[0] as any;
 
