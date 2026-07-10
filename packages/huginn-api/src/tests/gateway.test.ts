@@ -27,7 +27,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Gateway } from "../gateway";
-import { makeClient } from "./ws-test-utils";
+import { makeClient } from "./test-utils";
 
 // ============================================================
 // Test fixtures & helpers

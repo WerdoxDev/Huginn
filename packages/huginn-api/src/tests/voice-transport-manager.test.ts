@@ -8,7 +8,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VoiceTransportManager } from "../voice-transport-manager";
-import { makeClient } from "./ws-test-utils";
+import { makeClient } from "./test-utils";
 
 // ---------------------------------------------------------------------------
 // Real-device helpers

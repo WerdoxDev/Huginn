@@ -1,5 +1,4 @@
-import type { GatewayReadyData } from "@huginn/shared";
-
+import { type GatewayReadyData } from "@huginn/shared";
 import { expect } from "vitest";
 
 import { HuginnClient } from "../huginn-client";
@@ -83,4 +82,12 @@ export function multiDone(done: (err?: unknown) => void, amount: number): () => 
    }
 
    return tryDone;
+}
+
+export function makeClient(token: string | undefined = "test-token"): HuginnClient {
+   return {
+      currentUser: { id: "user-me" },
+      tokenHandler: { token },
+      generateNonce: () => "test-nonce",
+   } as HuginnClient;
 }

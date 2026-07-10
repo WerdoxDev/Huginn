@@ -6,17 +6,16 @@ import {
    type VoiceCreateTransportResultData,
    type VoiceReadyData,
 } from "@huginn/shared";
-import { Device } from "mediasoup-client";
-import * as fakeParameters from "mediasoup-client/fakeParameters";
-import { FakeHandler } from "mediasoup-client/handlers/FakeHandler";
-import { type Transport, type Consumer, type RtpCapabilities, type RtpParameters } from "mediasoup-client/types";
+import { testFakeParameters } from "mediasoup-client";
+import { type RtpParameters } from "mediasoup-client/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VoiceSignalingClient } from "../voice-signaling-client";
 import type { VoiceTransportManager } from "../voice-transport-manager";
 
 import { Voice } from "../voice";
-import { makeClient } from "./ws-test-utils";
+import { makeClient } from "./test-utils";
+// import { makeClient } from "./test-utils";
 
 vi.mock("../voice-device-manager", () => {
    class VoiceDeviceManager {
@@ -70,74 +69,7 @@ vi.mock("../voice-signaling-client", async () => {
 });
 
 vi.mock("../voice-transport-manager", async () => {
-   const { EventEmitter } = await import("@huginn/shared");
-
-   class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {
-      public status = "idle";
-      public sendTransport?: Transport<MediasoupAppData>;
-      public recvTransport?: Transport;
-      public remoteProducers = new Map<string, { producerId: string; userId: string; kind: string }>();
-      public remoteConsumers = new Map<string, { consumerId: string; producerId: string; userId: string; kind: string }>();
-      public consumers = new Map<string, Consumer>();
-      private device?: Device;
-
-      public initializeDevice = vi.fn(async (rtpCapabilities: RtpCapabilities) => {
-         this.device = new Device({ handlerFactory: FakeHandler.createFactory(fakeParameters) });
-         await this.device.load({ routerRtpCapabilities: rtpCapabilities });
-
-         const { id, iceParameters, iceCandidates, dtlsParameters, sctpParameters } = fakeParameters.generateTransportRemoteParameters();
-         this.sendTransport = this.device.createSendTransport({ id, iceParameters, iceCandidates, dtlsParameters, sctpParameters });
-         this.recvTransport = this.device.createRecvTransport({ id, iceParameters, iceCandidates, dtlsParameters, sctpParameters });
-
-         this.sendTransport.on("connect", (_, callback) => setTimeout(callback));
-         this.sendTransport.on("produce", (_, callback) => {
-            const id = fakeParameters.generateProducerRemoteParameters().id;
-            setTimeout(() => callback({ id }));
-         });
-         this.recvTransport.on("connect", (_, callback) => setTimeout(callback));
-      });
-
-      public createSendTransport = vi.fn(async () => undefined);
-      public createRecvTransport = vi.fn(async () => undefined);
-
-      public addRemoteProducer = vi.fn((producer: { producerId: string; userId: string; kind: string }) => {
-         this.remoteProducers.set(producer.producerId, producer);
-      });
-
-      public removeRemoteProducer = vi.fn((producerId: string) => {
-         this.remoteProducers.delete(producerId);
-      });
-
-      public addRemoteConsumer = vi.fn((consumer: { consumerId: string; producerId: string; userId: string; kind: string }) => {
-         this.remoteConsumers.set(consumer.consumerId, consumer);
-      });
-
-      public removeRemoteConsumer = vi.fn((consumerId: string) => {
-         this.remoteConsumers.delete(consumerId);
-      });
-
-      public getRemoteConsumers = vi.fn(() => Array.from(this.remoteConsumers.values()));
-
-      public getConsumer = vi.fn((userId: string, kind: string) => {
-         return Array.from(this.consumers.values()).find((x) => x.appData.userId === userId && x.appData.mediaKind === kind);
-      });
-
-      public closeConsumer = vi.fn(async (consumerId: string) => {
-         this.consumers.delete(consumerId);
-      });
-
-      public getConsumers = vi.fn(() => Array.from(this.consumers.values()));
-
-      public reset = vi.fn(() => undefined);
-      public cancelRestartIce = vi.fn(() => undefined);
-      public checkAndRestartIce = vi.fn(async () => undefined);
-
-      public setStatus(status: string): void {
-         this.status = status;
-         this.emit("status_changed", status);
-      }
-   }
-
+   const { VoiceTransportManager } = await import("./voice-mocks");
    return { VoiceTransportManager };
 });
 
@@ -150,14 +82,14 @@ beforeEach(async () => {
    voice = new Voice(makeClient());
    signaling = voice.signaling as VoiceSignalingClient;
    transport = voice.transport as VoiceTransportManager;
-   await transport.initializeDevice(fakeParameters.generateRouterRtpCapabilities());
+   await transport.initializeDevice(testFakeParameters.generateRouterRtpCapabilities());
 });
 
 // afterEach(() => {
 // });
 
 async function createConsumer(userId: string, producerId: string, kind: HMediaKind = "microphone") {
-   const consumeParams = fakeParameters.generateConsumerRemoteParameters({ codecMimeType: "audio/opus" });
+   const consumeParams = testFakeParameters.generateConsumerRemoteParameters({ codecMimeType: "audio/opus" });
    return await transport.recvTransport!.consume<MediasoupAppData>({ ...consumeParams, appData: { mediaKind: kind, userId }, producerId });
 }
 
@@ -350,7 +282,7 @@ describe("transport lifecycle", () => {
 
    it("initializes transports and adds remote peers after signaling ready", async () => {
       const readyData = {
-         rtpCapabilities: fakeParameters.generateRouterRtpCapabilities(),
+         rtpCapabilities: testFakeParameters.generateRouterRtpCapabilities(),
          producers: [{ producerId: "p1", userId: "u2", kind: "microphone" }],
          consumers: [{ consumerId: "c1", producerId: "p1", userId: "u2", kind: "microphone" }],
       } as VoiceReadyData;
@@ -376,7 +308,7 @@ describe("transport lifecycle", () => {
       });
 
       await expect(
-         voice["handleSignalingReady"]({ rtpCapabilities: fakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] }),
+         voice["handleSignalingReady"]({ rtpCapabilities: testFakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] }),
       ).rejects.toThrow();
 
       vi.mocked(signaling.sendCreateTransport).mockImplementation(async (direction) => {
@@ -385,7 +317,7 @@ describe("transport lifecycle", () => {
       });
 
       await expect(
-         voice["handleSignalingReady"]({ rtpCapabilities: fakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] }),
+         voice["handleSignalingReady"]({ rtpCapabilities: testFakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] }),
       ).rejects.toThrow();
    });
 });
@@ -471,7 +403,7 @@ describe("transport events", () => {
    it("handles connect_transport by proxying through signaling and invoking callback", async () => {
       const callback = vi.fn();
 
-      const dtlsParameters = fakeParameters.generateLocalDtlsParameters();
+      const dtlsParameters = testFakeParameters.generateLocalDtlsParameters();
       transport.emit("connect_transport", {
          transportId: "send-transport-id",
          dtlsParameters,

@@ -1,4 +1,4 @@
-import { analytics, recordSpanError } from "@huginn/shared";
+import { analytics } from "@huginn/shared";
 
 import type { VoiceTransportManager } from "./voice-transport-manager";
 
@@ -23,12 +23,7 @@ export class VoiceDeviceManager {
             "track.track_id": track.id,
          });
 
-         try {
-            await this.transport.createProducer("microphone", track);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.createProducer("microphone", track);
       });
    }
 
@@ -40,12 +35,7 @@ export class VoiceDeviceManager {
             "track.track_id": track.id,
          });
 
-         try {
-            await this.transport.replaceProducerTrack("microphone", track);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.replaceProducerTrack("microphone", track);
       });
    }
 
@@ -56,12 +46,7 @@ export class VoiceDeviceManager {
             "track.kind": "microphone",
          });
 
-         try {
-            await this.transport.closeProducer("microphone");
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.closeProducer("microphone");
       });
    }
 
@@ -73,15 +58,10 @@ export class VoiceDeviceManager {
             "track.track_id": track.id,
          });
 
-         try {
-            await this.transport.createProducer("camera", track, {
-               encodings: [{ scalabilityMode: "L1T3", scaleResolutionDownBy: 1 }],
-               codecOptions: { videoGoogleStartBitrate: 1000 },
-            });
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.createProducer("camera", track, {
+            encodings: [{ scalabilityMode: "L1T3", scaleResolutionDownBy: 1 }],
+            codecOptions: { videoGoogleStartBitrate: 1000 },
+         });
       });
    }
 
@@ -93,12 +73,7 @@ export class VoiceDeviceManager {
             "track.track_id": track.id,
          });
 
-         try {
-            await this.transport.replaceProducerTrack("camera", track);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.replaceProducerTrack("camera", track);
       });
    }
 
@@ -109,12 +84,7 @@ export class VoiceDeviceManager {
             "track.kind": "camera",
          });
 
-         try {
-            await this.transport.closeProducer("camera");
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.closeProducer("camera");
       });
    }
 }

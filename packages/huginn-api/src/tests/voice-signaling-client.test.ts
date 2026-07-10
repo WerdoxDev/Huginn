@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 
 import { Voice } from "..";
 import { VoiceSignalingClient } from "../voice-signaling-client";
-import { makeClient } from "./ws-test-utils";
+import { makeClient } from "./test-utils";
 
 const VOICE_URL = "wss://voice.test/";
 const link = ws.link(VOICE_URL);
@@ -563,7 +563,7 @@ describe("send helpers", () => {
       it("sendConnectTransport resolves with the connect result", async () => {
          const { serverClient, findSent } = await connectAndAuthenticate();
 
-         const connectTransportPromise = signaling.sendConnectTransport("send-transport", { fingerprint: "abc" });
+         const connectTransportPromise = signaling.sendConnectTransport("send-transport", { fingerprints: [] });
          await vi.waitFor(() => expect(findSent("connect_transport").length).toBe(1));
          const connectTransportPayload = findSent("connect_transport")[0] as any;
          expect(connectTransportPayload).toMatchObject({ op: VoiceOperations.DISPATCH, t: "connect_transport" });

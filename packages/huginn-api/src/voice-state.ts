@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, recordSpanError, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
+import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
 
 type Events = {
    update_gateway_voice_state: {
@@ -17,7 +17,6 @@ export class VoiceState extends EventEmitter<Events> {
       isScreenSharing: false,
       isAudioStreaming: false,
    };
-   private pendingGatewayVoiceState?: GatewayVoiceStateFlags;
 
    public localVoiceState: LocalVoiceState = { isAudioPaused: false };
 
@@ -32,39 +31,27 @@ export class VoiceState extends EventEmitter<Events> {
             "voice.state.is_audio_streaming": final.isAudioStreaming,
          });
 
-         try {
-            // If the provided update is the same as the current state, ignore
-            if (JSON.stringify(final) === JSON.stringify(this.gatewayVoiceState)) {
-               span.setAttribute("voice.state.update_ignored", true);
-               return;
-            }
-
-            this.pendingGatewayVoiceState = { ...this.gatewayVoiceState };
-            this.gatewayVoiceState = { ...this.gatewayVoiceState, ...update };
-
-            this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
-
-            const confirmed = await new Promise<GatewayVoiceStateFlags | undefined>((r) => {
-               this.emit("update_gateway_voice_state", {
-                  voiceState: this.gatewayVoiceState,
-                  callback: r,
-               });
-            });
-
-            if (!confirmed) return;
-
-            this.gatewayVoiceState = { ...confirmed };
-            this.pendingGatewayVoiceState = undefined;
-
-            this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
-
-            if (JSON.stringify(confirmed) !== JSON.stringify(this.gatewayVoiceState)) {
-               throw new Error("Confirmed gateway voice state does not match local state");
-            }
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+         // If the provided update is the same as the current state, ignore
+         if (JSON.stringify(final) === JSON.stringify(this.gatewayVoiceState)) {
+            span.setAttribute("voice.state.update_ignored", true);
+            return;
          }
+
+         this.gatewayVoiceState = { ...this.gatewayVoiceState, ...update };
+         this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
+
+         const confirmed = await new Promise<GatewayVoiceStateFlags | undefined>((r) => {
+            this.emit("update_gateway_voice_state", {
+               voiceState: this.gatewayVoiceState,
+               callback: r,
+            });
+         });
+
+         if (!confirmed) return;
+
+         this.gatewayVoiceState = { ...confirmed };
+
+         this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
       });
    }
 

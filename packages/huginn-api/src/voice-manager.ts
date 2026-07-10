@@ -149,7 +149,7 @@ export class VoiceManager<V extends Voice = Voice> {
                   this.voice.signaling.close();
                }
 
-               let voiceToken: string | undefined;
+               let voiceToken: string | null;
                if (token) {
                   voiceToken = token;
                } else {

@@ -1,9 +1,0 @@
-import type { HuginnClient } from "../";
-
-export function makeClient(token: string | undefined = "test-token"): HuginnClient {
-   return {
-      currentUser: { id: "user-me" },
-      tokenHandler: { token },
-      generateNonce: () => "test-nonce",
-   } as HuginnClient;
-}
