@@ -113,7 +113,7 @@ export class VoiceInputDevice {
 
       this.audioLevel = new AudioLevelChecker();
       this.audioLevel.startChecking(stream);
-      this.audioLevel.onAudioLevel = (db) => onAudioLevel(this.client, db);
+      this.audioLevel.onAudioLevel = (db) => handleAudioLevel(this.client, db);
 
       let speaking = false;
       let hangoverUntil = 0;
@@ -129,7 +129,7 @@ export class VoiceInputDevice {
          voice.updateSpeakingState(userId, value);
       }
 
-      function onAudioLevel(client: HuginnClient, db: number) {
+      function handleAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
 
          const OPEN_DB = settings.inputThreshold;
@@ -172,7 +172,5 @@ export class VoiceInputDevice {
             }
          }
       }
-
-      return { audioLevel: this.audioLevel, stream };
    }
 }

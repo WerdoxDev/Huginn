@@ -9,11 +9,11 @@ import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 import { version } from "./package.json";
-
 // const reactCompilerConfig = { target: "19" };
 
 const isHttps = process.env.VITE_LAN_HTTPS === "true";
@@ -143,16 +143,34 @@ export default defineConfig(({ mode }) => {
          outDir: "./dist",
       },
       test: {
-         globals: false,
-         include: ["src/**/*.test.{ts,tsx}"],
-         exclude: ["tests/**"],
          environment: "jsdom",
          environmentOptions: {
             jsdom: {
                url: "http://localhost:3000",
             },
          },
-         setupFiles: ["./vitest.setup.ts"],
+         exclude: ["tests/**"],
+
+         projects: [
+            {
+               name: "default",
+               extends: true,
+               test: {
+                  include: ["src/**/*.test.{ts,tsx}"],
+                  exclude: ["src/lib/voice/voice-bridge.test.ts"],
+                  setupFiles: ["./vitest.setup.ts"],
+               },
+            },
+            {
+               extends: true,
+               name: "voice-bridge",
+               test: {
+                  include: ["src/lib/voice/voice-bridge.test.ts"],
+                  setupFiles: ["./src/lib/voice/voice-bridge.setup.ts"],
+               },
+            },
+         ],
+
          // browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
       },
    };

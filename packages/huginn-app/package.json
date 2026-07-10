@@ -24,7 +24,7 @@
       "electron:run": "bun ./scripts/build.ts && electron .",
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "p-test": "playwright test",
-      "test": "vitest",
+      "test": "vitest --coverage",
       "test-gen": "playwright codegen localhost:5174",
       "electron:rebuild": "electron-rebuild -f -v 42.5.0 -m native-addon",
       "vite:cap": "adb reverse tcp:5174 tcp:5174 && bunx cap sync && vite --host --port 5174 --mode capacitor",

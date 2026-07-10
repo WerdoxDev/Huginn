@@ -14,5 +14,14 @@
       },
       "rootDirs": ["."]
    },
-   "include": ["src", "auto-imports.d.ts", "electron", "src/index.d.ts", "shared/remote-logger.ts", "shared", "../transactional/ChannelSidebar.tsx"]
+   "include": [
+      "src",
+      "auto-imports.d.ts",
+      "electron",
+      "src/index.d.ts",
+      "shared/remote-logger.ts",
+      "shared",
+      "../transactional/ChannelSidebar.tsx",
+      "voice-bridge.setup.ts"
+   ]
 }
