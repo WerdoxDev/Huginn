@@ -22,8 +22,6 @@ export class VoiceInputDevice {
    }
 
    public async getStream(deviceId: string, volumePercentage: number, noiseSuppression: boolean) {
-      log("app:voice-input-device", "default", "get stream", "did:", deviceId, "vp:", volumePercentage, "ns:", noiseSuppression);
-
       this.options = { deviceId, volumePercentage, noiseSuppression };
 
       const audioConstraints: MediaTrackConstraints = {
@@ -87,8 +85,6 @@ export class VoiceInputDevice {
    }
 
    public setGain(volumePercentage: number) {
-      log("app:voice-input-device", "default", "set gain", "vp:", volumePercentage);
-
       if (this.gainNode) {
          this.gainNode.gain.value = volumePercentage / 100;
          this.dummyInput?.setGain(volumePercentage);
@@ -99,8 +95,6 @@ export class VoiceInputDevice {
    }
 
    public async initializeAudioLevel() {
-      log("app:voice-input-device", "default", "initialize local audio level checker");
-
       if (!this.dummyInput) {
          this.dummyInput = new VoiceInputDevice(this.client);
       }

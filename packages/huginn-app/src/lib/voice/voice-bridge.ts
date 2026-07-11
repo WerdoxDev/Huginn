@@ -292,8 +292,6 @@ export class VoiceBridge extends Voice {
    }
 
    public async stopAudioLoopback() {
-      log("app:voice-bridge", "default", "stop audio loopback");
-
       if (window.electronAPI) {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
