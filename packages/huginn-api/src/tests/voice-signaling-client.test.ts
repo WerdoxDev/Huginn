@@ -188,6 +188,26 @@ describe("connection lifecycle", () => {
    it("attemptReconnect() throws if connection data is missing", async () => {
       await expect(signaling["attemptReconnect"]()).rejects.toThrow();
    });
+
+   it("attemptReconnect() should not be called if signaling is closed intentionally while reconnecting", async () => {
+      let connectionCount = 0;
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            connectionCount++;
+            client.send(helloPayload("session-123", 20));
+         }),
+      );
+
+      await signaling.connect("token", "channel-1", "guild-1");
+      // unintentionally close
+      signaling.socket?.close();
+
+      await vi.advanceTimersByTimeAsync(1000);
+      signaling.close();
+      await vi.advanceTimersByTimeAsync(2000);
+
+      await vi.waitFor(() => expect(connectionCount).toBe(1));
+   });
 });
 
 describe("hello and websocket messages", () => {

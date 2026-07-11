@@ -186,6 +186,15 @@ export class Gateway extends SharedWebsocket<Events> {
             "event.close.code": e.code,
             "event.close.reason": e.reason,
          });
+         analytics.log({
+            body: "Gateway closed",
+            level: "info",
+            attributes: {
+               ...this.getDefaultAttributes(),
+               "event.close.code": e.code,
+               "event.close.reason": e.reason,
+            },
+         });
 
          this.cleanup();
 

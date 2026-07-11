@@ -36,6 +36,7 @@ class MockAudioContext {
 
    public constructor(options: { sinkId?: string } = {}) {
       this.options = options;
+      // oxlint-disable-next-line typescript/no-this-alias
       lastAudioContext = this;
    }
 }
@@ -55,7 +56,7 @@ let lastAudioElement: MockAudioElement | undefined;
 let createElementMock: ReturnType<typeof vi.fn>;
 
 function getLoadedMetadataRegistration() {
-   const call = lastAudioElement?.addEventListener.mock.calls.find(([type]: [string]) => type === "loadedmetadata");
+   const call = lastAudioElement?.addEventListener.mock.calls.find((args: any[]) => args[0] === "loadedmetadata");
    return {
       handler: call?.[1] as (e: Event) => void,
       signal: call?.[2]?.signal as AbortSignal,

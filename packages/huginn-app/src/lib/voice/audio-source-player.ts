@@ -1,4 +1,4 @@
-import { type HMediaKind, log, type Snowflake } from "@huginn/shared";
+import { type HMediaKind, type Snowflake } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
 
 export class AudioSourcePlayer {
@@ -15,8 +15,6 @@ export class AudioSourcePlayer {
    public localGain: number = 1;
 
    public constructor(stream: MediaStream, producerId: string, userId: Snowflake, kind: HMediaKind) {
-      log("app:audio-source-player", "default", "initializing", "pid:", producerId, "uid:", userId, "mk:", kind);
-
       this.producerId = producerId;
       this.userId = userId;
       this.kind = kind;
@@ -48,8 +46,6 @@ export class AudioSourcePlayer {
    }
 
    public stop() {
-      log("app:audio-source-player", "default", "stop");
-
       this.abortController.abort();
       this.gainNode.disconnect();
       this.audioContext.close();
@@ -58,8 +54,6 @@ export class AudioSourcePlayer {
    }
 
    public setGain(globalGainPercent: number | undefined, localGainPercent: number | undefined) {
-      log("app:audio-source-player", "default", "set gain", "uid:", this.userId, "gg:", globalGainPercent, "lg:", localGainPercent);
-
       if (globalGainPercent !== undefined) {
          this.globalGain = (globalGainPercent / 100) ** 2.3219;
       }
@@ -79,8 +73,6 @@ export class AudioSourcePlayer {
    }
 
    public setSinkId(deviceId: string) {
-      log("app:audio-source-player", "default", "set sink id", "did:", deviceId);
-
       this.audioContext.setSinkId(deviceId);
       if (this.audioContext.state === "suspended") {
          this.audioContext.resume();

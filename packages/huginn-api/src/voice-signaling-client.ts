@@ -150,6 +150,16 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "event.close.reason": e.reason,
             "voice.signaling.intentional_close": this.intentionalClose,
          });
+         analytics.log({
+            body: "Voice signaling closed",
+            level: "info",
+            attributes: {
+               ...this.getDefaultAttributes(),
+               "event.close.code": e.code,
+               "event.close.reason": e.reason,
+               "voice.signaling.intentional_close": this.intentionalClose,
+            },
+         });
 
          // Server told us to disconnect but we didn't intentionally disconnect
          if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
@@ -382,6 +392,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       this.softReset(false);
       this.resetSession(false);
       this.connectionData = undefined;
+      this.clearReconnectTimeout();
       this.setStatus("idle");
 
       this.emit("reset", { type: "hard" });

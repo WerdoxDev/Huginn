@@ -86,8 +86,6 @@ export class HuginnClient<V extends Voice = Voice> {
       this.gifs = new GifAPI(this.rest);
       this.common = new CommonAPI(this.rest);
       this.oauth = new OAuthAPI(this.rest, this.gateway);
-
-      this.gateway.connect();
    }
 
    public get currentUser(): APIUser | undefined {
@@ -96,6 +94,10 @@ export class HuginnClient<V extends Voice = Voice> {
 
    private setUser(user: APIUser | undefined): void {
       this._user = user;
+   }
+
+   public async connect(): Promise<boolean> {
+      return await this.gateway.connect();
    }
 
    public async initialize(options: ConnectOptions = {}): Promise<InitializationResult> {

@@ -6,7 +6,7 @@ import {
    error,
    type GatewayReadyData,
    type GatewayStatus,
-   log,
+   recordSpanError,
    type Snowflake,
    type UserSettings,
 } from "@huginn/shared";
@@ -44,36 +44,39 @@ export type ExternalHostnameResult = {
 };
 
 export async function setHostnamesFromExternal(): Promise<ExternalHostnameResult> {
-   log("app:client-store", "default", "set hostnames from external");
+   return analytics.startActiveSpan("clientStore.setHostnamesFromExternal", async (span) => {
+      try {
+         const settings = storageStore.getState().getCachedValue("settings");
+         const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
+         let response: Response | undefined;
 
-   const settings = storageStore.getState().getCachedValue("settings");
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-   let response: Response | undefined;
+         span.setAttributes({
+            "presets.count": settings.hostnamePresets?.length ?? 0,
+            "presets.active_preset_name": settings.activePresetName ?? "",
+            "active_preset.has_external_hostnames_url": !!activePreset?.externalHostnamesUrl,
+         });
 
-   if (!activePreset) {
-      return { success: false, status: "invalid_response" } as ExternalHostnameResult;
-   }
+         if (!activePreset) {
+            return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+         }
 
-   try {
-      response = await fetch(activePreset.externalHostnamesUrl, { cache: "no-cache" });
-      const json = response.headers.get("content-type")?.includes("application/json") ? await response?.json() : undefined;
-      if (!response?.ok || !json || !json?.api || !json?.cdn || !json?.voice) {
-         error("app:client-store", "invalid response fetching external hostnames", response);
-         return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+         response = await fetch(activePreset.externalHostnamesUrl, { cache: "no-cache" });
+         const json = response.headers.get("content-type")?.includes("application/json") ? await response?.json() : undefined;
+         if (!response?.ok || !json || !json?.api || !json?.cdn || !json?.voice) {
+            error("app:client-store", "invalid response fetching external hostnames", response);
+            return { success: false, status: "invalid_response" } as ExternalHostnameResult;
+         }
+
+         store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
+         return { success: true, status: "success" } as ExternalHostnameResult;
+      } catch (e) {
+         recordSpanError(e);
+         return { success: false, status: "network_error" } as ExternalHostnameResult;
       }
-
-      store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
-      return { success: true, status: "success" } as ExternalHostnameResult;
-   } catch (e) {
-      error("app:client-store", "error fetching external hostnames", e);
-
-      return { success: false, status: "network_error" } as ExternalHostnameResult;
-   }
+   });
 }
 
 export function setHostnamesFromSettings() {
-   log("app:client-store", "default", "set hostnames from settings");
-
    const settings = storageStore.getState().getCachedValue("settings");
    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
    store.setState({
@@ -106,34 +109,32 @@ function updateUsersFromReadyData(d: GatewayReadyData) {
 }
 
 export async function initializeClient() {
-   log("app:client-store", "default", "initialize client");
-
    const huginnWindowStore = windowStore.getState();
    let thisStore = store.getState();
 
-   if (thisStore.client === undefined) {
-      const client = new HuginnClient({
-         rest: { api: `${thisStore.hostnames.api}/api` },
-         cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
-         gateway: {
-            url: `${thisStore.hostnames.api}/gateway`,
-            intents: 0,
-            createSocket(url) {
-               return new WebSocket(url);
-            },
+   if (thisStore.client !== undefined) return;
+
+   const client = new HuginnClient({
+      rest: { api: `${thisStore.hostnames.api}/api` },
+      cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
+      gateway: {
+         url: `${thisStore.hostnames.api}/gateway`,
+         intents: 0,
+         createSocket(url) {
+            return new WebSocket(url);
          },
-         voice: {
-            class: VoiceBridge,
-            url: `${thisStore.hostnames.voice}/voice`,
-            createSocket(url) {
-               return new WebSocket(url);
-            },
+      },
+      voice: {
+         class: VoiceBridge,
+         url: `${thisStore.hostnames.voice}/voice`,
+         createSocket(url) {
+            return new WebSocket(url);
          },
-      });
-      store.setState({ client });
-   } else {
-      return;
-   }
+      },
+   });
+   store.setState({ client });
+
+   await client?.connect();
 
    thisStore = store.getState();
 
@@ -207,6 +208,7 @@ export async function initializeClient() {
 
    unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.setState({ gatewayStatus: status })));
    unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.setState({ voiceStatus: status })));
+   store.setState({ gatewayStatus: thisStore.client?.gateway.status, voiceStatus: thisStore.client?.voice.status });
 
    store.setState({ isInitialized: true });
 

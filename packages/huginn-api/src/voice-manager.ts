@@ -158,7 +158,7 @@ export class VoiceManager<V extends Voice = Voice> {
 
                if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
-               this.voice.signaling.connect(voiceToken, channelId, guildId);
+               await this.voice.signaling.connect(voiceToken, channelId, guildId);
 
                // Wait for ready
                await new Promise<void>((r) => {

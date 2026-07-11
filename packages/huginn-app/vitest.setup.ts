@@ -1,4 +1,6 @@
+import { cleanup } from "@testing-library/react";
 import { beforeEach } from "vitest";
+import { afterEach } from "vitest";
 
 import { initializeClient, setHostnamesFromSettings } from "./src/stores/clientStore";
 import { initStorageStoreEarly } from "./src/stores/storageStore";
@@ -24,4 +26,8 @@ beforeEach(async () => {
    await initStorageStoreEarly();
    setHostnamesFromSettings();
    // await initializeClient();
+});
+
+afterEach(() => {
+   cleanup();
 });
