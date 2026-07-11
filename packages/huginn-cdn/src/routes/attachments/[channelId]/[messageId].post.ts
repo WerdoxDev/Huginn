@@ -2,6 +2,7 @@ import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";
 
 import { storage } from "#server";
+import { extractFileInfo } from "#utils/file-utils";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 
@@ -14,7 +15,8 @@ export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
          return invalidBody(status);
       }
 
-      await storage.writeFile("attachments", `${channelId}/${messageId}`, file.name, file);
+      const { name, extension } = extractFileInfo(file.name);
+      await storage.writeFile("attachments", `${channelId}/${messageId}`, `${name}.${extension}`, file);
 
       return status("Created", file.name);
    },

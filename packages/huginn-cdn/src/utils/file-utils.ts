@@ -28,12 +28,14 @@ export function extractFileInfo(filename: string): FileInfo {
 /**
  * Tries to find an image with the same name but different format.
  */
-export async function findImageByName(category: FileCategory, subDirectory: string, name: string, wantedFormat: string) {
+export async function findImageByName(category: FileCategory, subDirectory: string, name: string, wantedFormat: string, extension?: string) {
    const formats = ["png", "jpeg", "jpg", "webp", "gif"];
+
+   console.log(name, wantedFormat, formats);
 
    let foundFile;
    for (const format of formats) {
-      const filename = `${name}.${format}`;
+      const filename = `${name}.${extension?.toLowerCase() === format ? extension : format}`;
 
       const existingFile = await storage.getFile(category, subDirectory, filename);
 
