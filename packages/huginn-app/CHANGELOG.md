@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.80.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.79.0...app@v0.80.0) (2026-07-11)
+
+
+### Features
+
+* **app:** 100% test coverage for audio level checker, source player and voice input device ([54d2c96](https://github.com/WerdoxDev/Huginn/commit/54d2c96027d2e2feee47a878ce1d476b639943e3))
+* **app:** 100% voice-bridge test coverage ([e5fa7c5](https://github.com/WerdoxDev/Huginn/commit/e5fa7c5f3984d4061a7c4400aea4e5f0bb7b8bec))
+* **app:** action messages RTL tests ([79f1f47](https://github.com/WerdoxDev/Huginn/commit/79f1f476d4375de3a93f85032f8f5e24a09b473a))
+* **app:** add expression panel for gifs, emojis and... ([df3b9ed](https://github.com/WerdoxDev/Huginn/commit/df3b9ed6ddcf044bd34ba7bd528ba6de34b97358))
+* **app:** alsmost 100% test coverage on some other files ([50013d5](https://github.com/WerdoxDev/Huginn/commit/50013d5c0a8d62c9785de662755ecf6e9d171375))
+* **app:** full gif sending implementation with favoutite gifs ([d86ee8a](https://github.com/WerdoxDev/Huginn/commit/d86ee8ad6a03c502c78359fd9c03927c8220371d))
+* **app:** use new native addon methods ([136248d](https://github.com/WerdoxDev/Huginn/commit/136248ddded3e854835f7ea3ae5fec65a7133e03))
+
 ## [0.79.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.78.0...app@v0.79.0) (2026-07-05)
 
 

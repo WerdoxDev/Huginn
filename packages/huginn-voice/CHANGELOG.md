@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.0...voice@v0.18.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **voice:** incorrect consumer closed message being sent ([327a7a5](https://github.com/WerdoxDev/Huginn/commit/327a7a5ca1ad83452bb279dfec28a9cc9098a33d))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.17.1...voice@v0.18.0) (2026-07-02)
 
 

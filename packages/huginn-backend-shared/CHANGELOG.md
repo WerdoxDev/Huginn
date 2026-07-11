@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.0...backend-shared@v0.30.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **backend-shared:** update message shouldn't always set updated timestamp ([dfe9c94](https://github.com/WerdoxDev/Huginn/commit/dfe9c94fa0c6da5b3e3f0e50c51a9286d51341eb))
+
 ## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.29.0...backend-shared@v0.30.0) (2026-07-05)
 
 

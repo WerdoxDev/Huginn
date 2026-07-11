@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.1...server@v0.44.0) (2026-07-11)
+
+
+### Features
+
+* **server:** add klipy gif provider routes ([05c2584](https://github.com/WerdoxDev/Huginn/commit/05c2584a8dbe320e1afac98220c41e5036cc03dd))
+
 ## [0.43.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.0...server@v0.43.1) (2026-07-05)
 
 

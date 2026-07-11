@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.5.0...native-addon@v0.6.0) (2026-07-11)
+
+
+### Features
+
+* **native:** add much better application icon detection logic ([7a6f4a6](https://github.com/WerdoxDev/Huginn/commit/7a6f4a69662c1234457a2066f0b2a74a116575fe))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.4.0...native-addon@v0.5.0) (2026-07-02)
 
 
