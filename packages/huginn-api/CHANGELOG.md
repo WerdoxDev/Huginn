@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.39.0...api@v0.40.0) (2026-07-11)
+
+
+### Features
+
+* **api:** 100% voice stream, device manager, state and manager test coverages ([231bd6e](https://github.com/WerdoxDev/Huginn/commit/231bd6e6278731d4b3a3c4899915baa1c9d02f9d))
+* **api:** 100% voice-signaling-client coverage ([76847bb](https://github.com/WerdoxDev/Huginn/commit/76847bba8f5db9d75000093ba53db9799e91b246))
+* **api:** 100% voice-transport-manager coverage tests ([bf4c149](https://github.com/WerdoxDev/Huginn/commit/bf4c14970e8c39b4de2d1eebd40e0ebef26f76e6))
+* **api:** add mostly 100% coverage tests for client, gateway, voice and rest ([2e3e4e6](https://github.com/WerdoxDev/Huginn/commit/2e3e4e6fe5e66df31e99ed5676225d423a3fce7e))
+* **api:** add new api for gifs ([3596b28](https://github.com/WerdoxDev/Huginn/commit/3596b28743585d0ef2a06fbd900fbef41aa79d80))
+* **app:** alsmost 100% test coverage on some other files ([50013d5](https://github.com/WerdoxDev/Huginn/commit/50013d5c0a8d62c9785de662755ecf6e9d171375))
+
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.38.0...api@v0.39.0) (2026-07-02)
 
 
