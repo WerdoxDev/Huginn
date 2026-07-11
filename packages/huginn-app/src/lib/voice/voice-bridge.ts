@@ -195,8 +195,6 @@ export class VoiceBridge extends Voice {
       const voicePreferences = storage.getCachedValue("voice-preferences");
       const settings = storage.getCachedValue("settings");
 
-      log("app:voice-bridge", "default", "refresh consumer audio players", "ovol:", settings.outputVolume, "ncons:", consumers.length);
-
       // Remove old players
       for (const player of this.audioSourcePlayers) {
          player.stop();
@@ -222,17 +220,13 @@ export class VoiceBridge extends Voice {
          const preference = voicePreferences.find((x) => x.userId === consumer.appData.userId);
          if (!preference) throw new Error(`Voice preference for ${consumer.appData.userId} was not found`);
 
-         if (consumer.appData.mediaKind === "microphone") {
-            sourcePlayer.setGain(undefined, preference?.microphoneVolume);
-         } else if (consumer.appData.mediaKind === "stream_audio") {
-            sourcePlayer.setGain(undefined, preference?.streamVolume);
-         }
+         if (consumer.appData.mediaKind === "microphone") sourcePlayer.setGain(undefined, preference?.microphoneVolume);
+         // stream_audio
+         else sourcePlayer.setGain(undefined, preference?.streamVolume);
       }
    }
 
    private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
-      log("app:voice-bridge", "default", "open microphone", "did:", microphoneDeviceId, "vol:", microphoneVolume, "ns:", noiseSuppression);
-
       const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
       const audioTrack = otherStream.getAudioTracks()[0];
 
@@ -268,6 +262,7 @@ export class VoiceBridge extends Voice {
       const writer: WritableStreamDefaultWriter = audioGenerator.writable.getWriter();
 
       this.loopbackDataUnlisten?.();
+      /* v8 ignore next */
       this.loopbackDataUnlisten = window.electronAPI.onLoopbackData(async (_, d) => {
          const float32 = new Float32Array(d.length / 2);
          const view = new DataView(d.buffer);
@@ -297,8 +292,6 @@ export class VoiceBridge extends Voice {
    }
 
    public async stopAudioLoopback() {
-      log("app:voice-bridge", "default", "stop audio loopback");
-
       if (window.electronAPI) {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
@@ -314,7 +307,7 @@ export class VoiceBridge extends Voice {
          if (existingIndex !== -1) {
             draft[existingIndex] = { ...draft[existingIndex], ...options };
          } else {
-            if (!options.microphoneVolume || !options.streamVolume) {
+            if (options.microphoneVolume === undefined || options.streamVolume === undefined) {
                throw new Error("Creating new voice preference requires both microphone and screen share volumes");
             }
 
@@ -328,11 +321,9 @@ export class VoiceBridge extends Voice {
 
       storageStore.getState().setCachedValue("voice-preferences", updatedVoicePreferences);
 
-      const userPreference = updatedVoicePreferences.find((x) => x.userId === userId);
+      const userPreference = updatedVoicePreferences.find((x) => x.userId === userId)!;
       const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === userId);
       const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === userId);
-
-      if (!userPreference) throw new Error(`User preference for user ${userId} was not found`);
 
       if (microphonePlayer) {
          microphonePlayer.setGain(undefined, userPreference.microphoneVolume);

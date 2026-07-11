@@ -1,7 +1,7 @@
 {
    "extends": "../../tsconfig.json",
    "compilerOptions": {
-      "types": ["unplugin-icons/types/react", "vite/client"],
+      "types": ["unplugin-icons/types/react", "vite/client", "@testing-library/jest-dom"],
       "jsx": "react-jsx",
 
       "paths": {
@@ -14,5 +14,14 @@
       },
       "rootDirs": ["."]
    },
-   "include": ["src", "auto-imports.d.ts", "electron", "src/index.d.ts", "shared/remote-logger.ts", "shared", "../transactional/ChannelSidebar.tsx"]
+   "include": [
+      "src",
+      "auto-imports.d.ts",
+      "electron",
+      "src/index.d.ts",
+      "shared/remote-logger.ts",
+      "shared",
+      "../transactional/ChannelSidebar.tsx",
+      "voice-bridge.setup.ts"
+   ]
 }

@@ -12,6 +12,7 @@ cache
 builds
 target
 certs
+coverage
 
 emoji-out
 icon-out

@@ -1,14 +1,15 @@
 packages:
-   - "packages/*"
+  - "packages/*"
 allowBuilds:
-   "@firebase/util": true
-   "@posthog/cli": true
-   "@prisma/engines": false
-   core-js: false
-   electron-winstaller: false
-   esbuild: false
-   mediasoup: true
-   prisma: true
-   protobufjs: true
-   sharp: true
+  "@firebase/util": true
+  "@posthog/cli": true
+  "@prisma/engines": false
+  core-js: false
+  electron-winstaller: false
+  esbuild: false
+  mediasoup: true
+  msw: set this to true or false
+  prisma: true
+  protobufjs: true
+  sharp: true
 minimumReleaseAge: 0

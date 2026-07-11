@@ -3,17 +3,15 @@ import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-c
 import {
    analytics,
    CONSTANTS,
-   EventEmitter,
    GatewayCode,
    recordSpanError,
-   SpanStatusCode,
    VoiceOperations,
    type HMediaKind,
    type Snowflake,
    type VoiceCloseConsumerResult,
    type VoiceCloseProducerResult,
    type VoiceConnectTransportResult,
-   type VoiceConsumeResultData,
+   type VoiceConsumeResult,
    type VoiceCreateTransportResult,
    type VoiceHelloData,
    type VoicePayload,
@@ -25,6 +23,8 @@ import {
 } from "@huginn/shared";
 
 import type { HuginnClient, VoiceConnectionData, VoiceOptions, VoiceSignallingResetType } from ".";
+
+import { SharedWebsocket } from "./websocket";
 
 type SignalingClientStatus = "connecting" | "connected" | "helloed" | "authenticated" | "resuming" | "disconnected" | "idle";
 
@@ -38,7 +38,7 @@ type Events = {
    reset: { type: VoiceSignallingResetType };
 } & VoiceWebsocketEvents;
 
-export class VoiceSignalingClient extends EventEmitter<Events> {
+export class VoiceSignalingClient extends SharedWebsocket<Events> {
    private client: HuginnClient;
    private options: VoiceOptions;
    public socket?: WebSocket;
@@ -46,6 +46,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
    private intentionalClose = false;
 
    private heartbeatInterval?: ReturnType<typeof setInterval>;
+   private reconnectTimeout?: ReturnType<typeof setTimeout>;
    private pingTimeout?: ReturnType<typeof setTimeout>;
 
    private sequence?: number;
@@ -80,8 +81,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       };
    }
 
-   public connect(token: string, channelId: Snowflake, guildId: Snowflake | null): void {
-      analytics.startActiveSpan("apiVoiceSignaling.connect", (span) => {
+   // ============================================================
+   // Public API - Connection Management
+   // ============================================================
+
+   public async connect(token: string, channelId: Snowflake, guildId: Snowflake | null): Promise<boolean> {
+      return await analytics.startActiveSpan("apiVoiceSignaling.connect", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "params.channel_id": channelId,
@@ -91,7 +96,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
          try {
             if (this.status !== "idle" && this.status !== "disconnected") {
-               throw new Error("Voice socket is already connected or is connecting");
+               throw new Error("Voice signaling socket is already connected or is connecting");
             }
 
             this.intentionalClose = false;
@@ -102,7 +107,11 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             this.socket.onopen = () => this.onOpen();
             this.socket.onclose = (e) => this.onClose(e);
             this.socket.onmessage = (e) => this.onMessage(e);
-            this.socket.onerror = () => this.onError();
+
+            const result = await this.waitForAnyEvents(["hello", "disconnected"]);
+
+            if (result.event === "disconnected") return false;
+            return true;
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -114,28 +123,22 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       analytics.startActiveSpan("apiVoiceSignaling.close", (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
-         try {
-            this.intentionalClose = true;
-            this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
-            this.hardReset();
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.intentionalClose = true;
+         this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
+         this.hardReset();
       });
    }
+
+   // ============================================================
+   // Private - Connection Lifecycle
+   // ============================================================
 
    private onOpen(): void {
       analytics.startActiveSpan("apiVoiceSignaling.onOpen", (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
-         try {
-            this.setStatus("connected");
-            this.emit("connected", undefined);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.setStatus("connected");
+         this.emit("connected", undefined);
       });
    }
 
@@ -147,46 +150,53 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             "event.close.reason": e.reason,
             "voice.signaling.intentional_close": this.intentionalClose,
          });
+         analytics.log({
+            body: "Voice signaling closed",
+            level: "info",
+            attributes: {
+               ...this.getDefaultAttributes(),
+               "event.close.code": e.code,
+               "event.close.reason": e.reason,
+               "voice.signaling.intentional_close": this.intentionalClose,
+            },
+         });
 
-         try {
-            // Server told us to disconnect but we didn't intentionally disconnect
-            if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
-               this.hardReset();
+         // Server told us to disconnect but we didn't intentionally disconnect
+         if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
+            this.hardReset();
+         }
+
+         if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
+            if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
+               this.resetSession();
+            } else {
+               this.softReset();
             }
 
-            if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
-               if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
-                  this.resetSession();
-               } else {
-                  this.softReset();
-               }
+            this.setStatus("disconnected");
+            this.emit("disconnected", undefined);
 
-               this.setStatus("disconnected");
-               this.emit("disconnected", undefined);
-
-               analytics.withRootContext(() => {
-                  window.setTimeout(() => {
-                     void this.tryReconnect();
-                  }, 1000);
-               });
-            }
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+            analytics.withRootContext(() => {
+               this.scheduleReconnect();
+            });
          }
       });
    }
 
-   private onError(): void {
-      analytics.startActiveSpan("apiVoiceSignaling.onError", (span) => {
-         span.setAttributes(this.getDefaultAttributes());
-         span.setStatus({ code: SpanStatusCode.ERROR });
-         span.end();
-      });
+   // ============================================================
+   // Private - Reconnection
+   // ============================================================
+
+   private scheduleReconnect(): void {
+      this.clearReconnectTimeout();
+
+      this.reconnectTimeout = setTimeout(async () => {
+         await this.attemptReconnect();
+      }, 2000);
    }
 
-   private async tryReconnect() {
-      return await analytics.startActiveSpan("apiVoiceSignaling.tryReconnect", async (span) => {
+   private async attemptReconnect() {
+      return await analytics.startActiveSpan("apiVoiceSignaling.attemptReconnect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
@@ -200,22 +210,31 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       });
    }
 
+   private clearReconnectTimeout(): void {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = undefined;
+   }
+
+   // ============================================================
+   // Private - Message Processing
+   // ============================================================
+
    private async onMessage(e: MessageEvent): Promise<void> {
       const data: VoicePayload = JSON.parse(e.data);
 
       switch (data.op) {
          case VoiceOperations.HELLO:
-            this.onHello(data.d);
+            this.handleHello(data.d);
             break;
          case VoiceOperations.DISPATCH:
             this.sequence = data.s;
 
             switch (data.t) {
                case "ready":
-                  await this.onReady(data.d);
+                  await this.handleReady(data.d);
                   break;
                case "resumed":
-                  await this.onResumed();
+                  await this.handleResumed();
                   break;
 
                case "create_transport_result":
@@ -266,12 +285,12 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
 
             break;
          case VoiceOperations.PONG:
-            this.onPong();
+            this.handlePong();
             break;
       }
    }
 
-   private onHello(data: VoiceHelloData) {
+   private handleHello(data: VoiceHelloData) {
       this.setStatus("helloed");
       this.startHeartbeatInterval(data.heartbeatInterval);
 
@@ -303,20 +322,22 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
             },
          });
       }
+
+      this.emit("hello", data);
    }
 
-   private async onReady(data: VoiceReadyData) {
+   private async handleReady(data: VoiceReadyData) {
       this.setStatus("authenticated");
       this.sendPing();
       this.emit("ready", data);
    }
 
-   private async onResumed() {
+   private async handleResumed() {
       this.setStatus("authenticated");
       this.sendPing();
    }
 
-   private onPong() {
+   private handlePong() {
       const rtt = Date.now() - (this.lastPingStart ?? 0);
 
       this.pingTimeout = setTimeout(() => {
@@ -326,17 +347,24 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.emit("pong", { rtt });
    }
 
+   // ============================================================
+   // Private - Heartbeat
+   // ============================================================
+
    private startHeartbeatInterval(interval: number) {
       this.heartbeatInterval = setInterval(() => {
          this.send({ op: VoiceOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
+   private stopHeartbeatInterval() {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = undefined;
+   }
+
    private setStatus(newStatus: SignalingClientStatus) {
-      if (this._status !== newStatus) {
-         this._status = newStatus;
-         this.emit("status_changed", newStatus);
-      }
+      this._status = newStatus;
+      this.emit("status_changed", newStatus);
    }
 
    private send(data: VoicePayload): void {
@@ -354,7 +382,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       }
 
       this.socket = undefined;
-      clearInterval(this.heartbeatInterval);
+      this.stopHeartbeatInterval();
       clearInterval(this.pingTimeout);
 
       if (emitEvent) this.emit("reset", { type: "soft" });
@@ -364,6 +392,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       this.softReset(false);
       this.resetSession(false);
       this.connectionData = undefined;
+      this.clearReconnectTimeout();
       this.setStatus("idle");
 
       this.emit("reset", { type: "hard" });
@@ -399,14 +428,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId: this.connectionData.channelId, direction, nonce },
             });
 
-            return await new Promise<VoiceCreateTransportResult>((res) => {
-               const unlisten = this.listen("create_transport_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("create_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -432,15 +454,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, transportId, dtlsParameters, nonce },
             });
 
-            // Wait for the transport to get connected
-            return await new Promise<VoiceConnectTransportResult>((res) => {
-               const unlisten = this.listen("connect_transport_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("connect_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -467,15 +481,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, transportId, kind, rtpParameters, nonce },
             });
 
-            // Wait for the producer to be created
-            return await new Promise<VoiceProduceResult>((res) => {
-               const unlisten = this.listen("produce_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("produce_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -501,14 +507,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { producerId, channelId, nonce },
             });
 
-            return await new Promise<VoiceCloseProducerResult>((res) => {
-               const unlisten = this.listen("close_producer_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("close_producer_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -516,7 +515,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
       });
    }
 
-   public async sendCreateConsumer(producerId: string, transportId: string, rtpCapabilities: RtpCapabilities): Promise<VoiceConsumeResultData> {
+   public async sendCreateConsumer(producerId: string, transportId: string, rtpCapabilities: RtpCapabilities): Promise<VoiceConsumeResult> {
       return await analytics.startActiveSpan("apiVoiceSignaling.sendCreateConsumer", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -535,17 +534,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, producerId, rtpCapabilities, transportId, nonce },
             });
 
-            // Wait for the consumer to be created
-            return await new Promise<VoiceConsumeResultData>((res, rej) => {
-               const unlisten = this.listen("consume_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-
-                     if ("error" in d) rej(d.error);
-                     else res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("consume_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -571,14 +560,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, consumerId, nonce },
             });
 
-            return await new Promise<VoiceResumeConsumerResult>((res) => {
-               const unlisten = this.listen("resume_consumer_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("resume_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -604,14 +586,7 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, consumerId, nonce },
             });
 
-            return await new Promise<VoiceCloseConsumerResult>((res) => {
-               const unlisten = this.listen("close_consumer_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("close_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -636,18 +611,25 @@ export class VoiceSignalingClient extends EventEmitter<Events> {
                d: { channelId, transportId, nonce },
             });
 
-            return await new Promise<VoiceRestartIceResult>((res) => {
-               const unlisten = this.listen("restart_ice_result", (d) => {
-                  if (d.nonce === nonce) {
-                     unlisten();
-                     res(d);
-                  }
-               });
-            });
+            return await this.waitForCommandResult("restart_ice_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;
          }
       });
+   }
+
+   private async waitForCommandResult<K extends keyof VoiceWebsocketEvents>(resultEvent: K, nonce: string): Promise<VoiceWebsocketEvents[K]> {
+      const result = await this.waitForAnyEventUntil([resultEvent, "disconnected", "reset"], (event, data) => {
+         if (event === "disconnected" || event === "reset") return true;
+
+         return event === resultEvent && (data as any)?.nonce === nonce;
+      });
+
+      if (result.event === "disconnected" || result.event === "reset") {
+         throw new Error(`Voice signaling closed while waiting for ${resultEvent}`);
+      }
+
+      return result.data as VoiceWebsocketEvents[K];
    }
 }

@@ -1,6 +1,5 @@
-import type { GatewayReadyData } from "@huginn/shared";
-
-import { expect } from "bun:test";
+import { type GatewayReadyData } from "@huginn/shared";
+import { expect } from "vitest";
 
 import { HuginnClient } from "../huginn-client";
 
@@ -34,7 +33,7 @@ export async function connectVoice(client: HuginnClient, readyData?: GatewayRead
    expect(channel).toBeDefined();
 
    const result = await client.voiceManager.connectVoice(null, channel!.id);
-   expect(result).toBeTrue();
+   expect(result).toBe(true);
 }
 
 export async function getConnectedClient(login: boolean): Promise<HuginnClient> {
@@ -45,7 +44,7 @@ export async function getConnectedClient(login: boolean): Promise<HuginnClient> 
    }
 
    client.gateway.connect();
-   await client.gateway.waitForEvents(["hello"]);
+   await client.gateway.waitForAnyEvents(["hello"]);
 
    expect(client.gateway.status).toBe("connected");
 
@@ -83,4 +82,12 @@ export function multiDone(done: (err?: unknown) => void, amount: number): () => 
    }
 
    return tryDone;
+}
+
+export function makeClient(token: string | undefined = "test-token"): HuginnClient {
+   return {
+      currentUser: { id: "user-me" },
+      tokenHandler: { token },
+      generateNonce: () => "test-nonce",
+   } as HuginnClient;
 }

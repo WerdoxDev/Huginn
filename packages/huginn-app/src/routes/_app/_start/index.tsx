@@ -30,7 +30,7 @@ function getSessionRedirect() {
    return redirect ? (JSON.parse(redirect) as { pathname: string; requiresAuth: boolean }) : null;
 }
 
-function reducer(state: State, action: Action): State {
+export function reducer(state: State, action: Action): State {
    switch (action.type) {
       case "SET":
          return {
@@ -40,8 +40,6 @@ function reducer(state: State, action: Action): State {
          };
       case "FAIL":
          return { ...state, status: "error", error: action.error };
-      default:
-         return state;
    }
 }
 
@@ -51,7 +49,7 @@ export const Route = createFileRoute("/_app/_start/")({
    component: IndexComponent,
 });
 
-function IndexComponent() {
+export function IndexComponent() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
    const settings = useStorage("settings");

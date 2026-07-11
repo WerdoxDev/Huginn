@@ -1,6 +1,7 @@
 import Tooltip from "@components/tooltip/Tooltip";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
+import { useIsRTL } from "@hooks/useIsRTL";
 import { MessageType, type Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
@@ -27,6 +28,8 @@ export default function ActionMessage() {
       () => (!message.isPreview && message.type === MessageType.CHANNEL_PINNED_MESSAGE ? message.messageReference : undefined),
       [message],
    );
+
+   const isContentRTL = useIsRTL(message.content);
 
    const callParticipants = useUsers(call?.participants);
 
@@ -130,7 +133,7 @@ export default function ActionMessage() {
             ) : (
                <>
                   <span className="text-text/50"> changed the channel name: </span>
-                  <span className="text-text font-bold">{message.content}</span>
+                  <span className={clsx("text-text font-bold", isContentRTL && "[unicode-bidi:plaintext]")}>{message.content}</span>
                </>
             ))}
          {mentionUsers[0] ? (

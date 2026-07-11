@@ -8,7 +8,7 @@ export class AudioLevelChecker {
    public readonly consumerId?: string;
    public readonly userId?: string;
    public readonly kind?: HMediaKind;
-   public isStopped = false;
+   public isStopped = true;
    public currentDb = 0;
    public onAudioLevel?: (db: number) => void;
 
@@ -22,7 +22,7 @@ export class AudioLevelChecker {
    }
 
    public async startChecking(stream: MediaStream) {
-      this.stopChecking();
+      // this.stopChecking();
       this.isStopped = false;
 
       log("app:audio-level-checker", "default", "start checking");
@@ -41,15 +41,9 @@ export class AudioLevelChecker {
       this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
       source.connect(this.volumeNode).connect(this.audioContext.destination);
 
-      const random = Math.random();
-      let last = 0;
-
       this.messageHandler = (event: MessageEvent<number>) => {
          if (this.isStopped) return;
 
-         if (performance.now() - last > 1000) {
-            last = performance.now();
-         }
          this.currentDb = event.data;
          this.onAudioLevel?.(event.data);
       };

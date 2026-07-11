@@ -3,16 +3,17 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import { set } from "animejs";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 import { version } from "./package.json";
-
 // const reactCompilerConfig = { target: "19" };
 
 const isHttps = process.env.VITE_LAN_HTTPS === "true";
@@ -140,6 +141,37 @@ export default defineConfig(({ mode }) => {
          // sourcemap: true,
          target: "esnext",
          outDir: "./dist",
+      },
+      test: {
+         environment: "jsdom",
+         environmentOptions: {
+            jsdom: {
+               url: "http://localhost:3000",
+            },
+         },
+         exclude: ["tests/**"],
+
+         projects: [
+            {
+               name: "default",
+               extends: true,
+               test: {
+                  include: ["src/**/*.test.{ts,tsx}"],
+                  exclude: ["src/lib/voice/voice-bridge.test.ts"],
+                  setupFiles: ["./vitest.setup.ts"],
+               },
+            },
+            {
+               extends: true,
+               name: "voice-bridge",
+               test: {
+                  include: ["src/lib/voice/voice-bridge.test.ts"],
+                  setupFiles: ["./src/lib/voice/voice-bridge.setup.ts"],
+               },
+            },
+         ],
+
+         // browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
       },
    };
 });

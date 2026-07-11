@@ -1,16 +1,14 @@
 import type { VoiceStreamOptions } from "@huginn/api";
 
 import { useFullscreen } from "@hooks/useFullscreen";
-import { error, type Snowflake } from "@huginn/shared";
+import { type Snowflake } from "@huginn/shared";
 import { getMediaErrorMessage } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage } from "@stores/storageStore";
-import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export function useVoiceUtils() {
-   const { user } = useThisUser();
    const settings = useStorage("settings");
    const client = useClient();
    // const posthog = usePostHog();
@@ -60,19 +58,13 @@ export function useVoiceUtils() {
             }
          }
          // Audio track is not given but it exists, so remove it.
-         else if (audioProducer && !audioTrack) {
-            await client?.voice.stream.closeStreamAudio();
-         }
+         else if (audioProducer && !audioTrack) await client?.voice.stream.closeStreamAudio();
          // Audio is not open but track is given, so open audio
-         else if (!audioProducer && audioTrack) {
-            await client?.voice.stream.openStream(undefined, audioTrack, options);
-         }
+         else await client?.voice.stream.openStream(undefined, audioTrack, options);
       }
 
       try {
-         if (isFullscreen) {
-            toggleFullscreen();
-         }
+         if (isFullscreen) toggleFullscreen();
 
          if (huginnWindow.environment === "browser") {
             const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -105,7 +97,6 @@ export function useVoiceUtils() {
                            maxVideoBitrate: options.maxVideoBitrate,
                         });
                      } catch (e) {
-                        error("app:hooks", "open screen share failed", e);
                         updateModals({
                            info: {
                               status: "error",
@@ -122,7 +113,6 @@ export function useVoiceUtils() {
             });
          }
       } catch (e) {
-         error("app:hooks", "open screen share failed", e);
          updateModals({
             info: {
                status: "error",
@@ -141,9 +131,7 @@ export function useVoiceUtils() {
          toggleFullscreen();
       }
 
-      if (huginnWindow.environment !== "desktop") {
-         return;
-      }
+      if (huginnWindow.environment !== "desktop") return;
 
       updateModals({
          streamAudio: {
@@ -162,7 +150,6 @@ export function useVoiceUtils() {
                      await client?.voice.stream.openStream(undefined, audioTrack);
                   }
                } catch (e) {
-                  error("app:hooks", "open audio stream failed", e);
                   updateModals({
                      info: {
                         status: "error",
@@ -192,7 +179,6 @@ export function useVoiceUtils() {
             await client?.voice.device.openCamera(track);
          }
       } catch (e) {
-         error("app:hooks", "open camera failed", e);
          updateModals({
             info: {
                status: "error",
@@ -223,7 +209,6 @@ export function useVoiceUtils() {
             await client?.voice.transport.createConsumer(userId, "stream_audio");
          }
       } catch (e) {
-         error("app:hooks", "consume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -249,7 +234,6 @@ export function useVoiceUtils() {
             await client?.voice.transport.closeConsumer(audioConsumer.id);
          }
       } catch (e) {
-         error("app:hooks", "unconsume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -266,13 +250,9 @@ export function useVoiceUtils() {
       const videoProducer = client?.voice.transport.getProducer("stream_video");
 
       // Audio Stream
-      if (audioProducer && !videoProducer) {
-         openAudioStream();
-      }
+      if (audioProducer && !videoProducer) openAudioStream();
       // Screen Share
-      else {
-         await openScreenShare();
-      }
+      else await openScreenShare();
    }
 
    async function updateStream(
@@ -288,7 +268,14 @@ export function useVoiceUtils() {
             await client?.voice.stream.updateAudioBitrate(audio.maxBitrate);
          }
       } catch (e) {
-         error("app:hooks", "update stream failed", e);
+         updateModals({
+            info: {
+               status: "error",
+               title: "Updating Stream Failed",
+               text: "An unexpected error occurred. Please try again.",
+               isOpen: true,
+            },
+         });
       }
    }
 
@@ -296,7 +283,6 @@ export function useVoiceUtils() {
       try {
          await client?.voice.stream.closeStream();
       } catch (e) {
-         error("app:hooks", "close stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -312,7 +298,6 @@ export function useVoiceUtils() {
       try {
          await client?.voice.device.closeCamera();
       } catch (e) {
-         error("app:hooks", "close camera failed", e);
          updateModals({
             info: {
                status: "error",

@@ -1,412 +1,491 @@
-import type { APIUser, LoginCredentials, RegisterUser } from "@huginn/shared";
+/**
+ * Tests for `HuginnClient`.
+ *
+ * Unlike `gateway.test.ts` (which exercises the real WebSocket handshake via
+ * MSW), this file treats `HuginnClient` as a unit: every collaborator it
+ * constructs (`Gateway`, `REST`, `AuthAPI`, `TokenHandler`, `Voice`,
+ * `VoiceManager`, and the other `rest-apis/*` classes) is mocked. That's
+ * deliberate — `HuginnClient`'s constructor eagerly calls
+ * `this.gateway.connect()`, and its real job here is orchestration
+ * (session restore, token bookkeeping, cleanup ordering), not network I/O.
+ * `jose`'s `decodeJwt` and `@huginn/shared`'s `snowflake` are left real
+ * since they're pure/local and exercising them is part of the point.
+ *
+ * Assumptions (adjust if your layout differs):
+ *   - This file lives next to `huginn-client.ts`, e.g. `src/huginn-client.test.ts`.
+ *   - `./rest`, `./cdn`, and the `./rest-apis/*` modules (other than `auth`)
+ *     export a single class each and are safe to auto-mock with `vi.mock(path)`
+ *     (no factory) — Vitest replaces the class with a mock constructor whose
+ *     instance methods are all `vi.fn()`. If any of those modules have more
+ *     complex exports, swap in an explicit factory like the ones used below
+ *     for `./gateway` / `./rest-apis/auth`.
+ */
 
-import { describe, expect, test, beforeEach, afterEach, mock, spyOn } from "bun:test";
-import * as jose from "jose";
+import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
 
-import { HuginnClient } from "../";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock dependencies
-const mockGateway = {
-   connect: mock(() => {}),
-   authenticate: mock(() => Promise.resolve({ authenticated: true, retryable: true })),
-   close: mock(() => {}),
-   user: undefined as APIUser | undefined,
-};
+import { Gateway } from "../gateway";
+import { HuginnClient } from "../huginn-client";
 
-const mockVoice = {
-   signaling: {
-      close: mock(() => {}),
-   },
-};
+// ============================================================
+// Mocks
+// ============================================================
 
-const mockREST = {
-   request: mock(() => Promise.resolve({})),
-};
-
-const mockAuthAPI = {
-   login: mock(() =>
-      Promise.resolve({
-         token: "mock_token",
-         refreshToken: "mock_refresh_token",
-         user: { id: "123", username: "testuser" },
-      }),
-   ),
-   register: mock(() =>
-      Promise.resolve({
-         token: "mock_token",
-         refreshToken: "mock_refresh_token",
-         user: { id: "123", username: "testuser" },
-      }),
-   ),
-   logout: mock(() => Promise.resolve()),
-   refreshToken: mock(() =>
-      Promise.resolve({
-         token: "new_mock_token",
-         refreshToken: "new_mock_refresh_token",
-      }),
-   ),
-};
-
-// Mock modules
-mock.module("../gateway", () => ({
-   Gateway: class {
-      connect = mockGateway.connect;
-      authenticate = mockGateway.authenticate;
-      close = mockGateway.close;
-      user = mockGateway.user;
-   },
+vi.mock("../gateway.ts", () => ({
+   Gateway: vi.fn(function () {
+      return {
+         connect: vi.fn(),
+         close: vi.fn(),
+         authenticate: vi.fn(),
+         user: undefined as APIUser | undefined,
+         on: vi.fn(),
+      };
+   }),
 }));
 
-mock.module("../voice", () => ({
-   Voice: class {
-      signaling = mockVoice.signaling;
-   },
+vi.mock("../token-handler.ts", () => ({
+   TokenHandler: vi.fn(function () {
+      return {
+         token: undefined as string | undefined,
+         refreshToken: undefined as string | undefined,
+      };
+   }),
 }));
 
-mock.module("../voice-manager", () => ({
-   VoiceManager: class {},
+vi.mock("../voice.ts", () => ({
+   Voice: vi.fn(function () {
+      return {
+         signaling: { close: vi.fn() },
+      };
+   }),
 }));
 
-mock.module("../rest", () => ({
-   REST: class {
-      request = mockREST.request;
-   },
+vi.mock("../voice-manager.ts", () => ({
+   VoiceManager: vi.fn(function () {
+      return {};
+   }),
 }));
 
-mock.module("../rest-apis/auth", () => ({
-   AuthAPI: class {
-      login = mockAuthAPI.login;
-      register = mockAuthAPI.register;
-      logout = mockAuthAPI.logout;
-      refreshToken = mockAuthAPI.refreshToken;
-   },
+vi.mock("../rest-apis/auth.ts", () => ({
+   AuthAPI: vi.fn(function () {
+      return {
+         login: vi.fn(),
+         register: vi.fn(),
+         logout: vi.fn(),
+         refreshToken: vi.fn(),
+      };
+   }),
 }));
 
-describe("HuginnClient", () => {
-   let client: HuginnClient;
+// These aren't exercised by any test below; auto-mock so construction is
+// side-effect-free without needing to know their internals.
+vi.mock("../rest.ts");
+vi.mock("../cdn.ts");
+vi.mock("../rest-apis/application.ts");
+vi.mock("../rest-apis/channel.ts");
+vi.mock("../rest-apis/common.ts");
+vi.mock("../rest-apis/gif.ts");
+vi.mock("../rest-apis/message.ts");
+vi.mock("../rest-apis/oauth.ts");
+vi.mock("../rest-apis/relationship.ts");
+vi.mock("../rest-apis/user.ts");
 
+// ============================================================
+// Helpers
+// ============================================================
+
+/** Builds a minimal, unsigned JWT string with the given claims. `jose`'s `decodeJwt` does not verify signatures, so this is enough to drive `validateAccessToken`. */
+function makeJwt(claims: Record<string, unknown>): string {
+   const base64url = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+   const header = base64url({ alg: "none", typ: "JWT" });
+   const payload = base64url(claims);
+   return `${header}.${payload}.`;
+}
+
+function futureToken(): string {
+   return makeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 });
+}
+
+function expiredToken(): string {
+   return makeJwt({ exp: Math.floor(Date.now() / 1000) - 60 });
+}
+
+function makeUser(id: string): APIUser {
+   return { id, username: `user-${id}` } as unknown as APIUser;
+}
+
+/** `gateway.user` is a plain property (not a mock function), so it needs a direct cast to set from tests. */
+function setGatewayUser(client: HuginnClient, user: APIUser | undefined): void {
+   (client.gateway as unknown as { user?: APIUser }).user = user;
+}
+
+// ============================================================
+// Setup
+// ============================================================
+
+let client: HuginnClient;
+
+beforeEach(() => {
+   vi.clearAllMocks();
+   client = new HuginnClient();
+});
+
+afterEach(() => {
+   vi.useRealTimers();
+});
+
+// ============================================================
+// Construction
+// ============================================================
+
+describe("construction", () => {
+   it("builds every sub-client and connects the gateway immediately", () => {
+      expect(client.rest).toBeDefined();
+      expect(client.cdn).toBeDefined();
+      expect(client.tokenHandler).toBeDefined();
+      expect(client.gateway).toBeDefined();
+      expect(client.voice).toBeDefined();
+      expect(client.voiceManager).toBeDefined();
+      expect(client.users).toBeDefined();
+      expect(client.relationships).toBeDefined();
+      expect(client.auth).toBeDefined();
+      expect(client.channels).toBeDefined();
+      expect(client.messages).toBeDefined();
+      expect(client.oauth).toBeDefined();
+      expect(client.applications).toBeDefined();
+      expect(client.common).toBeDefined();
+      expect(client.gifs).toBeDefined();
+
+      expect(vi.mocked(Gateway)).toHaveBeenCalledWith(client, client.options.gateway);
+      expect(vi.mocked(client.gateway.connect)).toHaveBeenCalledTimes(1);
+   });
+
+   it("has no current user until initialize() succeeds", () => {
+      expect(client.currentUser).toBeUndefined();
+   });
+});
+
+// ============================================================
+// initialize() - no stored tokens
+// ============================================================
+
+describe("initialize() without stored tokens", () => {
+   it("authenticates against the gateway directly and stores the resulting user", async () => {
+      const user = makeUser("u1");
+      vi.mocked(client.gateway.authenticate).mockImplementation(async () => {
+         setGatewayUser(client, user);
+         return { authenticated: true, retryable: true, status: "success" };
+      });
+
+      client.tokenHandler.token = "good-token";
+      const result = await client.initialize();
+
+      expect(result).toEqual({ success: true, status: "success", retryable: false });
+      expect(client.currentUser).toEqual(user);
+      expect(vi.mocked(client.auth.refreshToken)).not.toHaveBeenCalled();
+   });
+
+   it("propagates a failed gateway authentication result", async () => {
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({
+         authenticated: false,
+         retryable: true,
+         status: "network_error",
+      });
+
+      client.tokenHandler.token = "good-token";
+      const result = await client.initialize();
+
+      expect(result).toEqual({ success: false, status: "network_error", retryable: true });
+      expect(client.currentUser).toBeUndefined();
+   });
+
+   it("defaults retryable to true if the gateway result omits it", async () => {
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({
+         authenticated: false,
+         status: "authentication_failed",
+      } as never);
+
+      client.tokenHandler.token = "good-token";
+      const result = await client.initialize();
+
+      expect(result).toEqual({ success: false, status: "authentication_failed", retryable: true });
+   });
+
+   it("returns authentication_failed if the gateway call throws unexpectedly", async () => {
+      vi.mocked(client.gateway.authenticate).mockRejectedValue(new Error("boom"));
+
+      client.tokenHandler.token = "good-token";
+      const result = await client.initialize();
+
+      expect(result).toEqual({ success: false, status: "authentication_failed", retryable: false });
+   });
+
+   it("does not attempt session restoration when no tokens are passed", async () => {
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({
+         authenticated: true,
+         retryable: true,
+         status: "success",
+      });
+
+      await client.initialize({ tokens: {} });
+
+      expect(vi.mocked(client.auth.refreshToken)).not.toHaveBeenCalled();
+   });
+});
+
+// ============================================================
+// initialize() - restoring a stored session
+// ============================================================
+
+describe("initialize() with stored tokens", () => {
    beforeEach(() => {
-      // Reset all mocks
-      mockGateway.connect.mockClear();
-      mockGateway.authenticate.mockClear();
-      mockGateway.close.mockClear();
-      mockVoice.signaling.close.mockClear();
-      mockAuthAPI.login.mockClear();
-      mockAuthAPI.register.mockClear();
-      mockAuthAPI.logout.mockClear();
-      mockAuthAPI.refreshToken.mockClear();
-      mockGateway.user = undefined;
-   });
-
-   afterEach(() => {
-      if (client) {
-         client.clearSession();
-      }
-   });
-
-   describe("Constructor", () => {
-      test("should initialize with default options", () => {
-         client = new HuginnClient();
-
-         expect(client).toBeDefined();
-         expect(client.options).toBeDefined();
-         expect(client.gateway).toBeDefined();
-         expect(client.voice).toBeDefined();
-         expect(client.tokenHandler).toBeDefined();
-         expect(mockGateway.connect).toHaveBeenCalledTimes(1);
-      });
-
-      test("should initialize all API instances", () => {
-         client = new HuginnClient();
-
-         expect(client.auth).toBeDefined();
-         expect(client.users).toBeDefined();
-         expect(client.channels).toBeDefined();
-         expect(client.relationships).toBeDefined();
-         expect(client.applications).toBeDefined();
-         expect(client.common).toBeDefined();
-         expect(client.oauth).toBeDefined();
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({
+         authenticated: true,
+         retryable: true,
+         status: "success",
       });
    });
 
-   describe("connect()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
-      });
+   it("accepts a still-valid access token without refreshing", async () => {
+      const token = futureToken();
 
-      test("should successfully connect without tokens", async () => {
-         mockGateway.user = { id: "123", username: "testuser" } as APIUser;
-         mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
+      const result = await client.initialize({ tokens: { token } });
 
-         const result = await client.initialize();
-
-         expect(result.success).toBe(true);
-         expect(result.status).toBe("success");
-         expect(result.retryable).toBe(false);
-         expect(client.currentUser).not.toBeDefined();
-      });
-
-      test("should timeout if authentication takes too long", async () => {
-         mockGateway.authenticate.mockImplementation(
-            () => new Promise((resolve) => setTimeout(() => resolve({ authenticated: true, retryable: true }), 15000)),
-         );
-
-         const result = await client.initialize({ timeout: 100 });
-
-         expect(result.success).toBe(false);
-         expect(result.status).toBe("timeout");
-         expect(result.retryable).toBe(true);
-      });
-
-      test("should handle authentication failure", async () => {
-         mockGateway.authenticate.mockResolvedValue({ authenticated: false, retryable: false });
-
-         const result = await client.initialize();
-
-         expect(result.success).toBe(false);
-         expect(result.status).toBe("authentication_failed");
-         expect(result.retryable).toBe(false);
-      });
-
-      test("should restore session with valid access token", async () => {
-         const futureDate = Math.floor(Date.now() / 1000) + 3600;
-         const mockToken = "header." + btoa(JSON.stringify({ exp: futureDate })) + ".signature";
-
-         spyOn(jose, "decodeJwt").mockReturnValue({ exp: futureDate });
-         mockGateway.user = { id: "123", username: "testuser" } as APIUser;
-         mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
-
-         const result = await client.initialize({
-            tokens: { token: mockToken },
-         });
-
-         expect(result.success).toBe(true);
-         expect(result.status).toBe("success");
-         expect(client.tokenHandler.token).toBe(mockToken);
-      });
-
-      test("should refresh session with expired access token but valid refresh token", async () => {
-         const pastDate = Math.floor(Date.now() / 1000) - 3600;
-         const futureDate = Math.floor(Date.now() / 1000) + 3600;
-         const expiredToken = "header." + btoa(JSON.stringify({ exp: pastDate })) + ".signature";
-         const newToken = "header." + btoa(JSON.stringify({ exp: futureDate })) + ".signature";
-
-         spyOn(jose, "decodeJwt").mockReturnValueOnce({ exp: pastDate }).mockReturnValue({ exp: futureDate });
-
-         mockAuthAPI.refreshToken.mockResolvedValue({
-            token: newToken,
-            refreshToken: "new_refresh_token",
-         });
-         mockGateway.user = { id: "123", username: "testuser" } as APIUser;
-         mockGateway.authenticate.mockResolvedValue({ authenticated: true, retryable: true });
-
-         const result = await client.initialize({
-            tokens: { token: expiredToken, refreshToken: "old_refresh_token" },
-         });
-
-         expect(result.success).toBe(true);
-         expect(mockAuthAPI.refreshToken).toHaveBeenCalledWith({
-            refreshToken: "old_refresh_token",
-         });
-         expect(client.tokenHandler.token).toBe(newToken);
-      });
-
-      test("should return invalid_tokens for invalid tokens", async () => {
-         spyOn(jose, "decodeJwt").mockImplementation(() => {
-            throw new Error("Invalid token");
-         });
-
-         const result = await client.initialize({
-            tokens: { token: "invalid_token" },
-         });
-
-         expect(result.success).toBe(false);
-         expect(result.status).toBe("invalid_tokens");
-         expect(result.retryable).toBe(false);
-      });
-
-      test("should handle network errors during token restoration", async () => {
-         mockAuthAPI.refreshToken.mockRejectedValue(new TypeError("Network request failed"));
-
-         const result = await client.initialize({
-            tokens: { refreshToken: "some_token" },
-         });
-
-         expect(result.success).toBe(false);
-         expect(result.status).toBe("network_error");
-         expect(result.retryable).toBe(true);
-      });
+      expect(result).toEqual({ success: true, status: "success", retryable: false });
+      expect(client.tokenHandler.token).toBe(token);
+      expect(vi.mocked(client.auth.refreshToken)).not.toHaveBeenCalled();
    });
 
-   describe("login()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
+   it("refreshes an expired access token using the refresh token", async () => {
+      const newTokens = { token: "new-access", refreshToken: "new-refresh" } as unknown as Tokens;
+      vi.mocked(client.auth.refreshToken).mockResolvedValue(newTokens);
+
+      const result = await client.initialize({
+         tokens: { token: expiredToken(), refreshToken: "old-refresh" },
       });
 
-      test("should successfully login with credentials", async () => {
-         const credentials: LoginCredentials = {
-            email: "test@example.com",
-            password: "password123",
-         };
-
-         const result = await client.login(credentials);
-
-         expect(mockAuthAPI.login).toHaveBeenCalledWith(credentials);
-         expect(result.pendingEmail).toBeFalse();
-         expect(result.token).toBe("mock_token");
-         expect(result.refreshToken).toBe("mock_refresh_token");
-         expect(client.tokenHandler.token).toBe("mock_token");
-         expect(client.tokenHandler.refreshToken).toBe("mock_refresh_token");
-      });
-
-      test("should handle login failure", async () => {
-         mockAuthAPI.login.mockRejectedValue(new Error("Invalid credentials"));
-
-         const credentials: LoginCredentials = {
-            email: "test@example.com",
-            password: "wrongpassword",
-         };
-
-         expect(client.login(credentials)).rejects.toThrow("Invalid credentials");
-      });
+      expect(vi.mocked(client.auth.refreshToken)).toHaveBeenCalledWith({ refreshToken: "old-refresh" });
+      expect(client.tokenHandler.token).toBe("new-access");
+      expect(client.tokenHandler.refreshToken).toBe("new-refresh");
+      expect(result).toEqual({ success: true, status: "success", retryable: false });
    });
 
-   describe("register()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
-      });
+   it("reports invalid_tokens for an expired token with no refresh token", async () => {
+      const result = await client.initialize({ tokens: { token: expiredToken() } });
 
-      test("should successfully register a new user", async () => {
-         const userData: RegisterUser = {
-            username: "newuser",
-            email: "newuser@example.com",
-            password: "password123",
-            displayName: "newuser",
-         };
-
-         const result = await client.register(userData);
-
-         expect(mockAuthAPI.register).toHaveBeenCalledWith(userData);
-         expect(result.token).toBe("mock_token");
-         expect(result.refreshToken).toBe("mock_refresh_token");
-         expect(client.tokenHandler.token).toBe("mock_token");
-         expect(client.tokenHandler.refreshToken).toBe("mock_refresh_token");
-      });
-
-      test("should handle registration failure", async () => {
-         mockAuthAPI.register.mockRejectedValue(new Error("Username already exists"));
-
-         const userData: RegisterUser = {
-            username: "existinguser",
-            email: "test@example.com",
-            password: "password123",
-            displayName: "existinguser",
-         };
-
-         await expect(client.register(userData)).rejects.toThrow("Username already exists");
-      });
+      expect(result).toEqual({ success: false, status: "invalid_tokens", retryable: false });
+      expect(vi.mocked(client.gateway.authenticate)).not.toHaveBeenCalled();
    });
 
-   describe("logout()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
-         client.tokenHandler.token = "some_token";
-         client.tokenHandler.refreshToken = "some_refresh_token";
-      });
+   it("reports invalid_tokens for a malformed token with no refresh token", async () => {
+      const result = await client.initialize({ tokens: { token: "not-a-jwt" } });
 
-      test("should successfully logout and cleanup", async () => {
-         await client.logout();
-
-         expect(mockAuthAPI.logout).toHaveBeenCalled();
-         expect(client.tokenHandler.token).toBeUndefined();
-         expect(client.tokenHandler.refreshToken).toBeUndefined();
-         expect(mockVoice.signaling.close).toHaveBeenCalled();
-         expect(mockGateway.close).toHaveBeenCalled();
-      });
-
-      test("should cleanup even if logout API call fails", async () => {
-         mockAuthAPI.logout.mockRejectedValue(new Error("Network error"));
-
-         await client.logout();
-
-         expect(client.tokenHandler.token).toBeUndefined();
-         expect(client.tokenHandler.refreshToken).toBeUndefined();
-         expect(mockVoice.signaling.close).toHaveBeenCalled();
-         expect(mockGateway.close).toHaveBeenCalled();
-      });
+      expect(result).toEqual({ success: false, status: "invalid_tokens", retryable: false });
    });
 
-   describe("clearSession()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
-         client.tokenHandler.token = "some_token";
-         client.tokenHandler.refreshToken = "some_refresh_token";
-         // @ts-expect-error - accessing private property for testing
-         client._user = { id: "123", username: "testuser" } as APIUser;
-      });
+   it("reports invalid_tokens for a no passed tokens", async () => {
+      // vi.mocked(client.auth.refreshToken).mockReturnValue({});
+      const result = await client.initialize({});
 
-      test("should clear all session data", () => {
-         client.clearSession();
-
-         expect(client.tokenHandler.token).toBeUndefined();
-         expect(client.tokenHandler.refreshToken).toBeUndefined();
-         expect(client.currentUser).toBeUndefined();
-      });
+      expect(result).toEqual({ success: false, status: "invalid_tokens", retryable: false });
    });
 
-   describe("generateNonce()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
+   it("clears the session and reports invalid_tokens if refreshing throws a non-network error", async () => {
+      vi.mocked(client.auth.refreshToken).mockRejectedValue(new Error("refresh rejected"));
+      client.tokenHandler.token = "stale-token";
+
+      const result = await client.initialize({
+         tokens: { token: expiredToken(), refreshToken: "old-refresh" },
       });
 
-      test("should generate a valid snowflake nonce", () => {
-         const nonce = client.generateNonce();
-
-         expect(nonce).toBeDefined();
-         expect(typeof nonce).toBe("string");
-         expect(nonce.length).toBeGreaterThan(0);
-      });
-
-      test("should generate unique nonces", () => {
-         const nonce1 = client.generateNonce();
-         const nonce2 = client.generateNonce();
-
-         expect(nonce1).not.toBe(nonce2);
-      });
+      expect(result).toEqual({ success: false, status: "invalid_tokens", retryable: false });
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
    });
 
-   describe("checkUser()", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
+   it("reports a retryable network_error if refreshing fails with a fetch-style TypeError", async () => {
+      vi.useFakeTimers();
+      vi.mocked(client.auth.refreshToken).mockRejectedValue(new TypeError("Failed to fetch"));
+
+      const resultPromise = client.initialize({
+         tokens: { token: expiredToken(), refreshToken: "old-refresh" },
       });
 
-      test("should not throw when user exists", () => {
-         // @ts-expect-error - accessing private property for testing
-         client._user = { id: "123", username: "testuser" } as APIUser;
+      await vi.advanceTimersByTimeAsync(1000);
+      const result = await resultPromise;
 
-         expect(() => client.checkUser()).not.toThrow();
-      });
+      expect(result).toEqual({ success: false, status: "network_error", retryable: true });
+   });
+});
 
-      test("should throw when user is undefined", () => {
-         expect(() => client.checkUser()).toThrow("Client user is null");
-      });
+// ============================================================
+// login()
+// ============================================================
+
+describe("login()", () => {
+   const credentials = { email: "a@example.com", password: "hunter2" } as LoginCredentials;
+
+   it("stores the returned tokens on success", async () => {
+      const response = { token: "access-1", refreshToken: "refresh-1" } as APIPostLoginResult;
+      vi.mocked(client.auth.login).mockResolvedValue(response);
+
+      const result = await client.login(credentials);
+
+      expect(result).toBe(response);
+      expect(client.tokenHandler.token).toBe("access-1");
+      expect(client.tokenHandler.refreshToken).toBe("refresh-1");
    });
 
-   describe("currentUser getter", () => {
-      beforeEach(() => {
-         client = new HuginnClient();
-      });
+   it("leaves stored tokens untouched if the response has no tokens (e.g. pending email verification)", async () => {
+      const response = { pendingEmail: "a@example.com" } as APIPostLoginResult;
+      vi.mocked(client.auth.login).mockResolvedValue(response);
 
-      test("should return undefined when no user is set", () => {
-         expect(client.currentUser).toBeUndefined();
-      });
+      const result = await client.login(credentials);
 
-      test("should return user when set", () => {
-         const mockUser = { id: "123", username: "testuser" } as APIUser;
-         // @ts-expect-error - accessing private property for testing
-         client._user = mockUser;
+      expect(result).toBe(response);
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
+   });
+});
 
-         expect(client.currentUser).toBe(mockUser);
-      });
+// ============================================================
+// register()
+// ============================================================
+
+describe("register()", () => {
+   const newUser = { email: "new@example.com", username: "newbie", password: "hunter2" } as RegisterUser;
+
+   it("stores the returned tokens on success", async () => {
+      const response = { token: "access-2", refreshToken: "refresh-2" } as APIPostRegisterResult;
+      vi.mocked(client.auth.register).mockResolvedValue(response);
+
+      const result = await client.register(newUser);
+
+      expect(result).toBe(response);
+      expect(client.tokenHandler.token).toBe("access-2");
+      expect(client.tokenHandler.refreshToken).toBe("refresh-2");
+   });
+
+   it("leaves stored tokens untouched if the response has no tokens (e.g. pending email verification)", async () => {
+      const response = { pendingEmail: "a@example.com" } as APIPostRegisterResult;
+      vi.mocked(client.auth.register).mockResolvedValue(response);
+
+      const result = await client.register(newUser);
+
+      expect(result).toBe(response);
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
+   });
+});
+
+// ============================================================
+// logout()
+// ============================================================
+
+describe("logout()", () => {
+   it("logs out, then clears the session, closes voice signaling, and closes the gateway", async () => {
+      client.tokenHandler.token = "access";
+      client.tokenHandler.refreshToken = "refresh";
+      setGatewayUser(client, makeUser("u1"));
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({ authenticated: true, retryable: true, status: "success" });
+      await client.initialize();
+
+      vi.mocked(client.auth.logout).mockResolvedValue(undefined as never);
+
+      await client.logout();
+
+      expect(vi.mocked(client.auth.logout)).toHaveBeenCalledTimes(1);
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
+      expect(client.currentUser).toBeUndefined();
+      expect(vi.mocked(client.voice.signaling.close)).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(client.gateway.close)).toHaveBeenCalledTimes(1);
+   });
+
+   it("still cleans up even if the logout request fails", async () => {
+      client.tokenHandler.token = "access";
+      vi.mocked(client.auth.logout).mockRejectedValue(new Error("network down"));
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      await expect(client.logout()).resolves.toBeUndefined();
+
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(vi.mocked(client.gateway.close)).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(client.voice.signaling.close)).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalled();
+
+      warnSpy.mockRestore();
+   });
+});
+
+// ============================================================
+// clearSession()
+// ============================================================
+
+describe("clearSession()", () => {
+   it("clears tokens and the current user", async () => {
+      client.tokenHandler.token = "access";
+      client.tokenHandler.refreshToken = "refresh";
+      setGatewayUser(client, makeUser("u1"));
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({ authenticated: true, retryable: true, status: "success" });
+      await client.initialize();
+      expect(client.currentUser).toBeDefined();
+
+      client.clearSession();
+
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
+      expect(client.currentUser).toBeUndefined();
+   });
+});
+
+// ============================================================
+// generateNonce()
+// ============================================================
+
+describe("generateNonce()", () => {
+   it("returns a non-empty, unique snowflake string on each call", () => {
+      const first = client.generateNonce();
+      const second = client.generateNonce();
+
+      expect(typeof first).toBe("string");
+      expect(first.length).toBeGreaterThan(0);
+      expect(first).not.toBe(second);
+   });
+});
+
+// ============================================================
+// checkUser()
+// ============================================================
+
+describe("checkUser()", () => {
+   it("throws when there is no current user", () => {
+      expect(() => client.checkUser()).toThrow("Client user is null");
+   });
+
+   it("does not throw once a user is set", async () => {
+      setGatewayUser(client, makeUser("u1"));
+      vi.mocked(client.gateway.authenticate).mockResolvedValue({ authenticated: true, retryable: true, status: "success" });
+      client.tokenHandler.token = "good-token";
+      await client.initialize();
+
+      expect(() => client.checkUser()).not.toThrow();
+   });
+});
+
+// ============================================================
+// validateAccessToken()
+// ============================================================
+
+describe("validateAccessToken()", () => {
+   it("returns false for a missing token", async () => {
+      const result = await client.validateAccessToken(undefined);
+      expect(result).toBe(false);
+   });
+
+   it("returns false when a token didn't have exp", async () => {
+      const result = await client.validateAccessToken(makeJwt({}));
+      expect(result).toBe(false);
    });
 });

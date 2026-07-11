@@ -30,6 +30,12 @@ export type InitializationResult = {
    retryable: boolean;
 };
 
+type RefreshTokenResult = {
+   success: boolean;
+   status: "success" | "invalid_token" | "network_error";
+   retryable: boolean;
+};
+
 type ConnectOptions = {
    tokens?: Partial<Tokens>;
 };
@@ -37,7 +43,7 @@ type ConnectOptions = {
 export class HuginnClient<V extends Voice = Voice> {
    public readonly options: ClientOptions<V>;
 
-   private readonly rest: REST;
+   public readonly rest: REST;
    public readonly cdn: CDN;
    public readonly tokenHandler: TokenHandler;
    public readonly gateway: Gateway;
@@ -80,8 +86,6 @@ export class HuginnClient<V extends Voice = Voice> {
       this.gifs = new GifAPI(this.rest);
       this.common = new CommonAPI(this.rest);
       this.oauth = new OAuthAPI(this.rest, this.gateway);
-
-      this.gateway.connect();
    }
 
    public get currentUser(): APIUser | undefined {
@@ -90,6 +94,10 @@ export class HuginnClient<V extends Voice = Voice> {
 
    private setUser(user: APIUser | undefined): void {
       this._user = user;
+   }
+
+   public async connect(): Promise<boolean> {
+      return await this.gateway.connect();
    }
 
    public async initialize(options: ConnectOptions = {}): Promise<InitializationResult> {
@@ -105,6 +113,10 @@ export class HuginnClient<V extends Voice = Voice> {
             if (tokenResult === "network_error") {
                return { status: tokenResult, retryable: true, success: false };
             }
+         }
+
+         if (!this.tokenHandler.token && !this.tokenHandler.refreshToken) {
+            return { status: "invalid_tokens", retryable: false, success: false };
          }
 
          const authResult = await this.authenticate();
@@ -140,37 +152,29 @@ export class HuginnClient<V extends Voice = Voice> {
    }
 
    private async restoreSession(tokens: Partial<Tokens>): Promise<InitializationStatus> {
-      try {
-         const accessTokenValid = await this.validateAccessToken(tokens.token);
+      const accessTokenValid = await this.validateAccessToken(tokens.token);
+      if (!accessTokenValid && tokens.refreshToken) {
+         const refreshResult = await this.refreshSession(tokens.refreshToken);
 
-         if (!accessTokenValid && tokens.refreshToken) {
-            const refreshSuccess = await this.refreshSession(tokens.refreshToken);
-            if (refreshSuccess) {
-               return "success";
-            }
-         }
-
-         if (accessTokenValid) {
-            return "success";
-         }
-
-         return "invalid_tokens";
-      } catch (e) {
-         if (e instanceof TypeError && e.message.toLocaleLowerCase().includes("fail")) {
-            await new Promise((r) => setTimeout(r, 1000));
-            return "network_error";
-         }
-
-         this.clearSession();
-         return "invalid_tokens";
+         // invalid tokens is handled further down
+         if (refreshResult.success) return "success";
+         if (refreshResult.status === "network_error") return "network_error";
       }
+
+      if (accessTokenValid) {
+         return "success";
+      }
+
+      this.clearSession();
+      return "invalid_tokens";
    }
 
-   private async validateAccessToken(token?: string): Promise<boolean> {
+   public async validateAccessToken(token?: string): Promise<boolean> {
       if (!token) return false;
 
       try {
-         const expireDate = (decodeJwt(token).exp ?? 0) * 1000;
+         const decoded = decodeJwt(token);
+         const expireDate = (decoded.exp ?? 0) * 1000;
          const isValid = expireDate >= Date.now();
 
          if (isValid) {
@@ -183,11 +187,18 @@ export class HuginnClient<V extends Voice = Voice> {
       }
    }
 
-   private async refreshSession(refreshToken: string): Promise<boolean> {
-      const newTokens = await this.auth.refreshToken({ refreshToken });
-      this.tokenHandler.token = newTokens.token;
-      this.tokenHandler.refreshToken = newTokens.refreshToken;
-      return true;
+   private async refreshSession(refreshToken: string): Promise<RefreshTokenResult> {
+      try {
+         const newTokens = await this.auth.refreshToken({ refreshToken });
+         this.tokenHandler.token = newTokens.token;
+         this.tokenHandler.refreshToken = newTokens.refreshToken;
+         return { success: true, status: "success", retryable: true };
+      } catch (e) {
+         if (e instanceof TypeError && e.message.toLocaleLowerCase().includes("fail")) {
+            return { success: false, status: "network_error", retryable: true };
+         }
+         return { success: false, status: "invalid_token", retryable: false };
+      }
    }
 
    public clearSession(): void {
@@ -228,7 +239,7 @@ export class HuginnClient<V extends Voice = Voice> {
       try {
          await this.auth.logout();
       } catch {
-         console.warn("logout failed");
+         console.warn("logout failed but session was cleared anyway");
       } finally {
          this.cleanup();
       }

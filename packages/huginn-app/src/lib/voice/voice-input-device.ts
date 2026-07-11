@@ -22,8 +22,6 @@ export class VoiceInputDevice {
    }
 
    public async getStream(deviceId: string, volumePercentage: number, noiseSuppression: boolean) {
-      log("app:voice-input-device", "default", "get stream", "did:", deviceId, "vp:", volumePercentage, "ns:", noiseSuppression);
-
       this.options = { deviceId, volumePercentage, noiseSuppression };
 
       const audioConstraints: MediaTrackConstraints = {
@@ -87,8 +85,6 @@ export class VoiceInputDevice {
    }
 
    public setGain(volumePercentage: number) {
-      log("app:voice-input-device", "default", "set gain", "vp:", volumePercentage);
-
       if (this.gainNode) {
          this.gainNode.gain.value = volumePercentage / 100;
          this.dummyInput?.setGain(volumePercentage);
@@ -99,8 +95,6 @@ export class VoiceInputDevice {
    }
 
    public async initializeAudioLevel() {
-      log("app:voice-input-device", "default", "initialize local audio level checker");
-
       if (!this.dummyInput) {
          this.dummyInput = new VoiceInputDevice(this.client);
       }
@@ -113,7 +107,7 @@ export class VoiceInputDevice {
 
       this.audioLevel = new AudioLevelChecker();
       this.audioLevel.startChecking(stream);
-      this.audioLevel.onAudioLevel = (db) => onAudioLevel(this.client, db);
+      this.audioLevel.onAudioLevel = (db) => handleAudioLevel(this.client, db);
 
       let speaking = false;
       let hangoverUntil = 0;
@@ -129,7 +123,7 @@ export class VoiceInputDevice {
          voice.updateSpeakingState(userId, value);
       }
 
-      function onAudioLevel(client: HuginnClient, db: number) {
+      function handleAudioLevel(client: HuginnClient, db: number) {
          const settings = storageStore.getState().getCachedValue("settings");
 
          const OPEN_DB = settings.inputThreshold;
@@ -172,7 +166,5 @@ export class VoiceInputDevice {
             }
          }
       }
-
-      return { audioLevel: this.audioLevel, stream };
    }
 }

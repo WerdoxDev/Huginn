@@ -93,7 +93,7 @@ export function getChannelRecipients(channelId: Snowflake, queryClient = client)
 }
 
 export function updateChannelLastMessageId(channelId: Snowflake, messageId: Snowflake, queryClient = client, options?: { allowLower?: boolean }) {
-   queryClient.setQueryData<APIGetUserChannelsResult>(["channels", "@me"], (data) => {
+   queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (data) => {
       if (!data) return undefined;
 
       const channelIndex = data.findIndex((x) => x.id === channelId);
@@ -171,6 +171,7 @@ export function appendAppMessage(
          const lastParams = draft.pageParams[draft.pageParams.length - 1];
 
          // See if the message can be appended to the current page
+         // Shouldn't have before and either no after or the last page contains the last message in the channel
          if (!lastParams.before && (!lastParams.after || lastPage.some((x) => x.id === targetChannel?.lastMessageId))) {
             inLoadedQueryPage = true;
             if (targetChannel?.id === currentChannel?.id) {

@@ -119,7 +119,7 @@ export type APIPostOAuthConfirmJSONBody = {
    avatar: string | null;
 };
 
-export type APIPostLoginResult = (APIUser & Tokens) | { pendingEmail: string };
+export type APIPostLoginResult = APIUser & (Tokens | { pendingEmail: string });
 export type APIPostRegisterResult = APIUser & Partial<Tokens> & { pendingEmail?: string };
 export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
@@ -138,7 +138,7 @@ export type APIRelationship = {
    id: Snowflake;
    type: RelationshipType;
    nickname: string;
-   since: Date | null;
+   since: Date | string | null;
    user: APIRelationUser;
    owner: APIRelationUser;
 };
@@ -216,7 +216,7 @@ export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 
 //#region MESSAGE
-type APIBaseMessage = {
+export type APIBaseMessage = {
    id: Snowflake;
    type: MessageType;
    channelId: Snowflake;
@@ -378,7 +378,7 @@ export enum MessageType {
    CHANNEL_ICON_CHANGED = 5,
    CHANNEL_PINNED_MESSAGE = 6,
    CHANNEL_OWNER_CHANGED = 7,
-   USER_JOIN = 8,
+   // USER_JOIN = 8,
    REPLY = 9,
 }
 //#endregion
