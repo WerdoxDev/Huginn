@@ -135,7 +135,7 @@ export default function MessageContextMenu() {
                {recentEmojis.slice(0, 6).map((emoji) => (
                   <button
                      key={emoji.slugs[0]}
-                     className="hover:bg-surface-alt active:bg-surface-alt bg-surface-deep shrink-0 cursor-pointer rounded p-3 lg:p-1.5"
+                     className="hover:bg-surface-alt active:bg-surface-alt bg-surface-deep shrink-0 cursor-pointer rounded p-3 outline-none lg:p-1.5"
                      onClick={() => handleEmojiSelect(emoji.slugs[0], emoji.unicode)}
                   >
                      <EmojiImg unicode={emoji.unicode} className="size-6 lg:size-5.5" />

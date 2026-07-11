@@ -55,7 +55,7 @@ export default function UserInfo(props: { user: AppUser }) {
             <HuginnMenu>
                <HuginnMenu.Trigger asChild>
                   <div
-                     className="flex h-full w-full cursor-pointer items-center rounded-lg px-2 hover:bg-white/5 active:bg-white/5"
+                     className="flex h-full w-full cursor-pointer items-center rounded-lg px-2 outline-none hover:bg-white/5 active:bg-white/5"
                      onMouseEnter={() => setIsHovered(true)}
                      onMouseLeave={() => setIsHovered(false)}
                   >

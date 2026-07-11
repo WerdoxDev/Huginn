@@ -46,7 +46,7 @@ export function ProfileActivity(props: {
             </div>
             <div className="flex flex-col truncate">
                <div className="truncate text-sm font-semibold text-white">{activity.name}</div>
-               <div className="text-positive-100 flex items-center gap-x-1 text-xs">
+               <div className="text-positive-300 flex items-center gap-x-1 text-xs">
                   <IconMingcuteGame2Fill />
                   <span>{getFormattedDuration()}</span>
                </div>

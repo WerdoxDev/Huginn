@@ -1,4 +1,4 @@
-import type { APIGif } from "@huginn/shared";
+import type { APIGif, FavoriteGif } from "@huginn/shared";
 
 import HuginnTab from "@components/HuginnTab";
 import HuginnInput from "@components/input/HuginnInput";
@@ -106,6 +106,11 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
       [fetchNextPage, hasNextPage, isFetchingNextPage],
    );
 
+   function handleSelectGif(gif: FavoriteGif) {
+      props.onGifSelect?.(gif.url);
+      toggleFavorite({ url: gif.url, src: gif.src, height: gif.height, width: gif.width });
+   }
+
    return (
       <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "rounded-t-xl bg-zinc-900")} data-ignore-swipe>
          <div className={clsx("flex w-full items-center gap-x-2 p-2")}>
@@ -135,7 +140,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
                <HuginnTab.Tab value="all">All GIFs</HuginnTab.Tab>
             </HuginnTab.TabList>
             <HuginnTab.TabPanels className="flex h-full w-full overflow-hidden" panelClassName="w-full h-full">
-               <HuginnTab.TabPanel value="your">
+               <HuginnTab.TabPanel value="your" className="py-2">
                   {(!favoriteGifs || favoriteGifs?.length === 0) && (
                      <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
                         <IconMingcuteSadFill className="size-10" />
@@ -143,22 +148,14 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
                      </div>
                   )}
                   {favoriteGifs && favoriteGifs?.length > 0 && (
-                     <div className="scroll-thin grid h-full w-full grid-cols-2 gap-2 overflow-y-scroll pr-0 pl-2">
-                        {favoriteGifs?.map((gif) => (
-                           <button
-                              key={gif.url}
-                              className="group relative h-24 w-full cursor-pointer rounded-md border-2 border-transparent transition-[border]"
-                              onClick={() => props.onGifSelect?.(gif.url)}
-                           >
-                              <div className="absolute inset-0 flex items-center justify-center gap-x-2 rounded-md bg-black/70 font-semibold text-white transition-[backdrop-filter] group-hover:backdrop-blur-sm">
-                                 <IconMingcuteStarFill
-                                    className="text-primary-600 group-hover:text-primary-500 size-5 transition-colors"
-                                    // onClick={() => setCategory()}
-                                 />
-                              </div>
-                              <img src={gif.src} className="size-full rounded-md object-cover" />
-                           </button>
-                        ))}
+                     <div className="scroll-super-thin h-full overflow-y-scroll pr-0 pl-2" onScroll={handleScroll}>
+                        <GifGrid
+                           gifs={favoriteGifs}
+                           gap={4}
+                           onScroll={handleScroll}
+                           onGifSelect={handleSelectGif}
+                           isLoading={values.search !== search || isLoading}
+                        />
                      </div>
                   )}
                </HuginnTab.TabPanel>
@@ -181,7 +178,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
                            gifs={gifs}
                            gap={4}
                            onScroll={handleScroll}
-                           onGifSelect={props.onGifSelect}
+                           onGifSelect={handleSelectGif}
                            isLoading={values.search !== search || isLoading}
                         />
                      </div>
@@ -194,11 +191,11 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
 }
 
 function GifGrid(props: {
-   gifs: APIGif[];
+   gifs: (APIGif | FavoriteGif)[];
    isLoading: boolean;
    gap: number;
    onScroll?: (e: UIEvent<HTMLDivElement>) => void;
-   onGifSelect?: (url: string) => void;
+   onGifSelect?: (gif: FavoriteGif) => void;
 }) {
    const [containerRef, width] = useContainerWidth();
 
@@ -220,11 +217,11 @@ function GifGrid(props: {
                      const width = row.height * x.aspectRatio;
                      return (
                         <Gif
-                           key={x.id}
-                           preview={x.preview}
+                           key={x.url}
+                           preview={"preview" in x ? x.preview : undefined}
                            src={x.src}
                            style={{ width, height: row.height }}
-                           onClick={() => props.onGifSelect?.(x.url)}
+                           onClick={() => props.onGifSelect?.(x)}
                         />
                      );
                   })}
@@ -239,12 +236,12 @@ function GifCategory(props: { src?: string; children?: ReactNode; className?: st
    return (
       <button
          className={clsx(
-            "group hover:border-primary-700 relative h-24 w-full cursor-pointer rounded-md border-2 border-transparent transition-[border]",
+            "group hover:border-primary-700 active:border-primary-700 relative h-24 w-full cursor-pointer rounded-md border-2 border-transparent transition-[border] select-none",
             props.className,
          )}
          onClick={props.onClick}
       >
-         <div className="absolute inset-0 flex items-center justify-center gap-x-2 rounded-md bg-black/70 font-semibold text-white transition-[backdrop-filter] group-hover:backdrop-blur-sm">
+         <div className="absolute inset-0 flex items-center justify-center gap-x-2 rounded-md bg-black/70 font-semibold text-white transition-[backdrop-filter] group-hover:backdrop-blur-sm group-active:backdrop-blur-sm">
             {props.children}
          </div>
          {props.isVideo ? (
@@ -256,7 +253,7 @@ function GifCategory(props: { src?: string; children?: ReactNode; className?: st
    );
 }
 
-function Gif(props: { src: string; preview: string; onClick?: () => void; style?: CSSProperties }) {
+function Gif(props: { src: string; preview?: string; onClick?: () => void; style?: CSSProperties }) {
    const [isLoaded, setIsLoaded] = useState(false);
 
    function handleLoadedData() {
@@ -266,12 +263,12 @@ function Gif(props: { src: string; preview: string; onClick?: () => void; style?
    return (
       <button
          className={clsx(
-            "group hover:border-primary-700 relative cursor-pointer overflow-hidden rounded-md border-2 border-transparent transition-[border]",
+            "group hover:border-primary-700 active:border-primary-700 relative cursor-pointer overflow-hidden rounded-md border-2 border-transparent transition-[border]",
          )}
          onClick={props.onClick}
          style={props.style}
       >
-         {!isLoaded && (
+         {!isLoaded && props.preview && (
             <div className="absolute inset-0">
                <img src={props.preview} className="size-full object-cover" />
             </div>

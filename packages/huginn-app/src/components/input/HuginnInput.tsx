@@ -92,7 +92,7 @@ function Input(props: { headless?: boolean; className?: string; lowercase?: bool
          value={inputContext.value}
          ref={inputContext.ref}
          className={clsx(
-            !headless && "placeholder-text/60 w-full bg-transparent p-2 text-white outline-hidden disabled:cursor-not-allowed",
+            !headless && "placeholder-text/60 h-10 w-full bg-transparent p-2 text-white outline-hidden disabled:cursor-not-allowed",
             className,
          )}
          disabled={inputContext.disabled}

@@ -788,12 +788,13 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             session.send(
                {
                   op: VoiceOperations.DISPATCH,
-                  t: "consumer_closed",
+                  t: "close_consumer_result",
                   d: {
                      consumerId: consumer.id,
                      kind: consumer.appData.mediaKind,
                      producerId: consumer.producerId,
                      userId: rtcPeer.userId,
+                     nonce: data.nonce,
                   },
                },
                true,
@@ -804,13 +805,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                router,
                {
                   op: VoiceOperations.DISPATCH,
-                  t: "close_consumer_result",
+                  t: "consumer_closed",
                   d: {
                      producerId: consumer.producerId,
                      userId: rtcPeer.userId,
                      consumerId: consumer.id,
                      kind: consumer.appData.mediaKind,
-                     nonce: data.nonce,
                   },
                },
                { excludeSession: session },

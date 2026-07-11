@@ -12,7 +12,7 @@ export async function tryResolveImage(
    imageName: string,
    options?: { width?: number; height?: number; quality?: number; format?: ImageFormats },
 ) {
-   const { name, format } = extractFileInfo(imageName);
+   const { name, format, extension } = extractFileInfo(imageName);
    if (!options?.format) options = { ...options, format: format as ImageFormats };
 
    const key = getCacheKey(name, format, options);
@@ -25,7 +25,7 @@ export async function tryResolveImage(
 
    // console.log(otherFile.name);
    // File/transformation doesn't exist so we have to see if another format exists
-   const { file: otherFile } = await findImageByName(category, subDirectory, name, format);
+   const { file: otherFile } = await findImageByName(category, subDirectory, name, format, extension);
 
    const transformedFile = await transformImage(otherFile, options ?? {});
    return { file: transformedFile, transformation: { key } };

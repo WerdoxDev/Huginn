@@ -23,7 +23,7 @@ import { useIsMobile } from "./useIsMobile";
 const INTERCEPT_ELEMENT_TYPES = ["emoji", "mention"];
 
 function isWorthyKeyEvent(event: globalThis.KeyboardEvent) {
-   if (event.key.includes("Shift") || event.key.includes("Control") || event.key.includes("Alt") || event.key.includes("Meta")) {
+   if (event.key.includes("Shift") || event.key.includes("Control") || event.key.includes("Alt") || event.key.includes("Meta") || event.ctrlKey) {
       return false;
    }
    return true;

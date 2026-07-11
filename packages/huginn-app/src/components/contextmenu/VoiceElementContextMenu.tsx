@@ -106,7 +106,7 @@ export default function VoiceElementContextMenu() {
                {hasAudio && (
                   <ContextMenu.Item
                      label="Stream Volume"
-                     className="mt-1 min-w-40 cursor-default flex-col items-start! gap-y-1 px-1 focus:bg-inherit!"
+                     className="mt-1 min-w-40 cursor-default! flex-col items-start! gap-y-1 px-1 hover:bg-transparent!"
                      preventClose
                   >
                      <HuginnSlider
