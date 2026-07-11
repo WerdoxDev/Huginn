@@ -82,6 +82,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
    useEffect(() => {
       return () => {
+         audioLevel.current?.stopChecking();
+         inputDevice.current?.close();
          stopCameraTest();
       };
    }, []);

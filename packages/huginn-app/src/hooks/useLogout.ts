@@ -13,8 +13,8 @@ export function useLogout() {
    const logoutMutation = useHuginnMutation({
       async mutationFn() {
          await client?.logout();
-         await client?.gateway.waitForAnyEvents(["disconnected"]);
-         client?.gateway.connect();
+         await client?.gateway.waitForAnyEvents(["reset"]);
+         await client?.gateway.connect();
       },
    });
 
@@ -28,6 +28,7 @@ export function useLogout() {
 
       await logoutMutation.mutateAsync();
       analytics.reset();
+
       await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
 
       resetScrolls();

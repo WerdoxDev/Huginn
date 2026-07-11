@@ -1,3 +1,4 @@
+import { HuginnClient } from "@huginn/api";
 import {
    ChannelType,
    MessageReferenceType,
@@ -11,9 +12,11 @@ import {
    type Snowflake,
 } from "@huginn/shared";
 import { convertToAppMessage } from "@lib/utils";
-import { QueryClient } from "@tanstack/react-query";
+import { clientStore } from "@stores/clientStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, type ReactNode } from "react";
 
-import type { AppMessage } from "./types";
+import type { AppMessage, ProcessedMessage } from "./types";
 
 export function createTestUser(options: { id: string }): APIUser {
    return {
@@ -146,6 +149,7 @@ export function makeAppMessage(overrides: {
    pinned?: boolean;
    isPreview?: boolean;
    type?: MessageType;
+   mentions?: Snowflake[];
    referencedMessage?: AppMessage | null;
 }): AppMessage {
    const base = convertToAppMessage(
@@ -159,4 +163,24 @@ export function makeAppMessage(overrides: {
    );
 
    return { ...base, ...overrides } as AppMessage;
+}
+
+export function makeProcessedMessages(overrides: { isActionType?: boolean; type: MessageType; content?: string }): ProcessedMessage {
+   return {
+      ...convertToAppMessage(
+         createTestMessage({ author: createTestUser({ id: "1" }), channelId: "1", id: "1", type: overrides.type, content: overrides.content }),
+         "fetch",
+      ),
+      hasNewAuthor: true,
+      hasNewDate: true,
+      hasNewMinute: true,
+      isActionType: overrides.isActionType ?? false,
+      isEditing: false,
+      isJumpHighlighted: false,
+      isUnread: false,
+      isMentioned: false,
+      isReplyType: false,
+      isReplying: false,
+      ...overrides,
+   } as ProcessedMessage;
 }

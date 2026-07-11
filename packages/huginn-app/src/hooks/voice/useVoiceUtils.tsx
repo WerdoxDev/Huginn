@@ -122,7 +122,7 @@ export function useVoiceUtils() {
             },
          });
 
-         await closeStream();
+         if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio")) await closeStream();
       }
    }
 
@@ -159,7 +159,7 @@ export function useVoiceUtils() {
                      },
                   });
 
-                  await closeStream();
+                  if (client?.voice.transport.getProducer("stream_audio")) await closeStream();
                }
             },
          },
@@ -188,7 +188,7 @@ export function useVoiceUtils() {
             },
          });
 
-         await closeCamera();
+         if (client?.voice.transport.getProducer("camera")) await closeCamera();
       }
    }
 
@@ -218,7 +218,8 @@ export function useVoiceUtils() {
             },
          });
 
-         await unconsumeStream(userId);
+         if (client?.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
+            await unconsumeStream(userId);
       }
    }
 

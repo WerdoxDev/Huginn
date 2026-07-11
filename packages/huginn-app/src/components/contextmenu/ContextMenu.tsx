@@ -125,7 +125,7 @@ function Item(
    }
 
    const itemClass = clsx(
-      "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden",
+      "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden select-none",
       context.isMobile && "px-3 py-3",
       "data-disabled:cursor-not-allowed",
       !props.color || props.color === "default"
@@ -181,7 +181,7 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    const [isOpen, setIsOpen] = useState(false);
 
    const triggerClass = clsx(
-      "flex min-w-28 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none",
+      "flex min-w-28 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none select-none",
       context?.isMobile && "px-3 py-3",
       "data-disabled:cursor-not-allowed data-disabled:text-white/50",
       !props.color || props.color === "default"

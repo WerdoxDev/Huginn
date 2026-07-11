@@ -1,8 +1,6 @@
 import { EventEmitter } from "@huginn/shared";
 import { vi } from "vitest";
 
-import type { AppSettings, StorageMap, VoicePreference } from "@/types";
-
 class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {
    getConsumers = vi.fn(() => [] as any[]);
    getProducer = vi.fn((_kind: string) => undefined as any);
@@ -10,26 +8,6 @@ class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {
 }
 
 vi.doMock("@huginn/api", async () => {
-   // class FakeEmitter {
-   //    private listeners = new Map<string, Array<(...args: any[]) => any>>();
-
-   //    on(event: string, cb: (...args: any[]) => any) {
-   //       const arr = this.listeners.get(event) ?? [];
-   //       arr.push(cb);
-   //       this.listeners.set(event, arr);
-   //       return this;
-   //    }
-
-   //    // Awaits every registered handler so tests can `await` the emit call
-   //    // and know the (async) VoiceBridge handler has fully settled.
-   //    async emit(event: string, ...args: any[]) {
-   //       const cbs = this.listeners.get(event) ?? [];
-   //       for (const cb of cbs) {
-   //          await cb(...args);
-   //       }
-   //    }
-   // }
-
    class FakeVoice extends EventEmitter<Record<string, unknown>> {
       public transport = new VoiceTransportManager();
       public device = {
@@ -56,35 +34,6 @@ vi.doMock("./voice-transport-manager", async () => {
    return { VoiceTransportManager };
 });
 
-// vi.mock("@stores/storageStore", () => {
-//    const state = {
-//       getCachedValue: vi.fn((key: string): StorageMap[keyof StorageMap] => {
-//          if (key === "settings") {
-//             return {
-//                inputDeviceId: "default-input",
-//                inputVolume: 80,
-//                outputVolume: 90,
-//                outputDeviceId: "default-output",
-//                noiseSuppression: true,
-//             } as AppSettings;
-//          }
-//          if (key === "voice-preferences") {
-//             return [] as VoicePreference[];
-//          }
-
-//          return undefined as unknown as StorageMap[keyof StorageMap];
-//       }),
-//       setCachedValue: vi.fn(),
-//       saveFromCachedValue: vi.fn(async (_key: string) => {}),
-//    };
-//    return {
-//       storageStore: {
-//          subscribe: vi.fn(),
-//          getState: vi.fn(() => state),
-//       },
-//    };
-// });
-
 vi.mock("@stores/voiceStore", () => {
    const state = {
       updateSpeakingState: vi.fn(),
@@ -98,7 +47,6 @@ vi.mock("@stores/voiceStore", () => {
    };
 });
 
-// console.log("SETUP", __dirname);
 vi.mock("./audio-level-checker", () => {
    class AudioLevelChecker {
       public onAudioLevel?: (db: number) => void;

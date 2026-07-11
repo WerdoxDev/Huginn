@@ -91,8 +91,3 @@ export function useTheme() {
 }
 
 export const themeStore = store;
-
-// export function useThemeStore() {
-// 	console.log(ThemeContext);
-// 	return useStore(ThemeContext);
-// }

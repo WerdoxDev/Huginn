@@ -15,6 +15,7 @@ const initialStore = () => ({
            onEmojiSelect?: (slug: string, unicode?: string) => void;
            onGifSelect?: (url: string) => void;
            messageId?: Snowflake;
+           activeTab?: "emoji" | "gif" | "sticker";
         }>
       | undefined,
    pinned_messages: undefined as PopoverStateProps<{ channelId: Snowflake }> | undefined,
@@ -48,7 +49,11 @@ export function usePopover<T extends keyof StoreType>(type: T) {
    }
 
    function close() {
-      hookStore.update(type, (prev) => ({ ...prev, isOpen: false, data: undefined }));
+      hookStore.update(type, (prev) => ({ ...prev, isOpen: false }));
+   }
+
+   function setData(data: NonNullable<StoreType[T]>["data"]) {
+      hookStore.update(type, (prev) => ({ ...prev, data }) as StoreType[T]);
    }
 
    function toggle(e: MouseEvent<HTMLElement>, data?: NonNullable<StoreType[T]>["data"]) {
@@ -70,6 +75,7 @@ export function usePopover<T extends keyof StoreType>(type: T) {
       open,
       close,
       toggle,
+      setData,
       popover: hookStore[type] as StoreType[T],
    };
 }
