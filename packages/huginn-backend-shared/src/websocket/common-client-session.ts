@@ -17,15 +17,17 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    private heartbeatTimeout?: NodeJS.Timeout;
    private sentMessages: Map<number, Payload>;
    private queue: Promise<void> = Promise.resolve();
+   private sentMessagesLimit: number;
 
    public get authenticated() {
       return !!this.user;
    }
 
-   public constructor(peer: Peer, sessionId: Snowflake, workerId: WorkerID) {
+   public constructor(peer: Peer, sessionId: Snowflake, workerId: WorkerID, sentMessagesLimit: number) {
       this.peer = peer;
       this.sessionId = sessionId;
       this.workerId = workerId;
+      this.sentMessagesLimit = sentMessagesLimit;
       this.sentMessages = new Map();
 
       this.resetHeartbeatTimeout();
@@ -33,7 +35,14 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
 
    public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
       if (increaseSequence) data.s = this.getIncreasedSequence();
-      if (resumable && data.s) this.sentMessages.set(data.s, data);
+      if (resumable && data.s) {
+         if (this.sentMessages.size >= this.sentMessagesLimit) {
+            const firstKey = this.sentMessages.keys().next().value;
+            if (firstKey !== undefined) this.sentMessages.delete(firstKey);
+         }
+
+         this.sentMessages.set(data.s, data);
+      }
 
       this.peer.send(JSON.stringify(data));
    }
