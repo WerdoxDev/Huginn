@@ -93,6 +93,6 @@ describe("POST /auth/login", () => {
       const result = (await response.json()) as { pendingEmail: string };
 
       expect(response.status).toBe(202);
-      expect(result).toStrictEqual({ pendingEmail: user.email });
+      expectUserExactSchema(result, { ...user, id: BigInt(user.id), pendingEmail: user.email });
    });
 });
