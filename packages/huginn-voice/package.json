@@ -19,7 +19,7 @@
       "dotenv": "^17.4.2",
       "elysia": "^1.4.29",
       "envalid": "^8.2.0",
-      "mediasoup": "^3.20.10",
+      "mediasoup": "^3.21.0",
       "srvx": "^0.11.17"
    },
    "devDependencies": {
