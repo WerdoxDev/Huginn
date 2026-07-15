@@ -60,18 +60,22 @@ export class VoiceManager<V extends Voice = Voice> {
                isScreenSharing,
             });
 
-            // oxlint-disable-next-line no-unused-vars
-         } catch (e) {
+            // this means we aren't connect to voice so just confirm the voice state without doing anything
+         } catch {
             d.callback(d.voiceState);
          }
       });
 
-      this.voiceState.on("gateway_voice_state_updated", () => {
-         this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState);
+      this.voiceState.on("gateway_voice_state_updated", async () => {
+         await this.applyVoiceState();
       });
 
-      this.voiceState.on("local_voice_state_updated", () => {
-         this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState);
+      this.voiceState.on("local_voice_state_updated", async () => {
+         await this.applyVoiceState();
+      });
+
+      this.voiceState.on("voice_preferences_updated", async () => {
+         await this.applyVoiceState();
       });
    }
 
@@ -191,6 +195,13 @@ export class VoiceManager<V extends Voice = Voice> {
             recordSpanError(e);
             throw e;
          }
+      });
+   }
+
+   public async applyVoiceState(): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceManager.applyVoiceState", async (span): Promise<void> => {
+         span.setAttributes(this.getDefaultAttributes());
+         await this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState, this.voiceState.voicePreferences);
       });
    }
 }

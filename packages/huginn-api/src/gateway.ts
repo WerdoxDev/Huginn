@@ -119,7 +119,9 @@ export class Gateway extends SharedWebsocket<Events> {
             this.socket.onclose = (e) => this.onClose(e);
             this.socket.onmessage = (e) => this.onMessage(e);
 
-            const result = await this.waitForAnyEvents(["hello", "disconnected", "reset"]);
+            const result = await analytics.withRootContext(async () => {
+               return await this.waitForAnyEvents(["hello", "disconnected", "reset"]);
+            });
 
             if (result.event === "disconnected" || result.event === "reset") return false;
             return true;

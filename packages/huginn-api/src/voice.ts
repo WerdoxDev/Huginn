@@ -222,6 +222,18 @@ export class Voice extends EventEmitter<Events> {
          });
       });
 
+      this.transport.on("pause_consumer", async (d) => {
+         return await analytics.startActiveSpan("apiVoice.transportPauseConsumer", async (span) => {
+            span.setAttributes({
+               ...this.getDefaultAttributes(),
+               "params.consumer_id": d.id,
+            });
+
+            const result = await this.signaling.sendPauseConsumer(d.id);
+            d.callback(result);
+         });
+      });
+
       this.transport.on("close_consumer", async (d) => {
          return await analytics.startActiveSpan("apiVoice.transportCloseConsumer", async (span) => {
             span.setAttributes({
