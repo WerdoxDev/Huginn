@@ -120,7 +120,7 @@ export type APIPostOAuthConfirmJSONBody = {
 };
 
 export type APIPostLoginResult = APIUser & (Tokens | { pendingEmail: string });
-export type APIPostRegisterResult = APIUser & Partial<Tokens> & { pendingEmail?: string };
+export type APIPostRegisterResult = APIUser & { pendingEmail?: string };
 export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
@@ -395,11 +395,20 @@ export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & {
 
 export type FavoriteGif = { url: string; src: string; width: number; height: number };
 
+export type VoicePreference = {
+   userId: Snowflake;
+   microphoneVolume: number;
+   streamVolume: number;
+   isMicrophoneMuted: boolean;
+   isStreamMuted: boolean;
+};
+
 export type UserSettings = {
    theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
    favoriteGifs?: FavoriteGif[];
+   voicePreferences?: VoicePreference[];
 };
 
 export type ActiveSession = {
