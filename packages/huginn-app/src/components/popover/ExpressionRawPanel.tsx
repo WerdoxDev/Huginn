@@ -20,7 +20,7 @@ export function ExpressionRawPanel(props: {
 
    return props.type === "full" ? (
       <HuginnTab value={activePanel} onChange={handleTabChange} className="h-full">
-         <HuginnTab.TabList className="gap-x-2 bg-zinc-900! p-0! px-2! pt-2!" tabClassName="py-1 w-full">
+         <HuginnTab.TabList className="bg-surface-void! gap-x-2 p-0! px-2! pt-2!" tabClassName="py-1 w-full">
             <HuginnTab.Tab value="emoji">Emojis</HuginnTab.Tab>
             <HuginnTab.Tab value="gif">GIFs</HuginnTab.Tab>
             <HuginnTab.Tab value="sticker">Stickers</HuginnTab.Tab>

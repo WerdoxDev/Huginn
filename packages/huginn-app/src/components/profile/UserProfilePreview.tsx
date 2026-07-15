@@ -2,17 +2,13 @@ import type { Snowflake } from "@huginn/shared";
 
 import { layout, prepare } from "@chenglou/pretext";
 import UserAvatar from "@components/UserAvatar";
+import UserBanner from "@components/UserBanner";
 import { useUser } from "@hooks/api-hooks/userHooks";
-import { getUserBannerOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
-import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useMemo } from "react";
 
 export default function UserProfilePreview(props: { userId: Snowflake; className?: string; maxWidth?: number }) {
    const user = useUser(props.userId);
-   const client = useClient();
-   const { data: originalBanner } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
 
    const maxWidth = props.maxWidth ?? 144;
 
@@ -33,11 +29,9 @@ export default function UserProfilePreview(props: { userId: Snowflake; className
          className={clsx("bg-surface-alt relative flex shrink-0 items-center gap-x-2.5 overflow-hidden rounded-md border-2 p-2.5", props.className)}
          style={{ borderColor: user.accentColor || "transparent" }}
       >
-         {originalBanner ? (
-            <img src={originalBanner} className="absolute inset-0 h-full w-full object-cover" />
-         ) : (
-            user.bannerColor && <div className="absolute inset-0 h-full w-full" style={{ backgroundColor: `${user.bannerColor}` }} />
-         )}
+         <div className="absolute inset-0">
+            <UserBanner userId={props.userId} animatedMode="always" bannerColor={user.bannerColor} bannerHash={user.banner} />
+         </div>
          <div className="bg-surface-alt z-10 rounded-full p-0.5">
             <UserAvatar userId={props.userId} avatarHash={user.avatar} size={2.5} animatedMode="always" />
          </div>

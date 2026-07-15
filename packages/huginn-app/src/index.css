@@ -19,6 +19,7 @@
    --color-surface: var(--tcolor-surface);
    --color-surface-alt: var(--tcolor-surface-alt);
    --color-surface-deep: var(--tcolor-surface-deep);
+   --color-surface-void: var(--tcolor-surface-void);
 
    --color-primary-300: var(--tcolor-primary-300);
    --color-primary-400: var(--tcolor-primary-400);

@@ -1,10 +1,10 @@
 import type { Consumer, Producer } from "mediasoup-client/types";
 
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake } from "@huginn/shared";
+import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginn/shared";
+import { clientStore } from "@stores/clientStore";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
-import { produce } from "immer";
 
 import type { AppSettings } from "@/types";
 
@@ -41,6 +41,11 @@ export class VoiceBridge extends Voice {
       storageStore.subscribe(
          (state) => state.cache.settings,
          (current, old) => this.handleStorageUpdated(current, old),
+      );
+
+      clientStore.subscribe(
+         (state) => state.userSettings?.voicePreferences,
+         (current) => this.handleVoicePreferenceUpdated(current),
       );
    }
 
@@ -115,14 +120,18 @@ export class VoiceBridge extends Voice {
 
       // create voice preference for new users
       if (data.kind === "microphone" || data.kind === "stream_audio") {
-         const storage = storageStore.getState();
-         const voicePreferences = storage.getCachedValue("voice-preferences");
+         const store = clientStore.getState();
+         let voicePreferences = store.userSettings?.voicePreferences;
+         if (!voicePreferences) voicePreferences = [];
 
-         if (!voicePreferences.some((x) => x.userId === data.userId)) {
-            this.updateVoicePreference(data.userId, { microphoneVolume: 100, streamVolume: 100 });
-            await storage.saveFromCachedValue("voice-preferences");
+         if (!voicePreferences?.some((x) => x.userId === data.userId)) {
+            voicePreferences?.push({ userId: data.userId, microphoneVolume: 100, streamVolume: 100, isMicrophoneMuted: false, isStreamMuted: false });
+            store.setUserSettings({ voicePreferences: voicePreferences });
+            await this.client.users.editSettings({ voicePreferences: voicePreferences });
          }
       }
+
+      await this.client.voiceManager.applyVoiceState();
    }
 
    private async handleAnyProducerClosed(data: ProducerData) {
@@ -189,10 +198,34 @@ export class VoiceBridge extends Voice {
       }
    }
 
+   private handleVoicePreferenceUpdated(current: VoicePreference[] | undefined) {
+      for (const player of this.audioSourcePlayers) {
+         const userPreference = current?.find((x) => x.userId === player.userId);
+
+         if (!userPreference) {
+            throw new Error(`Voice preference for user ${player.userId} was not found`);
+         }
+
+         const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === player.userId);
+         const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === player.userId);
+
+         if (microphonePlayer) {
+            microphonePlayer.setGain(undefined, userPreference.microphoneVolume);
+         }
+
+         if (streamAudioPlayer) {
+            streamAudioPlayer.setGain(undefined, userPreference.streamVolume);
+         }
+      }
+
+      console.log("voice preferences updated", current);
+      this.client.voiceManager.voiceState.updateVoicePreferences(current ?? []);
+   }
+
    private refreshConsumerAudioPlayers() {
       const consumers = this.transport.getConsumers();
       const storage = storageStore.getState();
-      const voicePreferences = storage.getCachedValue("voice-preferences");
+      const voicePreferences = clientStore.getState().userSettings?.voicePreferences;
       const settings = storage.getCachedValue("settings");
 
       // Remove old players
@@ -217,7 +250,7 @@ export class VoiceBridge extends Voice {
 
          this.audioSourcePlayers.push(sourcePlayer);
 
-         const preference = voicePreferences.find((x) => x.userId === consumer.appData.userId);
+         const preference = voicePreferences?.find((x) => x.userId === consumer.appData.userId);
          if (!preference) throw new Error(`Voice preference for ${consumer.appData.userId} was not found`);
 
          if (consumer.appData.mediaKind === "microphone") sourcePlayer.setGain(undefined, preference?.microphoneVolume);
@@ -295,42 +328,6 @@ export class VoiceBridge extends Voice {
       if (window.electronAPI) {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
-      }
-   }
-
-   public updateVoicePreference(userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) {
-      log("app:voice-bridge", "voice-preference", "update", "uid:", userId, "opts:", JSON.stringify(options));
-
-      const voicePreferences = storageStore.getState().getCachedValue("voice-preferences");
-      const updatedVoicePreferences = produce(voicePreferences, (draft) => {
-         const existingIndex = draft.findIndex((x) => x.userId === userId);
-         if (existingIndex !== -1) {
-            draft[existingIndex] = { ...draft[existingIndex], ...options };
-         } else {
-            if (options.microphoneVolume === undefined || options.streamVolume === undefined) {
-               throw new Error("Creating new voice preference requires both microphone and screen share volumes");
-            }
-
-            draft.push({
-               userId,
-               microphoneVolume: options.microphoneVolume,
-               streamVolume: options.streamVolume,
-            });
-         }
-      });
-
-      storageStore.getState().setCachedValue("voice-preferences", updatedVoicePreferences);
-
-      const userPreference = updatedVoicePreferences.find((x) => x.userId === userId)!;
-      const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === userId);
-      const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === userId);
-
-      if (microphonePlayer) {
-         microphonePlayer.setGain(undefined, userPreference.microphoneVolume);
-      }
-
-      if (streamAudioPlayer) {
-         streamAudioPlayer.setGain(undefined, userPreference.streamVolume);
       }
    }
 }

@@ -96,9 +96,10 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       }
 
       try {
+         console.log(application);
          const result = await submitMutation.mutateAsync({
             exePath: application.exePath,
-            windowTitle: application.displayName ?? application.windowTitle,
+            windowTitle: application.displayName !== undefined && application.displayName !== "" ? application.displayName : application.windowTitle,
          });
          updateModals({
             info: {

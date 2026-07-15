@@ -1,9 +1,11 @@
-import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, log, type Snowflake } from "@huginn/shared";
+import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginn/shared";
 import { playAudio } from "@lib/audio-player";
 import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";
+
+import { storageStore } from "./storageStore";
 
 const initialStore = () => ({
    voiceConnection: {} as {
@@ -23,15 +25,9 @@ type StoreType = ReturnType<typeof initialStore>;
 const store = createStore(
    devtools(
       combine(initialStore(), (set) => ({
-         updateOurVoiceState: (options: GatewayVoiceState) => {
-            log("app:voice-store", "voice-state", "update ours", "opts:", JSON.stringify(options));
-
-            return set({ voiceState: options });
-         },
-         updateVoiceState: (options: GatewayVoiceState) => {
-            log("app:voice-store", "voice-state", "update", "opts:", JSON.stringify(options));
-
-            return set(
+         updateOurVoiceState: (options: GatewayVoiceState) => set({ voiceState: options }),
+         updateVoiceState: (options: GatewayVoiceState) =>
+            set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.voiceStates.findIndex((x) => x.userId === options.userId);
                   if (existingIndex !== -1) {
@@ -40,19 +36,13 @@ const store = createStore(
                      draft.voiceStates.push({ ...options });
                   }
                }),
-            );
-         },
-         removeVoiceState: (userId: Snowflake) => {
-            log("app:voice-store", "voice-state", "remote", "uid:", userId);
-
-            return set((state) => ({
+            ),
+         removeVoiceState: (userId: Snowflake) =>
+            set((state) => ({
                voiceStates: state.voiceStates.filter((x) => x.userId !== userId),
-            }));
-         },
-         updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) => {
-            log("app:voice-store", "call-state", "update", "cid:", channelId, "mid:", messageId, "ring:", ringing.join(","));
-
-            return set(
+            })),
+         updateCallState: (channelId: Snowflake, messageId: Snowflake, ringing: Snowflake[]) =>
+            set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.callStates.findIndex((x) => x.channelId === channelId);
                   if (existingIndex !== -1) {
@@ -61,19 +51,13 @@ const store = createStore(
                      draft.callStates.push({ channelId, messageId, ringing });
                   }
                }),
-            );
-         },
-         removeCallState: (channelId: Snowflake) => {
-            log("app:voice-store", "call-state", "remove", "cid:", channelId);
-
-            return set((state) => ({
+            ),
+         removeCallState: (channelId: Snowflake) =>
+            set((state) => ({
                callStates: state.callStates.filter((x) => x.channelId !== channelId),
-            }));
-         },
-         updateSpeakingState: (userId: Snowflake, speaking: boolean) => {
-            log("app:voice-store", "speaking-state", "update", "uid:", userId, "spk:", speaking);
-
-            return set(
+            })),
+         updateSpeakingState: (userId: Snowflake, speaking: boolean) =>
+            set(
                produce((draft: StoreType) => {
                   const existingIndex = draft.speakingStates.findIndex((x) => x.userId === userId);
                   if (existingIndex !== -1) {
@@ -82,39 +66,40 @@ const store = createStore(
                      draft.speakingStates.push({ userId, speaking });
                   }
                }),
-            );
-         },
-         removeSpeakingState: (userId: Snowflake) => {
-            log("app:voice-store", "speaking-state", "remove", "uid:", userId);
-
-            return set((state) => ({
+            ),
+         removeSpeakingState: (userId: Snowflake) =>
+            set((state) => ({
                speakingStates: state.speakingStates.filter((x) => x.userId !== userId),
-            }));
-         },
-         clearSpeakingStates: () => {
-            log("app:voice-store", "speaking-state", "clear");
-
-            return set({ speakingStates: [] });
-         },
+            })),
+         clearSpeakingStates: () => set({ speakingStates: [] }),
       })),
       { name: "Voice" },
    ),
 );
 
-export function initVoiceStore() {
-   log("app:voice-store", "default", "initializing");
-
+export async function initVoiceStore() {
    const client = clientStore.getState().client;
    const unlisteners: Array<(() => void) | undefined> = [];
 
-   if (!client) {
-      return;
-   }
+   if (!client) return;
+
+   const settings = storageStore.getState().getCachedValue("settings");
+   const isDeafened = settings?.isVoiceDeafened ?? false;
+   const isMuted = settings?.isVoiceMuted ?? false;
+   store.setState((state) => ({
+      voiceState: {
+         ...state.voiceState,
+         isAudioMuted: isDeafened ? true : isMuted,
+         isAudioDeafened: isDeafened,
+      },
+   }));
+   await client.voiceManager.voiceState.updateGatewayVoiceState({
+      isAudioMuted: isDeafened ? true : isMuted,
+      isAudioDeafened: isDeafened,
+   });
 
    unlisteners.push(
       client.gateway.listen("ready", async (d) => {
-         log("app:voice-store", "gateway-recv", "ready");
-
          store.setState({ voiceStates: d.voiceStates });
          store.setState({ callStates: d.callStates });
       }),
@@ -122,31 +107,24 @@ export function initVoiceStore() {
 
    unlisteners.push(
       client.gateway.listen("call_create", (d) => {
-         log("app:voice-store", "gateway-recv", "call create", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
-
          store.getState().updateCallState(d.channelId, d.messageId, d.ringing);
       }),
    );
 
    unlisteners.push(
       client.gateway.listen("call_update", (d) => {
-         log("app:voice-store", "gateway-recv", "call update", "cid:", d.channelId, "mid:", d.messageId, "ring:", d.ringing.join(","));
-
          store.getState().updateCallState(d.channelId, d.messageId, d.ringing);
       }),
    );
 
    unlisteners.push(
       client.gateway.listen("call_delete", (d) => {
-         log("app:voice-store", "gateway-recv", "call delete", "cid:", d.channelId);
-
          store.getState().removeCallState(d.channelId);
       }),
    );
 
    unlisteners.push(
       client.gateway.listen("voice_state_update", (d) => {
-         log("app:voice-store", "gateway-recv", "voice state update", "opts:", JSON.stringify(d));
          const thisStore = store.getState();
 
          //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
@@ -199,8 +177,6 @@ export function initVoiceStore() {
    );
 
    return () => {
-      log("app:voice-store", "default", "uninitialize");
-
       for (const unlisten of unlisteners) {
          unlisten?.();
       }

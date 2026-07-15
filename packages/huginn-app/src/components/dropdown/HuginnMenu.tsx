@@ -11,7 +11,7 @@ type Tone = "default" | "negative";
 const MenuContext = createContext<{ onClose?: () => void; isMobile: boolean } | null>(undefined!);
 
 const popupClass = clsx(
-   "flex flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+   "bg-surface-void flex flex-col rounded-lg p-2 shadow-lg outline-hidden",
    "transition-[opacity_transform] duration-200",
    "data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-sm",
    "data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-sm",

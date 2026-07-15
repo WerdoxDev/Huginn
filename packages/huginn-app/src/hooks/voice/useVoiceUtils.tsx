@@ -5,11 +5,12 @@ import { type Snowflake } from "@huginn/shared";
 import { getMediaErrorMessage } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useStorage } from "@stores/storageStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export function useVoiceUtils() {
    const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
    const client = useClient();
    // const posthog = usePostHog();
    // const updateVoiceStateMutation = useUpdateVoiceState();
@@ -19,17 +20,23 @@ export function useVoiceUtils() {
 
    async function toggleMute() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newMutedState = !(voiceState?.isAudioMuted ?? false);
+      const newDeafenedState = newMutedState ? (voiceState?.isAudioDeafened ?? false) : false;
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioMuted: !(voiceState?.isAudioMuted ?? false),
+         isAudioMuted: newMutedState,
+         isAudioDeafened: newDeafenedState,
       });
+      await setValue("settings", { ...settings, isVoiceMuted: newMutedState, isVoiceDeafened: newDeafenedState });
    }
 
    async function toggleDeafen() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newDeafenedState = !(voiceState?.isAudioDeafened ?? false);
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioDeafened: !(voiceState?.isAudioDeafened ?? false),
-         isAudioMuted: !(voiceState?.isAudioDeafened ?? false),
+         isAudioDeafened: newDeafenedState,
+         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
       });
+      await setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
    }
 
    async function openScreenShare() {
@@ -193,21 +200,24 @@ export function useVoiceUtils() {
    }
 
    async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
+      if (!client) return;
       try {
-         if (client?.voice.status === "disconnected") throw new Error("Voice is disconnected");
+         if (client.voice.status === "disconnected") throw new Error("Voice is disconnected");
 
-         if (client?.voice.status !== "ready") {
-            await client?.voiceManager.connectVoice(guildId, channelId);
+         if (client.voice.status !== "ready") {
+            await client.voiceManager.connectVoice(guildId, channelId);
          }
 
-         const remoteProducers = client?.voice.transport.getRemoteProducers();
+         const remoteProducers = client.voice.transport.getRemoteProducers();
 
          if (remoteProducers?.some((x) => x.kind === "stream_video" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_video");
+            await client.voice.transport.createConsumer(userId, "stream_video");
          }
          if (remoteProducers?.some((x) => x.kind === "stream_audio" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_audio");
+            await client.voice.transport.createConsumer(userId, "stream_audio");
          }
+
+         await client.voiceManager.applyVoiceState();
       } catch (e) {
          updateModals({
             info: {
@@ -218,7 +228,7 @@ export function useVoiceUtils() {
             },
          });
 
-         if (client?.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
+         if (client.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
             await unconsumeStream(userId);
       }
    }

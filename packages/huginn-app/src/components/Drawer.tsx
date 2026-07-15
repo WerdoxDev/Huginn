@@ -24,7 +24,7 @@ export const drawerPopupClass = clsx(
    // "data-starting-style:[transform:translateY(calc(100%-var(--bleed)+2px))] data-swiping:duration-0",
    // "data-swiping:select-none data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*2000ms)]",
 
-   "pointer-events-auto flex w-full max-w-screen flex-col overflow-visible rounded-t-xl bg-zinc-900 p-2 shadow-lg outline-hidden select-none",
+   "bg-surface-void pointer-events-auto flex w-full max-w-screen flex-col overflow-visible rounded-t-xl p-2 shadow-lg outline-hidden select-none",
    "duration-200 [transition:transform_200ms,height_200ms,opacity_200ms]",
 
    // "data-starting-style:[transform:translateY(calc(100%-var(--bleed)+2px))] data-swiping:duration-0",

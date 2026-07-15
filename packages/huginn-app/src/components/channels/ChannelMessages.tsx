@@ -240,14 +240,10 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
 
    return (
       <div className="relative h-full overflow-y-hidden">
-         <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
+         <div className="h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
-               {hasPreviousPage && (
-                  <div ref={ghostTopRef}>
-                     <GhostMessages position="top" />
-                  </div>
-               )}
-               <ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
+               {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
+               <ol className="min-h-0 pr-0 pb-7" ref={listRef}>
                   {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
                         <div className="bg-surface text-text flex items-center justify-center gap-x-2 rounded-lg p-2 pr-3 italic underline">
@@ -276,11 +272,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
                      />
                   ))}
                </ol>
-               {hasNextPage && (
-                  <div ref={ghostBottomRef}>
-                     <GhostMessages position="bottom" />
-                  </div>
-               )}
+               {hasNextPage && <GhostMessages ref={ghostBottomRef} />}
             </div>
          </div>
          {!hasLatestMessageInList && (

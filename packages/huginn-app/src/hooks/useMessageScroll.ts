@@ -1,12 +1,11 @@
-import type { Snowflake } from "@huginn/shared";
-
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
 import { usePrevious } from "@hooks/usePrevious";
+import { clamp, type Snowflake } from "@huginn/shared";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
-import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { type RefObject, type UIEvent, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -35,7 +34,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    const scrollRef = useRef<HTMLDivElement>(null);
    const listRef = useRef<HTMLOListElement>(null);
-   const shouldScrollToLastSeen = useRef(false);
+   const pendingScroll = useRef(false);
    const shouldAnchorToBottom = useRef(false);
    const lastChannelId = useRef<Snowflake>(undefined);
    const lastScrollState = useRef<SavedScrollState | null>(null);
@@ -150,39 +149,40 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28 - ghostBottomHeight,
          viewportInGhosts,
       };
-
-      shouldScrollToLastSeen.current = true;
    }
 
    function scrollToLastSeenMessage() {
-      if (!lastSeenElement.current || !scrollRef.current || !listRef.current || !shouldScrollToLastSeen.current) return;
+      if (!lastSeenElement.current || !scrollRef.current || !listRef.current || !pendingScroll.current) return;
 
-      const foundMessageElement = [...listRef.current.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
+      const foundMessageElement = [...listRef.current!.children].find((x) => x.id === lastSeenElement.current?.messageId) as HTMLLIElement;
 
-      if (lastSeenElement.current.viewportInGhosts) {
-         // Viewport was entirely in ghosts — snap reference message to the viewport edge
-         foundMessageElement.scrollIntoView({
-            behavior: "instant",
-            block: lastDirection.current === "up" ? "end" : "start",
-         });
-         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-         scrollRef.current.scrollTop +=
-            (lastDirection.current === "up" ? -lastSeenElement.current.height : lastSeenElement.current.height) - heightDifference;
+      const elTop = foundMessageElement.offsetTop - scrollRef.current!.offsetTop;
+      const elHeight = foundMessageElement.clientHeight;
+      const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current!.height;
+      let target: number;
+
+      if (lastSeenElement.current!.viewportInGhosts) {
+         target =
+            lastDirection.current === "up"
+               ? // block:"end" base
+                 elTop + elHeight - scrollRef.current!.clientHeight - lastSeenElement.current!.height - heightDifference
+               : // block:"start" base
+                 elTop + lastSeenElement.current!.height - heightDifference;
       } else {
-         foundMessageElement.scrollIntoView({
-            behavior: "instant",
-            block: lastDirection.current === "up" ? "start" : "end",
-         });
-         const heightDifference = foundMessageElement.clientHeight - lastSeenElement.current.height;
-         scrollRef.current.scrollTop +=
-            (lastDirection.current === "up" ? lastSeenElement.current.distanceToTop : -lastSeenElement.current.distanceToBottom) + heightDifference;
+         target =
+            lastDirection.current! === "up"
+               ? // block:"start" base
+                 elTop + lastSeenElement.current!.distanceToTop + heightDifference
+               : // block:"end" base
+                 elTop + elHeight - scrollRef.current!.clientHeight - lastSeenElement.current!.distanceToBottom + heightDifference;
       }
 
-      shouldScrollToLastSeen.current = false;
+      scrollRef.current!.scrollTop = target;
+      return target;
    }
 
-   async function onScroll() {
-      if (!scrollRef.current || options.messages.length === 0) return;
+   function onScroll() {
+      if (!scrollRef.current || options.messages.length === 0 || pendingScroll.current) return;
 
       const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
       const isAtBottom = scrollHeight - clientHeight - scrollTop <= 20;
@@ -202,24 +202,26 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
       const ghostTopHeight = options.ghostTopRef.current?.offsetHeight ?? 0;
       const ghostBottomHeight = options.ghostBottomRef.current?.offsetHeight ?? 0;
-      // const ghostTopHeight = 0;
-      // const ghostBottomHeight = 0;
       if (suppressInfiniteFetchRef.current) {
          return;
       }
 
       if (scrollRef.current.scrollTop <= TOP_SCROLL_OFFSET + ghostTopHeight && !options.isFetchingPreviousPage && options.hasPreviousPage) {
          lastDirection.current = "up";
-         await options.fetchPreviousPage();
-         saveLastSeenMessage();
+         pendingScroll.current = true;
+         options.fetchPreviousPage().then(() => {
+            saveLastSeenMessage();
+         });
       } else if (
          scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop <= BOTTOM_SCROLL_OFFSET + ghostBottomHeight &&
          !options.isFetchingNextPage &&
          options.hasNextPage
       ) {
          lastDirection.current = "down";
-         await options.fetchNextPage();
-         saveLastSeenMessage();
+         pendingScroll.current = true;
+         options.fetchNextPage().then(() => {
+            saveLastSeenMessage();
+         });
       }
    }
 
@@ -275,12 +277,6 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    //    }
    // }, [messageBoxHeight]);
 
-   // Restore scroll position after fetching
-   useLayoutEffect(() => {
-      if (!lastSeenElement.current || !scrollRef.current || lastChannelId.current !== options.channelId) return;
-      scrollToLastSeenMessage();
-   }, [options.queryData]);
-
    // Save scroll state when leaving a channel
    useEffect(() => {
       lastScrollState.current = null;
@@ -321,23 +317,36 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!scrollRef.current) return;
 
       const resizeObserver = new ResizeObserver((entries) => {
-         requestAnimationFrame(() => {
-            if (!scrollRef.current) return;
-            const scrollHeight = entries[0].target.scrollHeight;
+         if (!scrollRef.current) return;
+         const scrollHeight = entries[0].target.scrollHeight;
 
-            const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
+         const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
 
-            if (shouldAnchorToBottom.current) {
-               isResizing.current = !alreadyAtBottom;
-               scrollRef.current.scrollTo(0, scrollHeight);
-            }
-         });
+         if (shouldAnchorToBottom.current) {
+            isResizing.current = !alreadyAtBottom;
+            scrollRef.current.scrollTo(0, scrollHeight);
+         }
       });
 
       resizeObserver.observe(scrollRef.current);
 
       return () => {
          resizeObserver.disconnect();
+      };
+   }, []);
+
+   useEffect(() => {
+      const mutationObserver = new MutationObserver(() => {
+         if (!scrollRef.current || !pendingScroll.current) return;
+         scrollToLastSeenMessage();
+
+         pendingScroll.current = false;
+      });
+
+      mutationObserver.observe(listRef.current!, { childList: true });
+
+      return () => {
+         mutationObserver.disconnect();
       };
    }, []);
 

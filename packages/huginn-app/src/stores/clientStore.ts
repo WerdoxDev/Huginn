@@ -14,6 +14,7 @@ import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/q
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { createStore, useStore } from "zustand";
+import { combine, subscribeWithSelector } from "zustand/middleware";
 
 import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
@@ -33,9 +34,18 @@ const initialStore = () => ({
    readyCount: 0,
 });
 
-// type StoreType = ReturnType<typeof initialStore>;
+// type StoreType = ReturnType<typeof initialStore> & {
+//    setUserSettings: (settings: Partial<UserSettings>) => void;
+// };
 
-const store = createStore(() => initialStore());
+const store = createStore(
+   subscribeWithSelector(
+      combine(initialStore(), (set) => ({
+         setUserSettings: (settings: Partial<UserSettings>) =>
+            set((state) => ({ userSettings: state.userSettings ? { ...state.userSettings, ...settings } : undefined })),
+      })),
+   ),
+);
 
 export type ExternalHostnameStatus = "network_error" | "invalid_response" | "success";
 export type ExternalHostnameResult = {
@@ -89,8 +99,6 @@ export function setHostnamesFromSettings() {
 }
 
 function updateUsersFromReadyData(d: GatewayReadyData) {
-   store.setState({ readyData: d, userSettings: d.userSettings });
-
    const channelUsers = d.privateChannels.flatMap((x) => x.recipients);
    const relationUsers = d.relationships.map((x) => x.user);
 
@@ -152,6 +160,8 @@ export async function initializeClient() {
 
    unlisteners.push(
       thisStore.client?.gateway.listen("ready", async (d) => {
+         store.setState({ readyData: d, userSettings: d.userSettings });
+
          updateUsersFromReadyData(d);
 
          store.setState((state) => ({ readyCount: state.readyCount + 1 }));
@@ -200,9 +210,7 @@ export async function initializeClient() {
 
    unlisteners.push(
       thisStore.client?.gateway.listen("settings_update", (d) => {
-         store.setState((state) => ({
-            userSettings: state.userSettings ? { ...state.userSettings, ...d } : undefined,
-         }));
+         thisStore.setUserSettings(d);
       }),
    );
 

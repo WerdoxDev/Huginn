@@ -5,24 +5,24 @@ import "dotenv/config";
 
 let allowedToRun: boolean = false;
 
-if (!process.env.VITE_DEV_SERVER_URL) {
-   if (process.defaultApp) {
-      if (process.argv.length >= 2) {
-         const args = process.argv[1];
-         app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(args)]);
-      }
-   } else {
-      app.setAsDefaultProtocolClient("huginn");
-   }
-
-   allowedToRun = app.requestSingleInstanceLock();
-
-   if (!allowedToRun) {
-      app.exit();
+// if (!process.env.VITE_DEV_SERVER_URL) {
+if (process.defaultApp) {
+   if (process.argv.length >= 2) {
+      const args = process.argv[1];
+      app.setAsDefaultProtocolClient("huginn", process.execPath, [path.resolve(args)]);
    }
 } else {
-   allowedToRun = true;
+   app.setAsDefaultProtocolClient("huginn");
 }
+
+allowedToRun = app.requestSingleInstanceLock();
+
+if (!allowedToRun) {
+   app.exit();
+}
+// } else {
+//    allowedToRun = true;
+// }
 
 // application-loopback executable path when packaged
 if (app.isPackaged) {

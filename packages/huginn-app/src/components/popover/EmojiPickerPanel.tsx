@@ -221,10 +221,10 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
    }, [activeGroupId]);
 
    return (
-      <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "rounded-t-xl bg-zinc-900")} data-ignore-swipe>
+      <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "bg-surface-void rounded-t-xl")} data-ignore-swipe>
          <div className={clsx("flex w-full items-center gap-x-2 p-2")}>
             <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
-               <HuginnInput.Wrapper>
+               <HuginnInput.Wrapper className="bg-surface-deep!">
                   <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
                   <HuginnInput.Input data-keyboard-no-close />
                </HuginnInput.Wrapper>
@@ -232,7 +232,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
             <HuginnSelect selected={selectedTone} onChange={setSelectedTone} className="w-max">
                <HuginnSelect.List
                   hideArrow
-                  className="flex h-10 w-10! items-center justify-center rounded-md!"
+                  className="bg-surface-deep! flex h-10 w-10! items-center justify-center rounded-md!"
                   triggerClassName="h-full justify-center"
                >
                   <HuginnSelect.ItemsWrapper className="rounded-md!">
@@ -243,7 +243,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                </HuginnSelect.List>
             </HuginnSelect>
          </div>
-         <div className="bg-surface h-px shrink-0" />
+         <div className="bg-surface-alt h-px shrink-0" />
          <div className="flex h-full flex-col overflow-hidden">
             <div
                className="scroll-hidden flex h-13 w-full shrink-0 touch-auto gap-x-1 overflow-x-auto overflow-y-hidden px-2 py-2"
@@ -258,8 +258,8 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                         className={clsx(
                            "relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition-all",
                            activeGroupId === groupId
-                              ? "bg-surface text-white opacity-100"
-                              : "text-text/60 hover:bg-surface/60 opacity-60 hover:-translate-y-0.5 hover:text-white hover:opacity-100",
+                              ? "bg-surface-alt text-white opacity-100"
+                              : "text-text/60 hover:bg-surface-deep opacity-60 hover:-translate-y-0.5 hover:text-white hover:opacity-100",
                         )}
                      >
                         {groupIcons[groupId]}
@@ -274,7 +274,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                   </Tooltip>
                ))}
             </div>
-            <div className="bg-surface h-px w-full shrink-0" />
+            <div className="bg-surface-alt h-px w-full shrink-0" />
             {rows.length > 0 ? (
                <div className="flex h-full flex-col overflow-hidden">
                   <div ref={parentRef} className="scroll-super-thin relative h-full overflow-x-hidden overflow-y-scroll pb-2 pl-2 select-none">
@@ -300,10 +300,10 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                                  }}
                               >
                                  {row.type === "header" ? (
-                                    <div className="flex items-center gap-x-2 bg-zinc-900 pt-2 pb-2 text-white">
+                                    <div className="bg-surface-void flex items-center gap-x-2 pt-2 pb-2 text-white">
                                        {groupIcons[row.groupId]}
                                        <div className="text-sm font-bold">{row.name}</div>
-                                       <div className="bg-surface ml-auto rounded-sm p-1 text-xs">{groupedEmojis[row.groupId].length}</div>
+                                       <div className="bg-surface-alt ml-auto rounded-sm p-1 text-xs">{groupedEmojis[row.groupId].length}</div>
                                     </div>
                                  ) : (
                                     <div className="grid grid-cols-8 place-items-center">
@@ -313,7 +313,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                                              type="button"
                                              className={clsx(
                                                 "z-10 flex size-10 cursor-pointer items-center justify-center rounded-md transition-transform",
-                                                lastHoveredEmoji?.slugs[0] === entry.slugs[0] ? "bg-surface" : "",
+                                                lastHoveredEmoji?.slugs[0] === entry.slugs[0] ? "bg-surface-alt" : "",
                                              )}
                                              onClick={() => handleEmojiClick(entry)}
                                              onMouseEnter={() => setLastHoveredEmoji(entry)}
@@ -330,7 +330,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                   </div>
                   {!isMobile && (
                      <>
-                        <div className="bg-surface h-px shrink-0" />
+                        <div className="bg-surface-alt h-px shrink-0" />
                         {lastHoveredEmoji && (
                            <div className="flex h-12 w-full shrink-0 items-center gap-x-2 px-3.5">
                               <Emoji codepoint={lastHoveredEmoji.codepoint} size={32} />

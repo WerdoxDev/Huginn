@@ -66,6 +66,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
          thumbAlignment="edge-client-only"
          min={rangeContext.minValue}
          max={rangeContext.maxValue}
+         step={rangeContext.step}
       >
          <Slider.Control
             className="group flex h-full w-full cursor-w-resize items-center"

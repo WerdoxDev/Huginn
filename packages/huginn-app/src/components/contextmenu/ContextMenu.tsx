@@ -1,4 +1,4 @@
-import { ContextMenu as BaseContextMenu, Drawer, Menu, type BaseUIEvent } from "@base-ui/react";
+import { ContextMenu as BaseContextMenu, Drawer } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
@@ -18,7 +18,7 @@ type Tone = "default" | "negative";
 const ContextMenuContext = createContext<{ onClose?: () => void; isMobile: boolean } | null>(undefined!);
 
 const popupClass = clsx(
-   "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+   "bg-surface-void z-998 flex min-w-28 flex-col rounded-lg p-2 shadow-lg outline-hidden",
    "transition-opacity duration-100",
    "data-starting-style:opacity-0",
    "data-ending-style:opacity-0",
@@ -159,19 +159,19 @@ function Item(
 }
 
 function SubmenuContent(
-   props: Menu.Popup.Props & {
-      side?: Menu.Positioner.Props["side"];
-      align?: Menu.Positioner.Props["align"];
+   props: BaseContextMenu.Popup.Props & {
+      side?: BaseContextMenu.Positioner.Props["side"];
+      align?: BaseContextMenu.Positioner.Props["align"];
       sideOffset?: number;
       alignOffset?: number;
    },
 ) {
    return (
-      <Menu.Portal keepMounted={false}>
-         <Menu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
-            <Menu.Popup className={clsx(popupClass, props.className)}>{props.children}</Menu.Popup>
-         </Menu.Positioner>
-      </Menu.Portal>
+      <BaseContextMenu.Portal keepMounted={false}>
+         <BaseContextMenu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
+            <BaseContextMenu.Popup className={clsx(popupClass, props.className)}>{props.children}</BaseContextMenu.Popup>
+         </BaseContextMenu.Positioner>
+      </BaseContextMenu.Portal>
    );
 }
 
@@ -222,8 +222,8 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    }
 
    return (
-      <Menu.SubmenuRoot>
-         <Menu.SubmenuTrigger
+      <BaseContextMenu.SubmenuRoot>
+         <BaseContextMenu.SubmenuTrigger
             openOnHover
             delay={0}
             closeDelay={100}
@@ -238,12 +238,12 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
                   <IconMingcuteRightLine className="size-5 text-white/80" />
                </span>
             </span>
-         </Menu.SubmenuTrigger>
+         </BaseContextMenu.SubmenuTrigger>
 
          <SubmenuContent side="right" align="start" sideOffset={12} alignOffset={-8}>
             {children}
          </SubmenuContent>
-      </Menu.SubmenuRoot>
+      </BaseContextMenu.SubmenuRoot>
    );
 }
 

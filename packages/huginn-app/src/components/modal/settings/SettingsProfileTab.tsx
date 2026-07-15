@@ -1,35 +1,29 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import HuginnLabel from "@components/HuginnLabel";
-import LoadingBackground from "@components/LoadingBackground";
-import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import { getUserBannerOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
-import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
 type EditingField = "username" | "displayName" | "email" | "password";
 
 export default function SettingsProfileTab() {
-   const client = useClient();
    const { user, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image");
 
-   const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
    const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
    const [bio, setBio] = useState(() => user?.bio ?? "");
@@ -175,9 +169,9 @@ export default function SettingsProfileTab() {
 
    const avatarOverride = pendingAvatar !== undefined ? pendingAvatar : undefined;
    const hasAvatarPreview = pendingAvatar !== undefined ? !!pendingAvatar : !!user?.avatar;
-   const displayBanner = pendingBanner !== undefined ? pendingBanner : originalBanner;
-   const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
-   const isBannerTall = !!displayBanner || isImageBannerLoading;
+   const hasBannerPreview = pendingBanner !== undefined ? !!pendingBanner : !!user?.banner;
+   const bannerOverride = pendingBanner !== undefined ? pendingBanner : undefined;
+   // const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
    const hasChanges =
       bannerColor !== (user?.bannerColor ?? "") ||
       accentColor !== (user?.accentColor ?? "") ||
@@ -195,7 +189,7 @@ export default function SettingsProfileTab() {
                   <ColorSelector
                      color={bannerColor}
                      onChange={handleBannerColorChange}
-                     disabled={!!displayBanner}
+                     disabled={!!hasBannerPreview}
                      label="banner"
                      disabledReason="Remove banner image to use banner color."
                   />
@@ -225,24 +219,12 @@ export default function SettingsProfileTab() {
             )}
 
             <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor || "transparent" }}>
-               <div className={clsx("group relative transition-all", showBanner ? (isBannerTall ? "h-32" : "h-20") : "h-0")}>
-                  {displayBanner ? (
-                     <>
-                        <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-                     </>
-                  ) : (
-                     !isImageBannerLoading && (
-                        <>
-                           <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
-                           <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                        </>
-                     )
-                  )}
-                  <LoadingBackground hasError={false} isLoaded={!isImageBannerLoading} />
+               <div className={clsx("group relative transition-all", showBanner ? (hasBannerPreview ? "h-32" : "h-20") : "h-0")}>
+                  <UserBanner userId={user.id} bannerColor={bannerColor} bannerHash={user.banner} imageSrc={bannerOverride} animatedMode="always" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
-                        {displayBanner && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}
+                        {hasBannerPreview && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}
                         <ImagePickerEditButton onClick={handleEditBanner} />
                      </div>
                   )}
@@ -253,7 +235,7 @@ export default function SettingsProfileTab() {
                <div className={clsx("flex items-start gap-x-4 px-5 pb-5 transition-[padding]", showBanner ? "pt-0" : "pt-5")}>
                   <div className="flex flex-col gap-y-2">
                      <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
-                        <div className="border-surface-alt rounded-full border-4">
+                        <div className="border-surface-alt bg-surface-alt rounded-full border-4">
                            <UserAvatar
                               userId={user.id}
                               avatarHash={user.avatar}

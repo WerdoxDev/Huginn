@@ -6,6 +6,7 @@ import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
+import Tooltip from "@components/tooltip/Tooltip";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
@@ -152,6 +153,7 @@ export default function ScreenShareModal() {
                   height: { ideal: height },
                },
             });
+            console.log(stream.getVideoTracks()[0].getSettings());
          } else {
             stream = await navigator.mediaDevices.getUserMedia({
                audio: isAudioEnabled
@@ -233,19 +235,24 @@ export default function ScreenShareModal() {
             </HuginnTab>
          </div>
          {activeTab !== "devices" && (
-            <LoadingButton
-               className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
-               color="primary"
-               onClick={() => refetch()}
-               isLoading={isFetching}
-            >
-               <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
-            </LoadingButton>
+            <Tooltip>
+               <Tooltip.Trigger asChild>
+                  <LoadingButton
+                     className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
+                     color="primary"
+                     onClick={() => refetch()}
+                     isLoading={isFetching}
+                  >
+                     <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
+                  </LoadingButton>
+               </Tooltip.Trigger>
+               <Tooltip.Content>Refresh</Tooltip.Content>
+            </Tooltip>
          )}
-         <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
+         <div className="bg-surface-alt flex w-52 shrink-0 flex-col gap-y-5 p-5">
             <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
                <HuginnSelect.Label>Quality</HuginnSelect.Label>
-               <HuginnSelect.List className="bg-surface! w-40!">
+               <HuginnSelect.List className="bg-surface! w-full!">
                   <HuginnSelect.ItemsWrapper>
                      {qualityOptions.map((x) => (
                         <HuginnSelect.Item key={x.value} item={x} />
@@ -255,7 +262,7 @@ export default function ScreenShareModal() {
             </HuginnSelect>
             <HuginnSelect selected={selectedFramerate} onChange={setSelectedFramerate}>
                <HuginnSelect.Label>Frame Rate</HuginnSelect.Label>
-               <HuginnSelect.List className="bg-surface! w-30!">
+               <HuginnSelect.List className="bg-surface! w-full!">
                   <HuginnSelect.ItemsWrapper>
                      {frameRateOptions.map((x) => (
                         <HuginnSelect.Item key={x.value} item={x} />
@@ -265,7 +272,7 @@ export default function ScreenShareModal() {
             </HuginnSelect>
 
             <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
-               <HuginnCheckbox.Input>Share Audio</HuginnCheckbox.Input>
+               <HuginnCheckbox.Input innerClassName="bg-surface!">Share Audio</HuginnCheckbox.Input>
             </HuginnCheckbox>
 
             {isAudioEnabled && activeTab === "devices" && (

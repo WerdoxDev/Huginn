@@ -288,7 +288,6 @@ describe("openScreenShare (browser environment)", () => {
             info: expect.objectContaining({ status: "error", title: "Screen Sharing Failed" }),
          }),
       );
-      expect(mockClient.voice.stream.closeStream).toHaveBeenCalled();
    });
 });
 
@@ -561,7 +560,6 @@ describe("openAudioStream", () => {
             info: expect.objectContaining({ status: "error", title: "Audio Stream Failed" }),
          }),
       );
-      expect(mockClient.voice.stream.closeStream).toHaveBeenCalled();
    });
 });
 
@@ -610,7 +608,6 @@ describe("openCamera", () => {
             info: expect.objectContaining({ status: "error", title: "Opening Camera Failed" }),
          }),
       );
-      expect(mockClient.voice.device.closeCamera).toHaveBeenCalled();
    });
 });
 

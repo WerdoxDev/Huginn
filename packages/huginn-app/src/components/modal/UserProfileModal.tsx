@@ -1,12 +1,12 @@
 import HuginnButton from "@components/button/HuginnButton";
 import DialogBody from "@components/DialogBody";
-import LoadingBackground from "@components/LoadingBackground";
 import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import UserBanner from "@components/UserBanner";
 import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
@@ -18,50 +18,19 @@ import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
 function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null }) {
-   const [isLoaded, setIsLoaded] = useState(false);
-   const [hasError, setHasError] = useState(false);
+   if (!props.banner && !props.bannerColor) return null;
 
-   const client = useClient();
-   // const { data: bannerImage } = useQuery(getUserBannerOptions(props.userId, props.banner, client));
-
-   function onLoad() {
-      setIsLoaded(true);
-   }
-
-   function onError() {
-      setHasError(true);
-   }
-
-   if (props.banner) {
-      return (
-         <div className="relative h-32 w-full overflow-hidden">
-            <img
-               src={client?.cdn.banner(props.userId, props.banner)}
-               alt="profile-banner"
-               className="h-full w-full object-cover"
-               onLoad={onLoad}
-               onError={onError}
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-            <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
-         </div>
-      );
-   }
-
-   if (props.bannerColor) {
-      return (
-         <div className="relative h-20 w-full" style={{ backgroundColor: props.bannerColor }}>
-            <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-         </div>
-      );
-   }
-
-   return null;
+   return (
+      <div className={clsx("relative w-full", props.banner ? "h-32" : "h-20")}>
+         <UserBanner userId={props.userId} animatedMode="always" bannerColor={props.bannerColor} bannerHash={props.banner} />
+         <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
+      </div>
+   );
 }
 
 function ActivityCard(props: { userId: string; accentColor: string }) {

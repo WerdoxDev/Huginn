@@ -43,7 +43,7 @@ export default function MessageReactions(props: { message: ProcessedAppMessage; 
                onClick={() => handleReactionClick(x)}
                key={x.emoji.name}
                className={clsx(
-                  "flex cursor-pointer items-center gap-x-2 py-1.5 pr-2.5 pl-2",
+                  "flex h-8 cursor-pointer items-center gap-x-2 py-1.5 pr-2.5 pl-2",
                   x.me ? "bg-primary-800/50 hover:bg-primary-800!" : "bg-surface hover:bg-surface-deep",
                )}
             >

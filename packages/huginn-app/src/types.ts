@@ -105,6 +105,7 @@ export type ColorTheme = {
    surface: string;
    "surface-alt": string;
    "surface-deep": string;
+   "surface-void": string;
    text: string;
 
    "primary-300": string;
@@ -301,8 +302,6 @@ export type AudioSource = {
    processId: string;
 };
 
-export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
-
 export type HostnamePreset = {
    name: string;
    hostnameSource: "manual" | "external";
@@ -333,6 +332,8 @@ export type AppSettings = {
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
    useProxy: boolean;
+   isVoiceMuted: boolean;
+   isVoiceDeafened: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
@@ -353,7 +354,6 @@ export type ClientInfo = {
 
 export type StorageMap = {
    settings: AppSettings;
-   "voice-preferences": VoicePreference[];
    keybinds: Keybind[];
    "known-applications": APIGetKnownApplicationsResult;
    "custom-applications": CustomApplication[];

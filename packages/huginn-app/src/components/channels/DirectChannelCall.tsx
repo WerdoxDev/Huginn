@@ -225,7 +225,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       const padding = {
          top: !maximizedSource?.producerId ? 12 : 0,
          right: !maximizedSource?.producerId ? 20 : 0,
-         bottom: !maximizedSource?.producerId ? 64 : 0,
+         bottom: !maximizedSource?.producerId ? 80 : 0,
          left: !maximizedSource?.producerId ? 20 : 0,
       };
       const aspectRatio = 16 / 9;
@@ -278,19 +278,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    return (
       <div
          className={clsx(
-            "group/wrapper shadow-surface-deep/50 z-10 flex shrink-0 flex-col gap-y-3 overflow-hidden shadow-lg select-none",
+            "group/wrapper shadow-surface-void z-10 flex shrink-0 flex-col gap-y-3 shadow-2xl select-none",
             isFullscreen
                ? "bg-surface-deep fixed inset-0 z-997 rounded-none"
                : "ring-primary-800 relative z-30 m-2 mb-0 rounded-xl bg-black/50 ring-2",
          )}
          ref={containerRef}
       >
-         <div ref={resizerRef} className="absolute inset-x-0 -bottom-1 z-10 h-2 cursor-ns-resize" />
+         <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 h-3 cursor-ns-resize" />
          <div
             className={clsx(
                "flex w-full shrink flex-wrap content-center items-center justify-center gap-3",
                !maximizedSource && "px-5 py-2",
-               !isLoading && !maximizedSource && "pb-16",
+               !isLoading && !maximizedSource && "pb-20",
             )}
             ref={gridRef}
             style={{ height: !isFullscreen ? gridHeight : "100%" }}

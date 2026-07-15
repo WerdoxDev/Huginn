@@ -88,10 +88,9 @@ export default function DefaultMessage() {
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing
                      ? "bg-positive-900/30"
-                     : // : "bg-primary-900/30"
-                       "bg-caution-900/30"
+                     : "bg-caution-900/30"
                   : isMentioned
-                    ? "bg-primary-900/30 hover:bg-primary-900/50"
+                    ? "bg-primary-900/30 hover:bg-primary-900/50 active:bg-primary-900/50 data-context:bg-primary-900/50"
                     : "hover:bg-surface-alt active:bg-surface-alt data-context:bg-surface-alt"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
@@ -279,10 +278,10 @@ function DefaultRenderer(props: {
                            className={clsx(
                               "h-full w-full overflow-hidden transition-all duration-1000",
                               props.error !== undefined
-                                 ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-negative-700))]"
+                                 ? "[box-shadow:0_-20px_0_0_var(--tcolor-negative-700)]"
                                  : props.isSelf
-                                   ? "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-primary-800))]"
-                                   : "[box-shadow:0_-20px_0_0_rgb(var(--tcolor-surface))]",
+                                   ? "[box-shadow:0_-20px_0_0_var(--tcolor-primary-800)]"
+                                   : "[box-shadow:0_-20px_0_0_var(--tcolor-surface)]",
                            )}
                            style={{
                               borderTopLeftRadius:
@@ -300,10 +299,10 @@ function DefaultRenderer(props: {
                         className={clsx(
                            "h-full w-full overflow-hidden transition-all duration-1000",
                            props.error !== undefined
-                              ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-negative-700))]"
+                              ? "[box-shadow:0_20px_0_0_var(--tcolor-negative-700)]"
                               : props.isSelf
-                                ? "[box-shadow:0_20px_0_0_rgb(var(--tcolor-primary-800))]"
-                                : "[box-shadow:0_20px_0_0_rgb(var(--tcolor-surface))]",
+                                ? "[box-shadow:0_20px_0_0_var(--tcolor-primary-800)]"
+                                : "[box-shadow:0_20px_0_0_var(--tcolor-surface)]",
                         )}
                         style={{
                            borderBottomLeftRadius:
