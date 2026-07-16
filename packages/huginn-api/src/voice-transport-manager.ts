@@ -459,6 +459,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.consumers.set(consumer.id, consumer);
             this.emit("consumer_created", consumer);
 
+            consumer.pause();
+
             // await this.resumeConsumer(consumer.id);
 
             return consumer;
@@ -619,6 +621,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             // no other kind of consumer should be paused.
             if (consumer.paused) {
                promises.push(this.resumeConsumer(consumer.id));
+               consumer.resume();
             }
             continue;
          }
