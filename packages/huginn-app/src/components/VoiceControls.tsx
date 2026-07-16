@@ -32,6 +32,7 @@ export default function VoiceControls(props: {
    const { updateModals } = useModals();
 
    const videoSource = props.mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
+   const audioSource = props.mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
 
    useEffect(() => {
       const controller = new AbortController();
@@ -117,7 +118,7 @@ export default function VoiceControls(props: {
                      <div className="flex gap-x-1">
                         <StreamButton
                            voiceState={voiceState}
-                           videoSource={videoSource}
+                           mediaSource={videoSource ?? audioSource}
                            onOpenScreenShare={openScreenShare}
                            onOpenAudioStream={openAudioStream}
                            onCloseStream={closeStream}

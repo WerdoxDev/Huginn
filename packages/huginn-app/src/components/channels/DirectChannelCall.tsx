@@ -6,6 +6,7 @@ import VoiceControls from "@components/VoiceControls";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
+import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
@@ -27,12 +28,14 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const posthog = usePostHog();
 
    const mediaSources = useMediaSources();
+   const { voicePreferences } = useVoicePreferences();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
    const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
    const isGridView = useMemo(() => thisVoiceStates.some((x) => x.isAudioStreaming || x.isScreenSharing || x.isCameraOn), [thisVoiceStates]);
 
    const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
+   const voicePreferencesLookup = useLookup(voicePreferences, (pref) => pref.userId);
 
    const { cameraSources, microphoneSources, streamAudioSources, streamVideoSources } = useMemo(() => {
       const streamVideoSources: Record<Snowflake, MediaSource> = {};
@@ -217,7 +220,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
            store.voiceStates.filter((x) => x.isAudioStreaming || x.isScreenSharing).length +
            // People getting ringed
            (thisCallState?.ringing.length ?? 0);
-      //
 
       const containerWidth = gridRef.current.clientWidth;
       const containerHeight = gridRef.current.clientHeight;
@@ -324,6 +326,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            isMaximized={!!maximizedSource}
                            mediaSource={streamVideoSources[x.userId] ?? streamAudioSources[x.userId]}
                            secondMediaSource={streamVideoSources[x.userId] && streamAudioSources[x.userId]}
+                           voicePreference={voicePreferencesLookup[x.userId]}
                            voiceState={x}
                            onClick={voiceConnection.channelId === props.channelId ? maximizeSource : undefined}
                         />
@@ -339,6 +342,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            gridElementHeight={gridSize?.elementHeight ?? 0}
                            mediaSource={cameraSources[x.userId] ?? microphoneSources[x.userId]}
                            secondMediaSource={cameraSources[x.userId] !== undefined ? microphoneSources[x.userId] : undefined}
+                           voicePreference={voicePreferencesLookup[x.userId]}
                            userId={x.userId}
                            channelId={props.channelId}
                            guildId={null}

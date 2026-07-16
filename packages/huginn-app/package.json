@@ -1,6 +1,6 @@
 {
    "name": "huginn-app-react",
-   "version": "0.80.0",
+   "version": "0.81.0",
    "description": "Huginn Desktop Application",
    "author": {
       "name": "Matin Tat",
@@ -21,6 +21,7 @@
       "vite:build": "vite build",
       "vite:build-cap": "vite build --mode capacitor && cap sync",
       "electron:build": "bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts",
+      "electron:build-update": "bun ./scripts/build.ts --update --prod && electron-builder --config ./electron-builder-config.ts",
       "electron:run": "bun ./scripts/build.ts && electron .",
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "p-test": "playwright test",

@@ -27,7 +27,7 @@ export default function VoiceVideoStats(props: {
                <span className="text-white/60">P</span>
             </div>
             <div className="bg-surface h-3 w-0.5 shrink-0" />
-            <div className="w-10 text-center">
+            <div className="w-12 text-center">
                {estimateFps}
                <span className="text-white/60"> FPS</span>
             </div>

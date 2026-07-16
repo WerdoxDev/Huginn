@@ -28,6 +28,7 @@ export const storageDefaults: StorageMap = {
       noiseSuppression: true,
       screenShareFramerate: "30",
       screenShareQuality: "medium",
+      audioStreamQuality: "medium",
       screenShareAudio: false,
       screenShareSimulcast: true,
       screenShareAudioBitrate: CONSTANTS.DEFAULT_AUDIO_BITRATE,

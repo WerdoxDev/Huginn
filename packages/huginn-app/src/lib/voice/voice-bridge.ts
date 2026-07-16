@@ -278,7 +278,7 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   public async startAudioLoopback(processTitle?: string, processId?: string) {
+   public async startAudioLoopback(processTitle?: string, processId?: number) {
       log("app:voice-bridge", "default", "start audio loopback", "ptit:", processTitle, "pid:", processId);
 
       if (!window.electronAPI) {

@@ -5,16 +5,18 @@ export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:
 export const external = [...builtins];
 
 const isProd = process.argv.includes("--prod");
+const isUpdate = process.argv.includes("--update");
 const noExternal = [
    "@huginn/shared",
    "@huginn/shared/runtime-analytics",
    "native-addon",
-   "electron-log/main",
+   // "electron-log/main",
    "electron-updater",
    "moment",
    "posthog-node",
    "unicode-emoji-json",
    "highlight.js",
+   "electron-log",
 ];
 
 await build({
@@ -36,4 +38,7 @@ await build({
    minify: false,
    clean: true,
    shims: true,
+   env: {
+      FORCE_UPDATE_PUBLISHER: isUpdate ? "1" : "0",
+   },
 });

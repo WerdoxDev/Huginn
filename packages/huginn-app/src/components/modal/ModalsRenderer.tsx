@@ -2,8 +2,8 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 
+import AudioStreamModal from "./AudioStreamModal";
 import BaseModal from "./BaseModal";
-import StreamAudioModal from "./StreamAudioModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));
@@ -34,7 +34,7 @@ export default function ModalsRenderer() {
       magnifiedMedia,
       news,
       screenShare,
-      streamAudio,
+      audioStream,
       updateModals,
       changeUsername,
       changeDisplayName,
@@ -60,7 +60,7 @@ export default function ModalsRenderer() {
             headless
          />
          <BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
-         <BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
+         <BaseModal renderChildren={<AudioStreamModal />} modal={audioStream} onClose={() => updateModals({ audioStream: { isOpen: false } })} />
          <BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
          <BaseModal
             renderChildren={<VerifyEmailModal />}

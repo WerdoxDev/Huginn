@@ -94,11 +94,18 @@ export default function VoiceElementContextMenu() {
          {mediaSources.some((x) => x?.kind === "stream_video" || x?.kind === "stream_audio") && (
             <>
                {isConsuming ? (
-                  <ContextMenu.Item
-                     label={mediaSources.some((x) => x?.kind === "stream_video") ? "Stop Watching" : "Stop Listening"}
-                     color="negative"
-                     onClick={unconsume}
-                  />
+                  <>
+                     <ContextMenu.Item
+                        label={mediaSources.some((x) => x?.kind === "stream_video") ? "Stop Watching" : "Stop Listening"}
+                        color="negative"
+                        onClick={unconsume}
+                     />
+                     <ContextMenu.Item label="Muted" preventClose className="py-1!" onClick={() => handleMuteChange(!preference.isStreamMuted)}>
+                        <HuginnCheckbox checked={preference.isStreamMuted}>
+                           <HuginnCheckbox.Input innerClassName="bg-surface!" onClick={(e) => e.stopPropagation()} />
+                        </HuginnCheckbox>
+                     </ContextMenu.Item>
+                  </>
                ) : (
                   <ContextMenu.Item label={mediaSources.some((x) => x?.kind === "stream_video") ? "Watch" : "Listen"} onClick={consume} />
                )}

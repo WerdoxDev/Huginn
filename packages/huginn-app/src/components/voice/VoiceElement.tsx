@@ -1,4 +1,4 @@
-import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginn/shared";
 
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
@@ -25,6 +25,7 @@ export default function VoiceElement(props: {
    guildId: Snowflake | null;
    mediaSource?: MediaSource;
    secondMediaSource?: MediaSource;
+   voicePreference?: VoicePreference;
    gridElementWidth: number;
    gridElementHeight: number;
    type: "normal" | "stream";
@@ -106,7 +107,7 @@ export default function VoiceElement(props: {
    const stateSize = 2;
    const stateCenter = stateSize / 2;
    const cutoutRadius = stateCenter + 4 / 18;
-   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${stateCenter - 0.5}rem) calc(100% - ${stateCenter - 0.5}rem), transparent 100%, black 100%)`;
+   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${stateCenter - 0.5}rem) calc(100% - ${stateCenter - 0.5}rem), transparent calc(100% - 1px), black 100%)`;
 
    return (
       <div
@@ -173,7 +174,13 @@ export default function VoiceElement(props: {
             />
          )}
          {(isAudioStream || isScreenShare) && <VoiceStreamParticipants mediaSource={props.mediaSource} />}
-         <VoiceLabel userId={props.userId} isGridView={props.isGridView} voiceState={props.voiceState} type={props.type} />
+         <VoiceLabel
+            userId={props.userId}
+            isGridView={props.isGridView}
+            voicePreference={props.voicePreference}
+            voiceState={props.voiceState}
+            type={props.type}
+         />
          {isLoadingStream ? (
             <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
                <LoadingIcon className="size-12" />

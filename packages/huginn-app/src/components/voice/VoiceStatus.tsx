@@ -37,6 +37,7 @@ export default function VoiceStatus() {
 
    const mediaSources = useMediaSources();
    const videoSource = mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
+   const audioSource = mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
 
    const latencyColor = useMemo(() => {
       const minPing = 100;
@@ -123,7 +124,7 @@ export default function VoiceStatus() {
             <div className="flex w-full gap-x-2">
                <StreamButton
                   voiceState={voiceState}
-                  videoSource={videoSource}
+                  mediaSource={videoSource ?? audioSource}
                   onUpdateStream={updateStream}
                   // onUpdateStream={}
                   // menu={{ side: "top", align: "center", sideOffset: 4 }}

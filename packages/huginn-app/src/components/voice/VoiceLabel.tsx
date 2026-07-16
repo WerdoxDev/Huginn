@@ -1,20 +1,33 @@
-import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginn/shared";
 
 import { useUser } from "@hooks/api-hooks/userHooks";
 import clsx from "clsx";
 
-export function VoiceLabel(props: { isGridView?: boolean; userId: Snowflake; voiceState?: GatewayVoiceState; type: "normal" | "stream" }) {
+export function VoiceLabel(props: {
+   isGridView?: boolean;
+   userId: Snowflake;
+   voiceState?: GatewayVoiceState;
+   voicePreference?: VoicePreference;
+   type: "normal" | "stream";
+}) {
    const user = useUser(props.userId);
+
+   const isMuted =
+      (props.type === "normal" && props.voicePreference?.isMicrophoneMuted) || (props.type === "stream" && props.voicePreference?.isStreamMuted);
 
    return (
       <>
-         <div className={clsx("absolute bottom-3 z-10 flex gap-x-2 overflow-hidden text-white", props.isGridView ? "left-2" : "right-3")}>
-            {(props.voiceState?.isAudioDeafened || props.voiceState?.isAudioMuted) && (
-               <div className={clsx("bg-negative-500 size-8 p-1.5", props.isGridView ? "rounded-lg" : "rounded-full")}>
-                  {props.voiceState?.isAudioDeafened ? (
+         <div className={clsx("absolute z-10 flex gap-x-1 overflow-hidden text-white", props.isGridView ? "bottom-2 left-2" : "right-3 bottom-3")}>
+            {(((props.voiceState?.isAudioDeafened || props.voiceState?.isAudioMuted) && props.type === "normal") || (isMuted && props.type)) && (
+               <div
+                  className={clsx("size-8 p-1.5", props.isGridView ? "rounded-lg" : "rounded-full", isMuted ? "bg-negative-700" : "bg-negative-500")}
+               >
+                  {isMuted ? (
+                     <IconMingcuteVolumeMuteFill className="size-full" />
+                  ) : props.voiceState?.isAudioDeafened && props.type === "normal" ? (
                      <IconMingcuteVolumeOffFill className="size-full" />
                   ) : (
-                     props.voiceState?.isAudioMuted && <IconMingcuteMicOffFill className="size-full" />
+                     props.voiceState?.isAudioMuted && props.type === "normal" && <IconMingcuteMicOffFill className="size-full" />
                   )}
                </div>
             )}

@@ -22,7 +22,7 @@ import type {
    ThemeType,
    ChannelType,
 } from "@huginn/shared";
-import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
+import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -293,13 +293,13 @@ export type DisplaySource = {
    thumbnail: string;
    appIcon?: string;
    name: string;
-   id: string;
+   electronId: string;
 };
 
 export type AudioSource = {
    appIcon?: string;
    name: string;
-   processId: string;
+   processId: number;
 };
 
 export type HostnamePreset = {
@@ -327,6 +327,7 @@ export type AppSettings = {
    noiseSuppression: boolean;
    screenShareFramerate: string;
    screenShareQuality: string;
+   audioStreamQuality: string;
    screenShareAudio: boolean;
    screenShareSimulcast: boolean;
    screenShareVideoBitrate: number;
@@ -565,6 +566,7 @@ export type Environment = "desktop" | "browser" | "android";
 
 export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
 export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
+export type AudioQuality = (typeof AUDIO_QUALITIES)[number]["value"];
 
 export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
    name: TFieldName,

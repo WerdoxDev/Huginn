@@ -70,7 +70,7 @@ export default function UserAvatar(props: {
    const cutoutRadius = statusCenter + size / 18;
 
    // Radial gradient mask that punches a transparent hole where the status indicator sits
-   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${statusCenter}rem) calc(100% - ${statusCenter}rem), transparent 100%, black 100%)`;
+   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${statusCenter}rem) calc(100% - ${statusCenter}rem), transparent calc(100% - 1px), black 100%)`;
    const maskStyle = !props.hideStatus ? { maskImage: maskGradient, WebkitMaskImage: maskGradient } : undefined;
 
    return (

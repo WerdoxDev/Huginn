@@ -1,3 +1,5 @@
+import { clsx } from "clsx";
+
 import type { DisplaySource } from "@/types";
 
 export default function DisplayPreview(props: {
@@ -5,28 +7,36 @@ export default function DisplayPreview(props: {
    deviceInfo?: MediaDeviceInfo;
    onSelect: (source?: DisplaySource, deviceInfo?: MediaDeviceInfo) => void;
 }) {
+   const isSource = !!props.source;
+   const hasThumbnail = !!props.source?.thumbnail;
    return (
       <button
          type="button"
-         className="group flex cursor-pointer flex-col gap-y-2 select-none"
+         className={clsx("group flex flex-col gap-y-2 select-none", isSource && !hasThumbnail ? "cursor-not-allowed" : "cursor-pointer")}
          draggable={false}
-         onClick={() => props.onSelect(props.source, props.deviceInfo)}
+         onClick={() => (isSource && !hasThumbnail ? undefined : props.onSelect(props.source, props.deviceInfo))}
       >
          {props.source && (
-            <img
-               src={props.source.thumbnail}
-               alt={props.source.id}
-               className="group-hover:ring-primary-700 aspect-video w-full overflow-hidden rounded-lg bg-black object-contain transition-all group-hover:ring-2"
-            />
+            <div className="group-hover:ring-primary-700 bg-surface-deep relative aspect-video w-full overflow-hidden rounded-lg transition-all group-hover:ring-2">
+               {hasThumbnail ? (
+                  <img src={props.source.thumbnail} alt={props.source.name} className="aspect-video w-full bg-black object-contain" />
+               ) : (
+                  <div className="flex h-full w-full items-center justify-center text-white">App is minimized</div>
+               )}
+            </div>
          )}
          {props.deviceInfo && (
             <div className="from-primary-500 to-text group-hover:ring-primary-700 aspect-video w-full rounded-lg bg-linear-to-r transition-all group-hover:ring-2"></div>
          )}
          <div className="flex items-center gap-x-2">
             {props.source?.appIcon ? (
-               <img src={props.source.appIcon} alt={props.source.id} className="aspect-square size-5" />
+               <img src={props.source.appIcon} alt={props.source.name} className="aspect-square size-5" />
             ) : props.source ? (
-               <IconMingcuteMonitorFill className="text-text size-5" />
+               props.source.electronId.includes("screen") ? (
+                  <IconMingcuteMonitorFill className="text-text size-5" />
+               ) : (
+                  <IconMingcuteWebFill className="text-text size-5" />
+               )
             ) : (
                <IconMingcuteVideoCamera2Fill className="text-text size-5" />
             )}

@@ -276,13 +276,12 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                                  expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "gif"
                               }
                            >
-                              <IconMingcuteVideoFill className="text-text size-full" />
+                              <span className="box-exact text-sm">GIF</span>
                            </ExpressionButton>
                            <ExpressionButton
                               onClick={(e) =>
                                  toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: handleSendGif, activeTab: "emoji" })
                               }
-                              // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
                               isActive={
                                  expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "emoji"
                               }
