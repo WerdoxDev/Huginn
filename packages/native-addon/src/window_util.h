@@ -17,11 +17,14 @@ namespace window_util
       std::wstring windowTitle;
       std::wstring cmdLine;
       DWORD processId;
+      HWND hwnd;
    };
 
    std::string WideToUtf8(const std::wstring &wide);
    std::wstring GetExecutablePath(HANDLE hProcess);
    winrt::hstring GetPackageDisplayName(DWORD processId);
+   HBITMAP CaptureWindowToBitmap(HWND hwnd, int &outW, int &outH);
+   bool GetWindowThumbnailBase64(HWND hwnd, int thumbW, int thumbH, std::string &outBase64);
    bool IsCloaked(HWND hwnd);
    HANDLE GetHandle(DWORD processId);
    std::map<DWORD, ProcessInfo> EnumerateApplications();

@@ -12,11 +12,6 @@ const path5 =
 const path6 = "C:\\Program Files\\WindowsApps\\SpotifyAB.SpotifyMusic_1.272.438.0_x64__zpdnekdrzrea0\\Spotify.exe";
 const path7 = "D:\\Xbox\\Forza Horizon 6\\Content\\forzahorizon6.exe";
 
-// const info = addon.getApplicationInfo(41764).then((x) => {
-//    const t1 = performance.now();
-//    console.log(t1 - t0, x);
-// });
-
 const applications = addon.getOpenApplications();
 console.log(applications.length);
 
@@ -24,13 +19,37 @@ let index = 0;
 for (const application of applications) {
    const processId = application.processId;
    const info = addon.getApplicationInfo(processId);
+   const thumb = addon.getWindowThumbnailBase64(application.hwnd, 256, 256);
    if (!info) continue;
-   console.log(info.displayName ? info.displayName : application.windowTitle);
+   // console.log(info.displayName ? info.displayName : application.windowTitle);
    const name = index.toString();
+
    if (!info.icon) {
       console.warn("No icon for", name, processId);
-      continue;
+   } else {
+      await new Bun.Image(info.icon).png().write("./test-out/" + name + ".png");
    }
-   await new Bun.Image(info.icon).png().write("./test-out/" + name + ".png");
+
+   if (!thumb) {
+      console.warn("No thumbnail for", name, processId);
+   } else {
+      await new Bun.Image(thumb).png().write("./test-out/" + name + "-thumb.png");
+   }
+
    index++;
+}
+
+// const screen1 = addon.getScreenThumbnailBase64(0, 0, 2560, 1440, 1);
+const screen2 = addon.getScreenThumbnailBase64(-1707, 258, 1707, 960, 1.5);
+
+// if (!screen1) {
+//    console.warn("No screen thumbnail for 0,0,2560,1440");
+// } else {
+//    await new Bun.Image(screen1).png().write("./test-out/screen-0.png");
+// }
+
+if (!screen2) {
+   console.warn("No screen thumbnail for -1707,258,1707,960");
+} else {
+   await new Bun.Image(screen2).png().write("./test-out/screen-1.png");
 }

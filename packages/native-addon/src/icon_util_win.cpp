@@ -1,4 +1,5 @@
 #include "icon_util.h"
+#include "image_util.h"
 #include <windows.h>
 #include <shellapi.h>
 #include <string>
@@ -16,50 +17,8 @@
 
 using namespace Gdiplus;
 
-static const char kB64Table[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz"
-    "0123456789+/";
-
 namespace icon_util
 {
-
-   std::string Base64Encode(const std::vector<BYTE> &data)
-   {
-      std::string out;
-      out.reserve(((data.size() + 2) / 3) * 4);
-      size_t i = 0;
-      const size_t n = data.size();
-
-      while (i + 3 <= n)
-      {
-         BYTE b0 = data[i], b1 = data[i + 1], b2 = data[i + 2];
-         out.push_back(kB64Table[b0 >> 2]);
-         out.push_back(kB64Table[((b0 & 0x3) << 4) | (b1 >> 4)]);
-         out.push_back(kB64Table[((b1 & 0xF) << 2) | (b2 >> 6)]);
-         out.push_back(kB64Table[b2 & 0x3F]);
-         i += 3;
-      }
-
-      const size_t rem = n - i;
-      if (rem == 1)
-      {
-         BYTE b0 = data[i];
-         out.push_back(kB64Table[b0 >> 2]);
-         out.push_back(kB64Table[(b0 & 0x3) << 4]);
-         out.push_back('=');
-         out.push_back('=');
-      }
-      else if (rem == 2)
-      {
-         BYTE b0 = data[i], b1 = data[i + 1];
-         out.push_back(kB64Table[b0 >> 2]);
-         out.push_back(kB64Table[((b0 & 0x3) << 4) | (b1 >> 4)]);
-         out.push_back(kB64Table[(b1 & 0xF) << 2]);
-         out.push_back('=');
-      }
-      return out;
-   }
 
    bool ExtractIconPixelsARGB(HICON hIcon, int &outWidth, int &outHeight, std::vector<BYTE> &outPixels)
    {
@@ -196,7 +155,7 @@ namespace icon_util
          return false;
 
       CLSID pngClsid;
-      if (GetEncoderClsid(L"image/png", &pngClsid) != 0)
+      if (image_util::GetEncoderClsid(L"image/png", &pngClsid) != 0)
       {
          stream->Release();
          return false;
@@ -225,28 +184,6 @@ namespace icon_util
 
       stream->Release();
       return !outBytes.empty();
-   }
-
-   int GetEncoderClsid(const WCHAR *mimeType, CLSID *pClsid)
-   {
-      UINT numEncoders = 0, size = 0;
-      GetImageEncodersSize(&numEncoders, &size);
-      if (size == 0)
-         return -1;
-
-      std::vector<BYTE> buffer(size);
-      auto *codecInfo = reinterpret_cast<ImageCodecInfo *>(buffer.data());
-      GetImageEncoders(numEncoders, size, codecInfo);
-
-      for (UINT i = 0; i < numEncoders; ++i)
-      {
-         if (wcscmp(codecInfo[i].MimeType, mimeType) == 0)
-         {
-            *pClsid = codecInfo[i].Clsid;
-            return 0;
-         }
-      }
-      return -1;
    }
 
    BOOL CALLBACK EnumWindowsCallback(HWND hwnd, LPARAM lParam)
@@ -340,7 +277,7 @@ namespace icon_util
          return false;
 
       CLSID pngClsid;
-      if (GetEncoderClsid(L"image/png", &pngClsid) != 0)
+      if (image_util::GetEncoderClsid(L"image/png", &pngClsid) != 0)
       {
          stream->Release();
          return false;
@@ -500,16 +437,14 @@ namespace icon_util
       HRESULT hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
       bool comInitialized = SUCCEEDED(hrCom);
 
-      GdiplusStartupInput gdiplusStartupInput;
-      ULONG_PTR gdiplusToken;
-      GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+      image_util::GdiplusProcessInit::EnsureStarted();
 
       std::string base64;
       std::vector<BYTE> pngBytes;
 
       if (TryGetPackagedAppIconPngBytes(processId, pngBytes))
       {
-         outBase64 = Base64Encode(pngBytes);
+         outBase64 = image_util::Base64Encode(pngBytes);
          return true;
       }
 
@@ -528,9 +463,8 @@ namespace icon_util
       if (!ok)
          return false;
 
-      outBase64 = icon_util::Base64Encode(pngBytes);
+      outBase64 = image_util::Base64Encode(pngBytes);
 
-      GdiplusShutdown(gdiplusToken);
       if (comInitialized)
       {
          CoUninitialize();

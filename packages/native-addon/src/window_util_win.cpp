@@ -1,4 +1,5 @@
 #include "window_util.h"
+#include "image_util.h"
 #include <windows.h>
 #include <psapi.h>
 #include <string>
@@ -10,12 +11,18 @@
 #include <iostream>
 #include <winternl.h>
 #include <dwmapi.h>
+#include <cstdio>
+#include <gdiplus.h>
 
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::Management::Deployment;
 
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "gdiplus.lib")
+
+using namespace Gdiplus;
 
 namespace window_util
 {
@@ -130,6 +137,97 @@ namespace window_util
       return cmdLine;
    }
 
+   HBITMAP CaptureWindowToBitmap(HWND hwnd, int &outW, int &outH)
+   {
+      // DWMWA_EXTENDED_FRAME_BOUNDS gives the true visible window rect,
+      // without the invisible resize-border padding Win10/11 add around
+      // top-level windows. Falls back to GetWindowRect if DWM call fails.
+      RECT rect{};
+      if (FAILED(DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS,
+                                       &rect, sizeof(rect))))
+      {
+         GetWindowRect(hwnd, &rect);
+      }
+
+      int width = rect.right - rect.left;
+      int height = rect.bottom - rect.top;
+
+      if (width <= 0 || height <= 0)
+         throw std::runtime_error("Invalid window size (is the window minimized?)");
+
+      HDC hdcWindow = GetWindowDC(hwnd);
+      HDC hdcMem = CreateCompatibleDC(hdcWindow);
+      HBITMAP hBitmap = CreateCompatibleBitmap(hdcWindow, width, height);
+      HGDIOBJ hOld = SelectObject(hdcMem, hBitmap);
+
+      // PW_RENDERFULLWINDOW (=2) asks the target app to render its full
+      // content, including anything drawn via DirectX/DirectComposition
+      // (browsers, many modern apps). Fall back to flag 0 if that fails.
+      BOOL ok = PrintWindow(hwnd, hdcMem, PW_RENDERFULLCONTENT);
+      if (!ok)
+         PrintWindow(hwnd, hdcMem, 0);
+
+      SelectObject(hdcMem, hOld);
+      DeleteDC(hdcMem);
+      ReleaseDC(hwnd, hdcWindow);
+
+      outW = width;
+      outH = height;
+
+      return hBitmap; // caller owns
+   }
+
+   bool GetWindowThumbnailBase64(HWND hwnd, int thumbW, int thumbH, std::string &outBase64)
+   {
+      if (IsIconic(hwnd))
+         return false; // window is minimized, no thumbnail available
+
+      image_util::GdiplusProcessInit::EnsureStarted();
+
+      int srcW = 0, srcH = 0;
+      HBITMAP hSrcBitmap = CaptureWindowToBitmap(hwnd, srcW, srcH);
+
+      // Wrap the raw HBITMAP in a GDI+ Bitmap so it can be resized + encoded.
+      Bitmap srcBitmap(hSrcBitmap, nullptr);
+
+      // Fit inside thumbW x thumbH while preserving aspect ratio.
+      double scale = min((double)thumbW / srcW, (double)thumbH / srcH);
+      int dstW = max(1, (int)(srcW * scale));
+      int dstH = max(1, (int)(srcH * scale));
+
+      Bitmap thumbBitmap(dstW, dstH, PixelFormat32bppARGB);
+      Graphics g(&thumbBitmap);
+      g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+      g.SetSmoothingMode(SmoothingModeHighQuality);
+      g.DrawImage(&srcBitmap, 0, 0, dstW, dstH);
+
+      DeleteObject(hSrcBitmap);
+
+      // Encode as PNG into an in-memory IStream.
+      CLSID pngClsid;
+      if (image_util::GetEncoderClsid(L"image/png", &pngClsid) != 0)
+         return false;
+
+      IStream *stream = nullptr;
+      CreateStreamOnHGlobal(nullptr, TRUE, &stream);
+      thumbBitmap.Save(stream, &pngClsid);
+
+      // Pull the bytes back out of the stream's backing HGLOBAL.
+      HGLOBAL hGlobal = nullptr;
+      GetHGlobalFromStream(stream, &hGlobal);
+      SIZE_T size = GlobalSize(hGlobal);
+      void *pData = GlobalLock(hGlobal);
+
+      std::vector<BYTE> pngBytes(size);
+      memcpy(pngBytes.data(), pData, size);
+
+      GlobalUnlock(hGlobal);
+      stream->Release();
+
+      outBase64 = image_util::Base64Encode(pngBytes);
+      return true;
+   }
+
    bool IsCloaked(HWND hwnd)
    {
       int cloaked = 0;
@@ -194,6 +292,7 @@ namespace window_util
       app.windowTitle = windowTitle;
       app.processId = processId;
       app.cmdLine = cmdLine;
+      app.hwnd = hwnd;
       apps->push_back(app);
 
       return TRUE;
