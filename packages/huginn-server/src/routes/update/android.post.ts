@@ -3,7 +3,7 @@ import * as semver from "semver";
 
 import { octokit } from "#server";
 import { env } from "#setup";
-import { getAllTags } from "#utils/route-utils";
+import { getAllTags, getReleaseByTag } from "#utils/route-utils";
 
 const schema = t.Object({
    version_name: t.String(),
@@ -22,7 +22,7 @@ const releasePrefix = "app@v";
 
 export const postAndroidUpdate = new Elysia().post(
    "/api/update/android",
-   async ({ body, status }) => {
+   async ({ body, request }) => {
       const { version_name } = body;
 
       const tags = await getAllTags();
@@ -63,20 +63,67 @@ export const postAndroidUpdate = new Elysia().post(
          };
       }
 
-      // Fetch the checksum value if a checksum asset exists
+      // Fetch the checksum value if a checksum asset exists (this already goes through
+      // the server since we read the text and embed it, rather than linking to it)
       let checksum = "";
       if (checksumAsset?.browser_download_url) {
          checksum = (await (await fetch(checksumAsset.browser_download_url)).text()).trim();
       }
 
+      // Point at our own streaming route instead of GitHub's browser_download_url
+      const origin = new URL(request.url).origin;
+      const downloadUrl = `${origin}/api/update/android/download/${encodeURIComponent(latestTag.name)}/${encodeURIComponent(bundleAsset.name)}`;
+
       // Return the Capgo-compatible response
       return {
          version: latestVersion,
-         url: bundleAsset.browser_download_url,
+         url: downloadUrl,
          checksum,
       };
    },
    {
       body: schema,
+   },
+);
+
+export const getAndroidUpdateAsset = new Elysia().get(
+   "/api/update/android/download/:tag/:file",
+   async ({ params: { tag, file }, request, status }) => {
+      const release = await getReleaseByTag(tag);
+      const asset = release.assets.find((x) => x.name === file);
+
+      if (!asset) {
+         return status("Not Found");
+      }
+
+      // Forward Range in case the updater client (or a CDN in front of your server) uses it
+      const range = request.headers.get("range");
+
+      const upstream = await fetch(asset.browser_download_url, {
+         headers: range ? { range } : undefined,
+      });
+
+      if (!upstream.ok && upstream.status !== 206) {
+         return status("Bad Gateway");
+      }
+
+      const headers = new Headers();
+      headers.set("content-type", "application/zip");
+      headers.set("content-disposition", `attachment; filename="${asset.name}"`);
+      headers.set("accept-ranges", "bytes");
+
+      const contentLength = upstream.headers.get("content-length");
+      if (contentLength) headers.set("content-length", contentLength);
+
+      const contentRange = upstream.headers.get("content-range");
+      if (contentRange) headers.set("content-range", contentRange);
+
+      return new Response(upstream.body, {
+         status: upstream.status,
+         headers,
+      });
+   },
+   {
+      params: t.Object({ tag: t.String(), file: t.String() }),
    },
 );
