@@ -51,7 +51,7 @@ import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
-import { postAndroidUpdate } from "#routes/update/android.post";
+import { getAndroidUpdateAsset, postAndroidUpdate } from "#routes/update/android.post";
 import { getWinUpdate } from "#routes/update/win.get";
 import { getMe } from "#routes/users/@me.get";
 import { patchMe } from "#routes/users/@me.patch";
@@ -211,6 +211,7 @@ export const app = new Elysia({
    .use(postUniqueUsername)
    .use(getWinUpdate)
    .use(postAndroidUpdate)
+   .use(getAndroidUpdateAsset)
    .use(postLog)
    .use(getIndex)
    .use(getChangelog)

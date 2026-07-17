@@ -69,6 +69,9 @@ export type VoiceWebsocketEvents = {
    resume_consumer: VoiceResumeConsumerData;
    resume_consumer_result: VoiceResumeConsumerResult;
 
+   pause_consumer: VoicePauseConsumerData;
+   pause_consumer_result: VoicePauseConsumerResult;
+
    close_consumer: VoiceCloseConsumerData;
    close_consumer_result: VoiceCloseConsumerResult;
 
@@ -260,6 +263,18 @@ export type VoiceResumeConsumerData = {
 
 export type VoiceResumeConsumerResult = VoiceError | VoiceResumeConsumerResultData;
 export type VoiceResumeConsumerResultData = {
+   consumerId: string;
+   nonce?: Snowflake;
+};
+
+export type VoicePauseConsumerData = {
+   channelId: Snowflake;
+   consumerId: string;
+   nonce?: Snowflake;
+};
+
+export type VoicePauseConsumerResult = VoiceError | VoicePauseConsumerResultData;
+export type VoicePauseConsumerResultData = {
    consumerId: string;
    nonce?: Snowflake;
 };

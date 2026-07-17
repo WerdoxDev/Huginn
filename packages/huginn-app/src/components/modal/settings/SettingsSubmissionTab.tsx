@@ -13,17 +13,16 @@ import { usePresenceStore } from "@stores/presenceStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { SelectItem, SettingsTabProps } from "@/types";
 
 import huginnInHuginnUrl from "@/assets/huginn-in-huginn-meme.jpg";
 
-type OpenApplication = ProcessInfo & { displayName?: string; icon?: string };
-
 export default function SettingsSubmissionTab(_props: SettingsTabProps) {
-   const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
+   // const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
    const knownApplications = useStorage("known-applications");
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const submitMutation = useSubmitKnownApplication();
@@ -34,9 +33,16 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    const targetActivity = thisPresence.activities[0];
    const accentColor = user?.accentColor ?? "transparent";
 
+   const { data } = useQuery({
+      queryKey: ["open-applications"],
+      queryFn: async () => await window.electronAPI.getOpenApplications(),
+      enabled: huginnWindow.environment === "desktop",
+      refetchInterval: 1000,
+   });
+
    const applicationOptions = useMemo(
       () =>
-         openApplications.map((x) => ({
+         data?.map((x) => ({
             id: Math.random(),
             value: x.processId.toString(),
             text: x.windowTitle,
@@ -46,7 +52,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                <div className="size-6 shrink-0 rounded-sm bg-white/50" />
             ),
          })),
-      [openApplications],
+      [data],
    );
 
    const contributedApplications = useMemo(
@@ -54,40 +60,12 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       [user, knownApplications],
    );
 
-   useEffect(() => {
-      if (huginnWindow.environment !== "desktop") {
-         return;
-      }
-
-      const timer = setInterval(async () => {
-         await fetchOpenApplications();
-      }, 5000);
-
-      fetchOpenApplications();
-
-      return () => {
-         clearInterval(timer);
-      };
-   }, []);
-
-   async function fetchOpenApplications() {
-      const applications: OpenApplication[] = await window.electronAPI.getOpenApplications();
-      for (const application of applications) {
-         const info = await window.electronAPI.getApplicationInfo(application.processId);
-         if (!info) continue;
-         application.displayName = info.displayName;
-         application.icon = info.icon;
-      }
-      setOpenApplications(applications);
-   }
-
    function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
    }
 
    async function submit() {
-      const application = openApplications.find((x) => x.processId === Number(selectedApplication?.value));
-
+      const application = data?.find((x) => x.processId === Number(selectedApplication?.value));
       if (!application) return;
 
       if (application.processId === huginnWindow.processId) {
@@ -98,7 +76,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       try {
          const result = await submitMutation.mutateAsync({
             exePath: application.exePath,
-            windowTitle: application.displayName ?? application.windowTitle,
+            windowTitle: application.displayName || application.windowTitle,
          });
          updateModals({
             info: {
@@ -164,7 +142,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                      <HuginnSelect onChange={onApplicationChanged} selected={selectedApplication}>
                         <HuginnSelect.List className="bg-surface-deep w-full! rounded-md!" placeholder="Select an application">
                            <HuginnSelect.ItemsWrapper>
-                              {applicationOptions.map((x) => (
+                              {applicationOptions?.map((x) => (
                                  <HuginnSelect.Item key={x.value} item={x} />
                               ))}
                            </HuginnSelect.ItemsWrapper>

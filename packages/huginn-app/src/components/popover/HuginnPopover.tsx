@@ -107,7 +107,7 @@ function Panel(props: { children?: ReactNode; className?: string; style?: CSSPro
       <Popover.Popup
          className={clsx(
             props.className,
-            "border-surface z-40 rounded-lg border bg-zinc-900 shadow-xl transition-[opacity_transform] duration-200 outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
+            "border-surface bg-surface-void z-40 rounded-lg border shadow-xl transition-[opacity_transform] duration-200 outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
          )}
          style={props.style}
       >

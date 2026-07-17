@@ -1,7 +1,7 @@
 import * as loopback from "application-loopback";
 import { app, dialog } from "electron";
-import path from "node:path";
 import "dotenv/config";
+import path from "node:path";
 
 let allowedToRun: boolean = false;
 

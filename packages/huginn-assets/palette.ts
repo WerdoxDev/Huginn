@@ -45,6 +45,7 @@ const OTHER_SEMANTIC_COLORS = {
    surface: oklch(0.31, 0, 0),
    "surface-alt": oklch(0.27, 0, 0),
    "surface-deep": oklch(0.23, 0, 0),
+   "surface-void": oklch(0.19, 0, 0),
    text: oklch(0.93, 0.032, 107),
 };
 
@@ -101,7 +102,7 @@ function kForHue(h: number): number {
    if (h < 90) return 0.6; // orange/yellow
    if (h < 160) return 0.6; // yellow-green/green
    if (h < 250) return 0.85; // cyan/blue
-   return 0.7; // purple/magenta
+   return 0.5; // purple/magenta
 }
 
 function buildPrimaryScale(hue: number): ColorScale {

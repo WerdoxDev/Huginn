@@ -28,6 +28,8 @@ import {
    type VoiceCloseProducerResult,
    type VoiceConnectTransportResult,
    type VoiceConsumeResult,
+   type VoicePauseConsumerResult,
+   type VoicePreference,
    type VoiceProduceResult,
    type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
@@ -67,6 +69,7 @@ type Events = {
       // errback: (d: VoiceConsumeResultData) => void;
    };
    resume_consumer: { id: string; callback: (d: VoiceResumeConsumerResult) => void };
+   pause_consumer: { id: string; callback: (d: VoicePauseConsumerResult) => void };
    close_consumer: { id: string; callback: (d: VoiceCloseConsumerResult) => void };
    consumer_created: Consumer<MediasoupAppData>;
    consumer_closed: ConsumerData;
@@ -454,18 +457,63 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             }
 
             this.consumers.set(consumer.id, consumer);
-
             this.emit("consumer_created", consumer);
 
-            const resumeResult = await new Promise<VoiceResumeConsumerResult>((res) => {
-               this.emit("resume_consumer", { id: consumer.id, callback: res });
-            });
+            consumer.pause();
 
-            if ("error" in resumeResult) {
-               throw new Error(`Failed to resume consumer ${resumeResult.error}`);
-            }
+            // await this.resumeConsumer(consumer.id);
 
             return consumer;
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public async resumeConsumer(consumerId: string): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceTransport.resumeConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer.id": consumerId,
+         });
+
+         try {
+            const consumer = this.consumers.get(consumerId);
+            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+
+            const result = await new Promise<VoiceResumeConsumerResult>((res) => {
+               this.emit("resume_consumer", { id: consumerId, callback: res });
+            });
+
+            if ("error" in result) {
+               throw new Error(`Failed to resume consumer: ${result.error}`);
+            }
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public async pauseConsumer(consumerId: string): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceTransport.pauseConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer.id": consumerId,
+         });
+
+         try {
+            const consumer = this.consumers.get(consumerId);
+            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+
+            const result = await new Promise<VoicePauseConsumerResult>((res) => {
+               this.emit("pause_consumer", { id: consumerId, callback: res });
+            });
+
+            if ("error" in result) {
+               throw new Error(`Failed to pause consumer: ${result.error}`);
+            }
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -550,7 +598,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public applyVoiceState(gatewayVoiceState: GatewayVoiceStateFlags, localVoiceState: LocalVoiceState): void {
+   public async applyVoiceState(
+      gatewayVoiceState: GatewayVoiceStateFlags,
+      localVoiceState: LocalVoiceState,
+      voicePreferences: VoicePreference[],
+   ): Promise<void> {
       const micProducer = this.producers.get("microphone");
 
       if (micProducer) {
@@ -563,20 +615,38 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          }
       }
 
+      let promises: Promise<void>[] = [];
       for (const consumer of this.consumers.values()) {
          if (consumer.appData.mediaKind !== "stream_audio" && consumer.appData.mediaKind !== "microphone") {
+            // no other kind of consumer should be paused.
+            if (consumer.paused) {
+               promises.push(this.resumeConsumer(consumer.id));
+               consumer.resume();
+            }
             continue;
          }
 
+         const voicePreference = voicePreferences.find((x) => x.userId === consumer.appData.userId);
+         const isMuted =
+            consumer.appData.mediaKind === "microphone"
+               ? voicePreference?.isMicrophoneMuted
+               : consumer.appData.mediaKind === "stream_audio"
+                 ? voicePreference?.isStreamMuted
+                 : false;
+
          // If state is deafened consume is not paused, pause consumer
-         if (gatewayVoiceState.isAudioDeafened === true && !consumer.paused) {
+         if ((gatewayVoiceState.isAudioDeafened === true || isMuted === true) && !consumer.paused) {
+            promises.push(this.pauseConsumer(consumer.id));
             consumer.pause();
          }
          // If state is not deafened, consumer is paused, resume consumer
-         else if (gatewayVoiceState.isAudioDeafened === false && consumer.paused) {
+         else if (gatewayVoiceState.isAudioDeafened === false && isMuted === false && consumer.paused) {
+            promises.push(this.resumeConsumer(consumer.id));
             consumer.resume();
          }
       }
+
+      await Promise.all(promises);
    }
 
    public async replaceProducerTrack(kind: HMediaKind, track: MediaStreamTrack): Promise<void> {

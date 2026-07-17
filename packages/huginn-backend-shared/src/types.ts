@@ -44,6 +44,7 @@ export type DBCall = { endedTimestamp?: Date; participants: Snowflake[] };
 export type WebsocketOptions = {
    workerId: WorkerID;
    sessionDeleteTimeout: number;
+   sessionSentMessagesLimit: number;
 };
 
 export type CommonPayload = {

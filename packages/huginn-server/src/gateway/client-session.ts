@@ -10,8 +10,8 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       return !!this.user && !!this.properties;
    }
 
-   public constructor(peer: Peer, sessionId: Snowflake) {
-      super(peer, sessionId, WorkerID.GATEWAY);
+   public constructor(peer: Peer, sessionId: Snowflake, sentMessagesLimit: number) {
+      super(peer, sessionId, WorkerID.GATEWAY, sentMessagesLimit);
    }
 
    public override async subscribeToTopics() {

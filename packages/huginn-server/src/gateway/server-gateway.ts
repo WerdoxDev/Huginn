@@ -37,7 +37,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    public voiceManager: VoiceManager;
 
    public constructor() {
-      super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY }, ClientSession);
+      super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY, sessionSentMessagesLimit: 20 }, ClientSession);
 
       this.presenceManager = new PresenceManager();
       this.voiceManager = new VoiceManager();
@@ -305,8 +305,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       });
    }
 
-   private async handleUpdatePresence(session: ClientSession, data: GatewayUpdatePresenceData) {
-      return await analytics.startActiveSpan("gateway.handleUpdatePresence", (span) => {
+   private handleUpdatePresence(session: ClientSession, data: GatewayUpdatePresenceData) {
+      return analytics.startActiveSpan("gateway.handleUpdatePresence", (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
             "params.status": data.status,

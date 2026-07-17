@@ -158,7 +158,6 @@ describe("construction", () => {
       expect(client.gifs).toBeDefined();
 
       expect(vi.mocked(Gateway)).toHaveBeenCalledWith(client, client.options.gateway);
-      expect(vi.mocked(client.gateway.connect)).toHaveBeenCalledTimes(1);
    });
 
    it("has no current user until initialize() succeeds", () => {

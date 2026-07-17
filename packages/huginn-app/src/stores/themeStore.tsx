@@ -57,6 +57,7 @@ function setColorProperty(theme: ColorTheme) {
    style.setProperty("--tcolor-surface", theme["surface"]);
    style.setProperty("--tcolor-surface-alt", theme["surface-alt"]);
    style.setProperty("--tcolor-surface-deep", theme["surface-deep"]);
+   style.setProperty("--tcolor-surface-void", theme["surface-void"]);
 
    style.setProperty("--tcolor-primary-400", theme["primary-400"]);
    style.setProperty("--tcolor-primary-500", theme["primary-500"]);

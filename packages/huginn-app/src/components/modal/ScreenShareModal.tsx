@@ -1,11 +1,12 @@
 import { Accordion } from "@base-ui/react";
 import LoadingButton from "@components/button/LoadingButton";
-import DisplayPreview from "@components/DisplayPreview";
+import DisplaySourcePreview from "@components/DisplaySourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
+import Tooltip from "@components/tooltip/Tooltip";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
 import { CONSTANTS } from "@huginn/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
@@ -20,13 +21,6 @@ import type { DisplaySource, SelectItem } from "@/types";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
-// const qualities: DropdownItem[] = [
-//    { text: "Low (480p)", value: "low" },
-//    { text: "Medium (720p)", value: "medium" },
-//    { text: "High (1080p)", value: "high" },
-//    { text: "Ultra (1440p)", value: "ultra" },
-// ];
-
 const qualityOptions: SelectItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,
    value: x.value,
@@ -36,29 +30,16 @@ const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
    value: x.toString(),
 }));
 
-// const framerates: DropdownItem[] = [
-//    { text: "5 fps", value: "5" },
-//    { text: "15 fps", value: "15" },
-//    { text: "30 fps", value: "30" },
-//    { text: "60 fps", value: "60" },
-// ];
-
-// const qualityToResolution = {
-//    ultra: { width: 2560, height: 1440 },
-//    high: { width: 1920, height: 1080 },
-//    medium: { width: 1280, height: 720 },
-//    low: { width: 854, height: 480 },
-// };
-
 export default function ScreenShareModal() {
    const client = useClient();
    const { screenShare: modal, updateModals } = useModals();
-   const { data, isFetching, isLoading, refetch } = useQuery({
+   const { data, isLoading } = useQuery({
       queryKey: ["display-sources"],
       queryFn: async () => await window.electronAPI.getDisplaySources(),
       enabled: modal.isOpen,
-      // refetchOnMount: true,
+      refetchInterval: 1000,
    });
+
    const { inputDevices, cameraDevices } = useDevice();
    const mediaSources = useMediaSources();
    const videoProducer = useMemo(
@@ -98,12 +79,8 @@ export default function ScreenShareModal() {
    const [activeTab, setActiveTab] = useState("screens");
    const [_screenSharePending, startTransition] = useTransition();
 
-   const screens = useMemo(() => data?.filter((x) => x.id.includes("screen")), [data]);
-   const applications = useMemo(() => data?.filter((x) => x.id.includes("window")), [data]);
-
-   useEffect(() => {
-      refetch();
-   }, []);
+   const screens = useMemo(() => data?.filter((x) => x.electronId.includes("screen")), [data]);
+   const applications = useMemo(() => data?.filter((x) => x.electronId.includes("window")), [data]);
 
    useEffect(() => {
       if (!modal.isOpen) {
@@ -123,13 +100,13 @@ export default function ScreenShareModal() {
       updateModals({ screenShare: { isOpen: false, callback: undefined } });
    }
 
-   async function start(source?: DisplaySource, deviceInfo?: MediaDeviceInfo) {
+   async function handleSelect(source?: DisplaySource, deviceInfo?: MediaDeviceInfo) {
       if ((!source && !deviceInfo) || !selectedFramerate || !selectedQuality) {
          return;
       }
 
       if (source) {
-         window.electronAPI.setSelectedDisplaySource(source.id);
+         window.electronAPI.setSelectedDisplaySource(source);
       }
 
       const frameRate = Number(selectedFramerate?.value);
@@ -153,6 +130,7 @@ export default function ScreenShareModal() {
                },
             });
          } else {
+            console.log("IM HERE");
             stream = await navigator.mediaDevices.getUserMedia({
                audio: isAudioEnabled
                   ? {
@@ -214,17 +192,17 @@ export default function ScreenShareModal() {
                      <>
                         <HuginnTab.TabPanel value="screens">
                            {screens?.map((x) => (
-                              <DisplayPreview key={x.id} source={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.electronId} source={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                         <HuginnTab.TabPanel value="applications">
                            {applications?.map((x) => (
-                              <DisplayPreview key={x.id} source={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.electronId} source={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                         <HuginnTab.TabPanel value="devices">
                            {cameraDevices?.map((x) => (
-                              <DisplayPreview key={x.deviceId} deviceInfo={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.deviceId} deviceInfo={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                      </>
@@ -232,20 +210,10 @@ export default function ScreenShareModal() {
                </HuginnTab.TabPanels>
             </HuginnTab>
          </div>
-         {activeTab !== "devices" && (
-            <LoadingButton
-               className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
-               color="primary"
-               onClick={() => refetch()}
-               isLoading={isFetching}
-            >
-               <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
-            </LoadingButton>
-         )}
-         <div className="bg-surface-alt flex shrink-0 flex-col gap-y-5 p-5">
+         <div className="bg-surface-alt flex w-56 shrink-0 flex-col gap-y-5 p-5">
             <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
                <HuginnSelect.Label>Quality</HuginnSelect.Label>
-               <HuginnSelect.List className="bg-surface! w-40!">
+               <HuginnSelect.List className="bg-surface! w-full!">
                   <HuginnSelect.ItemsWrapper>
                      {qualityOptions.map((x) => (
                         <HuginnSelect.Item key={x.value} item={x} />
@@ -255,7 +223,7 @@ export default function ScreenShareModal() {
             </HuginnSelect>
             <HuginnSelect selected={selectedFramerate} onChange={setSelectedFramerate}>
                <HuginnSelect.Label>Frame Rate</HuginnSelect.Label>
-               <HuginnSelect.List className="bg-surface! w-30!">
+               <HuginnSelect.List className="bg-surface! w-full!">
                   <HuginnSelect.ItemsWrapper>
                      {frameRateOptions.map((x) => (
                         <HuginnSelect.Item key={x.value} item={x} />
@@ -265,7 +233,7 @@ export default function ScreenShareModal() {
             </HuginnSelect>
 
             <HuginnCheckbox checked={isAudioEnabled} onChange={setIsAudioEnabled}>
-               <HuginnCheckbox.Input>Share Audio</HuginnCheckbox.Input>
+               <HuginnCheckbox.Input innerClassName="bg-surface!">Share Audio</HuginnCheckbox.Input>
             </HuginnCheckbox>
 
             {isAudioEnabled && activeTab === "devices" && (
@@ -315,7 +283,7 @@ export default function ScreenShareModal() {
                         step={10000}
                         getTooltipText={(v) => `${v / 1000000} mbps`}
                      >
-                        <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000000} mbps</HuginnSlider.Label>
+                        <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000} kbps</HuginnSlider.Label>
                         <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
                      </HuginnSlider>
                   </Accordion.Panel>

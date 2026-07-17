@@ -149,6 +149,45 @@ describe("Connection", () => {
       expect(closeCode).toBe(GatewayCode.INVALID_SEQ);
    });
 
+   test(
+      "should close the websocket with code 4006 (INVALID_SEQ) when the message queue cannot cover all missed messages",
+      async () => {
+         const { ws, user, readyData } = await getReadyWebSocket();
+         ws.close();
+
+         for (let i = 0; i < 40; i++) {
+            gateway.sendToTopic(user.id.toString(), {
+               op: GatewayOperations.DISPATCH,
+               s: 0,
+               t: "typing_start",
+               d: { channelId: "123", userId: "123", timestamp: i },
+            });
+         }
+
+         const ws2 = await getWebSocket();
+
+         const resumeData: GatewayResume = {
+            op: GatewayOperations.RESUME,
+            d: { sessionId: readyData.sessionId, token: user.accessToken, seq: 0 },
+         };
+
+         ws2.onmessage = (event) => {
+            if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
+               wsSend(ws2, resumeData);
+            }
+            expect(testIsDispatch(event.data, "resumed")).toBe(false);
+         };
+
+         const result = await new Promise((resolve, reject) => {
+            ws2.onclose = ({ code }) => resolve(code);
+            ws2.onerror = (err) => reject(err);
+         });
+
+         expect(result).toBe(GatewayCode.INVALID_SEQ);
+      },
+      { timeout: 10000 },
+   );
+
    test("should close the websocket with code 4009 (INVALID_SESSION) when trying to resume a non existing session", async () => {
       const { ws, user } = await getReadyWebSocket();
       ws.close();
@@ -175,7 +214,7 @@ describe("Connection", () => {
    });
 
    test("should resume the websocket when it is disconnected and has not received some messages", async (done) => {
-      const { ws, readyData, user, sessionId } = await getReadyWebSocket();
+      const { ws, readyData, user } = await getReadyWebSocket();
       ws.close();
 
       for (let i = 0; i < 10; i++) {
@@ -236,7 +275,7 @@ describe("Connection", () => {
             expectChannelExactRecipients(data.d.privateChannels[0], [user2]);
             expectRelationshipExactSchema(data.d.relationships[0], { type: RelationshipType.FRIEND, user: user2 });
             expectUserExactSchema(data.d.user, user);
-            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [] });
+            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [], favoriteGifs: [] });
             done();
          }
       };

@@ -40,7 +40,7 @@ export function MessageActions(props: { message: ProcessedAppMessage }) {
    return (
       <div
          className={clsx(
-            "pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg bg-zinc-900 p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
+            "bg-surface-void pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
          )}
       >
          <ActionButton

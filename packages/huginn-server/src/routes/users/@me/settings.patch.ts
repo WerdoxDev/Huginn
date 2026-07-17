@@ -10,6 +10,11 @@ const schema = t.Object({
    status: t.Optional(t.Union([t.Literal("offline"), t.Literal("online"), t.Literal("dnd"), t.Literal("idle")])),
    pinnedChannels: t.Optional(t.Array(t.String())),
    favoriteGifs: t.Optional(t.Array(t.Object({ url: t.String(), src: t.String(), width: t.Number(), height: t.Number() }))),
+   voicePreferences: t.Optional(
+      t.Array(
+         t.Object({ userId: t.String(), microphoneVolume: t.Number(), isMicrophoneMuted: t.Boolean(), streamVolume: t.Number(), isStreamMuted: t.Boolean() }),
+      ),
+   ),
 });
 
 export const patchUserSettings = new Elysia().use(verifyJwt()).patch(

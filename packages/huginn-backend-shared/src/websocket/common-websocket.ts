@@ -8,7 +8,7 @@ import { prisma, selectPrivateUser } from "#database";
 
 import type { CommonClientSession } from "./common-client-session";
 
-type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake) => T;
+type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake, sentMessagesLimit: number) => T;
 
 export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, unknown>, Payload extends CommonPayload> {
    public readonly sessions = new Map<Snowflake, ClientSession>();
@@ -34,7 +34,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             const sessionId = snowflake.generateString(this.options.workerId);
 
             peer.context.sessionId = sessionId;
-            const session = this.createSession(peer, sessionId);
+            const session = this.createSession(peer, sessionId, this.options.sessionSentMessagesLimit);
             span.setAttributes(session.getDefaultAttributes());
 
             await session.enqueue(() => this.onOpen(session));
@@ -231,6 +231,14 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             const messageQueue = oldSession.getMessages();
             span.setAttribute("old_session.message_queue.size", messageQueue.size);
 
+            const missedMessageCount = oldSession.sequence - lastSequence;
+            span.setAttribute("old_session.message_queue.missed_message_count", missedMessageCount);
+
+            if (messageQueue.size < missedMessageCount) {
+               session.peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+               return;
+            }
+
             let resendCount = 0;
             for (const [seq, _data] of messageQueue) {
                if (seq <= lastSequence) continue;
@@ -267,11 +275,11 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       });
    }
 
-   private createSession(peer: Peer, sessionId: Snowflake) {
+   private createSession(peer: Peer, sessionId: Snowflake, sentMessagesLimit: number) {
       return analytics.startActiveSpan("commonWebsocket.createSession", (span) => {
          span.setAttributes({ "params.session.id": sessionId, "params.peer.id": peer.id });
          try {
-            const session = new this.clientSessionConstructor(peer, sessionId);
+            const session = new this.clientSessionConstructor(peer, sessionId, sentMessagesLimit);
             span.setAttributes(session.getDefaultAttributes());
             this.sessions.set(sessionId, session);
 

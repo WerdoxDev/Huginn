@@ -6,3 +6,10 @@ export const SCREEN_SHARE_QUALITIES = [
 ] as const;
 
 export const SCREEN_SHARE_FRAME_RATES = [5, 15, 30, 60] as const;
+
+export const AUDIO_QUALITIES = [
+   { name: "Low", value: "low", bitrate: 16000 },
+   { name: "Medium", value: "medium", bitrate: 64000 },
+   { name: "High", value: "high", bitrate: 128000 },
+   { name: "Ultra", value: "ultra", bitrate: 256000 },
+] as const;

@@ -24,6 +24,7 @@ import {
    VoiceSignallingError,
    WorkerID,
    recordSpanError,
+   type VoicePauseConsumerData,
 } from "@huginn/shared";
 
 import type { RouterData, RTCPeer } from "#utils/types";
@@ -34,7 +35,7 @@ import { ClientSession } from "./client-session";
 
 export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload> {
    public constructor() {
-      super({ workerId: WorkerID.VOICE, sessionDeleteTimeout: 1000 * 30 }, ClientSession);
+      super({ workerId: WorkerID.VOICE, sessionDeleteTimeout: 1000 * 30, sessionSentMessagesLimit: 20 }, ClientSession);
    }
 
    public onOpen(session: ClientSession) {
@@ -153,28 +154,31 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                case VoiceOperations.DISPATCH:
                   switch (data.t) {
                      case "create_transport":
-                        await this.onCreateTransport(session, data.d);
+                        await this.handleCreateTransport(session, data.d);
                         break;
                      case "connect_transport":
-                        await this.onConnectTransport(session, data.d);
+                        await this.handleConnectTransport(session, data.d);
                         break;
                      case "restart_ice":
-                        await this.onRestartIce(session, data.d);
+                        await this.handleRestartIce(session, data.d);
                         break;
                      case "produce":
-                        await this.onProduce(session, data.d);
+                        await this.handleProduce(session, data.d);
                         break;
                      case "close_producer":
-                        this.onCloseProducer(session, data.d);
+                        this.handleCloseProducer(session, data.d);
                         break;
                      case "consume":
-                        await this.onConsume(session, data.d);
+                        await this.handleConsume(session, data.d);
                         break;
                      case "resume_consumer":
-                        await this.onResumeConsumer(session, data.d);
+                        await this.handleResumeConsumer(session, data.d);
+                        break;
+                     case "pause_consumer":
+                        await this.handlePauseConsumer(session, data.d);
                         break;
                      case "close_consumer":
-                        this.onCloseConsumer(session, data.d);
+                        this.handleCloseConsumer(session, data.d);
                         break;
                   }
                   break;
@@ -186,7 +190,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onResumeConsumer(session: ClientSession, data: VoiceResumeConsumerData) {
+   private async handleResumeConsumer(session: ClientSession, data: VoiceResumeConsumerData) {
       return await analytics.startActiveSpan("voice.onResumeConsumer", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -243,7 +247,64 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onConsume(session: ClientSession, data: VoiceConsumeData) {
+   private async handlePauseConsumer(session: ClientSession, data: VoicePauseConsumerData) {
+      return await analytics.startActiveSpan("voice.onPauseConsumer", async (span) => {
+         span.setAttributes({
+            ...session.getDefaultAttributes(),
+            "params.channel_id": data.channelId,
+            "params.consumer_id": data.consumerId,
+         });
+
+         try {
+            const router = routers.get(data.channelId);
+
+            if (!verifySession(router, session, data.channelId)) return;
+
+            const rtcPeer = router.peers.get(session.sessionId)!;
+            const consumer = rtcPeer?.consumers.get(data.consumerId);
+
+            if (!consumer) {
+               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_CONSUMER);
+               session.send(
+                  {
+                     op: VoiceOperations.DISPATCH,
+                     t: "pause_consumer_result",
+                     d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+                  },
+                  true,
+                  true,
+               );
+               return;
+            }
+
+            await consumer.pause();
+
+            span.setAttribute("result.consumer_id", data.consumerId);
+            session.send(
+               {
+                  op: VoiceOperations.DISPATCH,
+                  t: "pause_consumer_result",
+                  d: { consumerId: data.consumerId, nonce: data.nonce },
+               },
+               true,
+               true,
+            );
+         } catch (e) {
+            recordSpanError(e);
+            session.send(
+               {
+                  op: VoiceOperations.DISPATCH,
+                  t: "pause_consumer_result",
+                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+               },
+               true,
+               true,
+            );
+         }
+      });
+   }
+
+   private async handleConsume(session: ClientSession, data: VoiceConsumeData) {
       return await analytics.startActiveSpan("voice.onConsume", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -330,6 +391,10 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                paused: true,
             });
 
+            if (producer.appData.mediaKind === "stream_audio" || producer.appData.mediaKind === "stream_video") {
+               await consumer.setPriority(2);
+            }
+
             rtcPeer?.consumers.set(consumer.id, consumer);
 
             span.setAttributes({
@@ -384,7 +449,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onProduce(session: ClientSession, data: VoiceProduceData) {
+   private async handleProduce(session: ClientSession, data: VoiceProduceData) {
       return await analytics.startActiveSpan("voice.onProduce", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -491,7 +556,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onConnectTransport(session: ClientSession, data: VoiceConnectTransportData) {
+   private async handleConnectTransport(session: ClientSession, data: VoiceConnectTransportData) {
       return await analytics.startActiveSpan("voice.onConnectTransport", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -548,7 +613,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onCreateTransport(session: ClientSession, data: VoiceCreateTransportData) {
+   private async handleCreateTransport(session: ClientSession, data: VoiceCreateTransportData) {
       return await analytics.startActiveSpan("voice.onCreateTransport", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -601,7 +666,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private async onRestartIce(session: ClientSession, data: VoiceRestartIceData) {
+   private async handleRestartIce(session: ClientSession, data: VoiceRestartIceData) {
       return await analytics.startActiveSpan("voice.onRestartIce", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -658,7 +723,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private onCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
+   private handleCloseProducer(session: ClientSession, data: VoiceCloseProducerData) {
       analytics.startActiveSpan("voice.onCloseProducer", (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
@@ -746,7 +811,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
       });
    }
 
-   private onCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
+   private handleCloseConsumer(session: ClientSession, data: VoiceCloseConsumerData) {
       analytics.startActiveSpan("voice.onCloseConsumer", (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),

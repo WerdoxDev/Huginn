@@ -112,7 +112,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
    }
 
    return (
-      <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "rounded-t-xl bg-zinc-900")} data-ignore-swipe>
+      <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "bg-surface-void rounded-t-xl")} data-ignore-swipe>
          <div className={clsx("flex w-full items-center gap-x-2 p-2")}>
             {(category || values.search) && (
                <button className="size cursor-pointer p-2 text-white/70 hover:text-white" onClick={() => handleSelectCategory(null)}>
@@ -121,7 +121,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
             )}
             {category !== "trending" ? (
                <HuginnInput {...register("search")} placeholder={"Search in Klipy..."} className="w-full">
-                  <HuginnInput.Wrapper>
+                  <HuginnInput.Wrapper className="bg-surface-deep!">
                      <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
                      <HuginnInput.Input data-keyboard-no-close />
                   </HuginnInput.Wrapper>
@@ -130,7 +130,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
                <div className="font-semibold text-white">Trending Gifs</div>
             )}
          </div>
-         <div className="bg-surface h-px shrink-0" />
+         <div className="bg-surface-alt h-px shrink-0" />
          <HuginnTab className="flex h-full flex-col overflow-hidden" onChange={handleSelectTab} value={selectedTab}>
             <HuginnTab.TabList className="gap-x-2 bg-transparent p-2 pb-0" tabClassName="py-1 w-full">
                <HuginnTab.Tab value="your">

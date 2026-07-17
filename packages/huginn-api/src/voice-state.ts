@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState } from "@huginn/shared";
+import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState, type VoicePreference } from "@huginn/shared";
 
 type Events = {
    update_gateway_voice_state: {
@@ -7,6 +7,7 @@ type Events = {
    };
    gateway_voice_state_updated: GatewayVoiceStateFlags;
    local_voice_state_updated: LocalVoiceState;
+   voice_preferences_updated: VoicePreference[];
 };
 
 export class VoiceState extends EventEmitter<Events> {
@@ -19,6 +20,7 @@ export class VoiceState extends EventEmitter<Events> {
    };
 
    public localVoiceState: LocalVoiceState = { isAudioPaused: false };
+   public voicePreferences: VoicePreference[] = [];
 
    public async updateGatewayVoiceState(update: Partial<GatewayVoiceStateFlags>): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceState.updateGatewayVoiceState", async (span) => {
@@ -49,8 +51,12 @@ export class VoiceState extends EventEmitter<Events> {
 
          if (!confirmed) return;
 
-         this.gatewayVoiceState = { ...confirmed };
+         if (JSON.stringify(confirmed) === JSON.stringify(this.gatewayVoiceState)) {
+            span.setAttribute("voice.state.confirm_zero_diff", true);
+            return;
+         }
 
+         this.gatewayVoiceState = { ...confirmed };
          this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
       });
    }
@@ -58,5 +64,10 @@ export class VoiceState extends EventEmitter<Events> {
    public updateLocalVoiceState(update: Partial<LocalVoiceState>): void {
       this.localVoiceState = { ...this.localVoiceState, ...update };
       this.emit("local_voice_state_updated", this.localVoiceState);
+   }
+
+   public updateVoicePreferences(preferences: VoicePreference[]): void {
+      this.voicePreferences = preferences;
+      this.emit("voice_preferences_updated", this.voicePreferences);
    }
 }

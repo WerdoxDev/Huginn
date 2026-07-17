@@ -25,6 +25,7 @@
       "surface": "oklch(0.31 0.000 0)",
       "surface-alt": "oklch(0.27 0.000 0)",
       "surface-deep": "oklch(0.23 0.000 0)",
+      "surface-void": "oklch(0.19 0.000 0)",
       "text": "oklch(0.93 0.032 107)"
     }
   },
@@ -66,13 +67,13 @@
       "primary-900": "oklch(0.35 0.060 45)"
     },
     "violet": {
-      "primary-300": "oklch(0.8 0.083 300)",
-      "primary-400": "oklch(0.725 0.118 300)",
-      "primary-500": "oklch(0.65 0.155 300)",
-      "primary-600": "oklch(0.575 0.194 300)",
-      "primary-700": "oklch(0.5 0.187 300)",
-      "primary-800": "oklch(0.425 0.159 300)",
-      "primary-900": "oklch(0.35 0.131 300)"
+      "primary-300": "oklch(0.8 0.059 300)",
+      "primary-400": "oklch(0.725 0.084 300)",
+      "primary-500": "oklch(0.65 0.111 300)",
+      "primary-600": "oklch(0.575 0.139 300)",
+      "primary-700": "oklch(0.5 0.133 300)",
+      "primary-800": "oklch(0.425 0.113 300)",
+      "primary-900": "oklch(0.35 0.093 300)"
     },
     "rose": {
       "primary-300": "oklch(0.8 0.092 20)",

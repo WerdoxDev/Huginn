@@ -64,8 +64,8 @@ const initialStore = () => ({
       }) => Promise<void>;
       type: "create" | "change";
    },
-   streamAudio: { isOpen: false, callback: undefined } as DefaultModal & {
-      callback?: (sourceProcessId: string) => void;
+   audioStream: { isOpen: false, callback: undefined } as DefaultModal & {
+      callback?: (options: { processId: number; maxAudioBitrate: number }) => Promise<void>;
    },
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,

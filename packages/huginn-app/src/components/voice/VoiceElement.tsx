@@ -1,11 +1,12 @@
-import type { GatewayVoiceState, Snowflake } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginn/shared";
 
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import UserBanner from "@components/UserBanner";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useClient, useClientStore } from "@stores/clientStore";
+import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
@@ -24,6 +25,7 @@ export default function VoiceElement(props: {
    guildId: Snowflake | null;
    mediaSource?: MediaSource;
    secondMediaSource?: MediaSource;
+   voicePreference?: VoicePreference;
    gridElementWidth: number;
    gridElementHeight: number;
    type: "normal" | "stream";
@@ -43,8 +45,8 @@ export default function VoiceElement(props: {
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
-   const client = useClient();
 
+   const [isHovered, setIsHovered] = useState(false);
    const [isLoadingStream, setIsLoadingStream] = useState(false);
 
    const hasScreenShareAudio = useMemo(() => props.secondMediaSource?.kind === "stream_audio", [props.secondMediaSource]);
@@ -56,6 +58,8 @@ export default function VoiceElement(props: {
       () => (isCamera || isAudioStream || isScreenShare) && !props.mediaSource?.consumerId && props.userId !== thisUser?.id,
       [props.mediaSource, isCamera, isAudioStream, isScreenShare],
    );
+
+   const isMutedOrDeafened = useMemo(() => props.voiceState?.isAudioMuted || props.voiceState?.isAudioDeafened, [props.voiceState]);
 
    const isDisconnected = useMemo(
       () => voiceStatus === "ready" && props.userId !== thisUser?.id && !props.mediaSource && !props.isRinging,
@@ -100,6 +104,11 @@ export default function VoiceElement(props: {
       }
    }, [props.mediaSource, props.voiceState]);
 
+   const stateSize = 2;
+   const stateCenter = stateSize / 2;
+   const cutoutRadius = stateCenter + 4 / 18;
+   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${stateCenter - 0.5}rem) calc(100% - ${stateCenter - 0.5}rem), transparent calc(100% - 1px), black 100%)`;
+
    return (
       <div
          ref={props.ref}
@@ -107,19 +116,32 @@ export default function VoiceElement(props: {
          style={{
             width: props.isGridView ? props.gridElementWidth : "auto",
             height: props.isGridView ? props.gridElementHeight : "auto",
-            borderRadius: props.isMaximized ? "0px" : "12px",
+            borderColor: user.accentColor ?? "transparent",
          }}
+         onMouseEnter={() => setIsHovered(true)}
+         onMouseLeave={() => setIsHovered(false)}
          onContextMenu={onContextMenu}
          id={props.mediaSource?.consumerId}
          className={clsx(
-            "group/element relative flex shrink-0 flex-col items-center justify-center gap-y-1 shadow-md hover:shadow-xl",
+            "group/element bg-surface-alt relative flex shrink-0 flex-col items-center justify-center gap-y-1",
             props.onClick && "cursor-pointer",
-            props.isGridView && "overflow-hidden p-0",
-            props.isSpeaking && "ring-positive-100! ring-2!",
-            props.isRinging ? "bg-surface/50" : "bg-surface",
-            !props.isMaximized && "ring-surface ring-2",
+            props.isGridView && "p-0",
+            !props.isMaximized && "rounded-lg border-2",
+            props.isRinging && "animate-pulse",
          )}
       >
+         {!isCamera && !isScreenShare && !isAudioStream && (
+            <div className="absolute inset-0 overflow-hidden rounded-md">
+               <UserBanner hovered={isHovered} userId={props.userId} animatedMode="hover" bannerColor={user.bannerColor} bannerHash={user.banner} />
+            </div>
+         )}
+         <div
+            className={clsx(
+               "transition-border pointer-events-none absolute z-10 border-2",
+               props.isSpeaking ? "border-positive-300" : "border-transparent",
+               props.isMaximized ? "inset-0" : "-inset-1.5 rounded-xl",
+            )}
+         />
          {isDisconnected && (
             <Tooltip>
                <Tooltip.Content>Disconnected</Tooltip.Content>
@@ -129,9 +151,17 @@ export default function VoiceElement(props: {
             </Tooltip>
          )}
          {!isCamera && !isAudioStream && !isScreenShare && !isPreview && (
-            <div className={clsx("p-5", props.isRinging && "animate-pulse", props.isGridView && "w-max")}>
-               <div>
-                  <UserAvatar userId={props.userId} avatarHash={user?.avatar} size={props.isGridView ? 5 : 4} hideStatus />
+            <div className={clsx("z-10 p-4.5", props.isRinging && "animate-pulse", props.isGridView && "w-max")}>
+               <div className="bg-surface-alt rounded-full p-0.5">
+                  <UserAvatar
+                     userId={props.userId}
+                     avatarHash={user?.avatar}
+                     size={props.isGridView ? 5 : 4}
+                     hideStatus
+                     animatedMode="hover"
+                     hovered={isHovered}
+                     maskImage={!props.isGridView && isMutedOrDeafened ? maskGradient : undefined}
+                  />
                </div>
             </div>
          )}
@@ -144,16 +174,22 @@ export default function VoiceElement(props: {
             />
          )}
          {(isAudioStream || isScreenShare) && <VoiceStreamParticipants mediaSource={props.mediaSource} />}
-         <VoiceLabel userId={props.userId} isGridView={props.isGridView} voiceState={props.voiceState} type={props.type} />
+         <VoiceLabel
+            userId={props.userId}
+            isGridView={props.isGridView}
+            voicePreference={props.voicePreference}
+            voiceState={props.voiceState}
+            type={props.type}
+         />
          {isLoadingStream ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
                <LoadingIcon className="size-12" />
             </div>
          ) : (
             isPreview && (
                <button
                   className={clsx(
-                     "group/watch flex h-full w-full cursor-pointer items-center justify-center bg-black/80 transition-colors",
+                     "group/watch flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-black/80 transition-colors",
                      !isCamera && "hover:bg-black/60",
                   )}
                   onClick={!isCamera ? consume : undefined}
@@ -171,8 +207,8 @@ export default function VoiceElement(props: {
          )}
          {props.isConnected && (isCamera || (isScreenShare && !isPreview)) && (
             <video
-               className="absolute bg-black"
-               style={{ width: props.gridElementWidth, height: props.gridElementHeight }}
+               className={clsx("h-full w-full bg-black", !props.isMaximized && "rounded-lg")}
+               // style={{ width: props.gridElementWidth - 2, height: props.gridElementHeight - 2 }}
                ref={videoRef}
                autoPlay
                playsInline

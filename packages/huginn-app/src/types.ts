@@ -22,7 +22,7 @@ import type {
    ThemeType,
    ChannelType,
 } from "@huginn/shared";
-import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
+import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -105,6 +105,7 @@ export type ColorTheme = {
    surface: string;
    "surface-alt": string;
    "surface-deep": string;
+   "surface-void": string;
    text: string;
 
    "primary-300": string;
@@ -289,19 +290,17 @@ export type UploadProgress = {
 };
 
 export type DisplaySource = {
-   thumbnail: string;
-   appIcon?: string;
+   thumbnail: string | null;
+   appIcon?: string | null;
    name: string;
-   id: string;
+   electronId: string;
 };
 
 export type AudioSource = {
    appIcon?: string;
    name: string;
-   processId: string;
+   processId: number;
 };
-
-export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
 export type HostnamePreset = {
    name: string;
@@ -328,11 +327,14 @@ export type AppSettings = {
    noiseSuppression: boolean;
    screenShareFramerate: string;
    screenShareQuality: string;
+   audioStreamQuality: string;
    screenShareAudio: boolean;
    screenShareSimulcast: boolean;
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
    useProxy: boolean;
+   isVoiceMuted: boolean;
+   isVoiceDeafened: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
@@ -353,7 +355,6 @@ export type ClientInfo = {
 
 export type StorageMap = {
    settings: AppSettings;
-   "voice-preferences": VoicePreference[];
    keybinds: Keybind[];
    "known-applications": APIGetKnownApplicationsResult;
    "custom-applications": CustomApplication[];
@@ -565,6 +566,7 @@ export type Environment = "desktop" | "browser" | "android";
 
 export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
 export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
+export type AudioQuality = (typeof AUDIO_QUALITIES)[number]["value"];
 
 export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
    name: TFieldName,

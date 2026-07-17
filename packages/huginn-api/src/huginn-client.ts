@@ -227,11 +227,6 @@ export class HuginnClient<V extends Voice = Voice> {
    public async register(user: RegisterUser): Promise<APIPostRegisterResult> {
       const result = await this.auth.register(user);
 
-      if ("token" in result && "refreshToken" in result) {
-         this.tokenHandler.token = result.token;
-         this.tokenHandler.refreshToken = result.refreshToken;
-      }
-
       return result;
    }
 

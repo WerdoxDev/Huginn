@@ -14,6 +14,7 @@ import {
    type VoiceConsumeResult,
    type VoiceCreateTransportResult,
    type VoiceHelloData,
+   type VoicePauseConsumerResult,
    type VoicePayload,
    type VoiceProduceResult,
    type VoiceReadyData,
@@ -264,9 +265,14 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
                case "consume_result":
                   this.emit("consume_result", data.d);
                   break;
+
                case "resume_consumer_result":
                   this.emit("resume_consumer_result", data.d);
                   break;
+               case "pause_consumer_result":
+                  this.emit("pause_consumer_result", data.d);
+                  break;
+
                case "close_consumer_result":
                   this.emit("close_consumer_result", data.d);
                   break;
@@ -561,6 +567,32 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             });
 
             return await this.waitForCommandResult("resume_consumer_result", nonce);
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public async sendPauseConsumer(consumerId: string): Promise<VoicePauseConsumerResult> {
+      return await analytics.startActiveSpan("apiVoiceSignaling.sendPauseConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer_id": consumerId,
+         });
+
+         try {
+            this.checkStatus();
+            const channelId = this.connectionData.channelId;
+
+            const nonce = this.client.generateNonce();
+            this.send({
+               op: VoiceOperations.DISPATCH,
+               t: "pause_consumer",
+               d: { channelId, consumerId, nonce },
+            });
+
+            return await this.waitForCommandResult("pause_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
             throw e;

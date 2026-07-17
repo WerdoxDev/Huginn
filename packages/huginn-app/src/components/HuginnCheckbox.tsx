@@ -1,7 +1,7 @@
 import { Checkbox } from "@base-ui/react";
 import { snowflake, WorkerID } from "@huginn/shared";
 import clsx from "clsx";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type MouseEvent, type ReactNode } from "react";
 
 const CheckboxContext = createContext<{
    id: string;
@@ -17,17 +17,22 @@ export default function HuginnCheckbox(props: { checked: boolean; onChange?: (ch
 
    return (
       <CheckboxContext.Provider value={{ id, checked: props.checked, onChange: props.onChange }}>
-         <div className={clsx("flex", props.className)}>{props.children}</div>
+         <div autoFocus={false} className={clsx("flex", props.className)}>
+            {props.children}
+         </div>
       </CheckboxContext.Provider>
    );
 }
 
-function Input(props: { className?: string; children?: ReactNode; innerClassName?: string }) {
+function Input(props: { className?: string; children?: ReactNode; innerClassName?: string; onClick?: (e: MouseEvent) => void }) {
    const checkboxContext = useContext(CheckboxContext);
    return (
       <Checkbox.Root
          checked={checkboxContext.checked}
          onCheckedChange={checkboxContext.onChange}
+         onClick={props.onClick}
+         autoFocus={false}
+         tabIndex={-1}
          className={clsx("group flex w-full cursor-pointer items-center justify-between", props.className)}
       >
          <div className="text-text text-xs font-medium uppercase opacity-90 select-none">{props.children}</div>

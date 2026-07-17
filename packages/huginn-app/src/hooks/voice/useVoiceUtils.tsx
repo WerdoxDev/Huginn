@@ -1,15 +1,16 @@
 import type { VoiceStreamOptions } from "@huginn/api";
 
 import { useFullscreen } from "@hooks/useFullscreen";
-import { type Snowflake } from "@huginn/shared";
+import { analytics, type Snowflake } from "@huginn/shared";
 import { getMediaErrorMessage } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useStorage } from "@stores/storageStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export function useVoiceUtils() {
    const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
    const client = useClient();
    // const posthog = usePostHog();
    // const updateVoiceStateMutation = useUpdateVoiceState();
@@ -19,17 +20,23 @@ export function useVoiceUtils() {
 
    async function toggleMute() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newMutedState = !(voiceState?.isAudioMuted ?? false);
+      const newDeafenedState = newMutedState ? (voiceState?.isAudioDeafened ?? false) : false;
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioMuted: !(voiceState?.isAudioMuted ?? false),
+         isAudioMuted: newMutedState,
+         isAudioDeafened: newDeafenedState,
       });
+      await setValue("settings", { ...settings, isVoiceMuted: newMutedState, isVoiceDeafened: newDeafenedState });
    }
 
    async function toggleDeafen() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newDeafenedState = !(voiceState?.isAudioDeafened ?? false);
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioDeafened: !(voiceState?.isAudioDeafened ?? false),
-         isAudioMuted: !(voiceState?.isAudioDeafened ?? false),
+         isAudioDeafened: newDeafenedState,
+         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
       });
+      await setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
    }
 
    async function openScreenShare() {
@@ -122,6 +129,8 @@ export function useVoiceUtils() {
             },
          });
 
+         analytics.log({ level: "error", body: "failed to open screen share", exception: e });
+
          if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio")) await closeStream();
       }
    }
@@ -134,20 +143,25 @@ export function useVoiceUtils() {
       if (huginnWindow.environment !== "desktop") return;
 
       updateModals({
-         streamAudio: {
+         audioStream: {
             isOpen: true,
-            callback: async (sourceProcessId: string) => {
+            callback: async (options) => {
                try {
                   // Reset loopback even if we want to start a new one / end the last one
                   await client?.voice.stopAudioLoopback();
-                  const audioTrack = await client?.voice.startAudioLoopback(undefined, sourceProcessId);
+                  const audioTrack = await client?.voice.startAudioLoopback(undefined, options.processId);
 
                   if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
 
-                  if (client?.voice.transport.getProducer("stream_audio")) {
+                  const producer = client?.voice.transport.getProducer("stream_audio");
+
+                  if (producer) {
                      await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
+                     if (options.maxAudioBitrate) {
+                        await client?.voice.stream.updateAudioBitrate(options.maxAudioBitrate);
+                     }
                   } else {
-                     await client?.voice.stream.openStream(undefined, audioTrack);
+                     await client?.voice.stream.openStream(undefined, audioTrack, { maxAudioBitrate: options.maxAudioBitrate });
                   }
                } catch (e) {
                   updateModals({
@@ -158,6 +172,8 @@ export function useVoiceUtils() {
                         isOpen: true,
                      },
                   });
+
+                  analytics.log({ level: "error", body: "failed to open audio stream", exception: e, attributes: { options } });
 
                   if (client?.voice.transport.getProducer("stream_audio")) await closeStream();
                }
@@ -188,26 +204,31 @@ export function useVoiceUtils() {
             },
          });
 
+         analytics.log({ level: "error", body: "failed to open camera", exception: e });
+
          if (client?.voice.transport.getProducer("camera")) await closeCamera();
       }
    }
 
    async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
+      if (!client) return;
       try {
-         if (client?.voice.status === "disconnected") throw new Error("Voice is disconnected");
+         if (client.voice.status === "disconnected") throw new Error("Voice is disconnected");
 
-         if (client?.voice.status !== "ready") {
-            await client?.voiceManager.connectVoice(guildId, channelId);
+         if (client.voice.status !== "ready") {
+            await client.voiceManager.connectVoice(guildId, channelId);
          }
 
-         const remoteProducers = client?.voice.transport.getRemoteProducers();
+         const remoteProducers = client.voice.transport.getRemoteProducers();
 
          if (remoteProducers?.some((x) => x.kind === "stream_video" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_video");
+            await client.voice.transport.createConsumer(userId, "stream_video");
          }
          if (remoteProducers?.some((x) => x.kind === "stream_audio" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_audio");
+            await client.voice.transport.createConsumer(userId, "stream_audio");
          }
+
+         await client.voiceManager.applyVoiceState();
       } catch (e) {
          updateModals({
             info: {
@@ -218,7 +239,9 @@ export function useVoiceUtils() {
             },
          });
 
-         if (client?.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
+         analytics.log({ level: "error", body: "failed to consume stream", exception: e, attributes: { userId, guildId, channelId } });
+
+         if (client.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
             await unconsumeStream(userId);
       }
    }
@@ -243,6 +266,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to unconsume stream", exception: e, attributes: { userId } });
       }
    }
 
@@ -277,6 +302,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to update stream", exception: e, attributes: { video, audio } });
       }
    }
 
@@ -292,6 +319,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to close stream", exception: e });
       }
    }
 
@@ -307,6 +336,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to close camera", exception: e });
       }
    }
 

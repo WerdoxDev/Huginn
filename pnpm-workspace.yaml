@@ -8,7 +8,7 @@ allowBuilds:
   electron-winstaller: false
   esbuild: false
   mediasoup: true
-  msw: set this to true or false
+  msw: true
   prisma: true
   protobufjs: true
   sharp: true
