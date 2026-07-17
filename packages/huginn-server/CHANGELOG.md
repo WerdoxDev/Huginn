@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.44.0...server@v0.45.0) (2026-07-17)
+
+
+### Features
+
+* **server:** add limit to client sent messages ([2e56fde](https://github.com/WerdoxDev/Huginn/commit/2e56fde4579cc5f76a32cf9a45a56c0023d5363a))
+* **server:** download github releases on server first and stream them instead of redirecting user ([05cb033](https://github.com/WerdoxDev/Huginn/commit/05cb033ee84234e62e1e63b4b082ae06313cd2ab))
+
 ## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.1...server@v0.44.0) (2026-07-11)
 
 

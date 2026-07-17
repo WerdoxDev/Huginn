@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.40.0...api@v0.41.0) (2026-07-17)
+
+
+### Features
+
+* **api:** add pause consumer and move voice preferences to user settings ([cc1363f](https://github.com/WerdoxDev/Huginn/commit/cc1363f72000b35cbf9f26c0a34af7ddd4097879))
+
+
+### Bug Fixes
+
+* **api:** pause created consumers and manage its state later on applyVoiceState ([ad8e9f9](https://github.com/WerdoxDev/Huginn/commit/ad8e9f9ff0fa971924d8d932f0c41c4269eb67b6))
+
 ## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.39.0...api@v0.40.0) (2026-07-11)
 
 

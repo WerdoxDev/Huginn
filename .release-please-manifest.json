@@ -1,15 +1,15 @@
 {
-   "packages/huginn-api": "0.40.0",
-   "packages/huginn-server": "0.44.0",
+   "packages/huginn-api": "0.41.0",
+   "packages/huginn-server": "0.45.0",
    "packages/huginn-cdn": "0.20.1",
    "packages/huginn-bifrost": "0.5.0",
    "packages/huginn-shared": "0.41.0",
-   "packages/huginn-backend-shared": "0.30.1",
+   "packages/huginn-backend-shared": "0.30.2",
    "packages/huginn-runtime-shared": "0.3.0",
-   "packages/huginn-app": "0.80.0",
-   "packages/huginn-voice": "0.18.1",
-   "packages/native-addon": "0.6.0",
+   "packages/huginn-app": "0.81.0",
+   "packages/huginn-voice": "0.19.0",
+   "packages/native-addon": "0.7.0",
    "packages/huginn-tui": "0.4.0",
    "packages/transactional": "0.3.0",
-   "packages/huginn-assets": "0.2.0"
+   "packages/huginn-assets": "0.3.0"
 }

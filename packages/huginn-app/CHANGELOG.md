@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.81.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.80.0...app@v0.81.0) (2026-07-17)
+
+
+### Features
+
+* **app:** new voice element design ([76941ce](https://github.com/WerdoxDev/Huginn/commit/76941ce7ecd854ec09c648159d1cbe518ded3053))
+* **app:** remove constant desktopCapturer.getSources calls + complete rework of audio stream modal ([22087d5](https://github.com/WerdoxDev/Huginn/commit/22087d58f7c2447017316efe4722f5839992bf2e))
+* **app:** remove refresh button from audio and video streams in favor of live updates ([0016d11](https://github.com/WerdoxDev/Huginn/commit/0016d11e7d47940db4aec9e62e3eca47dfb4de83))
+
+
+### Bug Fixes
+
+* **app:** revert package json version change ([7f275b4](https://github.com/WerdoxDev/Huginn/commit/7f275b404ebdcee590bb659016b747ff623057c9))
+
 ## [0.80.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.79.0...app@v0.80.0) (2026-07-11)
 
 
