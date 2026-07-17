@@ -37,42 +37,35 @@ namespace window_util
       return result;
    }
 
-   winrt::hstring GetPackageDisplayName(DWORD processId)
+   bool GetPackageDisplayName(DWORD processId, winrt::hstring &outDisplayName)
    {
       HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
       if (!hProcess)
-      {
-         throw std::runtime_error("OpenProcess failed");
-      }
+         return false;
 
       UINT32 length = 0;
       LONG rc = GetPackageFullName(hProcess, &length, nullptr);
       if (rc != ERROR_INSUFFICIENT_BUFFER)
       {
          CloseHandle(hProcess);
-         if (rc == APPMODEL_ERROR_NO_PACKAGE)
-         {
-            return L""; // not a packaged process (plain Win32 exe)
-         }
-         throw std::runtime_error("GetPackageFullName failed");
+         return false;
       }
 
       std::wstring fullName(length, L'\0');
       rc = GetPackageFullName(hProcess, &length, fullName.data());
       CloseHandle(hProcess);
       if (rc != ERROR_SUCCESS)
-      {
-         throw std::runtime_error("GetPackageFullName failed (2nd call)");
-      }
+         return false;
       fullName.resize(wcslen(fullName.c_str())); // trim to actual length
 
       PackageManager packageManager;
       auto package = packageManager.FindPackageForUser(L"", fullName);
       if (!package)
       {
-         return L"";
+         return false;
       }
-      return package.DisplayName();
+      outDisplayName = package.DisplayName();
+      return true;
    }
 
    HANDLE GetHandle(DWORD processId)
@@ -137,14 +130,13 @@ namespace window_util
       return cmdLine;
    }
 
-   HBITMAP CaptureWindowToBitmap(HWND hwnd, int &outW, int &outH)
+   bool CaptureWindowToBitmap(HWND hwnd, int &outW, int &outH, HBITMAP &outBitmap)
    {
       // DWMWA_EXTENDED_FRAME_BOUNDS gives the true visible window rect,
       // without the invisible resize-border padding Win10/11 add around
       // top-level windows. Falls back to GetWindowRect if DWM call fails.
       RECT rect{};
-      if (FAILED(DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS,
-                                       &rect, sizeof(rect))))
+      if (FAILED(DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect))))
       {
          GetWindowRect(hwnd, &rect);
       }
@@ -153,7 +145,7 @@ namespace window_util
       int height = rect.bottom - rect.top;
 
       if (width <= 0 || height <= 0)
-         throw std::runtime_error("Invalid window size (is the window minimized?)");
+         return false; // window is minimized, no bitmap available
 
       HDC hdcWindow = GetWindowDC(hwnd);
       HDC hdcMem = CreateCompatibleDC(hdcWindow);
@@ -174,7 +166,8 @@ namespace window_util
       outW = width;
       outH = height;
 
-      return hBitmap; // caller owns
+      outBitmap = hBitmap; // caller owns
+      return true;
    }
 
    bool GetWindowThumbnailBase64(HWND hwnd, int thumbW, int thumbH, std::string &outBase64)
@@ -185,7 +178,9 @@ namespace window_util
       image_util::GdiplusProcessInit::EnsureStarted();
 
       int srcW = 0, srcH = 0;
-      HBITMAP hSrcBitmap = CaptureWindowToBitmap(hwnd, srcW, srcH);
+      HBITMAP hSrcBitmap = nullptr;
+      if (!CaptureWindowToBitmap(hwnd, srcW, srcH, hSrcBitmap))
+         return false;
 
       // Wrap the raw HBITMAP in a GDI+ Bitmap so it can be resized + encoded.
       Bitmap srcBitmap(hSrcBitmap, nullptr);

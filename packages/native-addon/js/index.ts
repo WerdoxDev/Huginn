@@ -7,16 +7,14 @@ export type ProcessInfo = {
    exePath: string;
    hwnd: number;
 };
-export type AppInfo = { displayName: string; icon: string | null };
 
 export type Addon = {
    getFileSha256(filepath: string): string;
-   getProcessIconBase64(processId: number): string | null;
+   getProcessIconBase64(processId: number): Promise<string | null>;
    getOpenApplications(): ProcessInfo[];
    getPackageDisplayName(processId: number): string;
-   getApplicationInfo(processId: number): AppInfo;
-   getWindowThumbnailBase64(hwnd: number, thumbW: number, thumbH: number): string | null;
-   getScreenThumbnailBase64(x: number, y: number, width: number, height: number): string | null;
+   getWindowThumbnailBase64(hwnd: number, thumbW: number, thumbH: number): Promise<string | null>;
+   getScreenThumbnailBase64(x: number, y: number, width: number, height: number): Promise<string | null>;
 };
 
 const addon: Addon = binding({
