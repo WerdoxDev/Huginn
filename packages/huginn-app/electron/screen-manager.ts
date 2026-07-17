@@ -22,13 +22,11 @@ export class ScreenManager {
 
       this.idMap.clear();
       for (const source of sources) {
-         console.log(source);
          if (source.display_id) this.idMap.set(source.display_id, source.id);
       }
    }
 
    public getDisplaySourceId(displayId: number): string | undefined {
-      console.log("getDisplaySourceId", displayId, this.idMap.get(displayId.toString()));
       return this.idMap.get(displayId.toString());
    }
 }

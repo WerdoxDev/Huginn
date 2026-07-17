@@ -3,7 +3,7 @@ import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "
 import { app, desktopCapturer, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
 import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";
-import native, { type AppInfo } from "native-addon";
+import native from "native-addon";
 import path from "node:path";
 
 import type { AudioSource, DisplaySource } from "@/types";
@@ -25,10 +25,10 @@ export class MainWindow extends BaseWindow {
 
    public constructor() {
       super("main", {
-         minWidth: 850,
-         minHeight: 380,
-         width: 1200,
-         height: 670,
+         minWidth: 1024,
+         minHeight: 500,
+         width: 1280,
+         height: 700,
          fullscreen: false,
          frame: false,
          titleBarStyle: "hidden",
@@ -62,7 +62,6 @@ export class MainWindow extends BaseWindow {
             callback({});
             return;
          }
-         // console.log(source);
          const audio = request.audioRequested && this.selectedDisplaySource.electronId.includes("screen") ? "loopback" : undefined;
          callback({
             video: { id: this.selectedDisplaySource.electronId, name: this.selectedDisplaySource.name },
@@ -134,23 +133,31 @@ export class MainWindow extends BaseWindow {
          }
       });
 
-      console.log(screen.getAllDisplays());
-
       ipcMain.handle("window:get-display-sources", async () => {
          const screens = screen.getAllDisplays();
 
-         const applications = native
-            .getOpenApplications()
-            .map((x) => ({ ...x, icon: native.getProcessIconBase64(x.processId), thumbnail: native.getWindowThumbnailBase64(x.hwnd, 256, 256) }));
+         const applications = await Promise.all(
+            native.getOpenApplications().map(async (x) => {
+               const [icon, thumbnail] = await Promise.all([
+                  native.getProcessIconBase64(x.processId),
+                  native.getWindowThumbnailBase64(x.hwnd, 256, 256),
+               ]);
+               return { ...x, icon, thumbnail };
+            }),
+         );
 
-         const screenSources: DisplaySource[] = screens.map((x, i) => {
-            const rect = screen.dipToScreenRect(null, x.bounds);
-            return {
-               thumbnail: native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height),
-               electronId: `${this.screenManager.getDisplaySourceId(x.id)}`,
-               name: `Screen ${i + 1}`,
-            } as DisplaySource;
-         });
+         const screenSources: DisplaySource[] = await Promise.all(
+            screens.map(async (x, i) => {
+               const rect = screen.dipToScreenRect(null, x.bounds);
+               const thumbnail = await native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height);
+               const electronId = this.screenManager.getDisplaySourceId(x.id);
+               return {
+                  thumbnail: thumbnail,
+                  electronId: `${electronId}`,
+                  name: `Screen ${i + 1}`,
+               } as DisplaySource;
+            }),
+         );
 
          const applicationSources: DisplaySource[] = applications.map(
             (x) =>
@@ -166,7 +173,12 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.handle("window:get-audio-sources", async () => {
-         const applications = native.getOpenApplications().map((x) => ({ ...x, icon: native.getProcessIconBase64(x.processId) }));
+         const applications = await Promise.all(
+            native.getOpenApplications().map(async (x) => {
+               const icon = await native.getProcessIconBase64(x.processId);
+               return { ...x, icon };
+            }),
+         );
 
          const audioSources: AudioSource[] = applications.map(
             (x) =>
@@ -286,15 +298,23 @@ export class MainWindow extends BaseWindow {
    }
 
    private registerNativeEvents() {
-      ipcMain.handle("native:get-open-applications", () => {
-         const applications = native.getOpenApplications();
+      ipcMain.handle("native:get-open-applications", async () => {
+         const applications = await Promise.all(
+            native.getOpenApplications().map(async (x) => {
+               const [icon, displayName] = await Promise.all([native.getProcessIconBase64(x.processId), native.getPackageDisplayName(x.processId)]);
+               return { ...x, icon, displayName };
+            }),
+         );
 
          return applications;
       });
 
-      const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
+      // const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
       ipcMain.handle("native:get-application-info", async (_, processId: number) => {
-         const info = await applicationIconCache.cacheOrGet(processId, () => native.getApplicationInfo(processId));
+         // const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(processId));
+         const icon = await native.getProcessIconBase64(processId);
+         const displayName = native.getPackageDisplayName(processId);
+         const info = { displayName, icon };
          return info;
       });
    }

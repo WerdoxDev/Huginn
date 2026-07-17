@@ -290,8 +290,8 @@ export type UploadProgress = {
 };
 
 export type DisplaySource = {
-   thumbnail: string;
-   appIcon?: string;
+   thumbnail: string | null;
+   appIcon?: string | null;
    name: string;
    electronId: string;
 };

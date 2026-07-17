@@ -1,3 +1,4 @@
+import AudioSourcePreview from "@components/AudioSourcePreview";
 import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import LoadingIcon from "@components/LoadingIcon";
@@ -24,26 +25,21 @@ const audioQualityToBitrate: Record<string, number> = AUDIO_QUALITIES.reduce(
 
 export default function AudioStreamModal() {
    const { audioStream: modal, updateModals } = useModals();
-   const { data, isFetching, isLoading, refetch } = useQuery({
+   const { data, isLoading } = useQuery({
       queryKey: ["audio-sources"],
       queryFn: async () => await window.electronAPI.getAudioSources(),
       enabled: modal.isOpen,
+      refetchInterval: 1000,
    });
 
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
 
-   const [selectedSource, setSelectedSource] = useState<AudioSource | undefined>();
+   // const [selectedSource, setSelectedSource] = useState<AudioSource | undefined>();
    const [selectedQuality, setSelectedQuality] = useState<SelectItem>(
       qualityOptions.find((x) => x.value === settings.audioStreamQuality) ?? qualityOptions[0],
    );
    const [_, startTransition] = useTransition();
-
-   useEffect(() => {
-      if (modal.isOpen) {
-         refetch();
-      }
-   }, [modal.isOpen]);
 
    useEffect(() => {
       if (!modal.isOpen) {
@@ -55,7 +51,6 @@ export default function AudioStreamModal() {
    }, [modal.isOpen]);
 
    function close() {
-      setSelectedSource(undefined);
       updateModals({ audioStream: { isOpen: false, callback: undefined } });
    }
 
@@ -76,35 +71,9 @@ export default function AudioStreamModal() {
                   <LoadingIcon className="size-16" />
                </div>
             ) : (
-               data?.map((x) => (
-                  <button
-                     key={`${x.processId}-${x.name}`}
-                     type="button"
-                     onClick={() => handleSelect(x)}
-                     className={clsx(
-                        "bg-surface-alt ring-primary-700 flex cursor-pointer flex-col items-center justify-center gap-y-3 rounded-lg px-4 py-6 text-center transition-shadow",
-                        x === selectedSource ? "ring-2" : "hover:ring-2",
-                     )}
-                  >
-                     <img src={x.appIcon} className="aspect-square size-10" />
-                     <div className="text-text w-full truncate text-sm wrap-anywhere">{x.name}</div>
-                  </button>
-               ))
+               data?.map((x) => <AudioSourcePreview onSelect={handleSelect} source={x} key={x.processId} />)
             )}
          </div>
-         <Tooltip>
-            <Tooltip.Trigger asChild>
-               <LoadingButton
-                  className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
-                  color="primary"
-                  onClick={() => refetch()}
-                  isLoading={isFetching}
-               >
-                  <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
-               </LoadingButton>
-            </Tooltip.Trigger>
-            <Tooltip.Content>Refresh</Tooltip.Content>
-         </Tooltip>
          <div className="bg-surface-alt flex w-56 shrink-0 flex-col gap-y-5 p-5">
             <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
                <HuginnSelect.Label>Audio Quality</HuginnSelect.Label>

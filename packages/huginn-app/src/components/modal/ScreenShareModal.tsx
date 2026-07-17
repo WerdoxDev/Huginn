@@ -1,6 +1,6 @@
 import { Accordion } from "@base-ui/react";
 import LoadingButton from "@components/button/LoadingButton";
-import DisplayPreview from "@components/DisplayPreview";
+import DisplaySourcePreview from "@components/DisplaySourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
@@ -33,12 +33,13 @@ const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
 export default function ScreenShareModal() {
    const client = useClient();
    const { screenShare: modal, updateModals } = useModals();
-   const { data, isFetching, isLoading, refetch } = useQuery({
+   const { data, isLoading } = useQuery({
       queryKey: ["display-sources"],
       queryFn: async () => await window.electronAPI.getDisplaySources(),
       enabled: modal.isOpen,
-      // refetchOnMount: true,
+      refetchInterval: 1000,
    });
+
    const { inputDevices, cameraDevices } = useDevice();
    const mediaSources = useMediaSources();
    const videoProducer = useMemo(
@@ -82,10 +83,6 @@ export default function ScreenShareModal() {
    const applications = useMemo(() => data?.filter((x) => x.electronId.includes("window")), [data]);
 
    useEffect(() => {
-      refetch();
-   }, []);
-
-   useEffect(() => {
       if (!modal.isOpen) {
          setValue("settings", {
             ...settings,
@@ -103,7 +100,7 @@ export default function ScreenShareModal() {
       updateModals({ screenShare: { isOpen: false, callback: undefined } });
    }
 
-   async function start(source?: DisplaySource, deviceInfo?: MediaDeviceInfo) {
+   async function handleSelect(source?: DisplaySource, deviceInfo?: MediaDeviceInfo) {
       if ((!source && !deviceInfo) || !selectedFramerate || !selectedQuality) {
          return;
       }
@@ -195,17 +192,17 @@ export default function ScreenShareModal() {
                      <>
                         <HuginnTab.TabPanel value="screens">
                            {screens?.map((x) => (
-                              <DisplayPreview key={x.electronId} source={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.electronId} source={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                         <HuginnTab.TabPanel value="applications">
                            {applications?.map((x) => (
-                              <DisplayPreview key={x.electronId} source={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.electronId} source={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                         <HuginnTab.TabPanel value="devices">
                            {cameraDevices?.map((x) => (
-                              <DisplayPreview key={x.deviceId} deviceInfo={x} onSelect={start} />
+                              <DisplaySourcePreview key={x.deviceId} deviceInfo={x} onSelect={handleSelect} />
                            ))}
                         </HuginnTab.TabPanel>
                      </>
@@ -213,21 +210,6 @@ export default function ScreenShareModal() {
                </HuginnTab.TabPanels>
             </HuginnTab>
          </div>
-         {activeTab !== "devices" && (
-            <Tooltip>
-               <Tooltip.Trigger asChild>
-                  <LoadingButton
-                     className="group absolute bottom-2 left-2 flex size-10 items-center justify-center"
-                     color="primary"
-                     onClick={() => refetch()}
-                     isLoading={isFetching}
-                  >
-                     <IconMingcuteRefresh3Fill className="size-5 transition-transform group-hover:rotate-30" />
-                  </LoadingButton>
-               </Tooltip.Trigger>
-               <Tooltip.Content>Refresh</Tooltip.Content>
-            </Tooltip>
-         )}
          <div className="bg-surface-alt flex w-56 shrink-0 flex-col gap-y-5 p-5">
             <HuginnSelect selected={selectedQuality} onChange={setSelectedQuality}>
                <HuginnSelect.Label>Quality</HuginnSelect.Label>

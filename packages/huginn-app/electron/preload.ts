@@ -1,6 +1,6 @@
 import type { LogArgs } from "@huginn/shared";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { AppInfo, ProcessInfo } from "native-addon";
+import type { ProcessInfo } from "native-addon";
 
 import { contextBridge, ipcRenderer } from "electron";
 
@@ -85,8 +85,10 @@ export const electronAPI = {
    },
 
    // Native
-   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ProcessInfo[]>,
-   getApplicationInfo: (processId: number) => ipcRenderer.invoke("native:get-application-info", processId) as Promise<AppInfo | null>,
+   getOpenApplications: () =>
+      ipcRenderer.invoke("native:get-open-applications") as Promise<(ProcessInfo & { icon: string | null; displayName: string | null })[]>,
+   // getApplicationInfo: (processId: number) =>
+   //    ipcRenderer.invoke("native:get-application-info", processId) as Promise<{ displayName: string | null; icon: string | null }>,
 
    // Voice debug
    openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),
