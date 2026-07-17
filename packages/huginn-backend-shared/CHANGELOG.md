@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.1...backend-shared@v0.30.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **backend-shared:** remove old migrations and start new one ([e0f7386](https://github.com/WerdoxDev/Huginn/commit/e0f73867b8726d6e4010fbcd67b4cc79066b210c))
+
 ## [0.30.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.0...backend-shared@v0.30.1) (2026-07-11)
 
 

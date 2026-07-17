@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.1...voice@v0.19.0) (2026-07-17)
+
+
+### Features
+
+* **voice:** add limit to client sent messages ([96c2b21](https://github.com/WerdoxDev/Huginn/commit/96c2b2172aa6813c5260d912dd9d9229918c733b))
+
 ## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.0...voice@v0.18.1) (2026-07-11)
 
 
