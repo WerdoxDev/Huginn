@@ -281,7 +281,7 @@ export default function ScreenShareModal() {
                         maxValue={CONSTANTS.MAX_AUDIO_BITRATE}
                         minValue={CONSTANTS.MIN_AUDIO_BITRATE}
                         step={10000}
-                        getTooltipText={(v) => `${v / 1000000} mbps`}
+                        getTooltipText={(v) => `${v / 1000} kbps`}
                      >
                         <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000} kbps</HuginnSlider.Label>
                         <HuginnSlider.Input backgroundClassName="bg-surface-deep" />

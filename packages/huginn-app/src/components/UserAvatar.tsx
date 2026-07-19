@@ -77,7 +77,13 @@ export default function UserAvatar(props: {
       <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
          <div
             className="relative h-full w-full overflow-hidden rounded-full"
-            style={props.maskImage ? { maskImage: props.maskImage } : presence && presence.status !== "offline" ? maskStyle : undefined}
+            style={
+               props.maskImage
+                  ? { maskImage: props.maskImage }
+                  : presence && presence.status !== "offline" && presence.status !== "invisible"
+                    ? maskStyle
+                    : undefined
+            }
          >
             <LoadingBackground hasError={hasError} isLoaded={isLoaded || !hasImage} />
             {hasImage ? (
@@ -98,7 +104,9 @@ export default function UserAvatar(props: {
             <div
                className={clsx(
                   "absolute right-0 bottom-0 rounded-full",
-                  presence?.status && presence.status !== "offline" ? PRESENCE_STATUS_MAP[presence.status].color : "bg-transparent",
+                  presence?.status && presence.status !== "offline" && presence.status !== "invisible"
+                     ? PRESENCE_STATUS_MAP[presence.status].color
+                     : "bg-transparent",
                )}
                style={{ width: `${statusSize}rem`, height: `${statusSize}rem` }}
             />

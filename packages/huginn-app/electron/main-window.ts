@@ -6,7 +6,7 @@ import electronUpdater, { CancellationToken } from "electron-updater";
 import native from "native-addon";
 import path from "node:path";
 
-import type { AudioSource, DisplaySource } from "@/types";
+import type { AudioSource, DisplaySource, OsInfo } from "@/types";
 
 import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
@@ -237,6 +237,16 @@ export class MainWindow extends BaseWindow {
    private registerShellEvents() {
       ipcMain.on("shell:open-external", (_, url: string) => {
          shell.openExternal(url);
+      });
+
+      ipcMain.handle("shell:get-os-info", () => {
+         return {
+            platform: process.platform,
+            arch: process.arch,
+            version: process.getSystemVersion(),
+            chromeVersion: process.versions.chrome,
+            electronVersion: process.versions.electron,
+         } as OsInfo;
       });
    }
 

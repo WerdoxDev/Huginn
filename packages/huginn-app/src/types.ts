@@ -23,6 +23,7 @@ import type {
    ChannelType,
 } from "@huginn/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
+import type { ProcessInfo } from "native-addon";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -602,4 +603,14 @@ export type AutocompleteState = {
    type: AutocompleteType | null;
    query: string;
    selectedIndex: number;
+};
+
+export type ApplicationInfo = ProcessInfo & { icon: string | null; displayName: string | null };
+
+export type OsInfo = {
+   platform: string;
+   arch: string;
+   version: string;
+   chromeVersion: string;
+   electronVersion: string;
 };

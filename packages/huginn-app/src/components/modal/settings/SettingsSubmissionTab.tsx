@@ -27,10 +27,10 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const submitMutation = useSubmitKnownApplication();
    const { user } = useThisUser();
-   const { thisPresence } = usePresenceStore();
+   const { session } = usePresenceStore();
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
-   const targetActivity = thisPresence.activities[0];
+   const targetActivity = session.activities[0];
    const accentColor = user?.accentColor ?? "transparent";
 
    const { data } = useQuery({
