@@ -75,10 +75,10 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
          "voice.signaling.status": this.status,
          "voice.signaling.url": this.options.url,
          "voice.signaling.can_resume": this.canResume,
-         "voice.signaling.session_id": this.sessionId ?? "null",
+         "voice.signaling.session.id": this.sessionId ?? "null",
          "voice.signaling.sequence": this.sequence ?? "null",
-         "voice.signaling.channel_id": this.connectionData?.channelId ?? "null",
-         "voice.signaling.guild_id": this.connectionData?.guildId ?? "null",
+         "voice.signaling.channel.id": this.connectionData?.channelId ?? "null",
+         "voice.signaling.guild.id": this.connectionData?.guildId ?? "null",
       };
    }
 
@@ -90,8 +90,8 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiVoiceSignaling.connect", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
-            "params.channel_id": channelId,
-            "params.guild_id": guildId ?? "null",
+            "params.channel.id": channelId,
+            "params.guild.id": guildId ?? "null",
             "params.has_token": !!token,
          });
 
@@ -221,79 +221,81 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    // ============================================================
 
    private async onMessage(e: MessageEvent): Promise<void> {
-      const data: VoicePayload = JSON.parse(e.data);
+      return await analytics.withRootContext(async () => {
+         const data: VoicePayload = JSON.parse(e.data);
 
-      switch (data.op) {
-         case VoiceOperations.HELLO:
-            this.handleHello(data.d);
-            break;
-         case VoiceOperations.DISPATCH:
-            this.sequence = data.s;
+         switch (data.op) {
+            case VoiceOperations.HELLO:
+               this.handleHello(data.d);
+               break;
+            case VoiceOperations.DISPATCH:
+               this.sequence = data.s;
 
-            switch (data.t) {
-               case "ready":
-                  await this.handleReady(data.d);
-                  break;
-               case "resumed":
-                  await this.handleResumed();
-                  break;
+               switch (data.t) {
+                  case "ready":
+                     await this.handleReady(data.d);
+                     break;
+                  case "resumed":
+                     await this.handleResumed();
+                     break;
 
-               case "create_transport_result":
-                  this.emit("create_transport_result", data.d);
-                  break;
-               case "connect_transport_result":
-                  this.emit("connect_transport_result", data.d);
-                  break;
-               case "restart_ice_result":
-                  this.emit("restart_ice_result", data.d);
-                  break;
+                  case "create_transport_result":
+                     this.emit("create_transport_result", data.d);
+                     break;
+                  case "connect_transport_result":
+                     this.emit("connect_transport_result", data.d);
+                     break;
+                  case "restart_ice_result":
+                     this.emit("restart_ice_result", data.d);
+                     break;
 
-               case "produce_result":
-                  this.emit("produce_result", data.d);
-                  break;
-               case "close_producer_result":
-                  this.emit("close_producer_result", data.d);
-                  break;
+                  case "produce_result":
+                     this.emit("produce_result", data.d);
+                     break;
+                  case "close_producer_result":
+                     this.emit("close_producer_result", data.d);
+                     break;
 
-               case "producer_created":
-                  this.emit("producer_created", data.d);
-                  break;
-               case "producer_closed":
-                  this.emit("producer_closed", data.d);
-                  break;
+                  case "producer_created":
+                     this.emit("producer_created", data.d);
+                     break;
+                  case "producer_closed":
+                     this.emit("producer_closed", data.d);
+                     break;
 
-               case "consume_result":
-                  this.emit("consume_result", data.d);
-                  break;
+                  case "consume_result":
+                     this.emit("consume_result", data.d);
+                     break;
 
-               case "resume_consumer_result":
-                  this.emit("resume_consumer_result", data.d);
-                  break;
-               case "pause_consumer_result":
-                  this.emit("pause_consumer_result", data.d);
-                  break;
+                  case "resume_consumer_result":
+                     this.emit("resume_consumer_result", data.d);
+                     break;
+                  case "pause_consumer_result":
+                     this.emit("pause_consumer_result", data.d);
+                     break;
 
-               case "close_consumer_result":
-                  this.emit("close_consumer_result", data.d);
-                  break;
+                  case "close_consumer_result":
+                     this.emit("close_consumer_result", data.d);
+                     break;
 
-               case "consumer_created":
-                  this.emit("consumer_created", data.d);
-                  break;
-               case "consumer_closed":
-                  this.emit("consumer_closed", data.d);
-                  break;
+                  case "consumer_created":
+                     this.emit("consumer_created", data.d);
+                     break;
+                  case "consumer_closed":
+                     this.emit("consumer_closed", data.d);
+                     break;
 
-               case "peer_left":
-                  this.emit("peer_left", data.d);
-                  break;
-            }
+                  case "peer_left":
+                     this.emit("peer_left", data.d);
+                     break;
+               }
 
-            break;
-         case VoiceOperations.PONG:
-            this.handlePong();
-            break;
-      }
+               break;
+            case VoiceOperations.PONG:
+               this.handlePong();
+               break;
+         }
+      });
    }
 
    private handleHello(data: VoiceHelloData) {
