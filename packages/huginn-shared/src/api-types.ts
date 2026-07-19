@@ -383,12 +383,14 @@ export enum MessageType {
 }
 //#endregion
 
-export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
+export type ClientStatusKey = "desktop" | "mobile" | "web";
+export type ClientStatus = Partial<Record<ClientStatusKey, PresenceStatus>>;
+export type PresenceStatus = "offline" | "online" | "dnd" | "idle" | "invisible";
 export type UserPresence = {
    user: PresenceUser;
    status: PresenceStatus;
+   clientStatus: ClientStatus;
    activities: Activity[];
-   activeSessions: ActiveSession[];
 };
 
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
@@ -411,10 +413,6 @@ export type UserSettings = {
    voicePreferences?: VoicePreference[];
 };
 
-export type ActiveSession = {
-   sessionId: Snowflake;
-};
-
 export enum ActivityType {
    PLAYING = 0,
    LISTENING = 1,
@@ -427,10 +425,10 @@ export type Activity = {
    startedAt?: number;
    applicationId?: number;
    iconUrl?: string;
-   sessionId: Snowflake;
+   sessionId?: Snowflake;
 };
 
-export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
+// export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
 
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "desktop";

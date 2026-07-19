@@ -66,7 +66,7 @@ export class WebAnalytics extends Analytics {
             clientId: options.clientId,
          },
          (span) => {
-            span.setAttribute("distinct.id", posthog.get_distinct_id());
+            span.setAttribute("distinct_id", posthog.get_distinct_id());
          },
       );
 
@@ -82,7 +82,7 @@ export class WebAnalytics extends Analytics {
          severityText: options.level.toUpperCase(),
          attributes: {
             ...mergedAttributes,
-            "distinct.id": posthog.get_distinct_id(),
+            distinct_id: posthog.get_distinct_id(),
          },
          exception: options.exception,
       });
@@ -97,13 +97,13 @@ export class WebAnalytics extends Analytics {
    }
 
    public identify(id: string, properties?: Record<string, any>): void {
-      posthog.identify(id, properties);
+      posthog.identify(id, { ...properties });
    }
 
    startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
    startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
    startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
-      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, "distinct.id": posthog.get_distinct_id() } }, (span: Span) => {
+      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, distinct_id: posthog.get_distinct_id() } }, (span: Span) => {
          let result: T | Promise<T>;
 
          try {
