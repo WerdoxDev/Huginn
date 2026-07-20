@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.41.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.0...api@v0.41.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **api:** some analytic fixes ([22fbf66](https://github.com/WerdoxDev/Huginn/commit/22fbf6636ff1a0c6a73bb42b6a1b27a3286c365f))
+
 ## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.40.0...api@v0.41.0) (2026-07-17)
 
 

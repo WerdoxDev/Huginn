@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.19.0...voice@v0.19.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **voice:** analytic name changes ([6103b4d](https://github.com/WerdoxDev/Huginn/commit/6103b4da5db826cde5f3f777ac5579c7973fe352))
+
 ## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.1...voice@v0.19.0) (2026-07-17)
 
 

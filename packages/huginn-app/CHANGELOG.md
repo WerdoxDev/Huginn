@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.82.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.81.0...app@v0.82.0) (2026-07-20)
+
+
+### Features
+
+* **app:** handle new presence model ([e96aa1b](https://github.com/WerdoxDev/Huginn/commit/e96aa1b30d74023bf74df2ac01cb7f62e77af3a9))
+
 ## [0.81.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.80.0...app@v0.81.0) (2026-07-17)
 
 
