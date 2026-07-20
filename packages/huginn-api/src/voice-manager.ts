@@ -199,9 +199,9 @@ export class VoiceManager<V extends Voice = Voice> {
    }
 
    public async applyVoiceState(): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceManager.applyVoiceState", async (span): Promise<void> => {
-         span.setAttributes(this.getDefaultAttributes());
-         await this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState, this.voiceState.voicePreferences);
-      });
+      // return await analytics.startActiveSpan("apiVoiceManager.applyVoiceState", async (span): Promise<void> => {
+      // span.setAttributes(this.getDefaultAttributes());
+      await this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState, this.voiceState.voicePreferences);
+      // });
    }
 }

@@ -3,8 +3,23 @@ version: "3.8"
 networks:
    caddy:
       external: true
+   dozzle:
+      driver: overlay
 
 services:
+   dozzle:
+      image: amir20/dozzle:latest
+      environment:
+         - DOZZLE_MODE=swarm
+      volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+         - /opt/dozzle/data:/data # persist settings per node
+      networks:
+         - dozzle
+         - caddy
+      deploy:
+         mode: global # runs one instance on every node
+
    caddy:
       image: ghcr.io/werdoxdev/caddy:latest
       configs:

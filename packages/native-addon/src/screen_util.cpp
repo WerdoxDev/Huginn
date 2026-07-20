@@ -34,14 +34,17 @@ namespace screen_util
       return monitors;
    }
 
-   const MonitorInfo *FindMonitorByBounds(const std::vector<MonitorInfo> &monitors,
-                                          const RECT &bounds, int tolerancePx)
+   const MonitorInfo *FindMonitorByBounds(const std::vector<MonitorInfo> &monitors, const RECT &bounds, int tolerancePx)
    {
       auto close = [tolerancePx](LONG a, LONG b)
       { return std::abs((long)(a - b)) <= tolerancePx; };
 
       for (const auto &m : monitors)
       {
+         std::cout << "Checking monitor: " << m.hMonitor << " bounds: (" << m.bounds.left << ", " << m.bounds.top
+                   << ", " << m.bounds.right << ", " << m.bounds.bottom << ")" << std::endl;
+         std::cout << "Against requested bounds: (" << bounds.left << ", " << bounds.top << ", " << bounds.right
+                   << ", " << bounds.bottom << ")" << std::endl;
          if (close(m.bounds.left, bounds.left) && close(m.bounds.top, bounds.top) &&
              close(m.bounds.right, bounds.right) && close(m.bounds.bottom, bounds.bottom))
          {
@@ -108,6 +111,7 @@ namespace screen_util
       RECT requested{x, y, x + width, y + height};
 
       auto monitors = EnumerateMonitors();
+      std::cout << "Enumerated " << monitors.size() << " monitors." << std::endl;
       const MonitorInfo *match = FindMonitorByBounds(monitors, requested, 2);
       if (!match)
          return false; // bounds didn't match any current monitor

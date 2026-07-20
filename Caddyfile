@@ -9,3 +9,7 @@
 
    reverse_proxy server:3004
 }
+
+:8080 {
+   reverse_proxy dozzle:8080
+}
