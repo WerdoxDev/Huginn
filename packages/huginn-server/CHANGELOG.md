@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.45.0...server@v0.46.0) (2026-07-20)
+
+
+### Features
+
+* **server:** new presence handling model ([e004fae](https://github.com/WerdoxDev/Huginn/commit/e004fae9212ef0d0fe485059e0cc7429ebae48b7))
+
 ## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.44.0...server@v0.45.0) (2026-07-17)
 
 
