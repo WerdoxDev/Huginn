@@ -17,7 +17,7 @@ const urls: Record<AudioType, string> = {
 } as const;
 
 export function playAudio(type: AudioType, respectStatus?: boolean) {
-   const thisPresence = presenceStore.getState().thisPresence;
+   const thisPresence = presenceStore.getState().session;
    if (thisPresence.status === "dnd" && respectStatus) {
       return;
    }

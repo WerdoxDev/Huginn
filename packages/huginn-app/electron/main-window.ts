@@ -1,4 +1,4 @@
-import { CacheStorage, findClosestString } from "@huginn/shared";
+import { analytics, CacheStorage, findClosestString } from "@huginn/shared";
 import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
 import { app, desktopCapturer, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
 import log from "electron-log";
@@ -6,7 +6,7 @@ import electronUpdater, { CancellationToken } from "electron-updater";
 import native from "native-addon";
 import path from "node:path";
 
-import type { AudioSource, DisplaySource } from "@/types";
+import type { AudioSource, DisplaySource, OsInfo } from "@/types";
 
 import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
@@ -134,42 +134,52 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.handle("window:get-display-sources", async () => {
-         const screens = screen.getAllDisplays();
+         return await analytics.startActiveSpan("electronMain.getDisplaySources", async (span) => {
+            const screens = screen.getAllDisplays();
 
-         const applications = await Promise.all(
-            native.getOpenApplications().map(async (x) => {
-               const [icon, thumbnail] = await Promise.all([
-                  native.getProcessIconBase64(x.processId),
-                  native.getWindowThumbnailBase64(x.hwnd, 256, 256),
-               ]);
-               return { ...x, icon, thumbnail };
-            }),
-         );
+            span.setAttribute("screen.count", screens.length);
 
-         const screenSources: DisplaySource[] = await Promise.all(
-            screens.map(async (x, i) => {
-               const rect = screen.dipToScreenRect(null, x.bounds);
-               const thumbnail = await native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height);
-               const electronId = this.screenManager.getDisplaySourceId(x.id);
-               return {
-                  thumbnail: thumbnail,
-                  electronId: `${electronId}`,
-                  name: `Screen ${i + 1}`,
-               } as DisplaySource;
-            }),
-         );
+            const applications = await Promise.all(
+               native.getOpenApplications().map(async (x) => {
+                  const [icon, thumbnail] = await Promise.all([
+                     native.getProcessIconBase64(x.processId),
+                     native.getWindowThumbnailBase64(x.hwnd, 256, 256),
+                  ]);
+                  return { ...x, icon, thumbnail };
+               }),
+            );
 
-         const applicationSources: DisplaySource[] = applications.map(
-            (x) =>
-               ({
-                  thumbnail: x.thumbnail,
-                  electronId: `window:${x.hwnd}:0`,
-                  name: x.windowTitle,
-                  appIcon: x.icon,
-               }) as DisplaySource,
-         );
+            span.setAttribute("application.count", applications.length);
 
-         return [...screenSources, ...applicationSources];
+            const screenSources: DisplaySource[] = await Promise.all(
+               screens.map(async (x, i) => {
+                  const rect = screen.dipToScreenRect(null, x.bounds);
+                  const thumbnail = await native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height);
+                  const electronId = this.screenManager.getDisplaySourceId(x.id);
+                  return {
+                     thumbnail: thumbnail,
+                     electronId: `${electronId}`,
+                     name: `Screen ${i + 1}`,
+                  } as DisplaySource;
+               }),
+            );
+
+            span.setAttribute("screen_source.count", screenSources.length);
+
+            const applicationSources: DisplaySource[] = applications.map(
+               (x) =>
+                  ({
+                     thumbnail: x.thumbnail,
+                     electronId: `window:${x.hwnd}:0`,
+                     name: x.windowTitle,
+                     appIcon: x.icon,
+                  }) as DisplaySource,
+            );
+
+            span.setAttribute("application_source.count", applicationSources.length);
+
+            return [...screenSources, ...applicationSources];
+         });
       });
 
       ipcMain.handle("window:get-audio-sources", async () => {
@@ -237,6 +247,16 @@ export class MainWindow extends BaseWindow {
    private registerShellEvents() {
       ipcMain.on("shell:open-external", (_, url: string) => {
          shell.openExternal(url);
+      });
+
+      ipcMain.handle("shell:get-os-info", () => {
+         return {
+            platform: process.platform,
+            arch: process.arch,
+            version: process.getSystemVersion(),
+            chromeVersion: process.versions.chrome,
+            electronVersion: process.versions.electron,
+         } as OsInfo;
       });
    }
 

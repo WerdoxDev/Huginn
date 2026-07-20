@@ -1,15 +1,14 @@
-import type { ServerUserPresence } from "@huginn/backend-shared";
-
 import {
-   type ActivityWithoutSessionId,
+   type Activity,
+   type ClientStatus,
+   type ClientStatusKey,
+   type GatewaySession,
    type PresenceStatus,
    type PresenceUser,
    type Snowflake,
    type UserPresence,
    type UserSettings,
    analytics,
-   log,
-   omit,
    pick,
    recordSpanError,
 } from "@huginn/shared";
@@ -19,8 +18,33 @@ import { dispatchToTopic } from "#utils/gateway-utils";
 
 import type { ClientSession } from "./client-session";
 
+type ClientBrowser = "Huginn Client" | "Huginn Mobile" | "Huginn Web" | (string & {});
+
+const BROWSER_TO_PLATFORM_KEY: Record<ClientBrowser, ClientStatusKey> = {
+   "Huginn Client": "desktop",
+   "Huginn Mobile": "mobile",
+   "Huginn Web": "web",
+};
+
+const STATUS_PRIORITY: PresenceStatus[] = ["online", "dnd", "idle", "offline", "invisible"];
+
+// type SessionPresence = {
+//    sessionId: Snowflake;
+//    platform: string;
+//    status: PresenceStatus;
+//    activities: Activity[];
+// };
+
+type AggregatedPresence = {
+   status: PresenceStatus;
+   clientStatus: ClientStatus;
+   activities: Activity[];
+};
+
+const OFFLINE_PRESENCE: AggregatedPresence = { status: "offline", clientStatus: {}, activities: [] };
+
 export class PresenceManager {
-   private presences: Map<Snowflake, ServerUserPresence>;
+   private presences: Map<Snowflake, GatewaySession[]>;
 
    public constructor() {
       this.presences = new Map();
@@ -29,36 +53,32 @@ export class PresenceManager {
    public setUserPresence(userId: Snowflake, session: ClientSession, settings: UserSettings) {
       return analytics.startActiveSpan("presenceManager.setUserPresence", (span) => {
          try {
-            const existingPresence = this.presences.get(userId);
+            const existingSessions = this.presences.get(userId) ?? [];
 
             span.setAttributes({
                "params.user.id": userId,
                "params.session.id": session.sessionId,
                "params.settings.status": settings.status,
                "params.settings.pinned_channels.count": settings.pinnedChannels?.length ?? "null",
-               "presence.has_existing": !!existingPresence,
-               "presence.user.id": existingPresence?.userId ?? "null",
+               "presence.has_existing": existingSessions.length > 0,
+               "presence.existing_sessions.count": existingSessions.length,
+               ...session?.getDefaultAttributes(),
             });
 
-            const presence: ServerUserPresence = {
-               userId: userId,
-               status: existingPresence?.status ?? settings.status,
-               activities: existingPresence?.activities ?? [],
-               activeSessions: [...(existingPresence?.activeSessions ?? []).filter((x) => x.sessionId !== session.sessionId), { sessionId: session.sessionId }],
+            const newSessionPresence: GatewaySession = {
+               sessionId: session.sessionId,
+               clientInfo: {
+                  browser: session.properties?.browser || "web",
+                  os: session.properties?.os || "unknown",
+               },
+               status: settings.status,
+               activities: [],
             };
 
-            span.setAttributes({
-               "presence.active_sessions.count": presence.activeSessions.length,
-               "presence.activities.count": presence.activities.length,
-            });
+            // Replace any existing entry for this exact session (e.g. a reconnect) and add the new one
+            const sessions = [...existingSessions.filter((s) => s.sessionId !== session.sessionId), newSessionPresence];
 
-            this.presences.set(userId, presence);
-
-            if (presence.status !== "offline") {
-               this.sendPresenceUpdate(`${userId}_presence`, presence, { id: userId });
-            }
-
-            this.sendSessionUpdate(userId, presence);
+            this.presences.set(userId, sessions);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -68,69 +88,83 @@ export class PresenceManager {
 
    public updateUserPresence(
       userId: Snowflake,
-      session?: ClientSession,
-      user?: PresenceUser,
-      status?: PresenceStatus,
-      activities?: ActivityWithoutSessionId[],
+      options: {
+         session?: ClientSession;
+         user?: PresenceUser;
+         status?: PresenceStatus;
+         activities?: Activity[];
+         overallStatus?: boolean;
+      } = {},
    ) {
       return analytics.startActiveSpan("presenceManager.updateUserPresence", (span) => {
          try {
-            const existingPresence = this.presences.get(userId);
+            const existingSessions = this.presences.get(userId);
 
             span.setAttributes({
                "params.user.id": userId,
-               "params.session.id": session?.sessionId ?? "null",
-               "params.status": status ?? "null",
-               "params.activities.count": activities?.length ?? "null",
-               "presence.has_existing": !!existingPresence,
-               "presence.has_user": !!user,
+               "params.session.id": options.session?.sessionId ?? "null",
+               "params.status": options.status ?? "null",
+               "params.activities.count": options.activities?.length ?? "null",
+               "presence.has_existing": !!existingSessions,
+               "presence.existing_sessions.count": existingSessions?.length ?? "null",
+               "presence.has_user": !!options.user,
+               ...options.session?.getDefaultAttributes(),
             });
 
-            if (activities && !session) {
+            if (options.activities && !options.session) {
                throw new Error("A new activity was provided but no session");
             }
 
-            if (existingPresence) {
-               let finalActivities = existingPresence.activities;
-
-               // If activities are provided, merge them with existing activities from other sessions
-               if (activities && session) {
-                  // Remove all activities from the current session
-                  const otherSessionActivities = existingPresence.activities.filter((activity) => activity.sessionId !== session.sessionId);
-
-                  // Add the new activities with the session ID
-                  const newSessionActivities = activities.map((activity) => ({
-                     ...activity,
-                     sessionId: session.sessionId,
-                  }));
-
-                  finalActivities = [...otherSessionActivities, ...newSessionActivities];
-
-                  presenceLogger.info(
-                     { userId, sessionId: session.sessionId, otherCount: otherSessionActivities.length, newCount: newSessionActivities.length },
-                     "merged activities",
-                  );
-               }
-
-               const newPresence: ServerUserPresence = {
-                  ...existingPresence,
-                  userId: userId,
-                  status: status ?? existingPresence.status,
-                  activities: finalActivities,
-               };
-
-               span.setAttributes({
-                  "presence.final_status": newPresence.status,
-                  "presence.final_activities.count": newPresence.activities.length,
-               });
-
-               this.presences.set(userId, newPresence);
-               this.sendPresenceUpdate(`${userId}_presence`, newPresence, user ?? { id: userId });
-               this.sendSessionUpdate(userId, newPresence);
-            } else {
+            if (!existingSessions || existingSessions.length === 0) {
                presenceLogger.info({ userId }, "update skipped - no existing presence");
                span.setAttributes({ "presence.update_skipped": true });
+               return;
             }
+
+            let sessions: GatewaySession[];
+
+            if (options.session) {
+               const sessionExists = existingSessions.some((s) => s.sessionId === options.session?.sessionId);
+               if (!sessionExists) {
+                  throw new Error(`Session ${options.session?.sessionId} does not exist for user ${userId}`);
+               }
+
+               // activities need session id attached when sending. receiving activities don't need it.
+               const activities = options.activities?.map((x) => ({ ...x, sessionId: options.session!.sessionId })) ?? undefined;
+               sessions = existingSessions.map((s) => (s.sessionId === options.session?.sessionId ? { ...s, activities: activities ?? s.activities } : s));
+
+               if (!options.overallStatus) {
+                  sessions = sessions.map((s) => (s.sessionId === options.session?.sessionId ? { ...s, status: options.status ?? s.status } : s));
+               } else {
+                  sessions = sessions.map((s) => ({ ...s, status: options.status ?? s.status }));
+               }
+
+               presenceLogger.info(
+                  { userId, sessionId: options.session?.sessionId, activitiesCount: options.activities?.length ?? 0 },
+                  "updated session presence",
+               );
+            } else {
+               sessions = existingSessions.map((s) => ({ ...s, status: options.status ?? s.status }));
+
+               presenceLogger.info({ userId, sessionCount: sessions.length }, "updated all sessions presence");
+            }
+
+            const previousAggregate = this.buildAggregatePresence(existingSessions);
+
+            this.presences.set(userId, sessions);
+
+            const aggregate = this.buildAggregatePresence(sessions);
+
+            span.setAttributes({
+               "presence.final_status": aggregate.status,
+               "presence.final_activities.count": aggregate.activities.length,
+            });
+
+            // only send if there is an actual update. This prevents a privacy leak where an invisible session updates activities
+            if (JSON.stringify(previousAggregate) !== JSON.stringify(aggregate)) {
+               this.sendPresenceUpdate(`${userId}_presence`, aggregate, options.user ?? { id: userId });
+            }
+            this.sendSessionUpdate(userId, sessions);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -141,60 +175,50 @@ export class PresenceManager {
    public removeUserPresence(userId: Snowflake, session: ClientSession) {
       return analytics.startActiveSpan("presenceManager.removeUserPresence", (span) => {
          try {
-            const presence = this.presences.get(userId);
+            const sessions = this.presences.get(userId);
 
             span.setAttributes({
                "params.user.id": userId,
                "params.session.id": session.sessionId,
-               "presence.has_existing": !!presence,
-               "presence.current_status": presence?.status ?? "null",
-               "presence.active_sessions.count": presence?.activeSessions.length ?? "null",
-               "presence.activities.count": presence?.activities.length ?? "null",
+               "presence.has_existing": !!sessions,
+               "presence.existing_sessions.count": sessions?.length ?? "null",
+               ...session?.getDefaultAttributes(),
             });
 
-            if (!presence) {
+            if (!sessions) {
                span.setAttributes({ "presence.remove_skipped": true });
                return;
             }
 
-            const newActiveSessions = presence.activeSessions.filter((x) => x.sessionId !== session.sessionId);
-            const newActivities = presence.activities.filter((x) => x.sessionId !== session.sessionId);
-            const newStatus = newActiveSessions.length === 0 ? "offline" : presence.status;
+            const previousAggregate = this.buildAggregatePresence(sessions);
+            const remainingSessions = sessions.filter((s) => s.sessionId !== session.sessionId);
 
             span.setAttributes({
-               "presence.new_status": newStatus,
-               "presence.remaining_sessions.count": newActiveSessions.length,
-               "presence.remaining_activities.count": newActivities.length,
-               "presence.was_offline": presence.status === "offline",
+               "presence.previous_status": previousAggregate.status,
+               "presence.remaining_sessions.count": remainingSessions.length,
             });
 
-            // Only send the user presence to others if it's not already set to offline. This is to keep a user who set their status to offline to be no different than an actual offline user
-            if (presence.status !== "offline") {
-               const newPresence: ServerUserPresence = {
-                  userId,
-                  status: newStatus,
-                  activeSessions: newActiveSessions,
-                  activities: newActivities,
-               };
-               this.sendPresenceUpdate(`${userId}_presence`, newPresence, { id: userId });
-            }
-
-            // it's length being 0 means it's the only session. So we can easily remove it
-            if (newActiveSessions.length === 0) {
+            // Only send the user presence to others if it wasn't already offline. This keeps a user
+            // who set their status to offline no different from an actual offline user.
+            if (remainingSessions.length === 0) {
                this.presences.delete(userId);
                presenceLogger.info({ userId }, "presence deleted (last session)");
                span.setAttributes({ "presence.deleted": true });
-            }
-            // Otherwise update the active sessions
-            else {
-               const newPresence: ServerUserPresence = {
-                  ...presence,
-                  activeSessions: newActiveSessions,
-                  activities: newActivities,
-               };
-               this.presences.set(userId, newPresence);
-               this.sendSessionUpdate(userId, newPresence);
-               span.setAttributes({ "presence.deleted": false });
+
+               if (previousAggregate.status !== "offline" && previousAggregate.status !== "invisible") {
+                  this.sendPresenceUpdate(`${userId}_presence`, OFFLINE_PRESENCE, { id: userId });
+               }
+            } else {
+               this.presences.set(userId, remainingSessions);
+
+               const newAggregate = this.buildAggregatePresence(remainingSessions);
+
+               if (previousAggregate.status !== "offline" && previousAggregate.status !== "invisible") {
+                  this.sendPresenceUpdate(`${userId}_presence`, newAggregate, { id: userId });
+               }
+
+               this.sendSessionUpdate(userId, remainingSessions);
+               span.setAttributes({ "presence.deleted": false, "presence.new_status": newAggregate.status });
             }
 
             presenceLogger.debug(
@@ -203,7 +227,7 @@ export class PresenceManager {
                   sessionId: session.sessionId,
                   sessions: this.presences
                      .get(userId)
-                     ?.activeSessions.map((s) => s.sessionId)
+                     ?.map((s) => s.sessionId)
                      .join(", "),
                },
                "active sessions",
@@ -224,12 +248,14 @@ export class PresenceManager {
                "params.session.id": session.sessionId,
                "presence.total_tracked": this.presences.size,
                "presence.subscriptions.count": subscriptions.size,
+               ...session?.getDefaultAttributes(),
             });
 
             const presences: UserPresence[] = [];
-            for (const [id, presence] of this.presences) {
+            for (const [id, sessions] of this.presences) {
                if (subscriptions.has(`${id}_presence`)) {
-                  presences.push(this.convertToGatewayPresence(presence, { id: presence.userId }));
+                  const aggregate = this.buildAggregatePresence(sessions);
+                  presences.push(this.convertToGatewayPresence(aggregate, { id }));
                }
             }
 
@@ -243,19 +269,21 @@ export class PresenceManager {
       });
    }
 
-   public getSessionPresence(userId: Snowflake) {
-      return analytics.startActiveSpan("presenceManager.getSessionPresence", (span) => {
+   /** Returns the raw list of sessions currently open for a user (not the aggregated presence). */
+   public getUserSessions(userId: Snowflake) {
+      return analytics.startActiveSpan("presenceManager.getUserSessions", (span) => {
          try {
-            const presence = this.presences.get(userId);
+            const sessions = this.presences.get(userId);
+            const aggregate = sessions ? this.buildAggregatePresence(sessions) : undefined;
 
             span.setAttributes({
                "params.user.id": userId,
-               "presence.found": !!presence,
-               "presence.status": presence?.status ?? "null",
-               "presence.active_sessions.count": presence?.activeSessions.length ?? "null",
+               "presence.found": !!sessions,
+               "presence.status": aggregate?.status ?? "null",
+               "presence.sessions.count": sessions?.length ?? "null",
             });
 
-            return presence;
+            return sessions;
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -272,14 +300,13 @@ export class PresenceManager {
                "params.offline_status": offlineStatus ?? false,
             });
 
-            const presence: ServerUserPresence | undefined = offlineStatus
-               ? { userId: userId, status: "offline", activeSessions: [], activities: [] }
-               : this.presences.get(userId);
+            const sessions = offlineStatus ? undefined : this.presences.get(userId);
+            const aggregate: AggregatedPresence | undefined = offlineStatus ? OFFLINE_PRESENCE : sessions ? this.buildAggregatePresence(sessions) : undefined;
 
-            span.setAttributes({ "presence.found": !!presence });
+            span.setAttributes({ "presence.found": !!aggregate });
 
-            if (presence) {
-               this.sendPresenceUpdate(whomToSendId, presence, { id: userId });
+            if (aggregate) {
+               this.sendPresenceUpdate(whomToSendId, aggregate, { id: userId });
             } else {
                presenceLogger.info({ userId, whomToSendId }, "sendToUser skipped - no presence found");
             }
@@ -290,24 +317,115 @@ export class PresenceManager {
       });
    }
 
-   public convertToGatewayPresence(presence: ServerUserPresence, user: PresenceUser): UserPresence {
+   public sendUserPresenceUpdate(userId: Snowflake) {
+      return analytics.startActiveSpan("presenceManager.sendUserPresence", (span) => {
+         try {
+            const sessions = this.presences.get(userId);
+            const aggregate: AggregatedPresence | undefined = sessions ? this.buildAggregatePresence(sessions) : undefined;
+
+            span.setAttributes({
+               "params.user.id": userId,
+               "presence.found": !!aggregate,
+               "presence.sessions.count": sessions?.length ?? "null",
+            });
+
+            if (aggregate) {
+               this.sendPresenceUpdate(`${userId}_presence`, aggregate, { id: userId });
+            }
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public sendUserSessionUpdate(userId: Snowflake) {
+      return analytics.startActiveSpan("presenceManager.sendUserSession", (span) => {
+         try {
+            const sessions = this.presences.get(userId);
+
+            span.setAttributes({
+               "params.user.id": userId,
+               "presence.sessions.count": sessions?.length ?? "null",
+            });
+
+            if (sessions) {
+               this.sendSessionUpdate(userId, sessions);
+            }
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public convertToGatewayPresence(aggregate: AggregatedPresence, user: PresenceUser): UserPresence {
+      const finalUser = pick(user, ["id", "avatar", "displayName", "flags", "username", "bannerColor", "accentColor", "banner", "bio"]);
+
+      if (aggregate.status === "offline" || aggregate.status === "invisible") return { ...OFFLINE_PRESENCE, user: finalUser };
       return {
-         ...omit(presence, ["userId"]),
+         ...aggregate,
          user: pick(user, ["id", "avatar", "displayName", "flags", "username", "bannerColor", "accentColor", "banner", "bio"]),
       };
    }
 
-   private sendPresenceUpdate(topic: string, presence: ServerUserPresence, user: PresenceUser) {
-      presenceLogger.info({ userId: user.id, topic }, "sendPresenceUpdate");
-      dispatchToTopic(topic, "presence_update", this.convertToGatewayPresence(presence, user));
+   /**
+    * Collapses every session a user has open into the single object that actually gets broadcast:
+    * merged activities (tagged with the session they came from), a `clientStatus` entry per
+    * platform, and one overall `status` resolved via `STATUS_PRIORITY`.
+    */
+   private buildAggregatePresence(sessions: GatewaySession[]): AggregatedPresence {
+      const clientStatus: ClientStatus = {};
+      const statuses: PresenceStatus[] = [];
+      const activities: Activity[] = [];
+
+      for (const session of sessions) {
+         statuses.push(session.status);
+
+         const key = BROWSER_TO_PLATFORM_KEY[session.clientInfo.browser];
+         const existing = clientStatus[key];
+         if (
+            (!existing || this.getStatusPriority(session.status) < this.getStatusPriority(existing)) &&
+            session.status !== "invisible" &&
+            session.status !== "offline"
+         ) {
+            clientStatus[key] = session.status;
+         }
+
+         if (session.status !== "offline" && session.status !== "invisible") {
+            for (const activity of session.activities) {
+               activities.push({ ...activity, sessionId: session.sessionId });
+            }
+         }
+      }
+
+      return {
+         status: this.getOverallStatus(statuses),
+         clientStatus,
+         activities,
+      };
    }
 
-   private sendSessionUpdate(userId: Snowflake, presence: ServerUserPresence) {
-      presenceLogger.info({ userId, status: presence.status }, "sendSessionUpdate");
-      dispatchToTopic(userId, "session_update", {
-         status: presence.status,
-         activities: presence.activities,
-         activeSessions: presence.activeSessions,
-      });
+   private getStatusPriority(status: PresenceStatus): number {
+      const index = STATUS_PRIORITY.indexOf(status);
+      return index === -1 ? STATUS_PRIORITY.length : index;
+   }
+
+   private getOverallStatus(statuses: PresenceStatus[]): PresenceStatus {
+      if (statuses.length === 0) {
+         return "offline";
+      }
+
+      return statuses.reduce((best, current) => (this.getStatusPriority(current) < this.getStatusPriority(best) ? current : best));
+   }
+
+   private sendPresenceUpdate(topic: string, aggregate: AggregatedPresence, user: PresenceUser) {
+      presenceLogger.info({ userId: user.id, topic }, "sendPresenceUpdate");
+      dispatchToTopic(topic, "presence_update", this.convertToGatewayPresence(aggregate, user));
+   }
+
+   private sendSessionUpdate(userId: Snowflake, sessions: GatewaySession[]) {
+      presenceLogger.info({ userId, sessionCount: sessions.length }, "sendSessionUpdate");
+      dispatchToTopic(userId, "session_update", sessions);
    }
 }

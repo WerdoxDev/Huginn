@@ -190,8 +190,8 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
    analytics.startActiveSpan("sendMessagePushNotification", async (span) => {
       try {
          span.setAttributes({
-            "params.channel_id": channelId,
-            "params.message_id": message.id,
+            "params.channel.id": channelId,
+            "params.message.id": message.id,
             "message.author.id": message.author.id,
             "message.content_length": message.content.length,
          });

@@ -26,7 +26,7 @@ export default function UserInfo(props: { user: AppUser }) {
    const { voiceState: localVoiceState } = useVoiceStore();
    const { toggleDeafen, toggleMute } = useVoiceUtils();
    const presence = usePresence(props.user.id);
-   const { thisPresence } = usePresenceStore();
+   const { session } = usePresenceStore();
    const editSettingsMutation = useEditSettings();
    const [isHovered, setIsHovered] = useState(false);
 
@@ -45,7 +45,7 @@ export default function UserInfo(props: { user: AppUser }) {
    }
 
    function setStatus(status: PresenceStatus) {
-      client?.gateway.updatePresence({ status, activities: thisPresence.activities });
+      client?.gateway.updatePresence({ status, activities: session.activities, overallStatus: true });
       editSettingsMutation.mutate({ status });
    }
 
@@ -131,14 +131,16 @@ export default function UserInfo(props: { user: AppUser }) {
                      label={PRESENCE_STATUS_MAP[presence?.status ?? "offline"].text}
                      endSlot={<div className={clsx("size-3 rounded-full", PRESENCE_STATUS_MAP[presence?.status ?? "offline"].color)} />}
                   >
-                     {Object.entries(PRESENCE_STATUS_MAP).map(([key, value]) => (
-                        <HuginnMenu.Item
-                           key={key}
-                           label={value.text}
-                           onClick={() => setStatus(key as PresenceStatus)}
-                           endSlot={<div className={clsx("size-3 rounded-full", value.color)} />}
-                        />
-                     ))}
+                     {Object.entries(PRESENCE_STATUS_MAP)
+                        .filter((x) => x[0] !== "offline")
+                        .map(([key, value]) => (
+                           <HuginnMenu.Item
+                              key={key}
+                              label={value.text}
+                              onClick={() => setStatus(key as PresenceStatus)}
+                              endSlot={<div className={clsx("size-3 rounded-full", value.color)} />}
+                           />
+                        ))}
                   </HuginnMenu.Submenu>
                </HuginnMenu.Content>
             </HuginnMenu>

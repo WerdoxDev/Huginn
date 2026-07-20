@@ -133,8 +133,8 @@ export class VoiceManager<V extends Voice = Voice> {
       return await analytics.startActiveSpan("apiVoiceManager.connectVoice", async (span): Promise<void> => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
-            "params.guild_id": guildId ?? "null",
-            "params.channel_id": channelId,
+            "params.guild.id": guildId ?? "null",
+            "params.channel.id": channelId,
             "params.has_token": !!token,
          });
 
@@ -199,9 +199,9 @@ export class VoiceManager<V extends Voice = Voice> {
    }
 
    public async applyVoiceState(): Promise<void> {
-      return await analytics.startActiveSpan("apiVoiceManager.applyVoiceState", async (span): Promise<void> => {
-         span.setAttributes(this.getDefaultAttributes());
-         await this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState, this.voiceState.voicePreferences);
-      });
+      // return await analytics.startActiveSpan("apiVoiceManager.applyVoiceState", async (span): Promise<void> => {
+      // span.setAttributes(this.getDefaultAttributes());
+      await this.voice.transport.applyVoiceState(this.voiceState.gatewayVoiceState, this.voiceState.localVoiceState, this.voiceState.voicePreferences);
+      // });
    }
 }

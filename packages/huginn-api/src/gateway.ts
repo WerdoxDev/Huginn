@@ -1,5 +1,6 @@
 import type {
    APIUser,
+   GatewayIdentifyProperties,
    GatewayPayload,
    GatewayStatus,
    GatewayUpdatePresenceData,
@@ -226,30 +227,32 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    private async onMessage(e: MessageEvent) {
-      const data: GatewayPayload = JSON.parse(e.data);
+      return await analytics.withRootContext(async () => {
+         const data: GatewayPayload = JSON.parse(e.data);
 
-      switch (data.op) {
-         case GatewayOperations.HELLO: {
-            await this.handleHello(data);
-            break;
-         }
-         case GatewayOperations.DISPATCH: {
-            this.sequence = data.s;
-
-            switch (data.t) {
-               case "ready":
-                  this.handleReady(data.d);
-                  break;
-               case "resumed":
-                  this.handleResumed();
-                  break;
+         switch (data.op) {
+            case GatewayOperations.HELLO: {
+               await this.handleHello(data);
+               break;
             }
+            case GatewayOperations.DISPATCH: {
+               this.sequence = data.s;
 
-            this.emit(data.t, data.d);
+               switch (data.t) {
+                  case "ready":
+                     this.handleReady(data.d);
+                     break;
+                  case "resumed":
+                     this.handleResumed();
+                     break;
+               }
+
+               this.emit(data.t, data.d);
+            }
          }
-      }
 
-      this.emit("message", data);
+         this.emit("message", data);
+      });
    }
 
    private async handleHello(data: GatewayHello) {
@@ -281,8 +284,8 @@ export class Gateway extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiGateway.getVoiceToken", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
-            "params.guild_id": "null",
-            "params.channel_id": channelId,
+            "params.guild.id": "null",
+            "params.channel.id": channelId,
             "params.is_camera_on": !!voiceState?.isCameraOn,
             "params.is_deafened": !!voiceState?.isAudioDeafened,
             "params.is_muted": !!voiceState?.isAudioMuted,
@@ -330,8 +333,8 @@ export class Gateway extends SharedWebsocket<Events> {
       return await analytics.startActiveSpan("apiGateway.updateVoiceState", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
-            "params.channel_id": channelId,
-            "params.guild_id": "null",
+            "params.channel.id": channelId,
+            "params.guild.id": "null",
             "params.is_camera_on": !!options.isCameraOn,
             "params.is_deafened": !!options.isAudioDeafened,
             "params.is_muted": !!options.isAudioMuted,
@@ -360,7 +363,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
          const updatePresenceData: GatewayPayload = {
             op: GatewayOperations.PRESENCE_UPDATE,
-            d: { status: options.status, activities: options.activities },
+            d: { status: options.status, activities: options.activities, overallStatus: options.overallStatus },
          };
 
          this.send(updatePresenceData);
@@ -423,7 +426,7 @@ export class Gateway extends SharedWebsocket<Events> {
             d: {
                token,
                intents: this.options.intents,
-               properties: { os: "windows", browser: "idk", device: "idk" },
+               properties: this.options.properties,
             },
          });
       });
@@ -561,7 +564,7 @@ export class Gateway extends SharedWebsocket<Events> {
          "gateway.url": this.options.url,
          "gateway.intents": this.options.intents,
          "gateway.status": this.status,
-         "gateway.session_id": this.sessionId ?? "null",
+         "gateway.session.id": this.sessionId ?? "null",
          "gateway.user.id": this.user?.id ?? "null",
          "gateway.is_authenticated": this.isAuthenticated,
          "gateway.is_connected": this.isConnected,

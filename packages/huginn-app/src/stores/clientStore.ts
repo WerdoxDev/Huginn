@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import {
@@ -15,6 +17,8 @@ import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
+
+import type { Environment } from "@/types";
 
 import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
@@ -116,9 +120,40 @@ function updateUsersFromReadyData(d: GatewayReadyData) {
    }
 }
 
+const ENV_TO_BROWSER_MAP: Record<Environment, string> = {
+   desktop: "Huginn Client",
+   android: "Huginn Mobile",
+   browser: "Huginn Web",
+};
+
+const NODE_PLATFORM_TO_OS: Record<string, string> = {
+   win32: "windows",
+   darwin: "macos",
+   linux: "linux",
+};
+
+const NAVIGATOR_PLATFORM_TO_OS: Record<string, string> = {
+   MacIntel: "macos",
+   Win32: "windows",
+   "Linux x86_64": "linux",
+};
+
+function getChromeVersion() {
+   var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+   return raw ? parseInt(raw[2], 10) : undefined;
+}
+
 export async function initializeClient() {
    const huginnWindowStore = windowStore.getState();
    let thisStore = store.getState();
+
+   const osInfo = huginnWindowStore.environment === "desktop" ? await window.electronAPI.getOsInfo() : undefined;
+   const deviceInfo = Capacitor.getPlatform() === "android" ? await Device.getInfo() : undefined;
+   const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : (NAVIGATOR_PLATFORM_TO_OS[navigator.platform] ?? "unknown");
+   const arch = osInfo?.arch ?? undefined;
+   const chromeVersion = osInfo?.chromeVersion ?? getChromeVersion()?.toString() ?? undefined;
+   const electronVersion = osInfo?.electronVersion ?? undefined;
+   const osVersion = osInfo?.version ?? deviceInfo?.osVersion ?? undefined;
 
    if (thisStore.client !== undefined) return;
 
@@ -128,6 +163,17 @@ export async function initializeClient() {
       gateway: {
          url: `${thisStore.hostnames.api}/gateway`,
          intents: 0,
+         properties: {
+            browser: ENV_TO_BROWSER_MAP[huginnWindowStore.environment],
+            os: platform,
+            osVersion: osVersion,
+            osArch: arch,
+            device: deviceInfo?.model ?? ENV_TO_BROWSER_MAP[huginnWindowStore.environment] ?? undefined,
+            browserUserAgent: navigator.userAgent,
+            browserVersion: chromeVersion,
+            electronVersion: electronVersion,
+            clientVersion: huginnWindowStore.version,
+         },
          createSocket(url) {
             return new WebSocket(url);
          },
@@ -171,8 +217,6 @@ export async function initializeClient() {
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
          queryClient.setQueryData(["relationships"], getInitialRelationships());
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
-
-         analytics.setDefaultAttributes({ "user.id": d.user.id });
       }),
    );
 

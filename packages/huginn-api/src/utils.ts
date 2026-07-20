@@ -27,6 +27,7 @@ export const defaultClientOptions = {
    gateway: {
       url: "wss://midgard.huginn.dev/gateway",
       intents: 0,
+      properties: { os: "unknown", browser: "unknown", device: "unknown" },
       createSocket(url) {
          return new WebSocket(url);
       },

@@ -214,6 +214,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             // Settings
             const settings = await prisma.settings.getOrCreateSettings(user.id);
 
+            this.presenceManager.setUserPresence(user.id, session, settings);
+
             const readyData: GatewayPayload = {
                op: GatewayOperations.DISPATCH,
                t: "ready",
@@ -226,11 +228,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                   readStates: finalReadStates,
                   callStates: this.voiceManager.getCallStates(userChannels.map((x) => x.id)),
                   voiceStates: this.voiceManager.getVoiceStates(userChannels.map((x) => x.id)),
+                  sessions: this.presenceManager.getUserSessions(user.id)!,
                },
             };
 
             session.send(readyData, true, false);
-            this.presenceManager.setUserPresence(user.id, session, settings);
+
+            this.presenceManager.sendUserPresenceUpdate(user.id);
+            this.presenceManager.sendUserSessionUpdate(user.id);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -240,7 +245,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    private async handleResume(session: ClientSession, data: GatewayResumeData) {
       return await analytics.startActiveSpan("gateway.handleResume", async (span) => {
-         span.setAttributes({ ...session.getDefaultAttributes(), "params.session_id": data.sessionId, "params.seq": data.seq });
+         span.setAttributes({ ...session.getDefaultAttributes(), "params.session.id": data.sessionId, "params.seq": data.seq });
          try {
             const { valid, payload } = await verifyToken("user-access", data.token);
             span.setAttribute("token.valid", valid);
@@ -266,6 +271,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
             result.oldSession.send(resumedData, true, false);
             this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
+            this.presenceManager.sendUserPresenceUpdate(result.user.id);
+            this.presenceManager.sendUserSessionUpdate(result.user.id);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -277,8 +284,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       return await analytics.startActiveSpan("gateway.handleUpdateVoiceState", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
-            "params.channel_id": data.channelId ?? "null",
-            "params.guild_id": data.guildId ?? "null",
+            "params.channel.id": data.channelId ?? "null",
+            "params.guild.id": data.guildId ?? "null",
             "params.is_audio_deafened": data.isAudioDeafened,
             "params.is_audio_muted": data.isAudioMuted,
             "params.is_camera_on": data.isCameraOn,
@@ -317,8 +324,13 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const userId = session.user?.id;
 
             // Make sure the status is valid.
-            if (["offline", "online", "dnd", "idle"].includes(data.status) && userId) {
-               this.presenceManager.updateUserPresence(userId, session, undefined, data.status, data.activities);
+            if (["invisible", "online", "dnd", "idle"].includes(data.status) && userId) {
+               this.presenceManager.updateUserPresence(userId, {
+                  session: session,
+                  status: data.status,
+                  activities: data.activities,
+                  overallStatus: data.overallStatus,
+               });
             }
          } catch (e) {
             recordSpanError(e);

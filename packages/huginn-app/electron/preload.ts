@@ -4,7 +4,7 @@ import type { ProcessInfo } from "native-addon";
 
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
+import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult, ApplicationInfo, OsInfo } from "@/types";
 
 export const electronAPI = {
    // Window
@@ -58,7 +58,11 @@ export const electronAPI = {
       return () => ipcRenderer.off("update:progress", callback);
    },
 
+   // Shell
    openExternal: (url: string) => ipcRenderer.send("shell:open-external", url),
+   getOsInfo: () => ipcRenderer.invoke("shell:get-os-info") as Promise<OsInfo>,
+
+   // CLI
    getArgs: () => ipcRenderer.invoke("cli:get-args") as Promise<string[]>,
    onDeepLink: (callback: (_event: Electron.IpcRendererEvent, cmd: string) => void) => {
       ipcRenderer.on("cli:deep-link", callback);
@@ -85,8 +89,7 @@ export const electronAPI = {
    },
 
    // Native
-   getOpenApplications: () =>
-      ipcRenderer.invoke("native:get-open-applications") as Promise<(ProcessInfo & { icon: string | null; displayName: string | null })[]>,
+   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ApplicationInfo[]>,
    // getApplicationInfo: (processId: number) =>
    //    ipcRenderer.invoke("native:get-application-info", processId) as Promise<{ displayName: string | null; icon: string | null }>,
 

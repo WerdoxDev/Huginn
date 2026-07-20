@@ -188,9 +188,9 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       return await analytics.startActiveSpan("commonWebsocket.resumeSession", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
-            "params.old_session_id": oldSessionId,
+            "params.old_session.id": oldSessionId,
             "params.last_sequence": lastSequence,
-            "params.user_id": userId,
+            "params.user.id": userId,
          });
          try {
             const oldSession = this.sessions.get(oldSessionId);

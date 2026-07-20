@@ -1,7 +1,5 @@
 import type {
-   ActiveSession,
    Activity,
-   ActivityWithoutSessionId,
    APIChannelUser,
    APIEmoji,
    APIMessage,
@@ -132,7 +130,13 @@ export type GatewayIdentifyData = {
 export type GatewayIdentifyProperties = {
    os: string;
    browser: string;
-   device: string;
+   device?: string;
+   clientVersion?: string;
+   osVersion?: string;
+   osArch?: string;
+   browserVersion?: string;
+   electronVersion?: string;
+   browserUserAgent?: string;
 };
 
 export type GatewayReadyData = {
@@ -144,6 +148,7 @@ export type GatewayReadyData = {
    readStates: APIReadStateWithoutUser[];
    callStates: GatewayCallState[];
    voiceStates: GatewayVoiceState[];
+   sessions: GatewaySession[];
 };
 
 export type GatewayResume = {
@@ -239,16 +244,29 @@ export type GatewayUpdatePresence = {
 
 export type GatewayUpdatePresenceData = {
    status: PresenceStatus;
-   activities: ActivityWithoutSessionId[];
+   activities: Activity[];
+   overallStatus?: boolean;
 };
 
 export type GatewaySettingsUpdateData = Partial<UserSettings>;
 
-export type GatewaySessionUpdateData = {
+export type GatewaySession = {
+   sessionId: Snowflake;
    status: PresenceStatus;
+   clientInfo: {
+      browser: string;
+      os: string;
+   };
    activities: Activity[];
-   activeSessions: ActiveSession[];
 };
+
+export type GatewaySessionUpdateData = GatewaySession[];
+// export type GatewaySessionUpdateData = {
+//    status: PresenceStatus;
+//    activities: Activity[];
+//    clientStatus: ClientStatus;
+//    sessions: Array<{ sessionId: Snowflake; platform: string; status: PresenceStatus }>;
+// };
 
 export type GatewayMessageReactionAddData = {
    userId: Snowflake;

@@ -6,7 +6,7 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "start": "node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/index.ts",
+      "start": "node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
       "dev": "node --import=tsx --watch --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
       "bun-dev": "bun ./src/index.ts"
    },

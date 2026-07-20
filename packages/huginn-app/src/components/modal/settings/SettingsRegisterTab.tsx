@@ -13,12 +13,12 @@ import { useMemo, useState } from "react";
 import type { SelectItem, SettingsTabProps } from "@/types";
 
 export default function SettingsRegisterTab(_props: SettingsTabProps) {
-   const { thisPresence } = usePresenceStore();
+   const { session } = usePresenceStore();
    const { user } = useThisUser();
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
-   const targetActivity = thisPresence.activities[0];
+   const targetActivity = session.activities[0];
    const customApplications = useStorage("custom-applications");
    const { setValue } = useStorageStore();
    const accentColor = user?.accentColor ?? "transparent";
