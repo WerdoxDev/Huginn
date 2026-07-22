@@ -12,6 +12,7 @@ import Icons from "unplugin-icons/vite";
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import "dotenv/config";
 
 import { version } from "./package.json";
 // const reactCompilerConfig = { target: "19" };
@@ -22,10 +23,13 @@ const keyFile = isHttps ? fs.readFileSync("./certs/key.pem") : undefined;
 const certFile = isHttps ? fs.readFileSync("./certs/cert.pem") : undefined;
 
 // https://vitejs.dev/config/
+// console.log(process.env);
 export default defineConfig(({ mode }) => {
    const isElectron = mode === "electron";
    const isCapacitor = mode === "capacitor";
-   const shouldUploadSourcemaps = process.env.VERCEL === "1" || process.env.CI === "true";
+   const isGithub = !!process.env.GITHUB_ACTIONS || process.env.CI === "true";
+   const isVercel = process.env.VERCEL === "1" || process.env.CI === "1";
+   const shouldUploadSourcemaps = isGithub || isVercel;
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
    // const isVercelPreview = process.env.VERCEL === "1";
    const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app/";
@@ -94,7 +98,7 @@ export default defineConfig(({ mode }) => {
             host: "https://eu.posthog.com",
             sourcemaps: {
                enabled: shouldUploadSourcemaps,
-               releaseName: `huginn-app-${isCapacitor ? "android" : "desktop"}`,
+               releaseName: `huginn-app-${isCapacitor ? "android" : isVercel ? "web" : "desktop"}`,
                releaseVersion: isVercelPreview ? process.env.VERCEL_GITHUB_COMMIT_SHA : version.toString(),
             },
          }),

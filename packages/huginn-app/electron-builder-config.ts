@@ -24,7 +24,7 @@ export default {
       "dist/**/*",
       "!dist/electron",
       "!node_modules",
-      "node_modules/application-loopback/**/*",
+      "node_modules/loopback-capture/**/*",
       "node_modules/native-addon/**/*",
       "node_modules/emojibase-data/**/*",
       ".electron/**/*",

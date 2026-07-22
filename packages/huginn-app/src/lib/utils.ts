@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 
+import { TransportError } from "@huginn/api";
 import {
    type APIMessage,
    type APIPostMessageReferenceJSONBody,
@@ -8,6 +9,7 @@ import {
    type APIUserProfile,
    ChannelType,
    type DirectChannel,
+   type GatewaySession,
    HuginnAPIError,
    type HuginnError,
    MessageFlags,
@@ -16,6 +18,7 @@ import {
    type PresenceUser,
    type Snowflake,
    type UserPresence,
+   VoiceSignallingError,
    WorkerID,
    changeUrlBase,
    omit,
@@ -165,6 +168,15 @@ export function convertToAppPresence(presence: UserPresence): AppPresence {
    return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
 
+export function convertToAppSession(session: GatewaySession): GatewaySession {
+   const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
+   const activities = session.activities.map((x) => ({
+      ...x,
+      iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined,
+   }));
+   return { ...session, activities };
+}
+
 export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: string }> = {
    invisible: { text: "Invisible", color: "bg-white/50" },
    offline: { text: "Offline", color: "bg-white/50" },
@@ -173,7 +185,14 @@ export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: 
    online: { text: "Online", color: "bg-positive-300" },
 } as const;
 
-export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
+export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "audio") {
+   if (e instanceof TransportError) {
+      switch (e.code) {
+         case VoiceSignallingError.WRONG_STATE:
+            return "The voice connection is in the wrong state. Please try again.";
+      }
+   }
+
    const defaultError = "An unexpected error occurred. Please try again.";
    if (!(e instanceof DOMException)) {
       return defaultError;
@@ -183,17 +202,25 @@ export function getMediaErrorMessage(e: unknown, type: "camera" | "screen") {
       case "NotAllowedError":
          return type === "camera"
             ? "Huginn doesn't have access to your camera. Please allow it and try again."
-            : "Huginn doesn't have access to your screen. Please allow it and try again.";
+            : type === "audio"
+              ? "Huginn doesn't have access to your audio. Please allow it and try again."
+              : "Huginn doesn't have access to your screen. Please allow it and try again.";
       case "NotFoundError":
-         return type === "camera" ? "No camera was found" : "No screens or windows were found";
+         return type === "camera" ? "No camera was found" : type === "audio" ? "No audio was found" : "No screens or windows were found";
       case "AbortError":
-         return type === "camera" ? "Camera access was canceled before it started." : "Screen sharing was canceled before it started.";
+         return type === "camera"
+            ? "Camera access was canceled before it started."
+            : type === "audio"
+              ? "Audio access was canceled before it started."
+              : "Screen sharing was canceled before it started.";
       case "NotReadableError":
          return type === "camera"
-            ? "Your system prevented access to your camera. Try restarting your browser."
-            : "Your system prevented screen sharing. Try restarting your browser.";
+            ? "Your system prevented access to your camera. Try restarting your browser/client."
+            : type === "audio"
+              ? "Your system prevented audio access. Try restarting your browser/client."
+              : "Your system prevented screen sharing. Try restarting your browser/client.";
       case "SecurityError":
-         return "Your browser blocked this action for security reasons. Try restarting your browser.";
+         return "Your browser blocked this action for security reasons. Try restarting your browser/client.";
 
       default:
          return defaultError;

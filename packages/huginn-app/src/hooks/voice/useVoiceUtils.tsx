@@ -93,8 +93,11 @@ export function useVoiceUtils() {
                         await client?.voice.stopAudioLoopback();
 
                         let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
-                        if (!audioTrack && options.isAudioEnabled && options.type === "display") {
-                           audioTrack = await client?.voice.startAudioLoopback(options.sourceName);
+                        if (!audioTrack && options.isAudioEnabled && options.type !== "device") {
+                           audioTrack = await client?.voice.startAudioLoopback(
+                              options.type === "screen" ? "system" : "application",
+                              options.processId,
+                           );
                         }
 
                         const videoTrack = options.stream.getVideoTracks()[0];
@@ -113,8 +116,23 @@ export function useVoiceUtils() {
                            },
                         });
 
-                        await closeStream();
+                        analytics.log({ level: "error", body: "failed to open screen share", exception: e, attributes: { options } });
+
+                        if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio"))
+                           await closeStream();
                      }
+                  },
+                  errback: ({ error }) => {
+                     updateModals({
+                        info: {
+                           status: "error",
+                           title: "Screen Sharing Failed",
+                           text: getMediaErrorMessage(error, "screen"),
+                           isOpen: true,
+                        },
+                     });
+
+                     analytics.log({ level: "error", body: "failed to open screen share", exception: error });
                   },
                },
             });
@@ -149,7 +167,7 @@ export function useVoiceUtils() {
                try {
                   // Reset loopback even if we want to start a new one / end the last one
                   await client?.voice.stopAudioLoopback();
-                  const audioTrack = await client?.voice.startAudioLoopback(undefined, options.processId);
+                  const audioTrack = await client?.voice.startAudioLoopback("application", options.processId);
 
                   if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
 
@@ -168,7 +186,7 @@ export function useVoiceUtils() {
                      info: {
                         status: "error",
                         title: "Audio Stream Failed",
-                        text: "An unexpected error occurred. Please try again.",
+                        text: getMediaErrorMessage(e, "audio"),
                         isOpen: true,
                      },
                   });
@@ -177,6 +195,18 @@ export function useVoiceUtils() {
 
                   if (client?.voice.transport.getProducer("stream_audio")) await closeStream();
                }
+            },
+            errback: ({ error }) => {
+               updateModals({
+                  info: {
+                     status: "error",
+                     title: "Audio Stream Failed",
+                     text: getMediaErrorMessage(error, "audio"),
+                     isOpen: true,
+                  },
+               });
+
+               analytics.log({ level: "error", body: "failed to open audio stream", exception: error });
             },
          },
       });
@@ -234,7 +264,7 @@ export function useVoiceUtils() {
             info: {
                status: "error",
                title: "Watching/Listening Stream Failed",
-               text: "An unexpected error occurred. Please try again.",
+               text: getMediaErrorMessage(e),
                isOpen: true,
             },
          });

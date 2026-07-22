@@ -278,16 +278,10 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   public async startAudioLoopback(processTitle?: string, processId?: number) {
-      log("app:voice-bridge", "default", "start audio loopback", "ptit:", processTitle, "pid:", processId);
+   public async startAudioLoopback(mode: "system" | "application", processId?: number) {
+      if (!window.electronAPI) return;
 
-      if (!window.electronAPI) {
-         return;
-      }
-
-      const result = await window.electronAPI.startAudioLoopback(processTitle, processId);
-
-      if (!result) throw new Error(`Process audio loopback with title: ${processTitle} or id: ${processId} failed`);
+      window.electronAPI.startAudioLoopback(mode, processId);
 
       const { sampleRate, numChannels } = { sampleRate: 48000, numChannels: 2 };
       /* @ts-ignore */

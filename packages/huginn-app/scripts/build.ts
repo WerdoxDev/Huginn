@@ -10,7 +10,7 @@ const noExternal = [
    "@huginn/shared",
    "@huginn/shared/runtime-analytics",
    "native-addon",
-   // "electron-log/main",
+   "loopback-capture",
    "electron-updater",
    "moment",
    "posthog-node",
@@ -25,7 +25,7 @@ await build({
 
    deps: {
       neverBundle: external,
-      alwaysBundle: isProd ? noExternal : ["@huginn/shared", "native-addon"],
+      alwaysBundle: isProd ? noExternal : ["@huginn/shared", "native-addon", "loopback-capture"],
 
       onlyBundle: false,
    },

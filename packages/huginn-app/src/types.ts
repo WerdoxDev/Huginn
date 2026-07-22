@@ -3,6 +3,7 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
+import type { Gateway } from "@huginn/api";
 import type {
    APICallMessage,
    APIDefaultMessage,
@@ -21,6 +22,7 @@ import type {
    MessageFlags,
    ThemeType,
    ChannelType,
+   GatewaySession,
 } from "@huginn/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
@@ -295,6 +297,7 @@ export type DisplaySource = {
    appIcon?: string | null;
    name: string;
    electronId: string;
+   processId?: number;
 };
 
 export type AudioSource = {
