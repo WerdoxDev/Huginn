@@ -1,8 +1,8 @@
-import { analytics, CacheStorage, findClosestString } from "@huginn/shared";
-import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, desktopCapturer, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
+import { analytics } from "@huginn/shared";
+import { app, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
 import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";
+import loopback, { type LoopbackCapture } from "loopback-capture";
 import native from "native-addon";
 import path from "node:path";
 
@@ -22,6 +22,7 @@ export class MainWindow extends BaseWindow {
    private voiceDebugWindow?: VoiceDebugWindow;
    private notificationController: NotificationController = new NotificationController();
    private screenManager: ScreenManager = new ScreenManager();
+   private loopbackCapture: LoopbackCapture | undefined;
 
    public constructor() {
       super("main", {
@@ -58,16 +59,21 @@ export class MainWindow extends BaseWindow {
 
    private registerSessionEvents() {
       session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
-         if (!this.selectedDisplaySource) {
+         try {
+            if (!this.selectedDisplaySource) {
+               callback({});
+               return;
+            }
+
+            callback({
+               video: request.videoRequested ? { id: this.selectedDisplaySource.electronId, name: this.selectedDisplaySource.name } : undefined,
+               audio: undefined,
+               enableLocalEcho: false,
+            });
+         } catch (e) {
+            console.error("Error handling display media request:", e);
             callback({});
-            return;
          }
-         const audio = request.audioRequested && this.selectedDisplaySource.electronId.includes("screen") ? "loopback" : undefined;
-         callback({
-            video: { id: this.selectedDisplaySource.electronId, name: this.selectedDisplaySource.name },
-            ...(audio ? { audio: audio } : {}),
-            enableLocalEcho: false,
-         });
       });
    }
 
@@ -160,6 +166,7 @@ export class MainWindow extends BaseWindow {
                      thumbnail: thumbnail,
                      electronId: `${electronId}`,
                      name: `Screen ${i + 1}`,
+                     processId: undefined,
                   } as DisplaySource;
                }),
             );
@@ -173,6 +180,7 @@ export class MainWindow extends BaseWindow {
                      electronId: `window:${x.hwnd}:0`,
                      name: x.windowTitle,
                      appIcon: x.icon,
+                     processId: x.processId,
                   }) as DisplaySource,
             );
 
@@ -283,36 +291,24 @@ export class MainWindow extends BaseWindow {
    }
 
    private registerAudioEvents(window: BrowserWindow) {
-      ipcMain.handle("audio:start-loopback", async (_, processTitle?: string, processId?: number) => {
-         let foundProcessId: string | undefined;
-         if (processTitle) {
-            const processIds = await getActiveWindowProcessIds();
-            const bestTitleMatch = findClosestString(
-               processTitle,
-               processIds.map((x) => x.title),
-            );
-            foundProcessId = processIds.find((x) => x.title === bestTitleMatch.match)?.processId;
-         } else if (processId) {
-            foundProcessId = processId.toString();
-         }
+      ipcMain.on("audio:start-loopback", (_, mode: "system" | "application", processId?: number) => {
+         this.loopbackCapture = new loopback.LoopbackCapture();
 
-         if (foundProcessId) {
-            startAudioCapture(foundProcessId, {
-               onData(data) {
-                  window.webContents.send("audio:loopback-data", data);
-               },
+         if (mode === "application" && processId) {
+            this.loopbackCapture.start(processId, true, (data) => {
+               window.webContents.send("audio:loopback-data", data);
             });
-
-            this.previousProcessId = foundProcessId;
-            return true;
          } else {
-            return false;
+            this.loopbackCapture.startSystemAudio((data) => {
+               window.webContents.send("audio:loopback-data", data);
+            });
          }
       });
 
       ipcMain.handle("audio:stop-loopback", () => {
-         if (this.previousProcessId) {
-            stopAudioCapture(this.previousProcessId);
+         if (this.loopbackCapture) {
+            this.loopbackCapture.stop();
+            this.loopbackCapture = undefined;
          }
       });
    }

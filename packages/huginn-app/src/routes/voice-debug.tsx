@@ -25,6 +25,7 @@ const debugTabs = [
    { value: "alcs", label: "ALCs" },
    { value: "consumers", label: "Consumers" },
    { value: "producers", label: "Producers" },
+   { value: "transports", label: "Transports" },
    { value: "stats-parsers", label: "Stats Parsers" },
 ] as const;
 
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/voice-debug")({ component: VoiceDebugComp
 
 function VoiceDebugComponent() {
    const [data, setData] = useState<VoiceDebugData>();
+   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date>();
 
    const usersLookup = useLookup(data?.usersData, (x) => x.id);
    const producersLookup = useLookup(data?.producersData, (x) => x.id);
@@ -41,6 +43,7 @@ function VoiceDebugComponent() {
 
       channel.onmessage = (d) => {
          setData(d.data);
+         setLastUpdatedAt(new Date());
       };
 
       return () => {
@@ -48,36 +51,61 @@ function VoiceDebugComponent() {
       };
    }, []);
 
+   const transportEndpoints = [
+      ...(data?.producersData ?? []).map((endpoint) => ({ endpoint, endpointType: "Producer" as const })),
+      ...(data?.consumersData ?? []).map((endpoint) => ({ endpoint, endpointType: "Consumer" as const })),
+   ].filter(({ endpoint }) => endpoint.stats?.transport || endpoint.stats?.connection);
+   // .filter((item, index, items) => {
+   //    const transportId = item.endpoint.stats?.transport?.id;
+   //    return !transportId || items.findIndex((candidate) => candidate.endpoint.stats?.transport?.id === transportId) === index;
+   // });
+
    return (
-      <div className="h-full overflow-hidden p-1 leading-4 text-white">
-         <Tabs.Root className="flex h-full flex-col gap-y-5" defaultValue="users">
-            <Tabs.List className="flex flex-wrap gap-2">
+      <div className="bg-surface-deep h-full overflow-hidden p-3 text-white">
+         <Tabs.Root className="flex h-full min-h-0 flex-col gap-y-3" defaultValue="users">
+            <header className="flex shrink-0 items-start justify-between gap-3">
+               <div>
+                  <h1 className="text-lg font-semibold tracking-tight">Voice debugger</h1>
+                  <p className="mt-0.5 text-xs text-white/45">Live WebRTC state and media diagnostics</p>
+               </div>
+               <div className="bg-surface flex items-center gap-2 rounded-full px-2.5 py-1 text-xs text-white/60">
+                  <span className={clsx("size-2 rounded-full", data ? "bg-positive-500" : "bg-white/25")} />
+                  {data ? `Updated ${lastUpdatedAt?.toLocaleTimeString()}` : "Waiting for data"}
+               </div>
+            </header>
+
+            <Tabs.List className="bg-surface flex shrink-0 flex-wrap gap-1 rounded-lg p-1">
                {debugTabs.map((tab) => (
-                  <DebugTab key={tab.value} value={tab.value}>
+                  <DebugTab key={tab.value} value={tab.value} count={getTabCount(tab.value, data, transportEndpoints.length)}>
                      {tab.label}
                   </DebugTab>
                ))}
             </Tabs.List>
-            <div className="scroll-alternative2 flex h-full w-full overflow-y-auto">
-               <Tabs.Panel value="users" className="flex w-full flex-col gap-y-2">
+            <div className="scroll-alternative2 min-h-0 flex-1 overflow-y-auto pr-1">
+               {!data && <EmptyState title="Waiting for voice data" detail="Open or join a voice session to start receiving debug information." />}
+               <Tabs.Panel value="users" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.usersData.length === 0 && <EmptyState title="No users" detail="No users are present in the latest voice snapshot." />}
                   {data?.usersData.map((x, index) => (
                      <UserViewer key={x.id} data={x} index={index} />
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="voice-states" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="voice-states" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.voiceStatesData.length === 0 && <EmptyState title="No voice states" detail="No active voice states were reported." />}
                   {data?.voiceStatesData.map((x, index) => (
                      <VoiceStateViewer key={`${x.userId}-${x.sessionId}-${index}`} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="asps" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="asps" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.aspData.length === 0 && <EmptyState title="No audio source players" detail="No audio source players are active." />}
                   {data?.aspData.map((x, index) => (
                      <ASPViewer key={x.producerId ?? index} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="alcs" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="alcs" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.alcData.length === 0 && <EmptyState title="No audio level checkers" detail="No audio level checkers are active." />}
                   {data?.alcData.map((x, index) => (
                      <ALCViewer
                         key={`${x.producerId}-${x.consumerId}-${index}`}
@@ -88,19 +116,41 @@ function VoiceDebugComponent() {
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="consumers" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="consumers" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.consumersData.length === 0 && <EmptyState title="No consumers" detail="No media consumers are active." />}
                   {data?.consumersData.map((x, index) => (
                      <ConsumerViewer key={x.id} data={x} usersLookup={usersLookup} producer={producersLookup[x.producerId]} index={index} />
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="producers" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="producers" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.producersData.length === 0 && <EmptyState title="No producers" detail="No media producers are active." />}
                   {data?.producersData.map((x, index) => (
                      <ProducerViewer key={x.id} data={x} user={usersLookup[x.userId]} index={index} />
                   ))}
                </Tabs.Panel>
 
-               <Tabs.Panel value="stats-parsers" className="flex w-full flex-col gap-y-2">
+               <Tabs.Panel value="transports" className="grid w-full gap-3 xl:grid-cols-2">
+                  {transportEndpoints.length === 0 && data ? (
+                     <EmptyState
+                        title="No transport stats"
+                        detail="Transport data will appear once a local media endpoint starts reporting WebRTC stats."
+                     />
+                  ) : (
+                     transportEndpoints.map(({ endpoint, endpointType }, index) => (
+                        <TransportViewer
+                           key={`${endpointType}-${endpoint.id}`}
+                           data={endpoint}
+                           endpointType={endpointType}
+                           user={usersLookup[endpoint.userId]}
+                           index={index}
+                        />
+                     ))
+                  )}
+               </Tabs.Panel>
+
+               <Tabs.Panel value="stats-parsers" className="grid w-full gap-3 xl:grid-cols-2">
+                  {data && data.statsParsersData.length === 0 && <EmptyState title="No stats parsers" detail="No WebRTC stats parsers are active." />}
                   {data?.statsParsersData.map((x, index) => (
                      <StatsParserViewer key={x.id} data={x} index={index} />
                   ))}
@@ -111,26 +161,53 @@ function VoiceDebugComponent() {
    );
 }
 
-function DebugTab(props: { children?: ReactNode; value: string }) {
+function getTabCount(value: (typeof debugTabs)[number]["value"], data: VoiceDebugData | undefined, transportCount: number) {
+   if (!data) return 0;
+
+   const counts = {
+      users: data.usersData.length,
+      "voice-states": data.voiceStatesData.length,
+      asps: data.aspData.length,
+      alcs: data.alcData.length,
+      consumers: data.consumersData.length,
+      producers: data.producersData.length,
+      transports: transportCount,
+      "stats-parsers": data.statsParsersData.length,
+   };
+
+   return counts[value];
+}
+
+function EmptyState(props: { title: string; detail: string }) {
+   return (
+      <div className="bg-surface col-span-full flex min-h-40 flex-col items-center justify-center rounded-xl border border-white/5 px-6 text-center">
+         <div className="font-medium text-white/80">{props.title}</div>
+         <div className="mt-1 max-w-sm text-sm text-white/40">{props.detail}</div>
+      </div>
+   );
+}
+
+function DebugTab(props: { children?: ReactNode; value: string; count: number }) {
    return (
       <Tabs.Tab
          type="button"
          value={props.value}
          className={({ active }) =>
             clsx(
-               "bg-surface shrink-0 cursor-pointer px-2 py-1 outline-none",
-               active ? "bg-primary-600 text-white" : "text-white/70 hover:bg-white/5 hover:text-white",
+               "flex shrink-0 cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors outline-none",
+               active ? "bg-primary-700 text-white shadow-sm" : "text-white/55 hover:bg-white/5 hover:text-white/90",
             )
          }
       >
          {props.children}
+         <span className="rounded bg-black/15 px-1.5 py-0.5 text-[10px] leading-none tabular-nums">{props.count}</span>
       </Tabs.Tab>
    );
 }
 
 function UserViewer(props: { data: UsersDebugData; index: number }) {
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`User ${props.index}`}>
             <Field text="ID" value={props.data.id} />
             <Field text="Username" value={props.data.username} />
@@ -142,11 +219,11 @@ function UserViewer(props: { data: UsersDebugData; index: number }) {
    );
 }
 
-function VoiceStateViewer(props: { data: VoiceStatesDebugData; user: UsersDebugData; index: number }) {
+function VoiceStateViewer(props: { data: VoiceStatesDebugData; user?: UsersDebugData; index: number }) {
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`Voice State ${props.index}`}>
-            <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
+            <Field text="User ID" value={`${props.data.userId} (${props.user?.username ?? "Unknown user"})`} />
             <Field text="Channel ID" value={props.data.channelId} />
             <Field text="Guild ID" value={props.data.guildId} />
             <Field text="Session ID" value={props.data.sessionId} />
@@ -163,9 +240,85 @@ function VoiceStateViewer(props: { data: VoiceStatesDebugData; user: UsersDebugD
    );
 }
 
+function TransportViewer(props: {
+   data: ProducerDebugData | ConsumerDebugData;
+   endpointType: "Producer" | "Consumer";
+   user?: UsersDebugData;
+   index: number;
+}) {
+   const connection = props.data.stats?.connection;
+   const transport = props.data.stats?.transport;
+
+   return (
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
+         <Section text={`Transport ${props.index}`}>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+               <span className="bg-primary-700/40 rounded-full px-2 py-1 text-xs font-medium text-white/80">{props.endpointType}</span>
+               <span className="bg-surface-alt rounded-full px-2 py-1 text-xs text-white/60">{props.data.type}</span>
+               {transport?.iceState && <StatusBadge label={`ICE ${transport.iceState}`} active={transport.iceState === "connected"} />}
+               {transport?.dtlsState && <StatusBadge label={`DTLS ${transport.dtlsState}`} active={transport.dtlsState === "connected"} />}
+            </div>
+            <Field text="Transport ID" value={transport?.id} />
+            <Field text="Endpoint ID" value={props.data.id} />
+            <Field text="User" value={`${props.data.userId} (${props.user?.username ?? "Unknown user"})`} />
+            <Field text="RTT" value={formatMilliseconds(connection?.rtt)} />
+            <Field text="Available Incoming" value={formatBitrate(connection?.availableIncomingBitrate)} />
+            <Field text="Available Outgoing" value={formatBitrate(connection?.availableOutgoingBitrate)} />
+
+            {transport && (
+               <Section text="Traffic" className="mt-3">
+                  <Field text="Bytes Received" value={formatBytes(transport.bytesReceived)} />
+                  <Field text="Bytes Sent" value={formatBytes(transport.bytesSent)} />
+                  <Field text="Packets Received" value={transport.packetsReceived} />
+                  <Field text="Packets Sent" value={transport.packetsSent} />
+               </Section>
+            )}
+
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+               <CandidateViewer title="Local candidate" data={connection?.localCandidate} />
+               <CandidateViewer title="Remote candidate" data={connection?.remoteCandidate} />
+            </div>
+         </Section>
+      </div>
+   );
+}
+
+function StatusBadge(props: { label: string; active: boolean }) {
+   return (
+      <span className={clsx("rounded-full px-2 py-1 text-xs", props.active ? "bg-positive-500/20 text-positive-500" : "bg-white/5 text-white/55")}>
+         {props.label}
+      </span>
+   );
+}
+
+function CandidateViewer(props: { title: string; data?: { address?: string; port?: number; protocol?: "tcp" | "udp" } }) {
+   return (
+      <Section text={props.title} className="bg-surface-alt rounded-lg p-2.5">
+         <Field text="Address" value={props.data?.address} />
+         <Field text="Port" value={props.data?.port} />
+         <Field text="Protocol" value={props.data?.protocol} />
+      </Section>
+   );
+}
+
+function formatBytes(value?: number) {
+   if (value === undefined) return undefined;
+   if (value < 1_000) return `${value} B`;
+   if (value < 1_000_000) return `${(value / 1_000).toFixed(1)} KB`;
+   return `${(value / 1_000_000).toFixed(2)} MB`;
+}
+
+function formatBitrate(value?: number) {
+   return value === undefined ? undefined : `${(value / 1_000_000).toFixed(2)} Mbps`;
+}
+
+function formatMilliseconds(value?: number) {
+   return value === undefined ? undefined : `${(value * 1_000).toFixed(0)} ms`;
+}
+
 function StatsParserViewer(props: { data: StatsParserData; index: number }) {
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`Stats Parser ${props.index}`}>
             <Field text="ID" value={props.data.id} />
             <Field text="Type" value={props.data.type} />
@@ -182,19 +335,17 @@ function ConsumerViewer(props: {
 }) {
    const bitrate = (props.data.stats?.videoInbound ?? props.data.stats?.audioInbound)?.bitrate ?? 0;
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`${props.data.type === "local" ? "Local" : "Remote"} Consumer ${props.index}`}>
             <Field text="ID" value={props.data.id} />
             <Field
                text="Producer ID"
-               value={`${props.data.producerId} (${props.producer ? props.usersLookup[props.producer.userId].username : ""})`}
+               value={`${props.data.producerId} (${props.producer ? (props.usersLookup[props.producer.userId]?.username ?? "Unknown user") : ""})`}
             />
             <Field text="User ID" value={`${props.data.userId} (${props.usersLookup[props.data.userId]?.username})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Media Kind" value={props.data.mediaKind} />
-            {props.data.type === "local" && (
-               <Field text="Bitrate" value={`${bitrate} Bps | ${(bitrate / 8_000_000).toFixed(3)} MB/s | ${(bitrate / 1_000_000).toFixed(3)} Mbps`} />
-            )}
+            {props.data.type === "local" && <Field text="Bitrate" value={formatBitrate(bitrate)} />}
 
             {props.data.track && <TrackViewer data={props.data.track} index={0} />}
             {props.data.stats && (
@@ -261,21 +412,16 @@ function ConsumerViewer(props: {
    );
 }
 
-function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; index: number }) {
+function ProducerViewer(props: { data: ProducerDebugData; user?: UsersDebugData; index: number }) {
    const totalBitrate = (props.data.stats?.videoOutbound ?? props.data.stats?.audioOutbound)?.reduce((a, b) => a + b.bitrate, 0) ?? 0;
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`${props.data.type === "local" ? "Local" : "Remote"} Producer ${props.index}`}>
             <Field text="ID" value={props.data.id} />
-            <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
+            <Field text="User ID" value={`${props.data.userId} (${props.user?.username ?? "Unknown user"})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Media Kind" value={props.data.mediaKind} />
-            {props.data.type === "local" && (
-               <Field
-                  text="Bitrate"
-                  value={`${totalBitrate} Bps | ${(totalBitrate / 8_000_000).toFixed(3)} MB/s | ${(totalBitrate / 1_000_000).toFixed(3)} Mbps`}
-               />
-            )}
+            {props.data.type === "local" && <Field text="Bitrate" value={formatBitrate(totalBitrate)} />}
 
             {props.data.track && <TrackViewer data={props.data.track} index={0} />}
 
@@ -316,9 +462,9 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                      </Section>
                   )}
                   {props.data.stats.audioOutbound && (
-                     <Section text="Audio Inbound" collapsable className="mt-2">
+                     <Section text="Audio Outbound" collapsable className="mt-2">
                         {props.data.stats.audioOutbound.map((x, i) => (
-                           <Section text={`Audio ${i}`}>
+                           <Section key={x.ssrc} text={`Audio ${i}`}>
                               <Field text="Active" value={x.active} />
                               <Field text="Bitrate" value={x.bitrate} />
                               <Field text="Target Bitrate" value={x.targetBitrate} />
@@ -332,9 +478,9 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
                      </Section>
                   )}
                   {props.data.stats.videoOutbound && (
-                     <Section text="Video Inbound" collapsable className="mt-2">
+                     <Section text="Video Outbound" collapsable className="mt-2">
                         {props.data.stats.videoOutbound.map((x, i) => (
-                           <Section text={`Video ${i}`}>
+                           <Section key={x.ssrc} text={`Video ${i}`}>
                               <Field text="Active" value={x.active} />
                               <Field text="Bitrate" value={x.bitrate} />
                               <Field text="Target Bitrate" value={x.targetBitrate} />
@@ -358,7 +504,7 @@ function ProducerViewer(props: { data: ProducerDebugData; user: UsersDebugData; 
 
 function ALCViewer(props: { data: ALCData; user?: UsersDebugData; index: number }) {
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`Audio Level Checker ${props.index}`}>
             <Field text="Producer ID" value={props.data.producerId} />
             <Field text="Consumer ID" value={props.data.consumerId} />
@@ -374,12 +520,12 @@ function ALCViewer(props: { data: ALCData; user?: UsersDebugData; index: number 
    );
 }
 
-function ASPViewer(props: { data: ASPData; user: UsersDebugData; index: number }) {
+function ASPViewer(props: { data: ASPData; user?: UsersDebugData; index: number }) {
    return (
-      <div className="bg-surface flex flex-col p-1">
+      <div className="bg-surface flex flex-col rounded-xl border border-white/5 p-3 shadow-sm">
          <Section text={`Audio Source Player ${props.index}`}>
             <Field text="Producer ID" value={props.data.producerId} />
-            <Field text="User ID" value={`${props.data.userId} (${props.user.username})`} />
+            <Field text="User ID" value={`${props.data.userId} (${props.user?.username ?? "Unknown user"})`} />
             <Field text="Kind" value={props.data.kind} />
             <Field text="Global Gain" value={props.data.globalGain} />
             <Field text="Local Gain" value={props.data.localGain} />
@@ -411,7 +557,7 @@ function StreamViewer(props: { data: StreamData }) {
          {props.data.audioTracks.length > 0 && (
             <Section text="Audio Tracks" className="mt-2" containerClassName="gap-y-1">
                {props.data.audioTracks.map((track, index) => (
-                  <TrackViewer data={track} index={index} />
+                  <TrackViewer key={track.id} data={track} index={index} />
                ))}
             </Section>
          )}
@@ -419,7 +565,7 @@ function StreamViewer(props: { data: StreamData }) {
          {props.data.videoTracks.length > 0 && (
             <Section text="Video Tracks" className="mt-2" containerClassName="gap-y-1">
                {props.data.videoTracks.map((track, index) => (
-                  <TrackViewer data={track} index={index} />
+                  <TrackViewer key={track.id} data={track} index={index} />
                ))}
             </Section>
          )}
@@ -432,20 +578,16 @@ function TrackViewer(props: { data: TrackData; index: number }) {
       <Section className="mt-2" text={`Track ${props.index}`} key={props.data.id}>
          <Field text="ID" value={props.data.id} />
          <Field text="Label" value={props.data.label} />
-         <div className="flex items-center gap-x-1">
-            <Field text="Enabled" value={props.data.enabled} />
-            -
-            <Field text="State" value={props.data.readyState} />
-            -
-            <Field text="Muted" value={props.data.muted} />
-         </div>
+         <Field text="Enabled" value={props.data.enabled} />
+         <Field text="State" value={props.data.readyState} />
+         <Field text="Muted" value={props.data.muted} />
       </Section>
    );
 }
 
 function Field(props: { text: string; value?: string | number | boolean | null; bold?: boolean; priority?: "high" | "medium" | "low" }) {
    return (
-      <div className="text-sm">
+      <div className="grid grid-cols-[minmax(7rem,40%)_1fr] gap-x-3 border-b border-white/5 py-1.5 text-sm last:border-b-0">
          <span
             className={clsx(
                props.priority === "high"
@@ -459,15 +601,15 @@ function Field(props: { text: string; value?: string | number | boolean | null; 
             )}
          >
             {props.text}:
-         </span>{" "}
+         </span>
          {props.value === "" ? (
-            <span className="italic">empty</span>
+            <span className="text-white/35 italic">empty</span>
          ) : typeof props.value === "boolean" ? (
             props.value.toString()
          ) : props.value === undefined ? (
-            <span className="italic">undefined</span>
+            <span className="text-white/35 italic">undefined</span>
          ) : props.value === null ? (
-            <span className="italic">null</span>
+            <span className="text-white/35 italic">null</span>
          ) : (
             props.value
          )}
@@ -479,20 +621,23 @@ function Section(props: { text: string; children?: ReactNode; className?: string
    if (props.collapsable) {
       return (
          <Accordion.Root>
-            <Accordion.Item className={props.className}>
+            <Accordion.Item className={clsx("overflow-hidden rounded-lg border border-white/5", props.className)}>
                <Accordion.Header>
-                  <Accordion.Trigger className="font-semibold">{props.text}:</Accordion.Trigger>
+                  <Accordion.Trigger className="flex w-full cursor-pointer items-center justify-between bg-white/3 px-3 py-2 text-left text-sm font-semibold text-white/80 outline-none hover:bg-white/5">
+                     {props.text}
+                     <span className="text-xs text-white/35">▾</span>
+                  </Accordion.Trigger>
                </Accordion.Header>
-               <Accordion.Panel className={clsx("ml-2 flex flex-col", props.containerClassName)}>{props.children}</Accordion.Panel>
+               <Accordion.Panel className={clsx("flex flex-col px-3 py-2", props.containerClassName)}>{props.children}</Accordion.Panel>
             </Accordion.Item>
          </Accordion.Root>
       );
    }
 
    return (
-      <div className={props.className}>
-         <div className="font-semibold">{props.text}:</div>
-         <div className={clsx("ml-2 flex flex-col", props.containerClassName)}>{props.children}</div>
-      </div>
+      <section className={props.className}>
+         <div className="mb-1 text-xs font-semibold tracking-wide text-white/75 uppercase">{props.text}</div>
+         <div className={clsx("flex min-w-0 flex-col", props.containerClassName)}>{props.children}</div>
+      </section>
    );
 }

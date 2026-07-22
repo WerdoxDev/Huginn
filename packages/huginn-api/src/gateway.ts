@@ -1,10 +1,8 @@
 import type {
    APIUser,
-   GatewayIdentifyProperties,
    GatewayPayload,
    GatewayStatus,
    GatewayUpdatePresenceData,
-   GatewayUpdateVoiceState,
    GatewayUpdateVoiceStateData,
    GatewayVoiceServerUpdateData,
    GatewayVoiceState,
@@ -71,8 +69,6 @@ export class Gateway extends SharedWebsocket<Events> {
          span.setAttributes({ ...this.getDefaultAttributes(), "gateway.new_status": newStatus, "gateway.old_status": this._status });
          this._status = newStatus;
          this.emit("status_changed", newStatus);
-
-         span.end();
       });
    }
 
@@ -97,7 +93,7 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    public get canResume(): boolean {
-      return !!this.sessionId && this.sequence !== undefined && this._status !== "authenticated" && !!this._user && !!this.client.tokenHandler.token;
+      return !!this.sessionId && this.sequence !== undefined && this._status !== "authenticated" && !!this.user && !!this.client.tokenHandler.token;
    }
 
    // ============================================================
@@ -142,7 +138,6 @@ export class Gateway extends SharedWebsocket<Events> {
 
          this.intentionalClose = true;
          this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
-         span.end();
       });
    }
 
@@ -178,7 +173,6 @@ export class Gateway extends SharedWebsocket<Events> {
 
          this.setStatus("connected");
          this.emit("connected", undefined);
-         span.end();
       });
    }
 
@@ -272,45 +266,47 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private handleReady(data: GatewayReadyData) {
-      this.setStatus("authenticated");
       this.setUser(data.user);
+      this.setStatus("authenticated");
    }
 
    // ============================================================
    // Public API - Voice State Management
    // ============================================================
 
-   public async getVoiceToken(guildId: Snowflake | null, channelId: Snowflake, voiceState?: GatewayVoiceStateFlags): Promise<string | null> {
-      return await analytics.startActiveSpan("apiGateway.getVoiceToken", async (span) => {
-         span.setAttributes({
-            ...this.getDefaultAttributes(),
-            "params.guild.id": "null",
-            "params.channel.id": channelId,
-            "params.is_camera_on": !!voiceState?.isCameraOn,
-            "params.is_deafened": !!voiceState?.isAudioDeafened,
-            "params.is_muted": !!voiceState?.isAudioMuted,
-            "params.is_streaming": !!voiceState?.isAudioStreaming,
-            "params.is_screen_sharing": !!voiceState?.isScreenSharing,
-         });
+   // public async getVoiceToken(guildId: Snowflake | null, channelId: Snowflake, voiceState?: GatewayVoiceStateFlags): Promise<string | null> {
+   //    return await analytics.startActiveSpan("apiGateway.getVoiceToken", async (span) => {
+   //       span.setAttributes({
+   //          ...this.getDefaultAttributes(),
+   //          "params.guild.id": "null",
+   //          "params.channel.id": channelId,
+   //          "params.is_camera_on": !!voiceState?.isCameraOn,
+   //          "params.is_deafened": !!voiceState?.isAudioDeafened,
+   //          "params.is_muted": !!voiceState?.isAudioMuted,
+   //          "params.is_streaming": !!voiceState?.isAudioStreaming,
+   //          "params.is_screen_sharing": !!voiceState?.isScreenSharing,
+   //       });
 
-         this.sendVoiceStateUpdate({
-            guildId,
-            channelId,
-            isAudioDeafened: false,
-            isAudioMuted: false,
-            isCameraOn: false,
-            isAudioStreaming: false,
-            isScreenSharing: false,
-            ...voiceState,
-         });
+   //       this.sendVoiceStateUpdate({
+   //          guildId,
+   //          channelId,
+   //          isAudioDeafened: false,
+   //          isAudioMuted: false,
+   //          isCameraOn: false,
+   //          isAudioStreaming: false,
+   //          isScreenSharing: false,
+   //          ...voiceState,
+   //       });
 
-         const [tokenResult, _voiceStateResult] = await Promise.allSettled([this.waitForVoiceServerUpdate(), this.waitForVoiceStateUpdate(channelId)]);
+   //       console.log("Waiting for voice server update and voice state update...", channelId, guildId, voiceState);
 
-         span.setAttribute("token.result", tokenResult.status);
+   //       const [tokenResult, _voiceStateResult] = await Promise.allSettled([this.waitForVoiceServerUpdate(), this.waitForVoiceStateUpdate(channelId)]);
 
-         return tokenResult.status === "fulfilled" ? tokenResult.value : null;
-      });
-   }
+   //       span.setAttribute("token.result", tokenResult.status);
+
+   //       return tokenResult.status === "fulfilled" ? tokenResult.value : null;
+   //    });
+   // }
 
    public async sendDefaultVoiceState(): Promise<void> {
       return await analytics.startActiveSpan("apiGateway.sendDefaultVoiceState", async (span) => {
@@ -471,17 +467,14 @@ export class Gateway extends SharedWebsocket<Events> {
 
    private startHeartbeat(interval: number) {
       this.stopHeartbeat();
-
       this.heartbeatInterval = setInterval(() => {
          this.send({ op: GatewayOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
    private stopHeartbeat() {
-      if (this.heartbeatInterval) {
-         clearInterval(this.heartbeatInterval);
-         this.heartbeatInterval = undefined;
-      }
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = undefined;
    }
 
    // ============================================================
@@ -496,7 +489,7 @@ export class Gateway extends SharedWebsocket<Events> {
       }, 2000);
    }
 
-   private async attemptReconnect() {
+   private async attemptReconnect(): Promise<void> {
       return analytics.startActiveSpan("apiGateway.attemptReconnect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
@@ -551,8 +544,7 @@ export class Gateway extends SharedWebsocket<Events> {
 
    private send(data: GatewayPayload): void {
       if (this.status === "connecting" || this.status === "idle" || this.status === "disconnected") {
-         analytics.log({ body: "attempted to send data while gateway is not connected", level: "warn", attributes: { ...this.getDefaultAttributes() } });
-         return;
+         throw new Error("Attempted to send data while gateway is not connected");
       }
 
       this.socket?.send(JSON.stringify(data));

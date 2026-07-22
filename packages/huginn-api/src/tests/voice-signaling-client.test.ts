@@ -1,4 +1,4 @@
-import { CONSTANTS, GatewayCode, VoiceOperations, type VoicePayload, type VoiceWebsocketEvents } from "@huginn/shared";
+import { GatewayCode, VoiceOperations, type VoicePayload, type VoiceWebsocketEvents } from "@huginn/shared";
 import { ws, type WebSocketHandlerConnection } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -302,8 +302,7 @@ describe("hello and websocket messages", () => {
       vi.waitFor(() => expect(sent.length).toBe(cases.length));
    });
 
-   it("sets authenticated on READY and RESUMED and emits ping afterwards", async () => {
-      const received: VoicePayload[] = [];
+   it("sets authenticated on READY and RESUMED", async () => {
       let serverClient: any;
 
       server.use(
@@ -312,7 +311,6 @@ describe("hello and websocket messages", () => {
             client.send(helloPayload("session-123", 30_000));
             client.addEventListener("message", (event) => {
                const payload = parse(event);
-               received.push(payload);
                if (payload.op === VoiceOperations.IDENTIFY) {
                   client.send(dispatchPayload("ready", { rtpCapabilities: {}, consumers: [], producers: [] }, 12));
                }
@@ -323,54 +321,10 @@ describe("hello and websocket messages", () => {
       await signaling.connect("token", "channel-1", null);
 
       await vi.waitFor(() => expect(signaling.status).toBe("authenticated"));
-      await vi.waitFor(() => expect(received.filter((p) => p.op === VoiceOperations.PING).length).toBe(1));
 
       serverClient.send(dispatchPayload("resumed", {}, 13));
 
       expect(signaling.status).toBe("authenticated");
-      await vi.waitFor(() => expect(received.filter((p) => p.op === VoiceOperations.PING).length).toBe(2));
-   });
-
-   it("emits pong with the measured RTT and schedules the next ping", async () => {
-      const received: VoicePayload[] = [];
-      let serverClient: any;
-      const pong = vi.fn();
-      signaling.on("pong", pong);
-
-      server.use(
-         link.addEventListener("connection", ({ client }) => {
-            serverClient = client;
-            client.send(helloPayload("session-123", 30_000));
-            client.addEventListener("message", (event) => {
-               const payload = parse(event);
-               received.push(payload);
-               if (payload.op === VoiceOperations.IDENTIFY) {
-                  client.send(dispatchPayload("ready", { rtpCapabilities: {}, consumers: [], producers: [] }, 14));
-               }
-            });
-         }),
-      );
-
-      await signaling.connect("token", "channel-1", null);
-      await vi.waitFor(() => expect(signaling.status).toBe("authenticated"));
-
-      vi.setSystemTime(Date.now() + 25);
-      serverClient.send(JSON.stringify({ op: VoiceOperations.PONG }));
-
-      await vi.waitFor(() => expect(pong).toHaveBeenCalledWith({ rtt: 125 }));
-
-      await vi.advanceTimersByTimeAsync(CONSTANTS.VOICE_CLIENT_PING_INTERVAL);
-
-      await vi.waitFor(() => expect(received.filter((p) => p.op === VoiceOperations.PING).length).toBeGreaterThanOrEqual(2));
-   });
-
-   it("emits pong with a zero RTT fallback before any ping has been sent", async () => {
-      const pong = vi.fn();
-      signaling.on("pong", pong);
-
-      await signaling["onMessage"]({ data: JSON.stringify({ op: VoiceOperations.PONG }) } as MessageEvent);
-
-      expect(pong).toHaveBeenCalledWith({ rtt: Date.now() });
    });
 });
 

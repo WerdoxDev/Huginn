@@ -21,13 +21,21 @@ CapacitorUpdater.notifyAppReady();
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {
       if (e.key === "\\") {
-         clientStore.getState().client?.gateway.close();
-         setTimeout(async () => {
-            clientStore.getState().client?.gateway.connect();
-            await clientStore.getState().client?.gateway.authenticate();
-         }, 2000);
+         // clientStore.getState().client?.gateway.close();
+         clientStore.getState().client?.gateway.socket?.close();
+         // setTimeout(async () => {
+         //    clientStore.getState().client?.gateway.connect();
+         //    await clientStore.getState().client?.gateway.authenticate();
+         // }, 2000);
       }
       if (e.key === "]") {
+         // clientStore.getState().client?.voice.signaling.socket?.close();
+         const conn = { ...clientStore.getState().client?.voice.signaling.connectionData };
+         clientStore.getState().client?.voice.signaling.close();
+         setTimeout(async () => {
+            await clientStore.getState().client?.voice.signaling.connect(conn.token, conn.channelId, conn.guildId);
+         }, 2000);
+      } else if (e.key === "[") {
          clientStore.getState().client?.voice.signaling.socket?.close();
       }
    });

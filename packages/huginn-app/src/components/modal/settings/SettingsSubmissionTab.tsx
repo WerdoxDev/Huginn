@@ -56,7 +56,10 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
    );
 
    const contributedApplications = useMemo(
-      () => knownApplications.applications.filter((x) => x.contributorId === user?.id),
+      () =>
+         knownApplications.applications
+            .filter((x) => x.contributorId === user?.id)
+            .sort((a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf()),
       [user, knownApplications],
    );
 

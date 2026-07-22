@@ -2,10 +2,10 @@ import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-c
 
 import {
    analytics,
-   CONSTANTS,
    GatewayCode,
    recordSpanError,
    VoiceOperations,
+   VoiceSignallingError,
    type HMediaKind,
    type Snowflake,
    type VoiceCloseConsumerResult,
@@ -33,8 +33,7 @@ type Events = {
    connected: undefined;
    disconnected: undefined;
    status_changed: SignalingClientStatus;
-
-   pong: { rtt: number };
+   reacquire_token: { channelId: Snowflake; guildId: Snowflake | null; callback: (token: string) => void; errback: () => void };
 
    reset: { type: VoiceSignallingResetType };
 } & VoiceWebsocketEvents;
@@ -48,11 +47,9 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
    private heartbeatInterval?: ReturnType<typeof setInterval>;
    private reconnectTimeout?: ReturnType<typeof setTimeout>;
-   private pingTimeout?: ReturnType<typeof setTimeout>;
 
    private sequence?: number;
    private sessionId?: Snowflake;
-   private lastPingStart?: number;
 
    private _status: SignalingClientStatus = "idle";
    public get status(): SignalingClientStatus {
@@ -121,7 +118,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    }
 
    public close(): void {
-      analytics.startActiveSpan("apiVoiceSignaling.close", (span) => {
+      return analytics.startActiveSpan("apiVoiceSignaling.close", (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
          this.intentionalClose = true;
@@ -165,11 +162,17 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
          // Server told us to disconnect but we didn't intentionally disconnect
          if (!this.intentionalClose && e.code === GatewayCode.INTENTIONAL_CLOSE) {
             this.hardReset();
+            return;
          }
 
          if (!this.intentionalClose && e.code !== GatewayCode.INTENTIONAL_CLOSE) {
-            if (e.code === GatewayCode.INVALID_SESSION || e.code === GatewayCode.AUTHENTICATION_FAILED) {
+            let shouldReacquireToken = false;
+            if (e.code === GatewayCode.AUTHENTICATION_FAILED) {
+               this.softReset();
+               shouldReacquireToken = true;
+            } else if (e.code === GatewayCode.INVALID_SESSION) {
                this.resetSession();
+               shouldReacquireToken = true;
             } else {
                this.softReset();
             }
@@ -178,7 +181,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             this.emit("disconnected", undefined);
 
             analytics.withRootContext(() => {
-               this.scheduleReconnect();
+               this.scheduleReconnect(shouldReacquireToken);
             });
          }
       });
@@ -188,22 +191,35 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    // Private - Reconnection
    // ============================================================
 
-   private scheduleReconnect(): void {
+   private scheduleReconnect(shouldReacquireToken: boolean = false): void {
       this.clearReconnectTimeout();
 
       this.reconnectTimeout = setTimeout(async () => {
-         await this.attemptReconnect();
+         await this.attemptReconnect(shouldReacquireToken);
       }, 2000);
    }
 
-   private async attemptReconnect() {
+   private async attemptReconnect(shouldReacquireToken: boolean) {
       return await analytics.startActiveSpan("apiVoiceSignaling.attemptReconnect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
             if (!this.connectionData) throw new Error("Connection Data cannot be undefined when reconnecting voice");
 
-            this.connect(this.connectionData.token, this.connectionData.channelId, this.connectionData.guildId);
+            if (shouldReacquireToken) {
+               const token = await new Promise<string>((res, rej) => {
+                  this.emit("reacquire_token", {
+                     channelId: this.connectionData!.channelId,
+                     guildId: this.connectionData!.guildId ?? null,
+                     callback: res,
+                     errback: rej,
+                  });
+               });
+
+               await this.connect(token, this.connectionData.channelId, this.connectionData.guildId);
+            } else {
+               await this.connect(this.connectionData.token, this.connectionData.channelId, this.connectionData.guildId);
+            }
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -291,16 +307,13 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
                }
 
                break;
-            case VoiceOperations.PONG:
-               this.handlePong();
-               break;
          }
       });
    }
 
    private handleHello(data: VoiceHelloData) {
       this.setStatus("helloed");
-      this.startHeartbeatInterval(data.heartbeatInterval);
+      this.startHeartbeat(data.heartbeatInterval);
 
       if (!this.sessionId) {
          this.sessionId = data.sessionId;
@@ -336,36 +349,26 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
    private async handleReady(data: VoiceReadyData) {
       this.setStatus("authenticated");
-      this.sendPing();
       this.emit("ready", data);
    }
 
    private async handleResumed() {
+      console.log("RESUMED");
       this.setStatus("authenticated");
-      this.sendPing();
-   }
-
-   private handlePong() {
-      const rtt = Date.now() - (this.lastPingStart ?? 0);
-
-      this.pingTimeout = setTimeout(() => {
-         this.sendPing();
-      }, CONSTANTS.VOICE_CLIENT_PING_INTERVAL);
-
-      this.emit("pong", { rtt });
    }
 
    // ============================================================
    // Private - Heartbeat
    // ============================================================
 
-   private startHeartbeatInterval(interval: number) {
+   private startHeartbeat(interval: number) {
+      this.stopHeartbeat();
       this.heartbeatInterval = setInterval(() => {
          this.send({ op: VoiceOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
 
-   private stopHeartbeatInterval() {
+   private stopHeartbeat() {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = undefined;
    }
@@ -376,12 +379,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    }
 
    private send(data: VoicePayload): void {
-      this.socket?.send(JSON.stringify(data));
-   }
+      if (this.status === "connecting" || this.status === "idle" || this.status === "disconnected") {
+         throw new Error("Attempted to send data while voice signaling is not connected");
+      }
 
-   private sendPing() {
-      this.lastPingStart = Date.now();
-      this.send({ op: VoiceOperations.PING });
+      this.socket?.send(JSON.stringify(data));
    }
 
    public softReset(emitEvent = true): void {
@@ -390,16 +392,18 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       }
 
       this.socket = undefined;
-      this.stopHeartbeatInterval();
-      clearInterval(this.pingTimeout);
+      this.stopHeartbeat();
 
       if (emitEvent) this.emit("reset", { type: "soft" });
    }
 
    public hardReset(): void {
       this.softReset(false);
-      this.resetSession(false);
+
       this.connectionData = undefined;
+      this.sessionId = undefined;
+      this.sequence = undefined;
+
       this.clearReconnectTimeout();
       this.setStatus("idle");
 
@@ -407,6 +411,8 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    }
 
    private resetSession(emitEvent = true): void {
+      this.softReset(false);
+
       this.sessionId = undefined;
       this.sequence = undefined;
 
@@ -419,6 +425,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       }
    }
 
+   public setVoiceToken(token: string): void {
+      if (!this.connectionData) return;
+      this.connectionData.token = token;
+   }
+
    public async sendCreateTransport(direction: "send" | "recv"): Promise<VoiceCreateTransportResult> {
       return await analytics.startActiveSpan("apiVoiceSignaling.sendCreateTransport", async (span) => {
          span.setAttributes({
@@ -426,10 +437,10 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.direction": direction,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "create_transport",
@@ -439,7 +450,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("create_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceCreateTransportResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -451,11 +462,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.transport_id": transportId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData?.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "connect_transport",
@@ -465,7 +476,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("connect_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceConnectTransportResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -478,11 +489,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.transport_id": transportId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData?.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "produce",
@@ -492,7 +503,8 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("produce_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceProduceResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            // throw e;
          }
       });
    }
@@ -504,11 +516,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.producer_id": producerId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData?.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "close_producer",
@@ -518,7 +530,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("close_producer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceCloseProducerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -531,11 +543,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.transport_id": transportId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData?.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "consume",
@@ -545,7 +557,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("consume_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceConsumeResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -557,11 +569,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.consumer_id": consumerId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "resume_consumer",
@@ -571,7 +583,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("resume_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceResumeConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -583,11 +595,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.consumer_id": consumerId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "pause_consumer",
@@ -597,7 +609,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("pause_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoicePauseConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
@@ -609,11 +621,11 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             "params.consumer_id": consumerId,
          });
 
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData.channelId;
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "close_consumer",
@@ -623,13 +635,14 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("close_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceCloseConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }
 
    public async sendRestartIce(transportId: string): Promise<VoiceRestartIceResult> {
       return await analytics.startActiveSpan("apiVoiceSignaling.sendRestartIce", async (span) => {
+         const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData.channelId;
@@ -638,7 +651,6 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
                "params.transport_id": transportId,
             });
 
-            const nonce = this.client.generateNonce();
             this.send({
                op: VoiceOperations.DISPATCH,
                t: "restart_ice",
@@ -648,7 +660,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("restart_ice_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            throw e;
+            return Promise.resolve<VoiceRestartIceResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
          }
       });
    }

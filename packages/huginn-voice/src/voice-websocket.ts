@@ -124,15 +124,8 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
 
    public async onMessage(session: ClientSession, data: VoicePayload) {
       // To skip trace
-      if (data.op === VoiceOperations.HEARTBEAT || data.op === VoiceOperations.PING) {
-         switch (data.op) {
-            case VoiceOperations.PING:
-               this.onPing(session);
-               break;
-            case VoiceOperations.HEARTBEAT:
-               this.onHeartbeat(session);
-               break;
-         }
+      if (data.op === VoiceOperations.HEARTBEAT) {
+         this.onHeartbeat(session);
          return;
       }
 
@@ -1013,10 +1006,6 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
    private onHeartbeat(session: ClientSession) {
       session.resetHeartbeatTimeout();
       session.send({ op: VoiceOperations.HEARTBEAT_ACK }, false, true);
-   }
-
-   private onPing(session: ClientSession) {
-      session.send({ op: VoiceOperations.PONG }, false, true);
    }
 
    private broadcastToRouter(router: RouterData, data: VoicePayload, options?: { excludeSession?: ClientSession }) {

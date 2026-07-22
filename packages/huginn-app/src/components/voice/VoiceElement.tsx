@@ -205,7 +205,7 @@ export default function VoiceElement(props: {
                </button>
             )
          )}
-         {props.isConnected && (isCamera || (isScreenShare && !isPreview)) && (
+         {props.isConnected && (isCamera || isScreenShare) && !isPreview && (
             <video
                className={clsx("h-full w-full bg-black", !props.isMaximized && "rounded-lg")}
                // style={{ width: props.gridElementWidth - 2, height: props.gridElementHeight - 2 }}

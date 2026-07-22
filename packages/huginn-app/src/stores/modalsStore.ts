@@ -54,18 +54,20 @@ const initialStore = () => ({
    news: { isOpen: false, lastVersion: undefined } as DefaultModal & { lastVersion?: string },
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {
       callback?: (options: {
-         type: "display" | "device";
+         type: "screen" | "application" | "device";
          stream: MediaStream;
          maxAudioBitrate: number;
          maxVideoBitrate: number;
          isAudioEnabled: boolean;
          isSimulcastEnabled: boolean;
-         sourceName?: string;
+         processId?: number;
       }) => Promise<void>;
+      errback?: (options: { error: unknown }) => void;
       type: "create" | "change";
    },
    audioStream: { isOpen: false, callback: undefined } as DefaultModal & {
       callback?: (options: { processId: number; maxAudioBitrate: number }) => Promise<void>;
+      errback?: (options: { error: unknown }) => void;
    },
    changeUsername: { isOpen: false } as DefaultModal,
    changeDisplayName: { isOpen: false } as DefaultModal,

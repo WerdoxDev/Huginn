@@ -61,6 +61,7 @@ export class WebRTCStatsParser {
          } else if (type === "transport") {
             const data = stat as RTCTransportStats;
             stats.transport = {
+               id: data.id,
                bytesReceived: data.bytesReceived,
                bytesSent: data.bytesSent,
                packetsReceived: data.packetsReceived,
@@ -134,6 +135,7 @@ export class WebRTCStatsParser {
          } else if (type === "transport") {
             const data = stat as RTCTransportStats;
             stats.transport = {
+               id: data.id,
                bytesReceived: data.bytesReceived,
                bytesSent: data.bytesSent,
                packetsReceived: data.packetsReceived,

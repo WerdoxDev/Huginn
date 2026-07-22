@@ -25,7 +25,6 @@ type StoreType = ReturnType<typeof initialStore>;
 const store = createStore(
    devtools(
       combine(initialStore(), (set) => ({
-         updateOurVoiceState: (options: GatewayVoiceState) => set({ voiceState: options }),
          updateVoiceState: (options: GatewayVoiceState) =>
             set(
                produce((draft: StoreType) => {

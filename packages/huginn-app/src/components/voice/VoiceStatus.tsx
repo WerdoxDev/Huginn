@@ -17,6 +17,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import Tooltip from "../tooltip/Tooltip";
 
+const RTT_UPDATE_INTERVAL = 2000;
+
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
    disconnected: { text: "Disconnected", color: "!text-negative-300" },
    idle: { text: "Connecting...", color: "!text-caution-300" },
@@ -54,18 +56,25 @@ export default function VoiceStatus() {
    }, [rtt]);
 
    useEffect(() => {
-      if (!client) {
+      if (!client || voiceStatus !== "ready") {
+         setRtt(0);
          return;
       }
 
-      const unlisten2 = client.voice.signaling.listen("pong", (d) => {
-         setRtt(d.rtt);
-      });
+      let cancelled = false;
+      const updateRtt = async () => {
+         const roundTripTime = await client.voice.getCurrentRoundTripTime();
+         if (!cancelled && roundTripTime !== undefined) setRtt(Math.round(roundTripTime));
+      };
+
+      void updateRtt();
+      const interval = window.setInterval(() => void updateRtt(), RTT_UPDATE_INTERVAL);
 
       return () => {
-         unlisten2();
+         cancelled = true;
+         window.clearInterval(interval);
       };
-   }, []);
+   }, [client, voiceStatus]);
 
    async function onDisconnect() {
       posthog.capture("voice:status_disconnect_button_click");

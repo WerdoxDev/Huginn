@@ -1,5 +1,5 @@
 import { ActivityType, error, type APIKnownApplication, type GatewaySession, type Snowflake } from "@huginn/shared";
-import { convertToAppPresence } from "@lib/utils";
+import { convertToAppPresence, convertToAppSession } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
@@ -48,14 +48,9 @@ export function initPresenceStore() {
       const session = d.sessions.find((x) => x.sessionId === client.gateway.sessionId);
       if (!session) return;
 
-      const presence: AppPresence = {
-         userId: d.user.id,
-         status: session.status,
-         activities: session?.activities,
-         clientStatus: {},
-      };
+      const presence = convertToAppPresence({ user: { id: d.user.id }, activities: session.activities, status: session.status, clientStatus: {} });
 
-      store.setState({ session: session });
+      store.setState({ session: convertToAppSession(session) });
       thisStore.updatePresence(d.user.id, presence);
 
       if (d.presences) {
@@ -76,14 +71,14 @@ export function initPresenceStore() {
 
       if (!client.currentUser || !session) return;
 
-      const presence: AppPresence = {
-         userId: client.currentUser.id,
+      const presence = convertToAppPresence({
+         user: { id: client.currentUser.id },
          activities: session.activities,
          status: session.status,
          clientStatus: {},
-      };
+      });
 
-      store.setState({ session: session });
+      store.setState({ session: convertToAppSession(session) });
       store.getState().updatePresence(client.currentUser.id, presence);
    });
 

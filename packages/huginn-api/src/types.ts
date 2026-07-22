@@ -49,3 +49,12 @@ export type VoiceStreamOptions = {
    maxVideoBitrate?: number;
    maxAudioBitrate?: number;
 };
+
+export class TransportError extends Error {
+   public code?: number;
+   constructor(message: string, code?: number) {
+      super(message);
+      this.name = "TransportError";
+      this.code = code;
+   }
+}

@@ -7,7 +7,7 @@
    "author": "",
    "binary": {
       "napi_versions": [
-         8
+         9
       ]
    },
    "type": "module",

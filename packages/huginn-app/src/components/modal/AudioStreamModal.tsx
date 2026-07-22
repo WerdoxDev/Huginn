@@ -3,6 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
+import { analytics, recordSpanError } from "@huginn/shared";
 import { AUDIO_QUALITIES } from "@lib/constants";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -39,7 +40,6 @@ export default function AudioStreamModal() {
    const [selectedQuality, setSelectedQuality] = useState<SelectItem>(
       qualityOptions.find((x) => x.value === settings.audioStreamQuality) ?? qualityOptions[0],
    );
-   const [_, startTransition] = useTransition();
 
    useEffect(() => {
       if (!modal.isOpen) {
@@ -55,11 +55,22 @@ export default function AudioStreamModal() {
    }
 
    async function handleSelect(source: AudioSource) {
-      startTransition(async () => {
-         close();
+      return await analytics.startActiveSpan("audioStreamModal.handleSelect", async (span) => {
+         span.setAttributes({
+            "params.source.name": source.name,
+            "params.source.process_id": source.processId,
+            selected_quality: selectedQuality.value,
+         });
+         try {
+            close();
 
-         const maxAudioBitrate = audioQualityToBitrate[selectedQuality.value];
-         await modal.callback?.({ processId: source.processId, maxAudioBitrate });
+            const maxAudioBitrate = audioQualityToBitrate[selectedQuality.value];
+            span.setAttribute("max_audio_bitrate", maxAudioBitrate);
+            await modal.callback?.({ processId: source.processId, maxAudioBitrate });
+         } catch (e) {
+            recordSpanError(e);
+            modal.errback?.({ error: e });
+         }
       });
    }
 

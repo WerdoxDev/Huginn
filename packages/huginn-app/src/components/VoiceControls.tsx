@@ -1,14 +1,13 @@
 import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { error, type Snowflake } from "@huginn/shared";
-import { SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
-import type { MediaSource, ScreenShareFrameRate, ScreenShareQuality } from "@/types";
+import type { MediaSource } from "@/types";
 
 import StreamButton from "./button/StreamButton";
 import VoiceControlButton from "./button/VoiceControlButton";

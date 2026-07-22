@@ -1,4 +1,3 @@
-import * as loopback from "application-loopback";
 import { app, dialog } from "electron";
 import "dotenv/config";
 import path from "node:path";
@@ -22,11 +21,6 @@ if (!process.env.VITE_DEV_SERVER_URL) {
    }
 } else {
    allowedToRun = true;
-}
-
-// application-loopback executable path when packaged
-if (app.isPackaged) {
-   loopback.setExecutablesRoot(path.resolve(import.meta.dirname, "..", "..", "app.asar.unpacked", "node_modules", "application-loopback", "bin"));
 }
 
 try {

@@ -57,7 +57,7 @@
       "@tanstack/react-router-devtools": "^1.167.0",
       "@tanstack/react-virtual": "^3.14.3",
       "animejs": "^4.5.0",
-      "application-loopback": "1.2.7",
+      "loopback-capture": "^2.0.0",
       "blobs": "^2.3.0-beta.2",
       "capacitor-native-settings": "^8.1.0",
       "clsx": "^2.1.1",

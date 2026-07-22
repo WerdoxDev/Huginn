@@ -12,11 +12,11 @@ export function VoiceStreamParticipants(props: { mediaSource?: MediaSource }) {
    }
 
    return (
-      <div className="bg-surface-deep absolute top-2 left-2 z-10 flex gap-x-0.5 rounded-lg px-1 py-1 italic opacity-0 transition-opacity group-hover/element:opacity-100">
+      <div className="bg-surface-deep absolute top-2 left-2 z-10 flex gap-x-1 rounded-lg px-1 py-1 opacity-0 transition-opacity group-hover/element:opacity-100">
          {users.map((x) => (
             <Tooltip key={x.id}>
                <Tooltip.Trigger>
-                  <UserAvatar userId={x.id} avatarHash={x.avatar} hideStatus size={1} />
+                  <UserAvatar userId={x.id} avatarHash={x.avatar} hideStatus size={1.5} />
                </Tooltip.Trigger>
                <Tooltip.Content>{x.displayName}</Tooltip.Content>
             </Tooltip>

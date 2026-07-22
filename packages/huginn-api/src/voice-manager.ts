@@ -1,33 +1,38 @@
-import { analytics, type Snowflake, recordSpanError } from "@huginn/shared";
+import { analytics, type Snowflake, recordSpanError, VoiceSignallingError, EventEmitter, CONSTANTS } from "@huginn/shared";
 
-import type { Voice } from ".";
+import type { HuginnClient, Voice } from ".";
 import type { Gateway } from "./gateway";
 
 import { VoiceState } from "./voice-state";
 
-export class VoiceManager<V extends Voice = Voice> {
+type VoiceToken = { token: string; updatedAt: number };
+
+type Events = {
+   voice_token_updated: VoiceToken;
+};
+
+export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> {
+   private client: HuginnClient;
    private gateway: Gateway;
    private voice: V;
    public voiceState: VoiceState;
+   private voiceToken: VoiceToken | null = null;
 
    private isConnecting = false;
 
-   public constructor(gateway: Gateway, voice: V) {
+   public constructor(client: HuginnClient, gateway: Gateway, voice: V) {
+      super();
+      this.client = client;
       this.gateway = gateway;
       this.voice = voice;
       this.voiceState = new VoiceState();
 
-      this.listenVoiceManagerEvents();
+      this.listenVoiceStateEvents();
       this.listenVoiceTransportManagerEvents();
+      this.listenGatewayEvents();
+      this.listenVoiceEvents();
 
-      // When gateway reconnects, we need to send the voice state again, like connecting to the voice for the first time
-      this.gateway.on("reconnected", async () => {
-         if (this.voice.status === "ready") {
-            this.voice.signaling.checkStatus();
-            const connectionData = this.voice.signaling.connectionData;
-            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, connectionData.channelId, connectionData.guildId);
-         }
-      });
+      // When gateway gets authenticated, we need to send the voice state again, like connecting to the voice for the first time
    }
 
    private getDefaultAttributes() {
@@ -39,30 +44,83 @@ export class VoiceManager<V extends Voice = Voice> {
       };
    }
 
-   private listenVoiceManagerEvents() {
-      this.voiceState.on("update_gateway_voice_state", async (d) => {
-         // Try catch is to simply confirm the voice state when signaling is not connected
+   private listenVoiceEvents() {
+      this.voice.on("update_voice_state", async (d) => {
          try {
-            this.voice.signaling.checkStatus();
+            switch (d.mediaKind) {
+               case "stream_audio":
+                  if (!this.voice.transport.getProducer("stream_video")) {
+                     await this.voiceState.updateGatewayVoiceState({ isAudioStreaming: d.isProducing }, false);
+                  }
+                  break;
+               case "stream_video":
+                  await this.voiceState.updateGatewayVoiceState({ isScreenSharing: d.isProducing }, false);
+                  break;
+               case "camera":
+                  await this.voiceState.updateGatewayVoiceState({ isCameraOn: d.isProducing }, false);
+                  break;
+            }
 
-            const connectionData = this.voice.signaling.connectionData;
-            const { isAudioDeafened, isAudioMuted, isAudioStreaming, isScreenSharing, isCameraOn } = await this.gateway.updateVoiceState(
-               d.voiceState,
-               connectionData.channelId,
-               connectionData.guildId,
-            );
-
-            d.callback({
-               isAudioDeafened,
-               isAudioMuted,
-               isCameraOn,
-               isAudioStreaming,
-               isScreenSharing,
-            });
-
-            // this means we aren't connect to voice so just confirm the voice state without doing anything
+            d.callback(undefined);
          } catch {
-            d.callback(d.voiceState);
+            d.callback({ error: VoiceSignallingError.WRONG_STATE });
+         }
+      });
+
+      this.voice.signaling.on("reacquire_token", async (d) => {
+         try {
+            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, d.channelId, d.guildId);
+            const token = await this.waitForVoiceToken();
+            if (!token) throw new Error("Couldn't get a token for voice");
+
+            d.callback(token);
+         } catch (e) {
+            recordSpanError(e);
+            d.errback?.();
+            await this.disconnectVoice();
+         }
+      });
+   }
+
+   private listenGatewayEvents() {
+      this.gateway.on("status_changed", async (d) => {
+         if (d !== "authenticated") return;
+
+         const connectionData = this.voice.signaling.connectionData;
+         if (this.voice.status === "ready" && connectionData) {
+            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, connectionData.channelId, connectionData.guildId);
+         }
+      });
+
+      this.gateway.on("voice_state_update", async (d) => {
+         if (d.userId !== this.client.currentUser?.id || d.channelId !== this.voice.signaling.connectionData?.channelId) return;
+         this.voiceState.confirmGatewayVoiceState({
+            isAudioDeafened: d.isAudioDeafened,
+            isAudioMuted: d.isAudioMuted,
+            isCameraOn: d.isCameraOn,
+            isScreenSharing: d.isScreenSharing,
+            isAudioStreaming: d.isAudioStreaming,
+         });
+      });
+
+      this.gateway.on("voice_server_update", (d) => {
+         this.voiceToken = { token: d.token, updatedAt: Date.now() };
+         this.voice.signaling.setVoiceToken(d.token);
+         this.emit("voice_token_updated", this.voiceToken);
+      });
+   }
+
+   private listenVoiceStateEvents() {
+      this.voiceState.on("update_gateway_voice_state", async (d) => {
+         try {
+            // We are not connected to voice so just confirm it to show locally
+            this.voice.signaling.checkStatus();
+            const connectionData = this.voice.signaling.connectionData;
+
+            await this.gateway.updateVoiceState(d.voiceState, connectionData.channelId, connectionData.guildId);
+            d.callback();
+         } catch (e) {
+            d.errback?.(e);
          }
       });
 
@@ -80,45 +138,26 @@ export class VoiceManager<V extends Voice = Voice> {
    }
 
    private listenVoiceTransportManagerEvents() {
-      // Automatically sets streaming or camera state to true when the producers are opened
-      this.voice.transport.on("producer_created", async (d) => {
-         switch (d.appData.mediaKind) {
-            case "stream_audio":
-               if (!this.voice.transport.getProducer("stream_video")) {
-                  await this.voiceState.updateGatewayVoiceState({ isAudioStreaming: true });
-               }
-               break;
-            case "stream_video":
-               await this.voiceState.updateGatewayVoiceState({ isScreenSharing: true });
-               break;
-            case "camera":
-               await this.voiceState.updateGatewayVoiceState({ isCameraOn: true });
-               break;
-         }
-      });
-
-      // Automatically sets streaming or camera state to false when the producers are closed
-      this.voice.transport.on("producer_closed", async (d) => {
-         switch (d.kind) {
-            case "stream_audio":
-               if (this.voiceState.gatewayVoiceState.isAudioStreaming) {
-                  await this.voiceState.updateGatewayVoiceState({ isAudioStreaming: false });
-               }
-               break;
-            case "stream_video":
-               await this.voiceState.updateGatewayVoiceState({ isScreenSharing: false });
-               break;
-            case "camera":
-               await this.voiceState.updateGatewayVoiceState({ isCameraOn: false });
-               break;
-         }
-      });
-
       this.voice.transport.on("reset", async () => {
          await this.voiceState.updateGatewayVoiceState({
             isCameraOn: false,
             isAudioStreaming: false,
             isScreenSharing: false,
+         });
+      });
+   }
+
+   private async waitForVoiceToken(): Promise<string> {
+      if (this.voiceToken && Date.now() - this.voiceToken.updatedAt < CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS) {
+         console.log("Using cached voice token", this.voiceToken.token);
+         return this.voiceToken.token;
+      }
+
+      return await new Promise<string>((r) => {
+         const unlisten = this.listen("voice_token_updated", (d) => {
+            unlisten();
+            console.log("Using new voice token", d.token);
+            r(d.token);
          });
       });
    }
@@ -153,12 +192,8 @@ export class VoiceManager<V extends Voice = Voice> {
                   this.voice.signaling.close();
                }
 
-               let voiceToken: string | null;
-               if (token) {
-                  voiceToken = token;
-               } else {
-                  voiceToken = await this.gateway.getVoiceToken(guildId, channelId, this.voiceState.gatewayVoiceState);
-               }
+               await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, channelId, guildId);
+               const voiceToken = token ?? (await this.waitForVoiceToken());
 
                if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
@@ -190,6 +225,7 @@ export class VoiceManager<V extends Voice = Voice> {
          try {
             await this.gateway.sendDefaultVoiceState();
             this.voice.signaling.close();
+            this.voiceToken = null;
             this.isConnecting = false;
          } catch (e) {
             recordSpanError(e);

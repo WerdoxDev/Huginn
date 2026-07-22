@@ -1,21 +1,19 @@
 import { Accordion } from "@base-ui/react";
-import LoadingButton from "@components/button/LoadingButton";
 import DisplaySourcePreview from "@components/DisplaySourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
-import Tooltip from "@components/tooltip/Tooltip";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
-import { CONSTANTS } from "@huginn/shared";
+import { analytics, CONSTANTS, recordSpanError } from "@huginn/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { DisplaySource, SelectItem } from "@/types";
 
@@ -77,7 +75,6 @@ export default function ScreenShareModal() {
    const [isSimulcastEnabled, setIsSimulcastEnabled] = useState(settings.screenShareSimulcast);
 
    const [activeTab, setActiveTab] = useState("screens");
-   const [_screenSharePending, startTransition] = useTransition();
 
    const screens = useMemo(() => data?.filter((x) => x.electronId.includes("screen")), [data]);
    const applications = useMemo(() => data?.filter((x) => x.electronId.includes("window")), [data]);
@@ -101,64 +98,90 @@ export default function ScreenShareModal() {
    }
 
    async function handleSelect(source?: DisplaySource, deviceInfo?: MediaDeviceInfo) {
-      if ((!source && !deviceInfo) || !selectedFramerate || !selectedQuality) {
-         return;
-      }
+      analytics.startActiveSpan("screenShareModal.handleSelect", async (span) => {
+         const type = source ? (source.electronId.includes("screen") ? "screen" : "application") : "device";
+         span.setAttributes({
+            "params.source.id": source?.electronId ?? "none",
+            "params.source.name": source?.name ?? "none",
+            "params.device.id": deviceInfo?.deviceId ?? "none",
+            "params.device.name": deviceInfo?.label ?? "none",
+            max_video_bitrate: maxVideoBitrate,
+            max_audio_bitrate: maxAudioBitrate,
+            type: type,
+            quality: selectedQuality?.value,
+            framerate: selectedFramerate?.value,
+            is_audio_enabled: isAudioEnabled,
+            is_simulcast_enabled: isSimulcastEnabled,
+         });
 
-      if (source) {
-         window.electronAPI.setSelectedDisplaySource(source);
-      }
+         try {
+            if ((!source && !deviceInfo) || !selectedFramerate || !selectedQuality) return;
 
-      const frameRate = Number(selectedFramerate?.value);
-      const { width, height } = SCREEN_SHARE_QUALITIES.find((x) => x.value === selectedQuality.value)!;
+            if (source) {
+               window.electronAPI.setSelectedDisplaySource(source);
+            }
 
-      startTransition(async () => {
-         close();
-         // This is to prevent Electron from giving the same video track back
-         const producer = client?.voice.transport.getProducer("stream_video");
-         producer?.track?.stop();
-         await new Promise((r) => setTimeout(r, 1000));
+            const frameRate = Number(selectedFramerate?.value);
+            const { width, height } = SCREEN_SHARE_QUALITIES.find((x) => x.value === selectedQuality.value)!;
 
-         let stream: MediaStream;
-         if (source) {
-            stream = await navigator.mediaDevices.getDisplayMedia({
-               audio: isAudioEnabled,
-               video: {
-                  frameRate: { ideal: frameRate },
-                  width: { ideal: width },
-                  height: { ideal: height },
-               },
+            span.setAttributes({ width: width, height: height });
+
+            close();
+            // This is to prevent Electron from giving the same video track back
+            const producer = client?.voice.transport.getProducer("stream_video");
+            producer?.track?.stop();
+            await new Promise((r) => setTimeout(r, 1000));
+
+            let stream: MediaStream;
+            if (source) {
+               stream = await navigator.mediaDevices.getDisplayMedia({
+                  audio: false,
+                  video: {
+                     frameRate: { ideal: frameRate },
+                     width: { ideal: width },
+                     height: { ideal: height },
+                  },
+               });
+            } else {
+               stream = await navigator.mediaDevices.getUserMedia({
+                  audio: isAudioEnabled
+                     ? {
+                          deviceId: selectedInput.value,
+                          sampleRate: 48000,
+                          channelCount: 2,
+                          echoCancellation: false,
+                          noiseSuppression: false,
+                          autoGainControl: false,
+                       }
+                     : false,
+                  video: {
+                     frameRate: { ideal: frameRate },
+                     width: { ideal: width },
+                     height: { ideal: height },
+                  },
+               });
+            }
+
+            span.setAttributes({
+               "stream.audio_tracks.count": stream.getAudioTracks().length,
+               "stream.video_tracks.count": stream.getVideoTracks().length,
             });
-         } else {
-            console.log("IM HERE");
-            stream = await navigator.mediaDevices.getUserMedia({
-               audio: isAudioEnabled
-                  ? {
-                       deviceId: selectedInput.value,
-                       sampleRate: 48000,
-                       channelCount: 2,
-                       echoCancellation: false,
-                       noiseSuppression: false,
-                       autoGainControl: false,
-                    }
-                  : false,
-               video: {
-                  frameRate: { ideal: frameRate },
-                  width: { ideal: width },
-                  height: { ideal: height },
-               },
+
+            await modal.callback?.({
+               type: type,
+               stream,
+               isAudioEnabled,
+               isSimulcastEnabled,
+               maxAudioBitrate,
+               maxVideoBitrate,
+               processId: source?.processId,
+            });
+         } catch (e) {
+            recordSpanError(e);
+            modal.errback?.({
+               error: e,
             });
          }
-
-         await modal.callback?.({
-            type: source ? "display" : "device",
-            stream,
-            isAudioEnabled,
-            isSimulcastEnabled,
-            maxAudioBitrate,
-            maxVideoBitrate,
-            sourceName: source?.name,
-         });
       });
    }
 
