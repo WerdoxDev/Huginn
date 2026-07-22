@@ -22,6 +22,7 @@ import {
    type GatewayUpdateVoiceStateData,
    merge,
    recordSpanError,
+   type Snowflake,
    WorkerID,
 } from "@huginn/shared";
 
@@ -33,14 +34,12 @@ import { PresenceManager } from "./presence-manager";
 import { VoiceManager } from "./voice-manager";
 
 export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload> {
-   public presenceManager: PresenceManager;
-   public voiceManager: VoiceManager;
+   public presenceManager: PresenceManager = new PresenceManager();
+   public voiceManager: VoiceManager = new VoiceManager();
+   public voiceTokenExpiresAt: Map<Snowflake, number> = new Map();
 
    public constructor() {
       super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY, sessionSentMessagesLimit: 20 }, ClientSession);
-
-      this.presenceManager = new PresenceManager();
-      this.voiceManager = new VoiceManager();
    }
 
    public onOpen(session: ClientSession) {
@@ -300,10 +299,20 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const previousState = this.voiceManager.getVoiceState(userId);
             this.voiceManager.updateVoiceState({ userId, ...data, sessionId: session.sessionId });
 
+            const tokenExpired = (this.voiceTokenExpiresAt.get(session.sessionId) ?? 0) <= Date.now();
+            const needsToken =
+               data.channelId && (previousState?.channelId !== data.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
+
             // If the new place is a valid channel and is not the same as before
-            if (data.channelId && (previousState?.channelId !== data.channelId || previousState.sessionId !== session.sessionId)) {
-               const token = await createToken("voice", { userId });
+            if (needsToken) {
+               const token = await createToken("voice", { userId }, CONSTANTS.VOICE_TOKEN_EXPIRE_TIME);
                dispatchToTopic(session.sessionId, "voice_server_update", { token });
+               this.voiceTokenExpiresAt.set(session.sessionId, Date.now() + CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS);
+            }
+
+            const newState = this.voiceManager.getVoiceState(userId);
+            if (!newState?.channelId) {
+               this.voiceTokenExpiresAt.delete(session.sessionId);
             }
          } catch (e) {
             recordSpanError(e);
