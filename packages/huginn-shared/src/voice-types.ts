@@ -9,8 +9,6 @@ export enum VoiceOperations {
    HEARTBEAT = 2,
    HEARTBEAT_ACK = 3,
    DISPATCH = 4,
-   PING = 5,
-   PONG = 6,
    RESUME = 7,
 }
 
@@ -20,8 +18,6 @@ export type VoiceOperationTypes = {
    [VoiceOperations.HEARTBEAT]: VoiceHeartbeat;
    [VoiceOperations.HEARTBEAT_ACK]: VoiceHeartbeatAck;
    [VoiceOperations.DISPATCH]: VoiceDispatch;
-   [VoiceOperations.PING]: VoicePing;
-   [VoiceOperations.PONG]: VoicePong;
    [VoiceOperations.RESUME]: VoiceResume;
 };
 
@@ -157,14 +153,6 @@ export type VoiceIdentifyData = {
    token: string;
    channelId: Snowflake;
    guildId: Snowflake | null;
-};
-
-export type VoicePing = {
-   op: VoiceOperations.PING;
-};
-
-export type VoicePong = {
-   op: VoiceOperations.PONG;
 };
 
 export type VoiceReadyData = {
