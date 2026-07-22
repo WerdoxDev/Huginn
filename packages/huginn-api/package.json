@@ -1,6 +1,6 @@
 {
    "name": "@huginn/api",
-   "version": "0.41.1",
+   "version": "0.42.0",
    "type": "module",
    "main": "./src/index.ts",
    "scripts": {
