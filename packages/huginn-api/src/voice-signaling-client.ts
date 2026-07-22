@@ -2,7 +2,6 @@ import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-c
 
 import {
    analytics,
-   CONSTANTS,
    GatewayCode,
    recordSpanError,
    VoiceOperations,
@@ -36,8 +35,6 @@ type Events = {
    status_changed: SignalingClientStatus;
    reacquire_token: { channelId: Snowflake; guildId: Snowflake | null; callback: (token: string) => void; errback: () => void };
 
-   pong: { rtt: number };
-
    reset: { type: VoiceSignallingResetType };
 } & VoiceWebsocketEvents;
 
@@ -50,11 +47,9 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
    private heartbeatInterval?: ReturnType<typeof setInterval>;
    private reconnectTimeout?: ReturnType<typeof setTimeout>;
-   private pingTimeout?: ReturnType<typeof setTimeout>;
 
    private sequence?: number;
    private sessionId?: Snowflake;
-   private lastPingStart?: number;
 
    private _status: SignalingClientStatus = "idle";
    public get status(): SignalingClientStatus {
@@ -312,9 +307,6 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
                }
 
                break;
-            case VoiceOperations.PONG:
-               this.handlePong();
-               break;
          }
       });
    }
@@ -357,24 +349,12 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
    private async handleReady(data: VoiceReadyData) {
       this.setStatus("authenticated");
-      this.sendPing();
       this.emit("ready", data);
    }
 
    private async handleResumed() {
       console.log("RESUMED");
       this.setStatus("authenticated");
-      this.sendPing();
-   }
-
-   private handlePong() {
-      const rtt = Date.now() - (this.lastPingStart ?? 0);
-
-      this.pingTimeout = setTimeout(() => {
-         this.sendPing();
-      }, CONSTANTS.VOICE_CLIENT_PING_INTERVAL);
-
-      this.emit("pong", { rtt });
    }
 
    // ============================================================
@@ -406,11 +386,6 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       this.socket?.send(JSON.stringify(data));
    }
 
-   private sendPing() {
-      this.lastPingStart = Date.now();
-      this.send({ op: VoiceOperations.PING });
-   }
-
    public softReset(emitEvent = true): void {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
          this.socket.close();
@@ -418,7 +393,6 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
       this.socket = undefined;
       this.stopHeartbeat();
-      clearInterval(this.pingTimeout);
 
       if (emitEvent) this.emit("reset", { type: "soft" });
    }
