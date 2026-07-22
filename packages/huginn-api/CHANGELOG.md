@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.1...api@v0.42.0) (2026-07-22)
+
+
+### Features
+
+* **api:** fix bunch of unhandled promise rejection stuff + handle voice token expiration ([08a94d6](https://github.com/WerdoxDev/Huginn/commit/08a94d617cb962d179b7da5dd7a0757bc0b029b7))
+* **api:** remove constant ping pong messaging ([3247c27](https://github.com/WerdoxDev/Huginn/commit/3247c27397b36c1c4da3f04950bb17892ee20228))
+
 ## [0.41.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.0...api@v0.41.1) (2026-07-20)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.83.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.82.0...app@v0.83.0) (2026-07-22)
+
+
+### Features
+
+* **app:** much better looking voice debug + ping derived from webrtc RTT ([cb72099](https://github.com/WerdoxDev/Huginn/commit/cb72099b42d0f2dcd62ccd737ffb29731c750309))
+* **app:** use new loopback-capture package ([fcd3251](https://github.com/WerdoxDev/Huginn/commit/fcd325168083352c1fe753610416b0ff7a84d753))
+
 ## [0.82.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.81.0...app@v0.82.0) (2026-07-20)
 
 

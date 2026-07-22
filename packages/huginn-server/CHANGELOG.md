@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.46.0...server@v0.47.0) (2026-07-22)
+
+
+### Features
+
+* **server:** keep track of voice tokens and issue new ones when old ones are expired ([892ec4c](https://github.com/WerdoxDev/Huginn/commit/892ec4cac1ccb3f760ec11153ed91ecd171693e6))
+
 ## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.45.0...server@v0.46.0) (2026-07-20)
 
 
