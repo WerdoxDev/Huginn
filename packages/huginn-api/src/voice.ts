@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, recordSpanError, type VoiceReadyData } from "@huginn/shared";
+import { analytics, EventEmitter, recordSpanError, type HMediaKind, type VoiceError, type VoiceReadyData } from "@huginn/shared";
 
 import type { HuginnClient, VoiceOptions, VoiceStatus } from ".";
 
@@ -8,11 +8,13 @@ import { VoiceSignalingClient } from "./voice-signaling-client";
 import { VoiceStreamManager } from "./voice-stream-manager";
 import { VoiceTransportManager } from "./voice-transport-manager";
 
+type UpdateVoiceStateResult = undefined | VoiceError;
 type Events = {
    status_changed: VoiceStatus;
    ready: undefined;
    disconnected: undefined;
    reset: undefined;
+   update_voice_state: { mediaKind: HMediaKind; isProducing: boolean; callback: (d: undefined | { error: number }) => void };
 };
 
 export class Voice extends EventEmitter<Events> {
@@ -23,7 +25,7 @@ export class Voice extends EventEmitter<Events> {
    public stream: VoiceStreamManager;
 
    private options: VoiceOptions;
-   private canEmitReady: boolean = false;
+   private canEmitReady: boolean = true;
 
    private _status: VoiceStatus = "idle";
    public get status(): VoiceStatus {
@@ -78,7 +80,7 @@ export class Voice extends EventEmitter<Events> {
          if (type === "hard" || type === "session") {
             this.transport.reset();
             this.emit("reset", undefined);
-            this.canEmitReady = false;
+            this.canEmitReady = true;
          }
       });
 
@@ -180,6 +182,14 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
+            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
+               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: true, callback: res }),
+            );
+            if (stateResult?.error) {
+               d.callback({ error: stateResult.error });
+               return;
+            }
+
             const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
             d.callback(result);
          });
@@ -191,6 +201,14 @@ export class Voice extends EventEmitter<Events> {
                ...this.getDefaultAttributes(),
                "params.producer_id": d.id,
             });
+
+            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
+               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: false, callback: res }),
+            );
+            if (stateResult?.error) {
+               d.callback({ error: stateResult.error });
+               return;
+            }
 
             const result = await this.signaling.sendCloseProducer(d.id);
             d.callback(result);
@@ -334,9 +352,9 @@ export class Voice extends EventEmitter<Events> {
             // case "idle":
             // case "signaling":
             case "ready":
-               if (!this.canEmitReady) {
+               if (this.canEmitReady) {
                   this.emit("ready", undefined);
-                  this.canEmitReady = true;
+                  this.canEmitReady = false;
                }
                break;
             case "disconnected":

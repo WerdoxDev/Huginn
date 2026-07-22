@@ -36,7 +36,7 @@ import {
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 
-import type { HuginnClient } from ".";
+import { TransportError, type HuginnClient } from ".";
 
 type Events = {
    send_transport_ready: undefined;
@@ -54,7 +54,7 @@ type Events = {
       rtpParameters: RtpParameters;
       callback: (d: VoiceProduceResult) => void;
    };
-   close_producer: { id: string; callback: (d: VoiceCloseProducerResult) => void };
+   close_producer: { id: string; kind: HMediaKind; callback: (d: VoiceCloseProducerResult) => void };
    producer_updated: { id: string; kind: HMediaKind; track: MediaStreamTrack | null };
    producer_created: Producer<MediasoupAppData>;
    producer_closed: ProducerData;
@@ -185,7 +185,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       device: mediasoupClient.Device;
    } {
       if (!this.device) {
-         throw new Error("Transport manager's device is not initialized");
+         throw new TransportError("Transport manager's device is not initialized");
       }
    }
 
@@ -194,7 +194,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       sendTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.sendTransport) throw new Error("Transport manager's send transport is not initialized");
+      if (!this.sendTransport) throw new TransportError("Transport manager's send transport is not initialized");
    }
 
    public checkRecvTransport(): asserts this is this & {
@@ -202,7 +202,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       recvTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.recvTransport) throw new Error("Transport manager's recv transport is not initialized");
+      if (!this.recvTransport) throw new TransportError("Transport manager's recv transport is not initialized");
    }
 
    public async initializeDevice(rtpCapabilities: RtpCapabilities): Promise<void> {
@@ -240,7 +240,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   dtlsParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to connect send transport: ${d.error}`));
+                        errback(new TransportError(`Failed to connect send transport: ${d.error}`, d.error));
                         return;
                      }
                      callback();
@@ -257,7 +257,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   rtpParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to create producer: ${d.error}`));
+                        errback(new TransportError(`Failed to create producer: ${d.error}`, d.error));
                         return;
                      }
 
@@ -297,7 +297,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   dtlsParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to connect receive transport: ${d.error}`));
+                        errback(new TransportError(`Failed to connect receive transport: ${d.error}`, d.error));
                         return;
                      }
                      callback();
@@ -357,7 +357,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          try {
             this.checkSendTransport();
 
-            if (this.producers.has(kind)) throw new Error(`Producer with kind ${kind} already exists`);
+            if (this.producers.has(kind)) throw new TransportError(`Producer with kind ${kind} already exists`);
 
             const producer = await this.sendTransport.produce<MediasoupAppData>({
                codecOptions: options?.codecOptions,
@@ -391,14 +391,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new Error(`Producer of kind ${kind} doesn't exist`);
+            if (!producer) throw new TransportError(`Producer of kind ${kind} doesn't exist`);
 
             const result = await new Promise<VoiceCloseProducerResult>((res) => {
-               this.emit("close_producer", { id: producer.id, callback: res });
+               this.emit("close_producer", { id: producer.id, kind: producer.appData.mediaKind, callback: res });
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to close producer: ${result.error}`);
+               throw new TransportError(`Failed to close producer: ${result.error}`, result.error);
             }
 
             producer.close();
@@ -427,7 +427,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkRecvTransport();
 
             const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
-            if (!remoteProducer) throw new Error(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
+            if (!remoteProducer) throw new TransportError(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
 
             const createResult = await new Promise<VoiceConsumeResult>((res) => {
                this.emit("create_consumer", {
@@ -439,7 +439,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             });
 
             if ("error" in createResult) {
-               throw new Error(`Failed to create consumer: ${createResult.error}`);
+               throw new TransportError(`Failed to create consumer: ${createResult.error}`, createResult.error);
             }
 
             const consumer = await this.recvTransport.consume({
@@ -453,7 +453,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             // To avoid a race condition that could happen when consumer is created and right after that the producer is removed
             if (!this.remoteProducers.has(remoteProducer.producerId)) {
                consumer.close();
-               throw new Error(`Remote producer with id ${remoteProducer.producerId} was deleted`);
+               throw new TransportError(`Remote producer with id ${remoteProducer.producerId} was deleted`);
             }
 
             this.consumers.set(consumer.id, consumer);
@@ -480,14 +480,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
 
             const result = await new Promise<VoiceResumeConsumerResult>((res) => {
                this.emit("resume_consumer", { id: consumerId, callback: res });
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to resume consumer: ${result.error}`);
+               throw new TransportError(`Failed to resume consumer: ${result.error}`, result.error);
             }
          } catch (e) {
             recordSpanError(e);
@@ -505,14 +505,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
 
             const result = await new Promise<VoicePauseConsumerResult>((res) => {
                this.emit("pause_consumer", { id: consumerId, callback: res });
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to pause consumer: ${result.error}`);
+               throw new TransportError(`Failed to pause consumer: ${result.error}`, result.error);
             }
          } catch (e) {
             recordSpanError(e);
@@ -533,7 +533,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
 
             if (!skipSignalling) {
                const result = await new Promise<VoiceCloseConsumerResult>((res) => {
@@ -541,7 +541,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                });
 
                if ("error" in result) {
-                  throw new Error(`Failed to close consumer: ${result.error}`);
+                  throw new TransportError(`Failed to close consumer: ${result.error}`, result.error);
                }
             }
 
@@ -587,7 +587,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to restart ice server for ${direction} transport: ${result.error}`);
+               throw new TransportError(`Failed to restart ice server for ${direction} transport: ${result.error}`, result.error);
             }
 
             await transport.restartIce({ iceParameters: result.iceParameters });
@@ -660,7 +660,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new Error(`No producer with kind ${kind} was found`);
+            if (!producer) throw new TransportError(`No producer with kind ${kind} was found`);
 
             await producer.replaceTrack({ track });
             this.emit("producer_updated", { id: producer.id, kind: producer.appData.mediaKind, track });

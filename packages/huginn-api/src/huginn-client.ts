@@ -75,7 +75,7 @@ export class HuginnClient<V extends Voice = Voice> {
 
       const VoiceClass = options?.voice?.class ?? (Voice as VoiceConstructor<V>);
       this.voice = new VoiceClass(this, this.options.voice);
-      this.voiceManager = new VoiceManager<V>(this.gateway, this.voice);
+      this.voiceManager = new VoiceManager<V>(this, this.gateway, this.voice);
 
       this.auth = new AuthAPI(this.rest);
       this.users = new UserAPI(this.rest);
