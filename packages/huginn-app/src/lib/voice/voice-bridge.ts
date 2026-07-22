@@ -1,7 +1,7 @@
-import type { Consumer, Producer } from "mediasoup-client/types";
+import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
 import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginn/shared";
+import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
@@ -20,6 +20,41 @@ export class VoiceBridge extends Voice {
    public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
+
+   /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
+   public async getCurrentRoundTripTime(): Promise<number | undefined> {
+      const transports = [this.transport.sendTransport, this.transport.recvTransport].filter(
+         (transport): transport is Transport => !!transport && !transport.closed,
+      );
+      const reports = await Promise.allSettled(transports.map((transport) => transport.getStats()));
+      const roundTripTimes = reports
+         .filter((result): result is PromiseFulfilledResult<RTCStatsReport> => result.status === "fulfilled")
+         .map((result) => this.getRoundTripTimeFromStats(result.value))
+         .filter((roundTripTime): roundTripTime is number => roundTripTime !== undefined);
+
+      if (roundTripTimes.length === 0) return undefined;
+      return Math.max(...roundTripTimes) * 1000;
+   }
+
+   private getRoundTripTimeFromStats(report: RTCStatsReport): number | undefined {
+      let selectedCandidatePairId: string | undefined;
+      const candidatePairs: RTCIceCandidatePairStats[] = [];
+
+      for (const stat of report.values()) {
+         if (stat.type === "transport") {
+            selectedCandidatePairId = (stat as RTCTransportStats).selectedCandidatePairId;
+         } else if (stat.type === "candidate-pair") {
+            candidatePairs.push(stat as RTCIceCandidatePairStats);
+         }
+      }
+
+      const selectedPair = selectedCandidatePairId ? candidatePairs.find((pair) => pair.id === selectedCandidatePairId) : undefined;
+      const activePair = selectedPair ?? candidatePairs.find((pair) => pair.state === "succeeded" && pair.nominated);
+      const fallbackPair = activePair ?? candidatePairs.find((pair) => pair.state === "succeeded");
+      const roundTripTime = fallbackPair?.currentRoundTripTime;
+
+      return typeof roundTripTime === "number" && Number.isFinite(roundTripTime) ? roundTripTime : undefined;
+   }
 
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);

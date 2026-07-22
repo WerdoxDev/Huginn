@@ -1,5 +1,5 @@
 import type { HuginnClient } from "@huginn/api";
-import type { Consumer, Producer } from "mediasoup-client/types";
+import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
 import * as shared from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";
@@ -117,6 +117,41 @@ describe("constructor", () => {
    //    expect(() => bridge.transport.emit("consumer_created", createConsumer({ appData: { mediaKind: "camera", userId: "u" } }))).not.toThrow();
    //    expect(() => bridge.transport.emit("producer_created", createProducer({ appData: { mediaKind: "camera" } }))).not.toThrow();
    // });
+});
+
+describe("getCurrentRoundTripTime", () => {
+   function createStatsReport(stats: RTCStats[]): RTCStatsReport {
+      return new Map(stats.map((stat) => [stat.id, stat])) as unknown as RTCStatsReport;
+   }
+
+   it("returns the slower selected transport RTT in milliseconds", async () => {
+      const sendStats = createStatsReport([
+         { id: "send-transport", type: "transport", selectedCandidatePairId: "send-pair" } as RTCTransportStats,
+         { id: "send-pair", type: "candidate-pair", state: "succeeded", nominated: true, currentRoundTripTime: 0.025 } as RTCIceCandidatePairStats,
+      ]);
+      const recvStats = createStatsReport([
+         { id: "recv-transport", type: "transport", selectedCandidatePairId: "recv-pair" } as RTCTransportStats,
+         { id: "recv-pair", type: "candidate-pair", state: "succeeded", nominated: true, currentRoundTripTime: 0.04 } as RTCIceCandidatePairStats,
+      ]);
+
+      bridge.transport.sendTransport = { closed: false, getStats: vi.fn().mockResolvedValue(sendStats) } as unknown as Transport;
+      bridge.transport.recvTransport = { closed: false, getStats: vi.fn().mockResolvedValue(recvStats) } as unknown as Transport;
+
+      await expect(bridge.getCurrentRoundTripTime()).resolves.toBe(40);
+   });
+
+   it("returns undefined when no active transport has an RTT", async () => {
+      bridge.transport.sendTransport = {
+         closed: false,
+         getStats: vi.fn().mockResolvedValue(createStatsReport([])),
+      } as unknown as Transport;
+      bridge.transport.recvTransport = {
+         closed: false,
+         getStats: vi.fn().mockRejectedValue(new Error("transport closed")),
+      } as unknown as Transport;
+
+      await expect(bridge.getCurrentRoundTripTime()).resolves.toBeUndefined();
+   });
 });
 
 // ---------------------------------------------------------------------------

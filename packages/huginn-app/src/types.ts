@@ -451,6 +451,7 @@ export type ConsumerStats = {
       remoteCandidate?: CandidateData;
    };
    transport?: {
+      id: string;
       bytesReceived?: number;
       bytesSent?: number;
       packetsReceived?: number;
@@ -491,6 +492,7 @@ export type ProducerStats = {
       remoteCandidate?: CandidateData;
    };
    transport?: {
+      id: string;
       bytesReceived?: number;
       bytesSent?: number;
       packetsReceived?: number;
