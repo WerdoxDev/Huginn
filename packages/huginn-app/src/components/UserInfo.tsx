@@ -109,7 +109,7 @@ export default function UserInfo(props: { user: AppUser }) {
                </HuginnMenu.Trigger>
 
                <HuginnMenu.Content className="w-64" sideOffset={8}>
-                  <UserProfilePreview userId={props.user.id} maxWidth={134} />
+                  <UserProfilePreview userId={props.user.id} textMaxWidth={150} />
                   <HuginnMenu.Separator />
                   <HuginnMenu.Item label="View Profile" onClick={handleViewProfile} />
                   <HuginnMenu.Separator />

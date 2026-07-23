@@ -56,3 +56,5 @@ playwright/.cache/
 .vs
 
 generated
+
+.pnpm-store

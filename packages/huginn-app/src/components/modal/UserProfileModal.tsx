@@ -22,13 +22,56 @@ import { Suspense, useMemo } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
-function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null }) {
-   if (!props.banner && !props.bannerColor) return null;
+function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null; imageSrc?: string | null }) {
+   const hasBannerImage = props.imageSrc !== undefined ? !!props.imageSrc : !!props.banner;
+   if (!hasBannerImage && !props.bannerColor) return null;
 
    return (
-      <div className={clsx("relative w-full", props.banner ? "h-32" : "h-20")}>
-         <UserBanner userId={props.userId} animatedMode="always" bannerColor={props.bannerColor} bannerHash={props.banner} />
+      <div className={clsx("relative w-full", hasBannerImage ? "aspect-444/128" : "h-20")}>
+         <UserBanner
+            userId={props.userId}
+            animatedMode="always"
+            bannerColor={props.bannerColor}
+            bannerHash={props.banner}
+            imageSrc={props.imageSrc}
+         />
          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
+      </div>
+   );
+}
+
+export function UserProfileCropPreview(props: { userId: string; avatarImageSrc?: string | null; bannerImageSrc?: string | null }) {
+   const user = useUser(props.userId);
+   const hasBannerImage = props.bannerImageSrc !== undefined ? !!props.bannerImageSrc : !!user.banner;
+   const hasBanner = hasBannerImage || !!user.bannerColor;
+
+   return (
+      <div
+         className="bg-surface-alt relative flex w-full flex-col overflow-hidden rounded-lg border-2"
+         style={{ borderColor: user.accentColor || "transparent" }}
+      >
+         <ProfileBanner userId={user.id} banner={user.banner} bannerColor={user.bannerColor} imageSrc={props.bannerImageSrc} />
+         <div className={clsx("flex items-start gap-x-4 px-5 pb-5", hasBanner ? "pt-0" : "pt-5")}>
+            <div className="flex min-w-0 flex-col gap-y-2">
+               <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
+                  <div className="border-surface-alt rounded-full border-4">
+                     <UserAvatar
+                        userId={user.id}
+                        avatarHash={user.avatar}
+                        imageSrc={props.avatarImageSrc}
+                        size={5.5}
+                        cdnSize={128}
+                        maskWidth={0.25}
+                        animatedMode="always"
+                     />
+                  </div>
+               </div>
+               <div className="flex min-w-0 flex-col pl-1">
+                  <div className="truncate text-lg font-semibold text-white">{user.displayName}</div>
+                  <div className="truncate text-sm text-white">{user.username}</div>
+               </div>
+            </div>
+         </div>
       </div>
    );
 }
@@ -106,7 +149,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} animatedMode="always" />
+                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} maskWidth={0.25} animatedMode="always" />
                   </div>
                </div>
                <div className="flex max-w-60 flex-col pl-1">

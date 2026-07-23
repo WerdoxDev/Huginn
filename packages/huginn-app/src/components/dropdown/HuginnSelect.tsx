@@ -136,6 +136,7 @@ function ItemsWrapper(props: {
             align={props.align}
             sideOffset={sideOffset}
             alignOffset={alignOffset}
+            collisionPadding={{ top: 28, bottom: 4 }}
             alignItemWithTrigger={false}
             className="z-20"
             style={{ width: "var(--anchor-width)" }}

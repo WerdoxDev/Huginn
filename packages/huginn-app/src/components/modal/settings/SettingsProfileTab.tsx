@@ -1,5 +1,6 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
+import ColorPicker from "@components/ColorPicker";
 import HuginnLabel from "@components/HuginnLabel";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
@@ -11,10 +12,13 @@ import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
+import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
+
+import * as palette from "@/assets/palettes.json";
 
 type EditingField = "username" | "displayName" | "email" | "password";
 
@@ -25,7 +29,7 @@ export default function SettingsProfileTab() {
    const { openFileDialog } = useFileDialog("image");
 
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
-   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
+   const [accentColor, setAccentColor] = useState(() => user?.accentColor);
    const [bio, setBio] = useState(() => user?.bio ?? "");
    const [isEditing, setIsEditing] = useState(false);
    const [pendingAvatar, setPendingAvatar] = useState<string | null | undefined>(undefined);
@@ -66,7 +70,7 @@ export default function SettingsProfileTab() {
    }
 
    function handleResetAccentColor() {
-      setAccentColor("");
+      setAccentColor(null);
    }
 
    async function handleEditField(field: EditingField) {
@@ -86,6 +90,11 @@ export default function SettingsProfileTab() {
             originalImageData: result.dataUrl,
             cropType: "avatar",
             mimeType: result.mimeType,
+            profilePreview: {
+               userId: user!.id,
+               avatarImageSrc: pendingAvatar,
+               bannerImageSrc: pendingBanner,
+            },
             callback: (data) => {
                setPendingAvatar(data);
                updateModals({ imageCrop: { isOpen: false } });
@@ -104,6 +113,11 @@ export default function SettingsProfileTab() {
             originalImageData: result.dataUrl,
             mimeType: result.mimeType,
             cropType: "banner",
+            profilePreview: {
+               userId: user!.id,
+               avatarImageSrc: pendingAvatar,
+               bannerImageSrc: pendingBanner,
+            },
             callback: (data) => {
                setPendingBanner(data);
                setShowBanner(true);
@@ -171,6 +185,16 @@ export default function SettingsProfileTab() {
    const hasAvatarPreview = pendingAvatar !== undefined ? !!pendingAvatar : !!user?.avatar;
    const hasBannerPreview = pendingBanner !== undefined ? !!pendingBanner : !!user?.banner;
    const bannerOverride = pendingBanner !== undefined ? pendingBanner : undefined;
+   const avatarMaskStyle = isEditing
+      ? createRadialMaskStyle(
+           hasAvatarPreview
+              ? [
+                   { radius: "1.25rem", x: "calc(50% - 1.125rem)", y: "calc(100% - 0.375rem + 4px)" },
+                   { radius: "1.25rem", x: "calc(50% + 1.125rem)", y: "calc(100% - 0.375rem + 4px)" },
+                ]
+              : [{ radius: "1.25rem", x: "50%", y: "calc(100% - 0.375rem + 4px)" }],
+        )
+      : undefined;
    // const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
    const hasChanges =
       bannerColor !== (user?.bannerColor ?? "") ||
@@ -235,7 +259,7 @@ export default function SettingsProfileTab() {
                <div className={clsx("flex items-start gap-x-4 px-5 pb-5 transition-[padding]", showBanner ? "pt-0" : "pt-5")}>
                   <div className="flex flex-col gap-y-2">
                      <div className={clsx("relative z-10 w-max shrink-0 transition-[margin]", showBanner ? "-mt-11" : "mt-0")}>
-                        <div className="border-surface-alt bg-surface-alt rounded-full border-4">
+                        <div className="border-surface-alt rounded-full border-4">
                            <UserAvatar
                               userId={user.id}
                               avatarHash={user.avatar}
@@ -243,10 +267,11 @@ export default function SettingsProfileTab() {
                               size={5.5}
                               hideStatus
                               animatedMode="always"
+                              maskStyle={avatarMaskStyle}
                            />
                         </div>
                         {isEditing && (
-                           <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
+                           <div className="absolute right-0 -bottom-2.5 left-0 z-20 flex justify-center gap-x-1">
                               {hasAvatarPreview && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
                               <ImagePickerEditButton onClick={handleEditAvatar} />
                            </div>
@@ -404,47 +429,53 @@ function ChangeButton(props: { onClick?: () => void }) {
 //    return <ProfileBadges badges={profile.badges} />;
 // }
 
-const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
+// const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
+const COLOR_PRESETS = Object.values(palette.primary).map((x) => x["primary-500"]);
 
-function ColorSelector(props: { onChange?: (color: string) => void; color: string; disabled?: boolean; label: string; disabledReason?: string }) {
-   function handleHexInputChange(value: string) {
-      props.onChange?.(value);
-   }
-
+function ColorSelector(props: {
+   onChange?: (color: string) => void;
+   color?: string | null;
+   disabled?: boolean;
+   label: string;
+   disabledReason?: string;
+}) {
    return (
-      <div className={clsx("flex w-full items-center gap-x-2", props.disabled && "opacity-50")}>
-         <HuginnLabel className="text-tiny mb-0!">{props.label}</HuginnLabel>
-         {props.disabled && (
-            <Tooltip>
-               <Tooltip.Trigger>
-                  <IconMingcuteInformationFill className="text-caution-100 size-3.5" />
-               </Tooltip.Trigger>
-               <Tooltip.Content>{props.disabledReason}</Tooltip.Content>
-            </Tooltip>
-         )}
-         {/* <span className="text-tiny w-20 shrink-0 font-semibold text-text/80 uppercase">Accent</span> */}
-         <div className={clsx("ml-auto flex gap-x-1.5", props.disabled && "pointer-events-none")}>
-            {COLOR_PRESETS.map((color) => (
-               <button
-                  key={color}
-                  type="button"
-                  className="size-5 shrink-0 cursor-pointer rounded-full transition-all hover:scale-110"
-                  style={{ backgroundColor: color }}
-                  onClick={() => props.onChange?.(color)}
-               />
-            ))}
-         </div>
-         <input
-            type="text"
-            className={clsx(
-               "bg-surface-alt w-24 shrink-0 rounded-md px-2 py-1 text-xs text-white outline-none placeholder:text-white/30",
-               props.disabled && "pointer-events-none",
+      <div className={clsx("flex w-full items-start gap-2", props.disabled && "opacity-50")}>
+         <div className="flex min-w-14 items-center gap-x-1 pt-1.5">
+            <HuginnLabel className="text-tiny mb-0!">{props.label}</HuginnLabel>
+            {props.disabled && (
+               <Tooltip>
+                  <Tooltip.Trigger>
+                     <IconMingcuteInformationFill className="text-caution-100 size-3.5" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{props.disabledReason}</Tooltip.Content>
+               </Tooltip>
             )}
-            placeholder="#000000"
-            maxLength={16}
-            value={props.color}
-            onChange={(e) => handleHexInputChange(e.currentTarget.value)}
-         />
+         </div>
+         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
+               {COLOR_PRESETS.map((color) => {
+                  const isSelected = color.toLowerCase() === props.color?.toLowerCase();
+
+                  return (
+                     <button
+                        key={color}
+                        type="button"
+                        className={clsx(
+                           "size-5 shrink-0 cursor-pointer rounded-full transition-transform hover:scale-110",
+                           isSelected && "ring-1 ring-white",
+                        )}
+                        style={{ backgroundColor: color }}
+                        onClick={() => props.onChange?.(color)}
+                        disabled={props.disabled}
+                        aria-label={`Use ${color} for ${props.label}`}
+                        aria-pressed={isSelected}
+                     />
+                  );
+               })}
+            </div>
+            <ColorPicker color={props.color} label={props.label} onChange={props.onChange} disabled={props.disabled} />
+         </div>
       </div>
    );
 }

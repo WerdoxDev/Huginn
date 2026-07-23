@@ -341,7 +341,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                   )}
                </div>
             ) : (
-               <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
+               <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 py-10 text-center">
                   <IconMingcuteSadFill className="size-10" />
                   <div>No emojis found</div>
                </div>

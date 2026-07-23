@@ -142,7 +142,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
             <HuginnTab.TabPanels className="flex h-full w-full overflow-hidden" panelClassName="w-full h-full">
                <HuginnTab.TabPanel value="your" className="py-2">
                   {(!favoriteGifs || favoriteGifs?.length === 0) && (
-                     <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
+                     <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 py-10 text-center">
                         <IconMingcuteSadFill className="size-10" />
                         <div>Maybe go favorite some gifs?</div>
                      </div>
