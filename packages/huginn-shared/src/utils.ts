@@ -242,6 +242,13 @@ export function isVideoMediaType(type: string): boolean {
    return false;
 }
 
+export function isAudioMediaType(type: string): boolean {
+   if (type === fileTypes.mp3 || type === fileTypes.wav || type === fileTypes.ogg) {
+      return true;
+   }
+   return false;
+}
+
 export function isBrowser(): boolean {
    try {
       return globalThis === window;

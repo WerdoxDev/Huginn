@@ -21,7 +21,7 @@ export const CONSTANTS = {
    ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif", "svg"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,
-
+   ALLOWED_AUDIO_FORMATS: ["mp3", "wav", "ogg"] as const,
    CHANNEL_NAME_MAX_LENGTH: 100,
    ATTACHMENT_MEDIA_MAX_WIDTH: 550,
    ATTACHMENT_MEDIA_MAX_HEIGHT: 350,
