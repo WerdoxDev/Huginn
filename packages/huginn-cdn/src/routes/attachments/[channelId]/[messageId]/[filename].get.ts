@@ -1,7 +1,7 @@
 import type { S3Stats } from "bun";
 
 import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
-import { type ImageFormats, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { type ImageFormats, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import Elysia, { env, StatusMap, t } from "elysia";
 
 import { storage } from "#server";
@@ -38,7 +38,7 @@ export const getMessageAttachment = new Elysia().use(globalPlugin).get(
       const { mimeType } = extractFileInfo(filename);
 
       // Video files with range require getting a specific range of bytes from the video
-      if (isVideoMediaType(mimeType)) {
+      if (isVideoMediaType(mimeType) || isAudioMediaType(mimeType)) {
          const head = (await storage.stat("attachments", `${channelId}/${messageId}`, filename)) as S3Stats;
          if (!head) {
             return fileNotFound(status);
