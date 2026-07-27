@@ -84,9 +84,9 @@ export function IndexComponent() {
    const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
    const updateProgressText = useMemo(() => {
-      if (huginnWindow.environment === "desktop")
-         return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
-      if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
+      // if (huginnWindow.environment === "desktop")
+      return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+      // if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
    }, [progress]);
 
    const { errorTitle, errorDescription } = useMemo(() => {

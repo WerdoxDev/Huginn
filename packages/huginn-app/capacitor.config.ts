@@ -1,18 +1,13 @@
 import "dotenv/config";
 import type { CapacitorConfig } from "@capacitor/cli";
 
-import { version } from "./package.json";
-
+console.log("VITE_DEV_SERVER_URL", process.env.VITE_DEV_SERVER_URL);
 const config: CapacitorConfig = {
    appId: "dev.huginn",
    appName: "Huginn",
    webDir: "dist",
    plugins: {
-      CapacitorUpdater: {
-         autoUpdate: "off",
-         allowModifyUrl: true,
-         version: version,
-      },
+      LiveUpdate: { publicKey: process.env.CAPAWESOME_PUBLIC_KEY, readyTimeout: 10000 },
    },
    server: process.env.VITE_DEV_SERVER_URL ? { cleartext: true, url: process.env.VITE_DEV_SERVER_URL } : undefined,
 };

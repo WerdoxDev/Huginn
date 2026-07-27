@@ -13,7 +13,7 @@ export default {
       icon: "src/assets/icons/default/outline-thick/outline-thick.ico",
       publish: {
          provider: "generic",
-         url: process.env.DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
+         url: process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
          useMultipleRangeRequest: false,
       },
    },

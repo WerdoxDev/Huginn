@@ -243,7 +243,7 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.on("update:set-url", (_, url: string) => {
-         if (process.env.FORCE_UPDATE_PUBLISHER === "1") return;
+         if (process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) return;
          autoUpdater.setFeedURL({ provider: "generic", url, useMultipleRangeRequest: false });
       });
 

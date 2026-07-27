@@ -9,7 +9,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
    const [audioHovering, setAudioHovering] = useState(false);
    const [isMuted, setIsMuted] = useState(false);
    const previousPercent = useRef(0);
-   const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 1000);
+   const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 500);
 
    function cancelAudioHoverTimeout() {
       cancelTimeout();
@@ -42,7 +42,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
    }
 
    return (
-      <div className="relative flex items-center justify-center select-none">
+      <div className="relative flex items-center justify-center select-none" data-ignore-swipe>
          <button
             type="button"
             className="shrink-0 cursor-pointer text-white/80 transition-transform hover:text-white active:scale-90"

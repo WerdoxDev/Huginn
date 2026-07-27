@@ -25,10 +25,21 @@ import {
    snowflake,
 } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
+import { parseBlob } from "music-metadata-browser";
 import { Children, isValidElement } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type { AppAttachment, AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
+import type {
+   AppAttachment,
+   AppDirectChannel,
+   AppMessage,
+   AppPresence,
+   AppRelationship,
+   AppUser,
+   AppUserProfile,
+   AttachmentInput,
+   InputMessage,
+} from "@/types";
 
 import { APIMessages } from "./error-messages";
 import { getMessage } from "./query-utils";
@@ -334,4 +345,54 @@ export function serializeSlate(nodes: Descendant[], options?: { emojiAsSlug?: bo
    }
 
    return text;
+}
+
+export function getVideoThumbnail(blob: Blob, seekTo: number = 1) {
+   return new Promise<string>((resolve, reject) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.muted = true;
+      video.playsInline = true;
+
+      const url = URL.createObjectURL(blob);
+      video.src = url;
+
+      video.addEventListener("loadedmetadata", () => {
+         // don't seek past the end of short clips
+         const time = Math.min(seekTo, video.duration || seekTo);
+         video.currentTime = time;
+      });
+
+      video.addEventListener("seeked", () => {
+         const canvas = document.createElement("canvas");
+         canvas.width = video.videoWidth;
+         canvas.height = video.videoHeight;
+
+         const ctx = canvas.getContext("2d");
+         ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+         canvas.toBlob(
+            () => {
+               URL.revokeObjectURL(url);
+               resolve(canvas.toDataURL("image/jpeg", 0.8));
+            },
+            "image/jpeg",
+            0.8,
+         );
+      });
+
+      video.addEventListener("error", (e) => {
+         URL.revokeObjectURL(url);
+         reject(e);
+      });
+   });
+}
+
+export async function getAudioCovertArt(blob: Blob) {
+   // const metadata = await parseBlob(blob);
+   // const picture = metadata.common.picture?.[0];
+
+   // console.log(URL.createObjectURL(blob));
+
+   return "";
 }

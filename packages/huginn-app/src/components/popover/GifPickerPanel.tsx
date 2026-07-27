@@ -3,6 +3,7 @@ import type { APIGif, FavoriteGif } from "@huginn/shared";
 import HuginnTab from "@components/HuginnTab";
 import HuginnInput from "@components/input/HuginnInput";
 import LoadingIcon from "@components/LoadingIcon";
+import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useContainerWidth } from "@hooks/useContainerWidth";
 import { useDebouncer } from "@hooks/useDebouncer";
@@ -142,10 +143,9 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
             <HuginnTab.TabPanels className="flex h-full w-full overflow-hidden" panelClassName="w-full h-full">
                <HuginnTab.TabPanel value="your" className="py-2">
                   {(!favoriteGifs || favoriteGifs?.length === 0) && (
-                     <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 py-10 text-center">
-                        <IconMingcuteSadFill className="size-10" />
-                        <div>Maybe go favorite some gifs?</div>
-                     </div>
+                     <PickerMessage className="h-full w-full" icon={<IconMingcuteSadFill className="size-8" />}>
+                        Maybe go favorite some gifs?
+                     </PickerMessage>
                   )}
                   {favoriteGifs && favoriteGifs?.length > 0 && (
                      <div className="scroll-super-thin h-full overflow-y-scroll pr-0 pl-2" onScroll={handleScroll}>

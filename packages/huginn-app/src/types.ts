@@ -327,6 +327,7 @@ export type AppSettings = {
    cameraDeviceId: string;
    inputVolume: number;
    outputVolume: number;
+   mediaVolume: number;
    inputThreshold: number;
    noiseSuppression: boolean;
    screenShareFramerate: string;
