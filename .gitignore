@@ -58,3 +58,5 @@ playwright/.cache/
 generated
 
 .pnpm-store
+
+update-keys

@@ -113,6 +113,8 @@ jobs:
          RELEASE_KEY_PASSWORD: ${{secrets.RELEASE_KEY_PASSWORD}}
          RELEASE_STORE_FILE: ${{github.workspace}}/packages/huginn-app/android/app/certs/huginn-release.keystore
          CI: ${{github.env.CI}}
+         CAPAWESOME_PRIVATE_KEY: ${{secrets.CAPAWESOME_PRIVATE_KEY}}
+         CAPAWESOME_PUBLIC_KEY: ${{secrets.CAPAWESOME_PUBLIC_KEY}}
       steps:
          - uses: actions/checkout@v4
 
