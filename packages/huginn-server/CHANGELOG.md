@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.47.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.47.0...server@v0.47.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **server:** use new android update flow ([2983fa8](https://github.com/WerdoxDev/Huginn/commit/2983fa8fa28ee02167ac5c1b0da97e43218eabd2))
+
 ## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.46.0...server@v0.47.0) (2026-07-22)
 
 
