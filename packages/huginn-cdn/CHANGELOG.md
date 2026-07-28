@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.20.1...cdn@v0.20.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **cdn:** support range for audio files ([62949dc](https://github.com/WerdoxDev/Huginn/commit/62949dc3e82a30cdd611f54583fe6a898167e4e2))
+
 ## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.20.0...cdn@v0.20.1) (2026-07-11)
 
 

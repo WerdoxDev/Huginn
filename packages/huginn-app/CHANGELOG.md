@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.84.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.83.0...app@v0.84.0) (2026-07-28)
+
+
+### Features
+
+* **app:** add banner and avatar previews when cropping + much better accent and banner color selection ([fddb815](https://github.com/WerdoxDev/Huginn/commit/fddb815054ea21dcdcbd0bd78a6d8d1c52b0d434))
+* **app:** add bunch of new context menu options for gifs, videos and images ([5caa816](https://github.com/WerdoxDev/Huginn/commit/5caa81693912e21a47cba44dce3a3e3681c4b6ee))
+* **app:** Audio player + mobile file picker ([9e399a7](https://github.com/WerdoxDev/Huginn/commit/9e399a7acc8690d45080474075aaa10d8c6e141a))
+
+
+### Bug Fixes
+
+* **app:** potential fix for empty notification body ([7c71e25](https://github.com/WerdoxDev/Huginn/commit/7c71e257a3878f2fff70618c5c4096f3056a1df0))
+
 ## [0.83.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.82.0...app@v0.83.0) (2026-07-22)
 
 
