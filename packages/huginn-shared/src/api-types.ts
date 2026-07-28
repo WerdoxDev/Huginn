@@ -395,7 +395,7 @@ export type UserPresence = {
 
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
-export type FavoriteGif = { url: string; src: string; width: number; height: number };
+export type FavoriteGif = { url: string; src: string; width: number; height: number; timestamp: number };
 
 export type VoicePreference = {
    userId: Snowflake;
@@ -448,7 +448,7 @@ export type APIReadState = {
 
 export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
 
-export type APIPatchUserSettingsJSONBody = Partial<UserSettings>;
+export type APIPatchUserSettingsJSONBody = Partial<Omit<UserSettings, "favoriteGifs"> & { favoriteGifs?: FavoriteGif[] }>;
 export type APIPatchUserSettingsResult = UserSettings;
 
 export type APIKnownApplication = {
