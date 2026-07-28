@@ -39,14 +39,14 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
          type: "application/octet-stream",
       },
       {
-         path: `./dev.huginn_${version}.zip`,
-         name: `dev.huginn_${version}.zip`,
+         path: `./android-releases/Huginn-android-${version}.zip`,
+         name: `Huginn-android-${version}.zip`,
          type: "application/zip",
       },
       {
-         path: "./checksum.txt",
-         name: "checksum.txt",
-         type: "text/plain",
+         path: "./android-releases/manifest.json",
+         name: "manifest.json",
+         type: "application/json",
       },
    ],
 };

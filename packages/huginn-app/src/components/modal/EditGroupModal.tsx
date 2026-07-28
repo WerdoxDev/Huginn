@@ -10,7 +10,7 @@ import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { ChannelType } from "@huginn/shared";
 import { getChannelIconOptions } from "@lib/queries";
-import { getChannelComputedName, getGroupChannelName } from "@lib/query-utils";
+import { getGroupChannelName } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";

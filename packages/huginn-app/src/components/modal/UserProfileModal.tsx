@@ -18,17 +18,60 @@ import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, type MouseEvent } from "react";
 
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
-function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null }) {
-   if (!props.banner && !props.bannerColor) return null;
+function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null; imageSrc?: string | null }) {
+   const hasBannerImage = props.imageSrc !== undefined ? !!props.imageSrc : !!props.banner;
+   if (!hasBannerImage && !props.bannerColor) return null;
 
    return (
-      <div className={clsx("relative w-full", props.banner ? "h-32" : "h-20")}>
-         <UserBanner userId={props.userId} animatedMode="always" bannerColor={props.bannerColor} bannerHash={props.banner} />
+      <div className={clsx("relative w-full", hasBannerImage ? "aspect-444/128" : "h-20")}>
+         <UserBanner
+            userId={props.userId}
+            animatedMode="always"
+            bannerColor={props.bannerColor}
+            bannerHash={props.banner}
+            imageSrc={props.imageSrc}
+         />
          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
+      </div>
+   );
+}
+
+export function UserProfileCropPreview(props: { userId: string; avatarImageSrc?: string | null; bannerImageSrc?: string | null }) {
+   const user = useUser(props.userId);
+   const hasBannerImage = props.bannerImageSrc !== undefined ? !!props.bannerImageSrc : !!user.banner;
+   const hasBanner = hasBannerImage || !!user.bannerColor;
+
+   return (
+      <div
+         className="bg-surface-alt relative flex w-full flex-col overflow-hidden rounded-lg border-2"
+         style={{ borderColor: user.accentColor || "transparent" }}
+      >
+         <ProfileBanner userId={user.id} banner={user.banner} bannerColor={user.bannerColor} imageSrc={props.bannerImageSrc} />
+         <div className={clsx("flex items-start gap-x-4 px-5 pb-5", hasBanner ? "pt-0" : "pt-5")}>
+            <div className="flex min-w-0 flex-col gap-y-2">
+               <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
+                  <div className="border-surface-alt rounded-full border-4">
+                     <UserAvatar
+                        userId={user.id}
+                        avatarHash={user.avatar}
+                        imageSrc={props.avatarImageSrc}
+                        size={5.5}
+                        cdnSize={128}
+                        maskWidth={0.25}
+                        animatedMode="always"
+                     />
+                  </div>
+               </div>
+               <div className="flex min-w-0 flex-col pl-1">
+                  <div className="truncate text-lg font-semibold text-white">{user.displayName}</div>
+                  <div className="truncate text-sm text-white">{user.username}</div>
+               </div>
+            </div>
+         </div>
       </div>
    );
 }
@@ -92,6 +135,22 @@ function ProfileContent(props: { userId: string }) {
       }
    }
 
+   function handleAvatarClick(event: MouseEvent<HTMLButtonElement>) {
+      event.stopPropagation();
+      if (!client || !user.avatar) return;
+
+      updateModals({
+         magnifiedMedia: {
+            isOpen: true,
+            url: client.cdn.avatar(user.id, user.avatar),
+            filename: `${user.username} avatar`,
+            width: 512,
+            height: 512,
+            type: "image",
+         },
+      });
+   }
+
    const hasLowerContent = !!user.bio || !!presence?.activities?.[0];
 
    return (
@@ -105,9 +164,23 @@ function ProfileContent(props: { userId: string }) {
          <div className={clsx("flex items-start gap-x-4 px-5 pb-5", hasBanner ? "pt-0" : "pt-5")}>
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
-                  <div className="border-surface-alt rounded-full border-4">
-                     <UserAvatar userId={user?.id} avatarHash={user?.avatar} size={5.5} cdnSize={128} animatedMode="always" />
-                  </div>
+                  <button
+                     type="button"
+                     aria-label="View avatar"
+                     className="bg-surface-alt group cursor-pointer rounded-full p-1 disabled:cursor-default"
+                     onClick={handleAvatarClick}
+                     disabled={!user.avatar}
+                  >
+                     <UserAvatar
+                        innerClassName={clsx(user.avatar && "transition-opacity group-hover:opacity-50")}
+                        userId={user?.id}
+                        avatarHash={user?.avatar}
+                        size={5.5}
+                        cdnSize={128}
+                        maskWidth={0.25}
+                        animatedMode="always"
+                     />
+                  </button>
                </div>
                <div className="flex max-w-60 flex-col pl-1">
                   <div className="text-lg font-semibold wrap-break-word whitespace-break-spaces text-white">{user?.displayName}</div>

@@ -40,8 +40,10 @@ declare global {
   const IconMingcuteEyeCloseLine: typeof import('~icons/mingcute/eye-close-line.jsx').default
   const IconMingcuteEyeLine: typeof import('~icons/mingcute/eye-line.jsx').default
   const IconMingcuteFileFill: typeof import('~icons/mingcute/file-fill.jsx').default
+  const IconMingcuteFileMusicFill: typeof import('~icons/mingcute/file-music-fill.jsx').default
   const IconMingcuteFileUploadFill: typeof import('~icons/mingcute/file-upload-fill.jsx').default
   const IconMingcuteFlag4Fill: typeof import('~icons/mingcute/flag4-fill.jsx').default
+  const IconMingcuteFolderOpenFill: typeof import('~icons/mingcute/folder-open-fill.jsx').default
   const IconMingcuteForkFill: typeof import('~icons/mingcute/fork-fill.jsx').default
   const IconMingcuteFullscreenExitFill: typeof import('~icons/mingcute/fullscreen-exit-fill.jsx').default
   const IconMingcuteFullscreenFill: typeof import('~icons/mingcute/fullscreen-fill.jsx').default

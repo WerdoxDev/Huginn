@@ -1,4 +1,4 @@
-import type { UserSettings } from "@huginn/shared";
+import type { APIPatchUserSettingsJSONBody } from "@huginn/shared";
 
 import { useClient } from "@stores/clientStore";
 import { useMutation } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ export function useEditSettings() {
 
    const mutation = useMutation({
       mutationKey: ["edit-settings"],
-      async mutationFn(settings: Partial<UserSettings>) {
+      async mutationFn(settings: APIPatchUserSettingsJSONBody) {
          await client?.users.editSettings(settings);
       },
    });

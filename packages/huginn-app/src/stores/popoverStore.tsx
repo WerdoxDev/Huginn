@@ -19,6 +19,7 @@ const initialStore = () => ({
         }>
       | undefined,
    pinned_messages: undefined as PopoverStateProps<{ channelId: Snowflake }> | undefined,
+   color_picker: undefined as PopoverStateProps<{ id: string; color?: string | null; label: string; onChange?: (color: string) => void }> | undefined,
 });
 
 const store = createStore(

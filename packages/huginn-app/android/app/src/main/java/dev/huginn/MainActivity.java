@@ -18,6 +18,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(InsetPlugin.class);
         registerPlugin(GalleryPlugin.class);
+        registerPlugin(FilesPlugin.class);
 
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         splashScreen.setKeepOnScreenCondition(() -> !appIsReady);

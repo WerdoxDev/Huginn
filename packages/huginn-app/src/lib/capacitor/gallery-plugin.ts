@@ -1,4 +1,4 @@
-import { registerPlugin, type PluginListenerHandle } from "@capacitor/core";
+import { registerPlugin } from "@capacitor/core";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export type MediaOptions = {
 };
 
 export type ThumbnailOptions = {
-   id: string;
+   id?: string;
    uri: string;
    size: number;
    quality: number;
@@ -78,6 +78,6 @@ export const Gallery = registerPlugin<GalleryPlugin>("Gallery", {
    // Web fallback — returns empty for browser builds
    web: () => ({
       getMedia: async () => ({ media: [], cursor: 0 }),
-      getMediaThumbnail: async () => "",
+      getMediaThumbnail: async () => ({ base64: "" }),
    }),
 });

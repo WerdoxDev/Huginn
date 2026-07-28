@@ -7,10 +7,16 @@ import { useUser } from "@hooks/api-hooks/userHooks";
 import clsx from "clsx";
 import { useMemo } from "react";
 
-export default function UserProfilePreview(props: { userId: Snowflake; className?: string; maxWidth?: number }) {
+export default function UserProfilePreview(props: {
+   userId: Snowflake;
+   className?: string;
+   textMaxWidth?: number;
+   avatarImageSrc?: string | null;
+   bannerImageSrc?: string | null;
+}) {
    const user = useUser(props.userId);
 
-   const maxWidth = props.maxWidth ?? 144;
+   const maxWidth = props.textMaxWidth ?? 144;
 
    const displayNameLineCount = useMemo(() => {
       const prepared = prepare(user.displayName ?? "", "600 16px Rubik");
@@ -30,10 +36,16 @@ export default function UserProfilePreview(props: { userId: Snowflake; className
          style={{ borderColor: user.accentColor || "transparent" }}
       >
          <div className="absolute inset-0">
-            <UserBanner userId={props.userId} animatedMode="always" bannerColor={user.bannerColor} bannerHash={user.banner} />
+            <UserBanner
+               userId={props.userId}
+               animatedMode="always"
+               bannerColor={user.bannerColor}
+               bannerHash={user.banner}
+               imageSrc={props.bannerImageSrc}
+            />
          </div>
-         <div className="bg-surface-alt z-10 rounded-full p-0.5">
-            <UserAvatar userId={props.userId} avatarHash={user.avatar} size={2.5} animatedMode="always" />
+         <div className="z-10 rounded-full">
+            <UserAvatar userId={props.userId} avatarHash={user.avatar} imageSrc={props.avatarImageSrc} size={2.5} animatedMode="always" />
          </div>
          <div className="z-10 flex w-full flex-col overflow-hidden rounded-md bg-black/50 px-2 py-1 backdrop-blur-sm">
             <div

@@ -40,6 +40,11 @@ const initialStore = () => ({
       mimeType: string;
       cropType?: "avatar" | "banner";
       callback?: (data: string) => Promise<void> | void;
+      profilePreview?: {
+         userId: Snowflake;
+         avatarImageSrc?: string | null;
+         bannerImageSrc?: string | null;
+      };
    },
    createDM: { isOpen: false } as DefaultModal,
    editGroup: { isOpen: false } as DefaultModal & { channel?: AppDirectChannel },

@@ -2,6 +2,7 @@ import type { Range } from "@tanstack/react-virtual";
 
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnInput from "@components/input/HuginnInput";
+import PickerMessage from "@components/PickerMessage";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
@@ -341,10 +342,9 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
                   )}
                </div>
             ) : (
-               <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
-                  <IconMingcuteSadFill className="size-10" />
-                  <div>No emojis found</div>
-               </div>
+               <PickerMessage className="h-full w-full" icon={<IconMingcuteSadFill className="size-8" />}>
+                  No emojis found
+               </PickerMessage>
             )}
          </div>
       </div>

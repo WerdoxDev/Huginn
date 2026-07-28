@@ -25,6 +25,7 @@ export const storageDefaults: StorageMap = {
       inputThreshold: -50,
       inputVolume: 100,
       outputVolume: 100,
+      mediaVolume: 100,
       noiseSuppression: true,
       screenShareFramerate: "30",
       screenShareQuality: "medium",

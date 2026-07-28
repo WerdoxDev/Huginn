@@ -1,7 +1,9 @@
-import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { LiveUpdate } from "@capawesome/capacitor-live-update";
+import { useClientStore } from "@stores/clientStore";
+// import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import type { UpdateInfo } from "@/types";
 
@@ -14,6 +16,7 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
    const contentLength = useRef(0);
    const downloaded = useRef(0);
    const isChecking = useRef(false);
+   const clientStore = useClientStore();
 
    const desktopUpdateMutation = useMutation({
       mutationKey: ["update"],
@@ -37,38 +40,81 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
       retryDelay: 3000,
    });
 
-   useCapacitorListener(() =>
-      CapacitorUpdater.addListener("updateAvailable", async (info) => {
-         console.log("Update available", info);
-         await CapacitorUpdater.set({ id: info.bundle.id });
-         await CapacitorUpdater.reload();
-      }),
-   );
-
-   useCapacitorListener(() =>
-      CapacitorUpdater.addListener("noNeedUpdate", () => {
-         console.log("No update available");
-         options.onNotAvailable?.();
-      }),
-   );
-
-   useCapacitorListener(() =>
-      CapacitorUpdater.addListener("downloadFailed", (error) => {
-         console.log("Download failed", error);
-         options.onError?.(`Failed to download update for version ${error.version}`);
-      }),
-   );
+   // useCapacitorListener(() =>
+   //    CapacitorUpdater.addListener("updateAvailable", async (info) => {
+   //       console.log("Update available", info);
+   //       await CapacitorUpdater.set({ id: info.bundle.id });
+   //       await CapacitorUpdater.reload();
+   //    }),
+   // );
 
    // useCapacitorListener(() =>
-   //    CapacitorUpdater.addListener("downloadComplete", (info) => {
-   //       if (huginnWindow.environment === "android") {
+   //    CapacitorUpdater.addListener("noNeedUpdate", () => {
+   //       console.log("No update available");
+   //       options.onNotAvailable?.();
+   //    }),
+   // );
+
+   // useCapacitorListener(() =>
+   //    CapacitorUpdater.addListener("downloadFailed", (error) => {
+   //       console.log("Download failed", error);
+   //       options.onError?.(`Failed to download update for version ${error.version}`);
+   //    }),
+   // );
+
+   // useCapacitorListener(() =>
+   //    CapacitorUpdater.addListener("download", (info) => {
+   //       console.log("Download progress", info);
+   //       setUpdateInfo({ version: info.bundle.version });
+   //       setProgress(info.percent);
+   //       options.onUpdating?.();
+   //    }),
+   // );
+
+   async function androidCheckAndDownload() {
+      console.log("Checking for updates...", clientStore.androidUpdateUrl);
+
+      try {
+         const result = await fetch(`${clientStore.androidUpdateUrl}/manifest.json`);
+         if (!result.ok) {
+            options.onError?.(`Failed to check for updates: ${result.status} ${result.statusText}`);
+            return;
+         }
+
+         const { version, filename, checksum, signature } = await result.json();
+
+         const { bundleId } = await LiveUpdate.getCurrentBundle();
+         console.log("Current bundleId", bundleId, "Latest version", version);
+         if (version === bundleId || __APP_VERSION__ === version) options.onNotAvailable?.();
+         else {
+            console.log("Update available", version);
+            setUpdateInfo({ version });
+            options.onUpdating?.();
+            await LiveUpdate.downloadBundle({
+               url: `${clientStore.androidUpdateUrl}/${filename}`,
+               checksum,
+               signature,
+               bundleId: version,
+               artifactType: "zip",
+            });
+
+            await LiveUpdate.setNextBundle({ bundleId: version });
+            await LiveUpdate.reload();
+         }
+      } catch (e) {
+         console.error("Error checking for updates:", e);
+         options.onError?.(`Failed to check for updates: ${e instanceof Error ? e.message : String(e)}`);
+      }
+   }
+
+   useEffect(() => {}, [clientStore.androidUpdateUrl]);
 
    useCapacitorListener(() =>
-      CapacitorUpdater.addListener("download", (info) => {
+      LiveUpdate.addListener("downloadBundleProgress", (info) => {
          console.log("Download progress", info);
-         setUpdateInfo({ version: info.bundle.version });
-         setProgress(info.percent);
-         options.onUpdating?.();
+         downloaded.current = info.downloadedBytes;
+         contentLength.current = info.totalBytes;
+         setProgress(Math.round(info.progress * 100));
       }),
    );
 
@@ -88,18 +134,16 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
       };
    }, []);
 
-   async function checkAndDownload() {
+   const checkAndDownload = useEffectEvent(async () => {
       if (huginnWindow.environment == "desktop") {
          if (!isChecking.current) {
             isChecking.current = true;
             desktopUpdateMutation.mutate();
          }
       } else if (huginnWindow.environment === "android") {
-         console.log("Checking for updates...");
-         const result = await CapacitorUpdater.triggerUpdateCheck();
-         console.log("Update check result:", result);
+         await androidCheckAndDownload();
       }
-   }
+   });
 
    return { checkAndDownload, updateInfo, progress, contentLength, downloaded };
 }

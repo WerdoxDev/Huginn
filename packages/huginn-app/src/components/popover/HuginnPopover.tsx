@@ -29,32 +29,26 @@ const PopoverContext = createContext<{ isMobile: boolean } | null>(undefined!);
 export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const isMobile = useIsMobile();
-   const modals = useModals();
 
    const anchor = useMemo(
       () => ({
          getBoundingClientRect: () =>
             DOMRect.fromRect({
-               x: props.popover?.position?.[0] ?? 0,
-               y: props.popover?.position?.[1] ?? 0,
+               x: (props.popover?.position?.[0] ?? 0) - (props.alignGap ?? 0),
+               y: (props.popover?.position?.[1] ?? 0) - (props.sideGap ?? 0),
                width: 0,
                height: 0,
             }),
       }),
-      [props.popover?.position],
+      [props.popover?.position, props.sideGap, props.alignGap],
    );
 
    const isOpen = props.popover?.isOpen ?? false;
-
-   function isAnyModalOpen() {
-      return Object.values(modals).some((modal) => "isOpen" in modal && modal.isOpen);
-   }
 
    function handleOpenChange(newOpen: boolean) {
       // Opening is fully controlled by the `popover` prop now — this only ever fires on dismissal
       // (outside click, escape, etc).
       if (newOpen) return;
-      if (isAnyModalOpen()) return;
       props.onClose?.();
    }
 
@@ -76,14 +70,13 @@ export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
    return (
       <Popover.Root open={isOpen} onOpenChange={handleOpenChange} modal={props.modal}>
          <Popover.Portal keepMounted={props.keepMounted}>
-            <Popover.Backdrop className="fixed inset-0" />
+            <Popover.Backdrop className="fixed inset-0 z-20" />
             <Popover.Positioner
+               className="z-20"
                anchor={anchor}
                align={props.align ?? "end"}
                side={props.side ?? "bottom"}
-               sideOffset={props.sideGap}
-               alignOffset={props.alignGap}
-               collisionPadding={0}
+               collisionPadding={{ top: 28, bottom: 4, left: 4, right: 4 }}
             >
                {children}
             </Popover.Positioner>

@@ -18,7 +18,7 @@ type Tone = "default" | "negative";
 const ContextMenuContext = createContext<{ onClose?: () => void; isMobile: boolean } | null>(undefined!);
 
 const popupClass = clsx(
-   "bg-surface-void z-998 flex min-w-28 flex-col rounded-lg p-2 shadow-lg outline-hidden",
+   "bg-surface-void flex min-w-28 flex-col rounded-lg p-2 shadow-lg outline-hidden",
    "transition-opacity duration-100",
    "data-starting-style:opacity-0",
    "data-ending-style:opacity-0",
@@ -88,7 +88,8 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
                }}
             >
                <BaseContextMenu.Portal container={props.contextMenu?.parent ?? undefined}>
-                  <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
+                  {/* <BaseContextMenu.Backdrop className="fixed inset-0 z-997" /> */}
+                  <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0} className="z-998">
                      <BaseContextMenu.Popup className={popupClass}>{children}</BaseContextMenu.Popup>
                   </BaseContextMenu.Positioner>
                </BaseContextMenu.Portal>

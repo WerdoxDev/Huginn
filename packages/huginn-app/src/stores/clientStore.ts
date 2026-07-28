@@ -1,6 +1,5 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
-import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import {
    analytics,
@@ -36,6 +35,7 @@ const initialStore = () => ({
    userSettings: undefined as UserSettings | undefined,
    client: undefined as HuginnClient<VoiceBridge> | undefined,
    readyCount: 0,
+   androidUpdateUrl: undefined as string | undefined,
 });
 
 // type StoreType = ReturnType<typeof initialStore> & {
@@ -199,7 +199,11 @@ export async function initializeClient() {
 
    if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
       const url = `${thisStore.hostnames.api}/api/update/android`;
-      await CapacitorUpdater.setUpdateUrl({ url });
+      if (import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) {
+         store.setState({ androidUpdateUrl: import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL });
+      } else {
+         store.setState({ androidUpdateUrl: url });
+      }
    }
 
    const unlisteners: Array<(() => void) | undefined> = [];

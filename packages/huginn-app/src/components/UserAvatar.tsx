@@ -1,11 +1,12 @@
 import type { ImageSize, Snowflake } from "@huginn/shared";
 
 import { useAnimatedImage } from "@hooks/useAnimatedImage";
+import { createRadialMaskStyle } from "@lib/mask-utils";
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { usePresence } from "@stores/presenceStore";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import type { AnimatedMode } from "@/types";
 
@@ -22,7 +23,9 @@ export default function UserAvatar(props: {
    animatedMode?: AnimatedMode;
    hovered?: boolean;
    test?: boolean;
-   maskImage?: string;
+   maskStyle?: CSSProperties;
+   maskWidth?: number;
+   innerClassName?: string;
 }) {
    const client = useClient();
    const imgRef = useRef<HTMLImageElement>(null);
@@ -67,27 +70,26 @@ export default function UserAvatar(props: {
    const hasImage = !!src;
    const statusSize = size / 4;
    const statusCenter = statusSize / 2;
-   const cutoutRadius = statusCenter + size / 18;
 
    // Radial gradient mask that punches a transparent hole where the status indicator sits
-   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${statusCenter}rem) calc(100% - ${statusCenter}rem), transparent calc(100% - 1px), black 100%)`;
-   const maskStyle = !props.hideStatus ? { maskImage: maskGradient, WebkitMaskImage: maskGradient } : undefined;
+   const maskStyle = !props.hideStatus
+      ? createRadialMaskStyle([
+           {
+              radius: `${statusCenter + (props.maskWidth ?? 0.125)}rem`,
+              x: `calc(100% - ${statusCenter}rem)`,
+              y: `calc(100% - ${statusCenter}rem)`,
+           },
+        ])
+      : undefined;
+   const appliedMaskStyle = props.maskStyle ?? (presence && presence.status !== "offline" && presence.status !== "invisible" ? maskStyle : undefined);
 
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
-         <div
-            className="relative h-full w-full overflow-hidden rounded-full"
-            style={
-               props.maskImage
-                  ? { maskImage: props.maskImage }
-                  : presence && presence.status !== "offline" && presence.status !== "invisible"
-                    ? maskStyle
-                    : undefined
-            }
-         >
+         <div className={clsx("relative h-full w-full overflow-hidden rounded-full", props.innerClassName)} style={appliedMaskStyle}>
             <LoadingBackground hasError={hasError} isLoaded={isLoaded || !hasImage} />
             {hasImage ? (
                <img
+                  draggable={false}
                   ref={imgRef}
                   onLoad={handleLoad}
                   onError={handleError}

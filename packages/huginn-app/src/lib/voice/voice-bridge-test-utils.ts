@@ -13,6 +13,7 @@ export function makeSettings(overrides: Partial<AppSettings> = {}): AppSettings 
       cameraDeviceId: "camera-device",
       inputVolume: 80,
       outputVolume: 70,
+      mediaVolume: 100,
       inputThreshold: -50,
       noiseSuppression: true,
       screenShareFramerate: "30",

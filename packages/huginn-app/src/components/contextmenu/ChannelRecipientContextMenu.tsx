@@ -1,8 +1,11 @@
 import UserProfilePreview from "@components/profile/UserProfilePreview";
 import { useChannelRecipients } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
+import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
+import { RelationshipType } from "@huginn/shared";
+import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -14,9 +17,15 @@ export default function ChannelRecipientContextMenu() {
    const { user } = useThisUser();
    const deleteMutation = useRemoveChannelRecipient();
    const createMutation = useCreateDMChannel("create-dm-channel_recipient");
+   const createRelationship = useCreateRelationship();
    const editMutation = usePatchDMChannel();
+   const { readyData } = useClientStore();
    const { ownerId } = useChannelRecipients(data?.channelId, "@me");
    const { updateModals } = useModals();
+
+   const isFriend = readyData?.relationships.some(
+      (relationship) => relationship.user.id === data?.recipient.id && relationship.type === RelationshipType.FRIEND,
+   );
 
    function handlePromote() {
       if (!data) return;
@@ -40,6 +49,11 @@ export default function ChannelRecipientContextMenu() {
       createMutation.mutate({ recipients: [data.recipient.id] });
    }
 
+   function handleAddFriend() {
+      if (!data) return;
+      createRelationship.mutate({ userId: data.recipient.id });
+   }
+
    function handleViewProfile() {
       if (!data) return;
       updateModals({ userProfile: { isOpen: true, userId: data.recipient.id } });
@@ -55,6 +69,7 @@ export default function ChannelRecipientContextMenu() {
          {data.recipient.id !== user.id && (
             <>
                <ContextMenu.Item label="Message" onClick={handleMessage} />
+               {!isFriend && <ContextMenu.Item label="Add Friend" onClick={handleAddFriend} disabled={createRelationship.isPending} />}
                {user.id === ownerId && <ContextMenu.Item label="Promote to Owner" onClick={handlePromote} />}
                {user.id === ownerId && <ContextMenu.Item label="Remove Member" onClick={handleRemove} color="negative" />}
                <ContextMenu.Divider />

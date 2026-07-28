@@ -116,7 +116,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       requestAnimationFrame(() => {
          if (editor.children.length !== 0) ReactEditor.focus(editor);
       });
-   }, [currentChannel?.id, isMobile]);
+   }, [currentChannel?.id]);
 
    // Track message box height for scroll calculations
    useEffect(() => {

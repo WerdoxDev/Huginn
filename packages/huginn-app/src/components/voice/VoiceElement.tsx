@@ -6,6 +6,7 @@ import UserAvatar from "@components/UserAvatar";
 import UserBanner from "@components/UserBanner";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
@@ -35,6 +36,8 @@ export default function VoiceElement(props: {
    isGridView?: boolean;
    isRinging?: boolean;
    isSpeaking?: boolean;
+   avatarImageSrc?: string | null;
+   bannerImageSrc?: string | null;
    voiceState?: GatewayVoiceState;
    onClick?: (producerId: string) => void;
    ref?: RefObject<HTMLDivElement>;
@@ -59,7 +62,13 @@ export default function VoiceElement(props: {
       [props.mediaSource, isCamera, isAudioStream, isScreenShare],
    );
 
-   const isMutedOrDeafened = useMemo(() => props.voiceState?.isAudioMuted || props.voiceState?.isAudioDeafened, [props.voiceState]);
+   const hasMutedIndicator = useMemo(
+      () =>
+         (props.type === "normal" &&
+            (props.voiceState?.isAudioMuted || props.voiceState?.isAudioDeafened || props.voicePreference?.isMicrophoneMuted)) ||
+         (props.type === "stream" && props.voicePreference?.isStreamMuted),
+      [props.type, props.voicePreference, props.voiceState],
+   );
 
    const isDisconnected = useMemo(
       () => voiceStatus === "ready" && props.userId !== thisUser?.id && !props.mediaSource && !props.isRinging,
@@ -105,9 +114,21 @@ export default function VoiceElement(props: {
    }, [props.mediaSource, props.voiceState]);
 
    const stateSize = 2;
-   const stateCenter = stateSize / 2;
-   const cutoutRadius = stateCenter + 4 / 18;
-   const maskGradient = `radial-gradient(circle ${cutoutRadius}rem at calc(100% - ${stateCenter - 0.5}rem) calc(100% - ${stateCenter - 0.5}rem), transparent calc(100% - 1px), black 100%)`;
+   const stateRadius = stateSize / 2;
+   // const indicatorMask = createRadialMaskStyle([
+   //    {
+   //       radius: `${stateRadius + 0.25}rem`,
+   //       x: `calc(100% - 0.75rem + 2px)`,
+   //       y: `calc(100% - 0.75rem + 2px)`,
+   //    },
+   // ]);
+   const indicatorMask = createRadialMaskStyle([
+      {
+         radius: `${stateRadius + 0.25}rem`,
+         x: `calc(100% - 0.75rem + 2px)`,
+         y: `calc(100% - 0.75rem + 2px)`,
+      },
+   ]);
 
    return (
       <div
@@ -123,7 +144,7 @@ export default function VoiceElement(props: {
          onContextMenu={onContextMenu}
          id={props.mediaSource?.consumerId}
          className={clsx(
-            "group/element bg-surface-alt relative flex shrink-0 flex-col items-center justify-center gap-y-1",
+            "group/element bg-surface-alt relative flex h-max w-max shrink-0 flex-col items-center justify-center gap-y-1",
             props.onClick && "cursor-pointer",
             props.isGridView && "p-0",
             !props.isMaximized && "rounded-lg border-2",
@@ -132,7 +153,14 @@ export default function VoiceElement(props: {
       >
          {!isCamera && !isScreenShare && !isAudioStream && (
             <div className="absolute inset-0 overflow-hidden rounded-md">
-               <UserBanner hovered={isHovered} userId={props.userId} animatedMode="hover" bannerColor={user.bannerColor} bannerHash={user.banner} />
+               <UserBanner
+                  hovered={isHovered}
+                  userId={props.userId}
+                  animatedMode="hover"
+                  bannerColor={user.bannerColor}
+                  bannerHash={user.banner}
+                  imageSrc={props.bannerImageSrc}
+               />
             </div>
          )}
          <div
@@ -152,15 +180,19 @@ export default function VoiceElement(props: {
          )}
          {!isCamera && !isAudioStream && !isScreenShare && !isPreview && (
             <div className={clsx("z-10 p-4.5", props.isRinging && "animate-pulse", props.isGridView && "w-max")}>
-               <div className="bg-surface-alt rounded-full p-0.5">
+               <div
+                  className="rounded-full"
+                  // style={!props.isGridView && hasMutedIndicator ? indicatorMask : undefined}
+               >
                   <UserAvatar
                      userId={props.userId}
                      avatarHash={user?.avatar}
+                     imageSrc={props.avatarImageSrc}
                      size={props.isGridView ? 5 : 4}
                      hideStatus
                      animatedMode="hover"
                      hovered={isHovered}
-                     maskImage={!props.isGridView && isMutedOrDeafened ? maskGradient : undefined}
+                     maskStyle={!props.isGridView && hasMutedIndicator ? indicatorMask : undefined}
                   />
                </div>
             </div>

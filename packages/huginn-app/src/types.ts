@@ -22,6 +22,7 @@ import type {
    MessageFlags,
    ThemeType,
    ChannelType,
+   FavoriteGif,
    GatewaySession,
 } from "@huginn/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
@@ -162,6 +163,7 @@ export type ContextMenuItemProps = {
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
+export type ContextMenuGif = Omit<FavoriteGif, "timestamp">;
 export type ContextMenuVoiceElement = {
    user: AppUser;
    guildId: Snowflake | null;
@@ -171,8 +173,12 @@ export type ContextMenuVoiceElement = {
 };
 export type ContextMenuMessage = {
    message: AppMessage;
+   gif?: ContextMenuGif;
    url?: string;
-   imgRef?: RefObject<HTMLImageElement | null>;
+   imgElement?: HTMLImageElement;
+   mediaUrl?: string;
+   mediaFilename?: string;
+   videoElement?: HTMLVideoElement;
 };
 
 export type PopoverStateProps<T = unknown> = {
@@ -327,6 +333,7 @@ export type AppSettings = {
    cameraDeviceId: string;
    inputVolume: number;
    outputVolume: number;
+   mediaVolume: number;
    inputThreshold: number;
    noiseSuppression: boolean;
    screenShareFramerate: string;

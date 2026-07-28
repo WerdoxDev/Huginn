@@ -28,7 +28,7 @@ export const settingsExtension = Prisma.defineExtension({
                }
             });
          },
-         async updateSettings(userId: Snowflake, options: APIPatchUserSettingsJSONBody) {
+         async updateSettings(userId: Snowflake, options: Partial<UserSettings>) {
             return analytics.startActiveSpan("db.settings.updateSettings", async (span) => {
                span.setAttributes({ "query.user.id": userId, "query.key_count": Object.keys(options).length });
                const methodName = "settings.getOrCreateSettings";

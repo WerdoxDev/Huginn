@@ -3,6 +3,7 @@ import type { APIGif, FavoriteGif } from "@huginn/shared";
 import HuginnTab from "@components/HuginnTab";
 import HuginnInput from "@components/input/HuginnInput";
 import LoadingIcon from "@components/LoadingIcon";
+import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useContainerWidth } from "@hooks/useContainerWidth";
 import { useDebouncer } from "@hooks/useDebouncer";
@@ -11,9 +12,10 @@ import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getGifCategoriesOptions, getSearchGifsOptions, getTrendingGifsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
+import { useContextMenu } from "@stores/contextMenuStore";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
-import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode, type UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactNode, type UIEvent } from "react";
 
 type Input = {
    search: string;
@@ -59,7 +61,7 @@ function useGifs(category: string | null, query: string) {
 
 export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: (url: string) => void }) {
    const client = useClient();
-   const { favoriteGifs, toggleFavorite } = useFavoriteGifs();
+   const { favoriteGifs, addFavorite } = useFavoriteGifs();
    const [category, setCategory] = useState<string | null>();
    const [search, setSearch] = useState<string>("");
    const [selectedTab, setSelectedTab] = useState<string>("your");
@@ -106,9 +108,9 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
       [fetchNextPage, hasNextPage, isFetchingNextPage],
    );
 
-   function handleSelectGif(gif: FavoriteGif) {
+   function handleSelectGif(gif: Omit<FavoriteGif, "timestamp">) {
       props.onGifSelect?.(gif.url);
-      toggleFavorite({ url: gif.url, src: gif.src, height: gif.height, width: gif.width });
+      addFavorite({ url: gif.url, src: gif.src, height: gif.height, width: gif.width, timestamp: Date.now() });
    }
 
    return (
@@ -120,7 +122,7 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
                </button>
             )}
             {category !== "trending" ? (
-               <HuginnInput {...register("search")} placeholder={"Search in Klipy..."} className="w-full">
+               <HuginnInput {...register("search")} placeholder={"Search in Klipy..."} className="w-full" autoFocus>
                   <HuginnInput.Wrapper className="bg-surface-deep!">
                      <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
                      <HuginnInput.Input data-keyboard-no-close />
@@ -142,10 +144,9 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
             <HuginnTab.TabPanels className="flex h-full w-full overflow-hidden" panelClassName="w-full h-full">
                <HuginnTab.TabPanel value="your" className="py-2">
                   {(!favoriteGifs || favoriteGifs?.length === 0) && (
-                     <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
-                        <IconMingcuteSadFill className="size-10" />
-                        <div>Maybe go favorite some gifs?</div>
-                     </div>
+                     <PickerMessage className="h-full w-full" icon={<IconMingcuteSadFill className="size-8" />}>
+                        Maybe go favorite some gifs?
+                     </PickerMessage>
                   )}
                   {favoriteGifs && favoriteGifs?.length > 0 && (
                      <div className="scroll-super-thin h-full overflow-y-scroll pr-0 pl-2" onScroll={handleScroll}>
@@ -195,9 +196,10 @@ function GifGrid(props: {
    isLoading: boolean;
    gap: number;
    onScroll?: (e: UIEvent<HTMLDivElement>) => void;
-   onGifSelect?: (gif: FavoriteGif) => void;
+   onGifSelect?: (gif: Omit<FavoriteGif, "timestamp">) => void;
 }) {
    const [containerRef, width] = useContainerWidth();
+   const { open: openGifContextMenu } = useContextMenu("gif");
 
    const rows = useMemo(() => {
       const items = props.gifs.map((gif) => ({ ...gif, aspectRatio: gif.width / gif.height }));
@@ -207,9 +209,7 @@ function GifGrid(props: {
    return (
       <div ref={containerRef} className="flex h-full w-full flex-col" style={{ gap: props.gap }}>
          {props.isLoading || !width ? (
-            <div className="text-text/70 flex h-full items-center justify-center gap-x-2">
-               <LoadingIcon className="size-10" />
-            </div>
+            <PickerMessage className="h-full w-full" icon={<LoadingIcon className="size-10" />} />
          ) : (
             rows?.map((row, index) => (
                <div className="flex" key={index} style={{ gap: props.gap }}>
@@ -222,6 +222,7 @@ function GifGrid(props: {
                            src={x.src}
                            style={{ width, height: row.height }}
                            onClick={() => props.onGifSelect?.(x)}
+                           onContextMenu={(event) => openGifContextMenu(x, event)}
                         />
                      );
                   })}
@@ -253,7 +254,13 @@ function GifCategory(props: { src?: string; children?: ReactNode; className?: st
    );
 }
 
-function Gif(props: { src: string; preview?: string; onClick?: () => void; style?: CSSProperties }) {
+function Gif(props: {
+   src: string;
+   preview?: string;
+   onClick?: () => void;
+   onContextMenu?: (event: MouseEvent<HTMLButtonElement>) => void;
+   style?: CSSProperties;
+}) {
    const [isLoaded, setIsLoaded] = useState(false);
 
    function handleLoadedData() {
@@ -266,6 +273,7 @@ function Gif(props: { src: string; preview?: string; onClick?: () => void; style
             "group hover:border-primary-700 active:border-primary-700 relative cursor-pointer overflow-hidden rounded-md border-2 border-transparent transition-[border]",
          )}
          onClick={props.onClick}
+         onContextMenu={props.onContextMenu}
          style={props.style}
       >
          {!isLoaded && props.preview && (
