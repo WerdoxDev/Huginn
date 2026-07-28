@@ -7,6 +7,8 @@ import type { LogLevel } from "./analytics";
 import { Analytics, logLevelToSeverityNumber } from "./analytics";
 import { setupWebInstrumentation } from "./web-instrumentation";
 
+const PRIVATE_POSTHOG_PERSON_PROPERTIES: readonly string[] = ["username", "displayName", "display_name", "email", "$name", "$email"];
+
 type Options = {
    posthogHost: string;
    otlpTraceUrl: string;
@@ -30,6 +32,23 @@ export class WebAnalytics extends Analytics {
          ui_host: "https://eu.posthog.com",
          defaults: "2026-01-30",
          capture_exceptions: true,
+         mask_all_element_attributes: true,
+         mask_all_text: true,
+         enable_recording_console_log: false,
+         session_recording: {
+            // Keep replay useful for layout and interaction debugging without
+            // sending user-generated text, media, or input attributes.
+            maskAllInputs: true,
+            maskTextSelector: "*",
+            blockSelector: 'img, picture, video, audio, canvas, input, textarea, select, a[href], [contenteditable="true"]',
+
+            // Explicit client-side false values take precedence over remote
+            // session replay settings.
+            recordHeaders: false,
+            recordBody: false,
+            captureCanvas: { recordCanvas: false },
+            maskCapturedNetworkRequestFn: () => null,
+         },
          logs: {
             serviceName: "app-web",
             environment: options.environment,
@@ -97,7 +116,11 @@ export class WebAnalytics extends Analytics {
    }
 
    public identify(id: string, properties?: Record<string, any>): void {
-      posthog.identify(id, { ...properties });
+      const privateProperties = new Set(PRIVATE_POSTHOG_PERSON_PROPERTIES);
+      const safeProperties = Object.fromEntries(Object.entries(properties ?? {}).filter(([key]) => !privateProperties.has(key)));
+
+      posthog.identify(id, safeProperties);
+      posthog.unsetPersonProperties([...PRIVATE_POSTHOG_PERSON_PROPERTIES]);
    }
 
    startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
