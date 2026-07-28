@@ -90,12 +90,7 @@ function ChannelWithIdComponent() {
       <div className="flex h-full flex-col">
          {channel ? (
             <>
-               <ChannelWithIdTopBar
-                  channel={channel}
-                  onRecipientsClick={onRecipientsClick}
-                  onCallClick={onCallClick}
-                  onClick={isMobile && channel.type === ChannelType.GROUP_DM ? onRecipientsClick : undefined}
-               />
+               <ChannelWithIdTopBar channel={channel} onRecipientsClick={onRecipientsClick} onCallClick={onCallClick} />
                <div className="flex h-full w-full overflow-hidden">
                   <div className="relative flex h-full w-full flex-col overflow-hidden">
                      <div

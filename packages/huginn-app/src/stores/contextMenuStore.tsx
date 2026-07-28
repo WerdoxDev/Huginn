@@ -4,6 +4,7 @@ import { createStore, useStore } from "zustand";
 import type {
    ContextMenuDMChannel,
    ContextMenuDMChannelRecipient,
+   ContextMenuGif,
    ContextMenuMessage,
    ContextMenuRelationship,
    ContextMenuStateProps,
@@ -13,6 +14,7 @@ import type {
 const store = createStore(() => ({
    dm_channel: undefined as ContextMenuStateProps<ContextMenuDMChannel> | undefined,
    dm_channel_recipient: undefined as ContextMenuStateProps<ContextMenuDMChannelRecipient> | undefined,
+   gif: undefined as ContextMenuStateProps<ContextMenuGif> | undefined,
    relationship_more: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
    relationship: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
    voice_element: undefined as ContextMenuStateProps<ContextMenuVoiceElement> | undefined,

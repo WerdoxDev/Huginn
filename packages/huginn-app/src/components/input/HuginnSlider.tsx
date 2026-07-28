@@ -77,6 +77,7 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
             className="group flex h-full w-full cursor-w-resize items-center"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
+            onTouchStart={(e) => e.stopPropagation()}
          >
             <Slider.Track className={clsx("bg-surface-alt h-1 w-full rounded-full transition-[height] group-hover:h-2", props.backgroundClassName)}>
                <Slider.Indicator className={clsx("bg-primary-500 rounded-full select-none", props.fillClassName)} />

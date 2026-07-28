@@ -92,7 +92,7 @@ export function ColorPickerPanel() {
    }
 
    return (
-      <HuginnPopover.Panel className="p-3" style={{ width: isMobile ? "100%" : 240 }}>
+      <HuginnPopover.Panel className={clsx("p-3", isMobile ? "w-full px-5" : "w-60")}>
          <div
             className="relative h-32 cursor-crosshair touch-none overflow-hidden rounded-md"
             style={{

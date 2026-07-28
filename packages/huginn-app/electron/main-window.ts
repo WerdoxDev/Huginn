@@ -55,6 +55,7 @@ export class MainWindow extends BaseWindow {
       this.registerNativeEvents();
       this.registerSessionEvents();
       this.registerVoiceDebugEvents();
+      this.registerMediaEvents(window);
    }
 
    private registerSessionEvents() {
@@ -356,6 +357,24 @@ export class MainWindow extends BaseWindow {
 
       ipcMain.handle("voice-debug:is-open", () => {
          return this.voiceDebugWindow && this.voiceDebugWindow.window.isVisible();
+      });
+   }
+
+   private registerMediaEvents(window: BrowserWindow) {
+      ipcMain.handle("media:download", async (_event, input: { url: string; filename: string }) => {
+         const url = new URL(input.url);
+
+         if (url.protocol !== "https:" && url.protocol !== "http:") {
+            throw new Error("Unsupported media URL");
+         }
+
+         window.webContents.session.once("will-download", (_event, item) => {
+            item.setSaveDialogOptions({
+               defaultPath: path.basename(input.filename),
+            });
+         });
+
+         window.webContents.downloadURL(url.toString());
       });
    }
 }

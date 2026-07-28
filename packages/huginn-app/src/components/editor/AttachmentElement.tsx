@@ -2,12 +2,14 @@ import AudioPlayer from "@components/AudioPlayer";
 import ImagePreview from "@components/ImagePreview";
 import Tooltip from "@components/tooltip/Tooltip";
 import VideoPlayer from "@components/VideoPlayer";
+import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
 import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
 import { getSizeText } from "@lib/utils";
+import { useContextMenu } from "@stores/contextMenuStore";
 import { useStorage } from "@stores/storageStore";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useContext, useMemo, type MouseEvent } from "react";
 
 export default function AttachmentElement(props: {
    description?: string;
@@ -23,13 +25,41 @@ export default function AttachmentElement(props: {
       () => constrainImageSize(props.width ?? 0, props.height ?? 0, CONSTANTS.ATTACHMENT_MEDIA_MAX_WIDTH, CONSTANTS.ATTACHMENT_MEDIA_MAX_HEIGHT),
       [props.width, props.height],
    );
+   const context = useContext(MessageContext);
    const settings = useStorage("settings");
+   const { open } = useContextMenu("message");
    const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
    const basedUrl = useMemo(() => changeUrlBase(props.url, `${activePreset?.cdnHostname ?? ""}/cdn`), [props.url, activePreset?.cdnHostname]);
 
    const isImage = isImageMediaType(props.contentType);
    const isVideo = isVideoMediaType(props.contentType);
    const isAudio = isAudioMediaType(props.contentType);
+
+   function handleImageContextMenu(e: MouseEvent<HTMLDivElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            imgElement: e.currentTarget as HTMLImageElement,
+            mediaUrl: basedUrl,
+            mediaFilename: props.filename,
+         },
+         e,
+      );
+   }
+
+   function handleVideoContextMenu(e: MouseEvent<HTMLVideoElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            videoElement: e.currentTarget,
+            mediaUrl: basedUrl,
+            mediaFilename: props.filename,
+         },
+         e,
+      );
+   }
 
    return (
       <div
@@ -50,9 +80,15 @@ export default function AttachmentElement(props: {
                   originalHeight={props.height ?? 0}
                   contentType={props.contentType}
                   url={basedUrl}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
                />
             ) : isVideo ? (
-               <VideoPlayer url={basedUrl} width={dimensions.width} height={dimensions.height} />
+               <VideoPlayer
+                  url={basedUrl}
+                  width={dimensions.width}
+                  height={dimensions.height}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
+               />
             ) : isAudio ? (
                <AudioPlayer url={basedUrl} filename={props.filename} />
             ) : (

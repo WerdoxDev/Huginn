@@ -104,21 +104,25 @@ export default function ImageCropModal() {
    const bannerImageSrc = isBanner ? (previewImageData ?? profilePreview?.bannerImageSrc) : profilePreview?.bannerImageSrc;
 
    return (
-      <HuginnDialogPanel className={clsx("h-full w-full lg:h-max lg:w-max")}>
+      <HuginnDialogPanel className={clsx("w-full lg:h-max lg:w-max", profilePreview && "h-full")}>
          <div className="flex h-full w-full flex-col">
-            <div className="text-text/50 px-5 pt-4 pb-2 text-center text-sm italic">Scroll to zoom</div>
+            {/* <div className="text-text/50 px-5 pt-4 pb-2 text-center text-sm italic">Scroll to zoom</div> */}
             <div
                className={clsx(
-                  "scroll-thin scroll-surface-alt flex gap-5 overflow-y-scroll pr-2.5 pl-5 lg:pb-5",
+                  "scroll-thin scroll-surface-alt flex gap-5 overflow-y-scroll pt-5 pr-2.5 pb-5 pl-5",
                   profilePreview && "flex-col lg:flex-row",
                )}
             >
-               <div className={clsx("flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/50")}>
+               <div
+                  className={clsx(
+                     "flex max-h-[calc(100vh-24rem)] min-h-96 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/50 lg:max-h-[100vh-16rem] lg:max-w-[min(calc(100vw-16rem),768px)] lg:min-w-96",
+                  )}
+               >
                   <Cropper
                      ref={cropperRef}
                      src={modal.originalImageData}
                      initialAspectRatio={isBanner ? 444 / 128 : 1}
-                     className={clsx("h-full max-h-[calc(100vh-16rem)] min-h-40 w-full lg:max-w-120 lg:min-w-sm", isBanner && "banner-crop")}
+                     className={clsx("h-full w-full", isBanner && "banner-crop")}
                      aspectRatio={isBanner ? 444 / 128 : 1}
                      movable={true}
                      unselectable="off"

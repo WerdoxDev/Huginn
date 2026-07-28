@@ -11,7 +11,12 @@ import VolumeSlider from "./VolumeSlider";
 
 const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;
 
-export default function VideoPlayer(props: { url: string; width: number; height: number }) {
+export default function VideoPlayer(props: {
+   url: string;
+   width: number;
+   height: number;
+   onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
+}) {
    const containerRef = useRef<HTMLDivElement>(null);
    const videoRef = useRef<HTMLVideoElement>(null);
    const [playing, setPlaying] = useState(false);
@@ -129,6 +134,7 @@ export default function VideoPlayer(props: { url: string; width: number; height:
             className="h-full w-full"
             src={props.url}
             ref={videoRef}
+            onContextMenu={props.onContextMenu}
             onLoadedData={() => setIsLoaded(true)}
             onError={() => setHasError(true)}
          />

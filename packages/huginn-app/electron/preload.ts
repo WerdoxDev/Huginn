@@ -99,6 +99,9 @@ export const electronAPI = {
 
    // App
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),
+
+   // Media
+   downloadMedia: (url: string, filename: string) => ipcRenderer.invoke("media:download", { url, filename }),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

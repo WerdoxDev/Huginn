@@ -25,6 +25,7 @@ export default function UserAvatar(props: {
    test?: boolean;
    maskStyle?: CSSProperties;
    maskWidth?: number;
+   innerClassName?: string;
 }) {
    const client = useClient();
    const imgRef = useRef<HTMLImageElement>(null);
@@ -84,7 +85,7 @@ export default function UserAvatar(props: {
 
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
-         <div className="relative h-full w-full overflow-hidden rounded-full" style={appliedMaskStyle}>
+         <div className={clsx("relative h-full w-full overflow-hidden rounded-full", props.innerClassName)} style={appliedMaskStyle}>
             <LoadingBackground hasError={hasError} isLoaded={isLoaded || !hasImage} />
             {hasImage ? (
                <img

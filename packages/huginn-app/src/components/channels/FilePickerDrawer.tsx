@@ -134,14 +134,11 @@ function FilePickerPanel(props: {
          {createPortal(
             <div
                className={clsx(
-                  "pointer-events-none fixed inset-x-0 bottom-5 z-20 flex justify-center px-4 transition-all duration-200",
+                  "pointer-events-none fixed inset-x-0 bottom-7 z-20 flex justify-center px-4 transition-all duration-200",
                   props.isOpen && areTabsVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
                )}
             >
-               <HuginnTab.TabList
-                  className="bg-surface-alt border-surface pointer-events-auto border backdrop-blur-sm"
-                  tabClassName="h-10 flex justify-center items-center py-1 w-28"
-               >
+               <HuginnTab.TabList className="bg-surface-alt pointer-events-auto" tabClassName="h-10 flex justify-center items-center py-1 w-28">
                   <HuginnTab.Tab value="media">
                      <IconMingcutePhotoAlbum2Fill className="size-5" />
                      Media
@@ -452,7 +449,7 @@ function MediaPickerPanel(props: {
    }, []);
 
    return (
-      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden pb-2 pl-2">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden pl-2">
          {error ? (
             <div className="text-text/70 flex h-full w-full flex-col items-center justify-center gap-2 text-center">
                <IconMingcuteSadFill className="size-10" />

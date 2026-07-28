@@ -11,6 +11,7 @@ import LoadingIcon from "./LoadingIcon";
 
 export default function ChannelIcon(props: {
    channelId: Snowflake;
+   innerClassName?: string;
    iconHash?: string | null;
    size?: number;
    className?: string;
@@ -73,7 +74,7 @@ export default function ChannelIcon(props: {
                onLoad={onLoad}
                ref={imgRef}
                loading="lazy"
-               className="h-full w-full rounded-full object-cover"
+               className={clsx("h-full w-full rounded-full object-cover", props.innerClassName)}
             />
          ) : hasError ? (
             <div className="bg-negative-500 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>

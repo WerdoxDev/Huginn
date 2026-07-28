@@ -3,7 +3,7 @@ import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import LoadingBackground from "./LoadingBackground";
 
@@ -16,6 +16,7 @@ export default function ImagePreview(props: {
    filename?: string;
    disableQuery?: boolean;
    contentType?: string;
+   onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void;
 }) {
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
@@ -66,7 +67,7 @@ export default function ImagePreview(props: {
       <div className="relative overflow-hidden rounded-md" style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}>
          <img
             crossOrigin={useCors ? undefined : "anonymous"}
-            onContextMenu={(e) => open({ message: context.message, imgRef }, e)}
+            onContextMenu={props.onContextMenu}
             onError={handleError}
             loading="lazy"
             onLoad={handleLoad}
