@@ -103,6 +103,10 @@ export class HuginnClient<V extends Voice = Voice> {
    public async initialize(options: ConnectOptions = {}): Promise<InitializationResult> {
       const { tokens } = options;
       try {
+         if (!this.gateway.isConnected) {
+            await this.connect();
+         }
+
          if (tokens?.token || tokens?.refreshToken) {
             const tokenResult = await this.restoreSession(tokens);
 
@@ -201,7 +205,7 @@ export class HuginnClient<V extends Voice = Voice> {
       }
    }
 
-   public clearSession(): void {
+   private clearSession(): void {
       this.tokenHandler.token = undefined;
       this.tokenHandler.refreshToken = undefined;
       this.setUser(undefined);
