@@ -253,7 +253,6 @@ export class VoiceBridge extends Voice {
          }
       }
 
-      console.log("voice preferences updated", current);
       this.client.voiceManager.voiceState.updateVoicePreferences(current ?? []);
    }
 
