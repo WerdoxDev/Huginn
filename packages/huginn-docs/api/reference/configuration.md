@@ -193,7 +193,7 @@ try {
 
 ## Exported package surface
 
-`@huginn/api` re-exports:
+`@huginnjs/api` re-exports:
 
 - `HuginnClient`, `InitializationStatus`, and `InitializationResult`;
 - `Voice`;

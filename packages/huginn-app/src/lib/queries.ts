@@ -1,4 +1,4 @@
-import type { HuginnClient } from "@huginn/api";
+import type { HuginnClient } from "@huginnjs/api";
 
 import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";

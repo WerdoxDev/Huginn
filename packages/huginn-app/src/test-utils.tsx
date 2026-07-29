@@ -1,4 +1,3 @@
-import { HuginnClient } from "@huginn/api";
 import {
    ChannelType,
    MessageReferenceType,
@@ -11,6 +10,7 @@ import {
    type DirectChannel,
    type Snowflake,
 } from "@huginn/shared";
+import { HuginnClient } from "@huginnjs/api";
 import { convertToAppMessage } from "@lib/utils";
 import { clientStore } from "@stores/clientStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

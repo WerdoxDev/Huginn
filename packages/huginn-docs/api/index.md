@@ -6,7 +6,7 @@ outline: deep
 
 # Work with the Huginn API
 
-`@huginn/api` is the typed client for Huginn's HTTP API, realtime gateway, CDN, and WebRTC voice stack. This page is the documentation entry point.
+`@huginnjs/api` is the typed client for Huginn's HTTP API, realtime gateway, CDN, and WebRTC voice stack. This page is the documentation entry point.
 
 ## Explore the API
 
@@ -22,15 +22,15 @@ Add the API package
 ::: code-group
 
 ```sh [pnpm]
-pnpm add @huginn/api
+pnpm add @huginnjs/api
 ```
 
 ```sh [bun]
-bun add @huginn/api
+bun add @huginnjs/api
 ```
 
 ```sh [npm]
-npm install @huginn/api
+npm install @huginnjs/api
 ```
 
 :::
@@ -40,7 +40,7 @@ npm install @huginn/api
 The defaults connect to `midgard.huginn.dev`. Instantiate one client and keep it for the lifetime of application.
 
 ```ts
-import { HuginnClient } from "@huginn/api";
+import { HuginnClient } from "@huginnjs/api";
 
 const client = new HuginnClient();
 ```

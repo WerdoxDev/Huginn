@@ -1,20 +1,17 @@
 {
+   "$schema": "https://openapi.vercel.sh/vercel.json",
    "rewrites": [
       {
          "source": "/app/:path*",
          "destination": "https://huginn-app-werdoxs-projects.vercel.app/:path*"
       },
       {
-         "source": "/app/",
-         "destination": "https://huginn-app-werdoxs-projects.vercel.app"
+         "source": "/docs/:path*",
+         "destination": "https://YOUR-DOCS-PROJECT.vercel.app/:path*"
       },
       {
          "source": "/:path*",
          "destination": "https://huginn-website-werdoxs-projects.vercel.app/:path*"
-      },
-      {
-         "source": "/",
-         "destination": "https://huginn-website-werdoxs-projects.vercel.app/"
       }
    ]
 }

@@ -1,4 +1,4 @@
-import type { InitializationResult } from "@huginn/api";
+import type { InitializationResult } from "@huginnjs/api";
 
 import { analytics } from "@huginn/shared";
 import { initNotifications } from "@lib/notification";

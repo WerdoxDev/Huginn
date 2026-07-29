@@ -8,7 +8,7 @@ description: Root client properties, lifecycle methods, and namespaces.
 `HuginnClient` composes all transport and feature clients into one typed entry point.
 
 ```ts
-import { HuginnClient } from "@huginn/api";
+import { HuginnClient } from "@huginnjs/api";
 
 const client = new HuginnClient(options);
 ```
@@ -25,30 +25,30 @@ User options are merged with the defaults. A custom `Voice` subclass can be supp
 
 ## Core properties
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `options` | `ClientOptions<V>` | Resolved client configuration. |
-| `currentUser` | `APIUser \| undefined` | Authenticated gateway user. |
-| `rest` | `REST` | Low-level HTTP request client. |
-| `cdn` | `CDN` | CDN URL builder. |
-| `tokenHandler` | `TokenHandler` | Access and refresh token state. |
-| `gateway` | `Gateway` | Realtime WebSocket client. |
-| `voice` | `V` | Voice signaling and media facade. |
-| `voiceManager` | `VoiceManager<V>` | Voice connection and state coordinator. |
+| Property       | Type                   | Description                             |
+| -------------- | ---------------------- | --------------------------------------- |
+| `options`      | `ClientOptions<V>`     | Resolved client configuration.          |
+| `currentUser`  | `APIUser \| undefined` | Authenticated gateway user.             |
+| `rest`         | `REST`                 | Low-level HTTP request client.          |
+| `cdn`          | `CDN`                  | CDN URL builder.                        |
+| `tokenHandler` | `TokenHandler`         | Access and refresh token state.         |
+| `gateway`      | `Gateway`              | Realtime WebSocket client.              |
+| `voice`        | `V`                    | Voice signaling and media facade.       |
+| `voiceManager` | `VoiceManager<V>`      | Voice connection and state coordinator. |
 
 ## REST namespaces
 
-| Property | Feature |
-| --- | --- |
-| `auth` | Login, registration, logout, refresh, notification tokens. |
-| `users` | Users, profiles, current user, settings, email verification. |
-| `channels` | DMs, recipients, messages, pins, typing, acknowledgements, calls. |
-| `messages` | Message reactions. |
-| `relationships` | Fetch, create, and remove relationships. |
-| `applications` | Known applications and application icons. |
-| `gifs` | Categories, trending GIFs, and search. |
-| `common` | Unique usernames and changelog. |
-| `oauth` | OAuth confirmation and authorization URL generation. |
+| Property        | Feature                                                           |
+| --------------- | ----------------------------------------------------------------- |
+| `auth`          | Login, registration, logout, refresh, notification tokens.        |
+| `users`         | Users, profiles, current user, settings, email verification.      |
+| `channels`      | DMs, recipients, messages, pins, typing, acknowledgements, calls. |
+| `messages`      | Message reactions.                                                |
+| `relationships` | Fetch, create, and remove relationships.                          |
+| `applications`  | Known applications and application icons.                         |
+| `gifs`          | Categories, trending GIFs, and search.                            |
+| `common`        | Unique usernames and changelog.                                   |
+| `oauth`         | OAuth confirmation and authorization URL generation.              |
 
 ## Methods
 
@@ -133,18 +133,12 @@ Narrows `currentUser` for TypeScript or throws if no authenticated user exists.
 ## Initialization types
 
 ```ts
-type InitializationStatus =
-  | "success"
-  | "timeout"
-  | "network_error"
-  | "invalid_tokens"
-  | "authentication_failed"
-  | "not_connected";
+type InitializationStatus = "success" | "timeout" | "network_error" | "invalid_tokens" | "authentication_failed" | "not_connected";
 
 type InitializationResult = {
-  success: boolean;
-  status: InitializationStatus;
-  retryable: boolean;
+   success: boolean;
+   status: InitializationStatus;
+   retryable: boolean;
 };
 ```
 
@@ -152,10 +146,10 @@ type InitializationResult = {
 
 `client.tokenHandler` is constructed with the client:
 
-| Member | Signature |
-| --- | --- |
-| `token` | `get/set string \| undefined` |
-| `refreshToken` | `get/set string \| undefined` |
-| `waitForTokenRefresh()` | `Promise<boolean>` |
+| Member                  | Signature                     |
+| ----------------------- | ----------------------------- |
+| `token`                 | `get/set string \| undefined` |
+| `refreshToken`          | `get/set string \| undefined` |
+| `waitForTokenRefresh()` | `Promise<boolean>`            |
 
 Setting a decodable, unexpired JWT schedules a token refresh one second before its `exp` time.

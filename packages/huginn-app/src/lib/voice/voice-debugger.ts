@@ -1,5 +1,5 @@
-import type { HuginnClient } from "@huginn/api";
 import type { Snowflake } from "@huginn/shared";
+import type { HuginnClient } from "@huginnjs/api";
 
 import { voiceStore } from "@stores/voiceStore";
 import { windowStore } from "@stores/windowStore";

@@ -96,7 +96,7 @@ importers:
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@huginn/api':
+      '@huginnjs/api':
         specifier: workspace:*
         version: link:../huginn-api
       '@huginn/shared':

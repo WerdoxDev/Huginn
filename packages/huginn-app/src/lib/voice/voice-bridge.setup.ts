@@ -7,7 +7,7 @@ class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {
    createConsumer = vi.fn(async (_userId: string, _kind: string) => {});
 }
 
-vi.doMock("@huginn/api", async () => {
+vi.doMock("@huginnjs/api", async () => {
    class FakeVoice extends EventEmitter<Record<string, unknown>> {
       public transport = new VoiceTransportManager();
       public device = {

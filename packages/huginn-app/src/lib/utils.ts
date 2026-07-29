@@ -1,7 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 
-import { TransportError } from "@huginn/api";
 import {
    type APIMessage,
    type APIPostMessageReferenceJSONBody,
@@ -24,6 +23,7 @@ import {
    omit,
    snowflake,
 } from "@huginn/shared";
+import { TransportError } from "@huginnjs/api";
 import { clientStore } from "@stores/clientStore";
 import { parseBlob } from "music-metadata-browser";
 import { Children, isValidElement } from "react";
