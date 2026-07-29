@@ -35,7 +35,7 @@ export default function App() {
 
             <div className="ml-auto hidden gap-x-10 md:flex">
                <HeaderButton link="/" text="Home" />
-               <HeaderButton link="/docs" text="Docs" />
+               <HeaderButton link="https://huginn.dev/docs" text="Docs" anchor />
                <HeaderButton link="/about" text="About" />
                <HeaderButton link="/download" text="Download" />
 
