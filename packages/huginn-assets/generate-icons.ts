@@ -241,7 +241,11 @@ async function exportVariant(name: string, composite: Buffer, options: Options) 
    }
 
    const icoPath = path.join(variantDir, `${name}.ico`);
-   execFileSync("magick", [...icoInputs, icoPath]);
+
+   // Force ImageMagick's ICO encoder and store each frame as an ICO bitmap.
+   // Without `-compress None`, ImageMagick may preserve PNG compression inside
+   // the ICO container, causing format inspectors to identify its frames as PNG.
+   execFileSync("magick", [...icoInputs, "-compress", "None", `ICO:${icoPath}`]);
 
    console.log(`✓ ${name}: ${options.pngSizes.length} PNGs + ${icoPath}`);
 }

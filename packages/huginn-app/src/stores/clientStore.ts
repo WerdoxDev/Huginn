@@ -1,6 +1,5 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
-import { HuginnClient, type VoiceStatus } from "@huginn/api";
 import {
    analytics,
    type APIPublicUser,
@@ -11,6 +10,7 @@ import {
    type Snowflake,
    type UserSettings,
 } from "@huginn/shared";
+import { HuginnClient, type VoiceStatus } from "@huginnjs/api";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";

@@ -1,4 +1,4 @@
-import type { VoiceStatus } from "@huginn/api";
+import type { VoiceStatus } from "@huginnjs/api";
 
 import StreamButton from "@components/button/StreamButton";
 import UserActionButton from "@components/button/UserActionButton";

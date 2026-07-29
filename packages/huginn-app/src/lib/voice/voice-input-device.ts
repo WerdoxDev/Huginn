@@ -1,4 +1,4 @@
-import type { HuginnClient } from "@huginn/api";
+import type { HuginnClient } from "@huginnjs/api";
 
 import { log } from "@huginn/shared";
 import { storageStore } from "@stores/storageStore";

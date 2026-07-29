@@ -38,7 +38,7 @@ function Content(
    const { extraStyle, ...rest } = props;
    return (
       <BaseTooltip.Portal keepMounted={false}>
-         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8} className="z-50">
+         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8} className="z-999">
             <BaseTooltip.Popup
                {...rest}
                className={clsx(

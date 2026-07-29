@@ -1,4 +1,4 @@
-import type { VoiceStreamOptions } from "@huginn/api";
+import type { VoiceStreamOptions } from "@huginnjs/api";
 
 import { useFullscreen } from "@hooks/useFullscreen";
 import { analytics, type Snowflake } from "@huginn/shared";

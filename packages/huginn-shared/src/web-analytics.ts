@@ -34,7 +34,7 @@ export class WebAnalytics extends Analytics {
          capture_exceptions: true,
          mask_all_element_attributes: true,
          mask_all_text: true,
-         enable_recording_console_log: false,
+         // enable_recording_console_log: false,
          session_recording: {
             // Keep replay useful for layout and interaction debugging without
             // sending user-generated text, media, or input attributes.
@@ -47,7 +47,7 @@ export class WebAnalytics extends Analytics {
             recordHeaders: false,
             recordBody: false,
             captureCanvas: { recordCanvas: false },
-            maskCapturedNetworkRequestFn: () => null,
+            // maskCapturedNetworkRequestFn: () => null,
          },
          logs: {
             serviceName: "app-web",
