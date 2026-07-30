@@ -7,7 +7,7 @@ export default defineConfig({
    appearance: "dark",
    cleanUrls: true,
    lastUpdated: true,
-   base: "/",
+   base: "/docs/",
    markdown: {
       lineNumbers: false,
    },
