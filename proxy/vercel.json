@@ -9,6 +9,14 @@
          "destination": "https://huginn-app-werdoxs-projects.vercel.app"
       },
       {
+         "source": "/docs/:path*",
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/:path*"
+      },
+      {
+         "source": "/docs/",
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app"
+      },
+      {
          "source": "/:path*",
          "destination": "https://huginn-website-werdoxs-projects.vercel.app/:path*"
       },

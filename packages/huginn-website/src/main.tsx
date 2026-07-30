@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 
 import About from "./About";
 import App from "./App";
-import Docs from "./Docs";
 import Download from "./Download";
 import Home from "./Home";
 import Redirect from "./Redirect";
@@ -32,19 +31,13 @@ const downloadRoute = createRoute({
    component: Download,
 });
 
-const docsRoute = createRoute({
-   getParentRoute: () => rootRoute,
-   path: "docs",
-   component: Docs,
-});
-
 const redirectRoute = createRoute({
    getParentRoute: () => rootRoute,
    path: "redirect",
    component: Redirect,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, downloadRoute, docsRoute, redirectRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, downloadRoute, redirectRoute]);
 
 const router = createRouter({
    routeTree,
