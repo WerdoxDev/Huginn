@@ -6,7 +6,7 @@ import {
    type OAuthType,
    Routes,
 } from "@huginnjs/shared";
-import { encodeBase64 } from "@std/encoding";
+import { base64 } from "@scure/base";
 
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
@@ -32,7 +32,7 @@ export class OAuthAPI {
       if (type === "google") {
          const url = new URL("/api/auth/google", this.rest.options?.api);
 
-         const state = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
+         const state = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
          url.searchParams.set("state", state);
          url.searchParams.set("flow", flow);
          url.searchParams.set("redirect_url", redirectUrl);

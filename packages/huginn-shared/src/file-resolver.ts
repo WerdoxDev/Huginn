@@ -1,4 +1,4 @@
-import { decodeBase64, encodeBase64 } from "@std/encoding";
+import { base64 } from "@scure/base";
 
 import type { ResolvedFile } from ".";
 
@@ -21,15 +21,16 @@ export async function resolveImage(image: string): Promise<string | undefined> {
 /**
  * Resolves a Uint8Array, ArrayBuffer or string to a base64 data url
  */
-export function toDataUrl(data: Uint8Array | ArrayBuffer | string, format: string): string {
-   return `data:image/${format};base64,${encodeBase64(data)}`;
+export function toDataUrl(data: Uint8Array | ArrayBuffer, format: string): string {
+   const base64Data = data instanceof Uint8Array ? base64.encode(data) : data instanceof ArrayBuffer ? base64.encode(new Uint8Array(data)) : data;
+   return `data:image/${format};base64,${base64Data}`;
 }
 
 /**
  * Resolves a base64 data url string to a ArrayBuffer
  */
 export function toArrayBuffer(data: string): ArrayBuffer {
-   return decodeBase64(data.split(",")[1]).buffer as ArrayBuffer;
+   return base64.decode(data.split(",")[1]).buffer as ArrayBuffer;
 }
 
 /**

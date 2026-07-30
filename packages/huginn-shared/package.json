@@ -27,7 +27,7 @@
       "@opentelemetry/sdk-trace-base": "^2.8.0",
       "@opentelemetry/sdk-trace-web": "^2.8.0",
       "@sapphire/snowflake": "^3.5.3",
-      "@std/encoding": "npm:@jsr/std__encoding",
+      "@scure/base": "^2.2.0",
       "emojibase-data": "^17.0.0",
       "file-type": "^22.0.1",
       "highlight.js": "^11.11.1",

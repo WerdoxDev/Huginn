@@ -106,20 +106,20 @@ export default defineConfig(({ mode }) => {
       server: {
          https: isHttps
             ? {
-                 key: keyFile,
-                 cert: certFile,
-              }
+               key: keyFile,
+               cert: certFile,
+            }
             : undefined,
          hmr: isCapacitor
             ? {
-                 host: "localhost",
-                 port: 5174,
-              }
+               host: "localhost",
+               port: 5174,
+            }
             : undefined,
          watch: isCapacitor
             ? {
-                 usePolling: false,
-              }
+               usePolling: false,
+            }
             : undefined,
       },
 

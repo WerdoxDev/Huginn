@@ -405,7 +405,7 @@ describe("logout()", () => {
    it("still cleans up even if the logout request fails", async () => {
       client.tokenHandler.token = "access";
       vi.mocked(client.auth.logout).mockRejectedValue(new Error("network down"));
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => { });
 
       await expect(client.logout()).resolves.toBeUndefined();
 

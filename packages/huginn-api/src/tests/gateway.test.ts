@@ -614,7 +614,7 @@ describe("send()", () => {
    it("does nothing if the socket is not connected", () => {
       server.use(
          link.addEventListener("connection", ({ client }) => {
-            client.addEventListener("message", () => {});
+            client.addEventListener("message", () => { });
          }),
       );
       expect(() => gateway["send"]({ op: GatewayOperations.HEARTBEAT, d: 0 })).not.toThrow();

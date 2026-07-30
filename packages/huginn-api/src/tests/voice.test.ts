@@ -19,7 +19,7 @@ import { makeClient } from "./test-utils";
 
 vi.mock("../voice-device-manager", () => {
    class VoiceDeviceManager {
-      public constructor(public transport: unknown) {}
+      public constructor(public transport: unknown) { }
    }
 
    return { VoiceDeviceManager };
@@ -27,7 +27,7 @@ vi.mock("../voice-device-manager", () => {
 
 vi.mock("../voice-stream-manager", () => {
    class VoiceStreamManager {
-      public constructor(public transport: unknown) {}
+      public constructor(public transport: unknown) { }
    }
 
    return { VoiceStreamManager };

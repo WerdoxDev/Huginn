@@ -11,7 +11,7 @@
       "build": "tsdown"
    },
    "dependencies": {
-      "@std/encoding": "npm:@jsr/std__encoding",
+      "@scure/base": "^2.2.0",
       "jose": "^5.10.0",
       "mediasoup-client": "^3.21.0",
       "pathe": "^1.1.2"

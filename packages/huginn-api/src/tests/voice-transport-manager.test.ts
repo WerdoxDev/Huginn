@@ -804,19 +804,19 @@ describe("applyVoiceState()", () => {
       transport.on("create_consumer", (payload) =>
          payload.producerId === "remote-audio"
             ? payload.callback({
-                 consumerId: audioParams.id,
-                 kind: "stream_audio",
-                 producerId: payload.producerId,
-                 producerUserId: "user-2",
-                 rtpParameters: audioParams.rtpParameters,
-              })
+               consumerId: audioParams.id,
+               kind: "stream_audio",
+               producerId: payload.producerId,
+               producerUserId: "user-2",
+               rtpParameters: audioParams.rtpParameters,
+            })
             : payload.callback({
-                 consumerId: videoParams.id,
-                 kind: "camera",
-                 producerId: payload.producerId,
-                 producerUserId: "user-2",
-                 rtpParameters: videoParams.rtpParameters,
-              }),
+               consumerId: videoParams.id,
+               kind: "camera",
+               producerId: payload.producerId,
+               producerUserId: "user-2",
+               rtpParameters: videoParams.rtpParameters,
+            }),
       );
       transport.on("resume_consumer", (payload) => payload.callback({ consumerId: payload.id }));
 
@@ -844,19 +844,19 @@ describe("applyVoiceState()", () => {
       transport.on("create_consumer", (payload) =>
          payload.producerId === "remote-audio"
             ? payload.callback({
-                 consumerId: audioParams.id,
-                 kind: "stream_audio",
-                 producerId: payload.producerId,
-                 producerUserId: "user-2",
-                 rtpParameters: audioParams.rtpParameters,
-              })
+               consumerId: audioParams.id,
+               kind: "stream_audio",
+               producerId: payload.producerId,
+               producerUserId: "user-2",
+               rtpParameters: audioParams.rtpParameters,
+            })
             : payload.callback({
-                 consumerId: videoParams.id,
-                 kind: "camera",
-                 producerId: payload.producerId,
-                 producerUserId: "user-2",
-                 rtpParameters: videoParams.rtpParameters,
-              }),
+               consumerId: videoParams.id,
+               kind: "camera",
+               producerId: payload.producerId,
+               producerUserId: "user-2",
+               rtpParameters: videoParams.rtpParameters,
+            }),
       );
       transport.on("resume_consumer", (payload) => payload.callback({ consumerId: payload.id }));
 

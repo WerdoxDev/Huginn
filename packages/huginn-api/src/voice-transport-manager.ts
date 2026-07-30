@@ -631,8 +631,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             consumer.appData.mediaKind === "microphone"
                ? voicePreference?.isMicrophoneMuted
                : consumer.appData.mediaKind === "stream_audio"
-                 ? voicePreference?.isStreamMuted
-                 : false;
+                  ? voicePreference?.isStreamMuted
+                  : false;
 
          // If state is deafened consume is not paused, pause consumer
          if ((gatewayVoiceState.isAudioDeafened === true || isMuted === true) && !consumer.paused) {
