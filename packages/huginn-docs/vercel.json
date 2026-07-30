@@ -4,5 +4,6 @@
          "source": "/docs/:path*",
          "destination": "/:path*"
       }
-   ]
+   ],
+   "trailingSlash": false
 }
