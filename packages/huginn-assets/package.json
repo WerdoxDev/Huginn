@@ -1,16 +1,18 @@
 {
    "name": "@huginn/assets",
-   "version": "0.1.0",
+   "version": "0.3.0",
    "private": true,
    "type": "module",
    "dependencies": {
       "@huginn/shared": "workspace:*",
+      "culori": "^4.0.2",
       "emojibase": "^17.0.0",
       "emojibase-data": "^17.0.0",
       "octokit": "^5.0.5",
       "sharp": "^0.35.2"
    },
    "devDependencies": {
-      "@types/bun": "latest"
+      "@types/bun": "latest",
+      "@types/culori": "^4.0.1"
    }
 }

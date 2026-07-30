@@ -167,7 +167,7 @@ export const patchMe = new Elysia()
             token: accessToken,
             refreshToken,
          });
-         gateway.presenceManager.updateUserPresence(tokenPayload.id, undefined, updatedUser);
+         gateway.presenceManager.updateUserPresence(tokenPayload.id, { user: updatedUser });
 
          const json: APIPatchCurrentUserResult = {
             ...updatedUser,

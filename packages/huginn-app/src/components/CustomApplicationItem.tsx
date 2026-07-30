@@ -48,9 +48,9 @@ export default function CustomApplicationItem(props: {
             <Tooltip>
                <Tooltip.Trigger
                   onClick={() => props.onDelete?.(props.application.exePath)}
-                  className="group bg-negative-100/10 hover:bg-negative-400 cursor-pointer rounded-md p-1"
+                  className="group bg-surface hover:bg-negative-500 cursor-pointer rounded-md p-1"
                >
-                  <IconMingcuteDelete3Fill className="text-negative-100 group-hover:text-white" />
+                  <IconMingcuteDelete3Fill className="text-negative-500 group-hover:text-white" />
                </Tooltip.Trigger>
                <Tooltip.Content>Delete</Tooltip.Content>
             </Tooltip>

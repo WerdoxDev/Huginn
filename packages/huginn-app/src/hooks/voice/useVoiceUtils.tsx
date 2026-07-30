@@ -1,17 +1,16 @@
-import type { VoiceStreamOptions } from "@huginn/api";
+import type { VoiceStreamOptions } from "@huginnjs/api";
 
 import { useFullscreen } from "@hooks/useFullscreen";
-import { error, type Snowflake } from "@huginn/shared";
+import { analytics, type Snowflake } from "@huginn/shared";
 import { getMediaErrorMessage } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useStorage } from "@stores/storageStore";
-import { useThisUser } from "@stores/userStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 
 export function useVoiceUtils() {
-   const { user } = useThisUser();
    const settings = useStorage("settings");
+   const { setValue } = useStorageStore();
    const client = useClient();
    // const posthog = usePostHog();
    // const updateVoiceStateMutation = useUpdateVoiceState();
@@ -21,17 +20,23 @@ export function useVoiceUtils() {
 
    async function toggleMute() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newMutedState = !(voiceState?.isAudioMuted ?? false);
+      const newDeafenedState = newMutedState ? (voiceState?.isAudioDeafened ?? false) : false;
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioMuted: !(voiceState?.isAudioMuted ?? false),
+         isAudioMuted: newMutedState,
+         isAudioDeafened: newDeafenedState,
       });
+      await setValue("settings", { ...settings, isVoiceMuted: newMutedState, isVoiceDeafened: newDeafenedState });
    }
 
    async function toggleDeafen() {
       const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
+      const newDeafenedState = !(voiceState?.isAudioDeafened ?? false);
       await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioDeafened: !(voiceState?.isAudioDeafened ?? false),
-         isAudioMuted: !(voiceState?.isAudioDeafened ?? false),
+         isAudioDeafened: newDeafenedState,
+         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
       });
+      await setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
    }
 
    async function openScreenShare() {
@@ -60,19 +65,13 @@ export function useVoiceUtils() {
             }
          }
          // Audio track is not given but it exists, so remove it.
-         else if (audioProducer && !audioTrack) {
-            await client?.voice.stream.closeStreamAudio();
-         }
+         else if (audioProducer && !audioTrack) await client?.voice.stream.closeStreamAudio();
          // Audio is not open but track is given, so open audio
-         else if (!audioProducer && audioTrack) {
-            await client?.voice.stream.openStream(undefined, audioTrack, options);
-         }
+         else await client?.voice.stream.openStream(undefined, audioTrack, options);
       }
 
       try {
-         if (isFullscreen) {
-            toggleFullscreen();
-         }
+         if (isFullscreen) toggleFullscreen();
 
          if (huginnWindow.environment === "browser") {
             const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -94,8 +93,11 @@ export function useVoiceUtils() {
                         await client?.voice.stopAudioLoopback();
 
                         let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
-                        if (!audioTrack && options.isAudioEnabled && options.type === "display") {
-                           audioTrack = await client?.voice.startAudioLoopback(options.sourceName);
+                        if (!audioTrack && options.isAudioEnabled && options.type !== "device") {
+                           audioTrack = await client?.voice.startAudioLoopback(
+                              options.type === "screen" ? "system" : "application",
+                              options.processId,
+                           );
                         }
 
                         const videoTrack = options.stream.getVideoTracks()[0];
@@ -105,7 +107,6 @@ export function useVoiceUtils() {
                            maxVideoBitrate: options.maxVideoBitrate,
                         });
                      } catch (e) {
-                        error("app:hooks", "open screen share failed", e);
                         updateModals({
                            info: {
                               status: "error",
@@ -115,14 +116,28 @@ export function useVoiceUtils() {
                            },
                         });
 
-                        await closeStream();
+                        analytics.log({ level: "error", body: "failed to open screen share", exception: e, attributes: { options } });
+
+                        if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio"))
+                           await closeStream();
                      }
+                  },
+                  errback: ({ error }) => {
+                     updateModals({
+                        info: {
+                           status: "error",
+                           title: "Screen Sharing Failed",
+                           text: getMediaErrorMessage(error, "screen"),
+                           isOpen: true,
+                        },
+                     });
+
+                     analytics.log({ level: "error", body: "failed to open screen share", exception: error });
                   },
                },
             });
          }
       } catch (e) {
-         error("app:hooks", "open screen share failed", e);
          updateModals({
             info: {
                status: "error",
@@ -132,7 +147,9 @@ export function useVoiceUtils() {
             },
          });
 
-         await closeStream();
+         analytics.log({ level: "error", body: "failed to open screen share", exception: e });
+
+         if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio")) await closeStream();
       }
    }
 
@@ -141,39 +158,55 @@ export function useVoiceUtils() {
          toggleFullscreen();
       }
 
-      if (huginnWindow.environment !== "desktop") {
-         return;
-      }
+      if (huginnWindow.environment !== "desktop") return;
 
       updateModals({
-         streamAudio: {
+         audioStream: {
             isOpen: true,
-            callback: async (sourceProcessId: string) => {
+            callback: async (options) => {
                try {
                   // Reset loopback even if we want to start a new one / end the last one
                   await client?.voice.stopAudioLoopback();
-                  const audioTrack = await client?.voice.startAudioLoopback(undefined, sourceProcessId);
+                  const audioTrack = await client?.voice.startAudioLoopback("application", options.processId);
 
                   if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
 
-                  if (client?.voice.transport.getProducer("stream_audio")) {
+                  const producer = client?.voice.transport.getProducer("stream_audio");
+
+                  if (producer) {
                      await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
+                     if (options.maxAudioBitrate) {
+                        await client?.voice.stream.updateAudioBitrate(options.maxAudioBitrate);
+                     }
                   } else {
-                     await client?.voice.stream.openStream(undefined, audioTrack);
+                     await client?.voice.stream.openStream(undefined, audioTrack, { maxAudioBitrate: options.maxAudioBitrate });
                   }
                } catch (e) {
-                  error("app:hooks", "open audio stream failed", e);
                   updateModals({
                      info: {
                         status: "error",
                         title: "Audio Stream Failed",
-                        text: "An unexpected error occurred. Please try again.",
+                        text: getMediaErrorMessage(e, "audio"),
                         isOpen: true,
                      },
                   });
 
-                  await closeStream();
+                  analytics.log({ level: "error", body: "failed to open audio stream", exception: e, attributes: { options } });
+
+                  if (client?.voice.transport.getProducer("stream_audio")) await closeStream();
                }
+            },
+            errback: ({ error }) => {
+               updateModals({
+                  info: {
+                     status: "error",
+                     title: "Audio Stream Failed",
+                     text: getMediaErrorMessage(error, "audio"),
+                     isOpen: true,
+                  },
+               });
+
+               analytics.log({ level: "error", body: "failed to open audio stream", exception: error });
             },
          },
       });
@@ -192,7 +225,6 @@ export function useVoiceUtils() {
             await client?.voice.device.openCamera(track);
          }
       } catch (e) {
-         error("app:hooks", "open camera failed", e);
          updateModals({
             info: {
                status: "error",
@@ -202,38 +234,45 @@ export function useVoiceUtils() {
             },
          });
 
-         await closeCamera();
+         analytics.log({ level: "error", body: "failed to open camera", exception: e });
+
+         if (client?.voice.transport.getProducer("camera")) await closeCamera();
       }
    }
 
    async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
+      if (!client) return;
       try {
-         if (client?.voice.status === "disconnected") throw new Error("Voice is disconnected");
+         if (client.voice.status === "disconnected") throw new Error("Voice is disconnected");
 
-         if (client?.voice.status !== "ready") {
-            await client?.voiceManager.connectVoice(guildId, channelId);
+         if (client.voice.status !== "ready") {
+            await client.voiceManager.connectVoice(guildId, channelId);
          }
 
-         const remoteProducers = client?.voice.transport.getRemoteProducers();
+         const remoteProducers = client.voice.transport.getRemoteProducers();
 
          if (remoteProducers?.some((x) => x.kind === "stream_video" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_video");
+            await client.voice.transport.createConsumer(userId, "stream_video");
          }
          if (remoteProducers?.some((x) => x.kind === "stream_audio" && x.userId === userId)) {
-            await client?.voice.transport.createConsumer(userId, "stream_audio");
+            await client.voice.transport.createConsumer(userId, "stream_audio");
          }
+
+         await client.voiceManager.applyVoiceState();
       } catch (e) {
-         error("app:hooks", "consume stream failed", e);
          updateModals({
             info: {
                status: "error",
                title: "Watching/Listening Stream Failed",
-               text: "An unexpected error occurred. Please try again.",
+               text: getMediaErrorMessage(e),
                isOpen: true,
             },
          });
 
-         await unconsumeStream(userId);
+         analytics.log({ level: "error", body: "failed to consume stream", exception: e, attributes: { userId, guildId, channelId } });
+
+         if (client.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
+            await unconsumeStream(userId);
       }
    }
 
@@ -249,7 +288,6 @@ export function useVoiceUtils() {
             await client?.voice.transport.closeConsumer(audioConsumer.id);
          }
       } catch (e) {
-         error("app:hooks", "unconsume stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -258,6 +296,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to unconsume stream", exception: e, attributes: { userId } });
       }
    }
 
@@ -266,13 +306,9 @@ export function useVoiceUtils() {
       const videoProducer = client?.voice.transport.getProducer("stream_video");
 
       // Audio Stream
-      if (audioProducer && !videoProducer) {
-         openAudioStream();
-      }
+      if (audioProducer && !videoProducer) openAudioStream();
       // Screen Share
-      else {
-         await openScreenShare();
-      }
+      else await openScreenShare();
    }
 
    async function updateStream(
@@ -288,7 +324,16 @@ export function useVoiceUtils() {
             await client?.voice.stream.updateAudioBitrate(audio.maxBitrate);
          }
       } catch (e) {
-         error("app:hooks", "update stream failed", e);
+         updateModals({
+            info: {
+               status: "error",
+               title: "Updating Stream Failed",
+               text: "An unexpected error occurred. Please try again.",
+               isOpen: true,
+            },
+         });
+
+         analytics.log({ level: "error", body: "failed to update stream", exception: e, attributes: { video, audio } });
       }
    }
 
@@ -296,7 +341,6 @@ export function useVoiceUtils() {
       try {
          await client?.voice.stream.closeStream();
       } catch (e) {
-         error("app:hooks", "close stream failed", e);
          updateModals({
             info: {
                status: "error",
@@ -305,6 +349,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to close stream", exception: e });
       }
    }
 
@@ -312,7 +358,6 @@ export function useVoiceUtils() {
       try {
          await client?.voice.device.closeCamera();
       } catch (e) {
-         error("app:hooks", "close camera failed", e);
          updateModals({
             info: {
                status: "error",
@@ -321,6 +366,8 @@ export function useVoiceUtils() {
                isOpen: true,
             },
          });
+
+         analytics.log({ level: "error", body: "failed to close camera", exception: e });
       }
    }
 

@@ -1,4 +1,4 @@
-import type { VoiceStatus } from "@huginn/api";
+import type { VoiceStatus } from "@huginnjs/api";
 
 import StreamButton from "@components/button/StreamButton";
 import UserActionButton from "@components/button/UserActionButton";
@@ -17,12 +17,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import Tooltip from "../tooltip/Tooltip";
 
+const RTT_UPDATE_INTERVAL = 2000;
+
 const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
-   disconnected: { text: "Disconnected", color: "!text-negative-100" },
-   idle: { text: "Connecting...", color: "!text-caution-100" },
-   connecting: { text: "Connecting...", color: "!text-caution-100" },
+   disconnected: { text: "Disconnected", color: "!text-negative-300" },
+   idle: { text: "Connecting...", color: "!text-caution-300" },
+   connecting: { text: "Connecting...", color: "!text-caution-300" },
    ready: { text: "Connected" },
-   signaling: { text: "RTC Signalling...", color: "!text-caution-100" },
+   signaling: { text: "RTC Signalling...", color: "!text-caution-300" },
 };
 
 export default function VoiceStatus() {
@@ -37,6 +39,7 @@ export default function VoiceStatus() {
 
    const mediaSources = useMediaSources();
    const videoSource = mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
+   const audioSource = mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
 
    const latencyColor = useMemo(() => {
       const minPing = 100;
@@ -53,18 +56,25 @@ export default function VoiceStatus() {
    }, [rtt]);
 
    useEffect(() => {
-      if (!client) {
+      if (!client || voiceStatus !== "ready") {
+         setRtt(0);
          return;
       }
 
-      const unlisten2 = client.voice.signaling.listen("pong", (d) => {
-         setRtt(d.rtt);
-      });
+      let cancelled = false;
+      const updateRtt = async () => {
+         const roundTripTime = await client.voice.getCurrentRoundTripTime();
+         if (!cancelled && roundTripTime !== undefined) setRtt(Math.round(roundTripTime));
+      };
+
+      void updateRtt();
+      const interval = window.setInterval(() => void updateRtt(), RTT_UPDATE_INTERVAL);
 
       return () => {
-         unlisten2();
+         cancelled = true;
+         window.clearInterval(interval);
       };
-   }, []);
+   }, [client, voiceStatus]);
 
    async function onDisconnect() {
       posthog.capture("voice:status_disconnect_button_click");
@@ -123,7 +133,7 @@ export default function VoiceStatus() {
             <div className="flex w-full gap-x-2">
                <StreamButton
                   voiceState={voiceState}
-                  videoSource={videoSource}
+                  mediaSource={videoSource ?? audioSource}
                   onUpdateStream={updateStream}
                   // onUpdateStream={}
                   // menu={{ side: "top", align: "center", sideOffset: 4 }}

@@ -1,4 +1,4 @@
-import { ContextMenu as BaseContextMenu, Drawer, Menu, type BaseUIEvent } from "@base-ui/react";
+import { ContextMenu as BaseContextMenu, Drawer } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
@@ -18,7 +18,7 @@ type Tone = "default" | "negative";
 const ContextMenuContext = createContext<{ onClose?: () => void; isMobile: boolean } | null>(undefined!);
 
 const popupClass = clsx(
-   "z-998 flex min-w-28 flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+   "bg-surface-void flex min-w-28 flex-col rounded-lg p-2 shadow-lg outline-hidden",
    "transition-opacity duration-100",
    "data-starting-style:opacity-0",
    "data-ending-style:opacity-0",
@@ -88,7 +88,8 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
                }}
             >
                <BaseContextMenu.Portal container={props.contextMenu?.parent ?? undefined}>
-                  <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0}>
+                  {/* <BaseContextMenu.Backdrop className="fixed inset-0 z-997" /> */}
+                  <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0} className="z-998">
                      <BaseContextMenu.Popup className={popupClass}>{children}</BaseContextMenu.Popup>
                   </BaseContextMenu.Positioner>
                </BaseContextMenu.Portal>
@@ -125,12 +126,12 @@ function Item(
    }
 
    const itemClass = clsx(
-      "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden",
+      "flex shrink-0 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-hidden select-none",
       context.isMobile && "px-3 py-3",
       "data-disabled:cursor-not-allowed",
       !props.color || props.color === "default"
          ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 disabled:text-white/50 data-disabled:text-white/50"
-         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50 disabled:text-negative-100/50",
+         : "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50 disabled:text-negative-300/50",
       props.className,
    );
 
@@ -159,19 +160,19 @@ function Item(
 }
 
 function SubmenuContent(
-   props: Menu.Popup.Props & {
-      side?: Menu.Positioner.Props["side"];
-      align?: Menu.Positioner.Props["align"];
+   props: BaseContextMenu.Popup.Props & {
+      side?: BaseContextMenu.Positioner.Props["side"];
+      align?: BaseContextMenu.Positioner.Props["align"];
       sideOffset?: number;
       alignOffset?: number;
    },
 ) {
    return (
-      <Menu.Portal keepMounted={false}>
-         <Menu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
-            <Menu.Popup className={clsx(popupClass, props.className)}>{props.children}</Menu.Popup>
-         </Menu.Positioner>
-      </Menu.Portal>
+      <BaseContextMenu.Portal keepMounted={false}>
+         <BaseContextMenu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
+            <BaseContextMenu.Popup className={clsx(popupClass, props.className)}>{props.children}</BaseContextMenu.Popup>
+         </BaseContextMenu.Positioner>
+      </BaseContextMenu.Portal>
    );
 }
 
@@ -181,12 +182,12 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    const [isOpen, setIsOpen] = useState(false);
 
    const triggerClass = clsx(
-      "flex min-w-28 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none",
+      "flex min-w-28 cursor-pointer items-center justify-between gap-x-5 rounded-sm px-2 py-2 text-start text-sm text-nowrap outline-none select-none",
       context?.isMobile && "px-3 py-3",
       "data-disabled:cursor-not-allowed data-disabled:text-white/50",
       !props.color || props.color === "default"
          ? "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 data-disabled:text-white/50"
-         : "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
+         : "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50",
    );
 
    useStackBackHandler(`context-menu-${id}`, () => setIsOpen(false), isOpen);
@@ -222,8 +223,8 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    }
 
    return (
-      <Menu.SubmenuRoot>
-         <Menu.SubmenuTrigger
+      <BaseContextMenu.SubmenuRoot>
+         <BaseContextMenu.SubmenuTrigger
             openOnHover
             delay={0}
             closeDelay={100}
@@ -238,12 +239,12 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
                   <IconMingcuteRightLine className="size-5 text-white/80" />
                </span>
             </span>
-         </Menu.SubmenuTrigger>
+         </BaseContextMenu.SubmenuTrigger>
 
          <SubmenuContent side="right" align="start" sideOffset={12} alignOffset={-8}>
             {children}
          </SubmenuContent>
-      </Menu.SubmenuRoot>
+      </BaseContextMenu.SubmenuRoot>
    );
 }
 

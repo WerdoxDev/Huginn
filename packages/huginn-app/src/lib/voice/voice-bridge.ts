@@ -1,10 +1,10 @@
-import type { Consumer, Producer } from "mediasoup-client/types";
+import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
-import { HuginnClient, Voice, type VoiceOptions } from "@huginn/api";
-import { diff, log, type MediasoupAppData, type ProducerData, type Snowflake } from "@huginn/shared";
+import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginn/shared";
+import { HuginnClient, Voice, type VoiceOptions } from "@huginnjs/api";
+import { clientStore } from "@stores/clientStore";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
-import { produce } from "immer";
 
 import type { AppSettings } from "@/types";
 
@@ -20,6 +20,41 @@ export class VoiceBridge extends Voice {
    public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
+
+   /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
+   public async getCurrentRoundTripTime(): Promise<number | undefined> {
+      const transports = [this.transport.sendTransport, this.transport.recvTransport].filter(
+         (transport): transport is Transport => !!transport && !transport.closed,
+      );
+      const reports = await Promise.allSettled(transports.map((transport) => transport.getStats()));
+      const roundTripTimes = reports
+         .filter((result): result is PromiseFulfilledResult<RTCStatsReport> => result.status === "fulfilled")
+         .map((result) => this.getRoundTripTimeFromStats(result.value))
+         .filter((roundTripTime): roundTripTime is number => roundTripTime !== undefined);
+
+      if (roundTripTimes.length === 0) return undefined;
+      return Math.max(...roundTripTimes) * 1000;
+   }
+
+   private getRoundTripTimeFromStats(report: RTCStatsReport): number | undefined {
+      let selectedCandidatePairId: string | undefined;
+      const candidatePairs: RTCIceCandidatePairStats[] = [];
+
+      for (const stat of report.values()) {
+         if (stat.type === "transport") {
+            selectedCandidatePairId = (stat as RTCTransportStats).selectedCandidatePairId;
+         } else if (stat.type === "candidate-pair") {
+            candidatePairs.push(stat as RTCIceCandidatePairStats);
+         }
+      }
+
+      const selectedPair = selectedCandidatePairId ? candidatePairs.find((pair) => pair.id === selectedCandidatePairId) : undefined;
+      const activePair = selectedPair ?? candidatePairs.find((pair) => pair.state === "succeeded" && pair.nominated);
+      const fallbackPair = activePair ?? candidatePairs.find((pair) => pair.state === "succeeded");
+      const roundTripTime = fallbackPair?.currentRoundTripTime;
+
+      return typeof roundTripTime === "number" && Number.isFinite(roundTripTime) ? roundTripTime : undefined;
+   }
 
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
@@ -41,6 +76,11 @@ export class VoiceBridge extends Voice {
       storageStore.subscribe(
          (state) => state.cache.settings,
          (current, old) => this.handleStorageUpdated(current, old),
+      );
+
+      clientStore.subscribe(
+         (state) => state.userSettings?.voicePreferences,
+         (current) => this.handleVoicePreferenceUpdated(current),
       );
    }
 
@@ -115,14 +155,18 @@ export class VoiceBridge extends Voice {
 
       // create voice preference for new users
       if (data.kind === "microphone" || data.kind === "stream_audio") {
-         const storage = storageStore.getState();
-         const voicePreferences = storage.getCachedValue("voice-preferences");
+         const store = clientStore.getState();
+         let voicePreferences = store.userSettings?.voicePreferences;
+         if (!voicePreferences) voicePreferences = [];
 
-         if (!voicePreferences.some((x) => x.userId === data.userId)) {
-            this.updateVoicePreference(data.userId, { microphoneVolume: 100, streamVolume: 100 });
-            await storage.saveFromCachedValue("voice-preferences");
+         if (!voicePreferences?.some((x) => x.userId === data.userId)) {
+            voicePreferences?.push({ userId: data.userId, microphoneVolume: 100, streamVolume: 100, isMicrophoneMuted: false, isStreamMuted: false });
+            store.setUserSettings({ voicePreferences: voicePreferences });
+            await this.client.users.editSettings({ voicePreferences: voicePreferences });
          }
       }
+
+      await this.client.voiceManager.applyVoiceState();
    }
 
    private async handleAnyProducerClosed(data: ProducerData) {
@@ -189,13 +233,34 @@ export class VoiceBridge extends Voice {
       }
    }
 
+   private handleVoicePreferenceUpdated(current: VoicePreference[] | undefined) {
+      for (const player of this.audioSourcePlayers) {
+         const userPreference = current?.find((x) => x.userId === player.userId);
+
+         if (!userPreference) {
+            throw new Error(`Voice preference for user ${player.userId} was not found`);
+         }
+
+         const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === player.userId);
+         const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === player.userId);
+
+         if (microphonePlayer) {
+            microphonePlayer.setGain(undefined, userPreference.microphoneVolume);
+         }
+
+         if (streamAudioPlayer) {
+            streamAudioPlayer.setGain(undefined, userPreference.streamVolume);
+         }
+      }
+
+      this.client.voiceManager.voiceState.updateVoicePreferences(current ?? []);
+   }
+
    private refreshConsumerAudioPlayers() {
       const consumers = this.transport.getConsumers();
       const storage = storageStore.getState();
-      const voicePreferences = storage.getCachedValue("voice-preferences");
+      const voicePreferences = clientStore.getState().userSettings?.voicePreferences;
       const settings = storage.getCachedValue("settings");
-
-      log("app:voice-bridge", "default", "refresh consumer audio players", "ovol:", settings.outputVolume, "ncons:", consumers.length);
 
       // Remove old players
       for (const player of this.audioSourcePlayers) {
@@ -219,20 +284,16 @@ export class VoiceBridge extends Voice {
 
          this.audioSourcePlayers.push(sourcePlayer);
 
-         const preference = voicePreferences.find((x) => x.userId === consumer.appData.userId);
+         const preference = voicePreferences?.find((x) => x.userId === consumer.appData.userId);
          if (!preference) throw new Error(`Voice preference for ${consumer.appData.userId} was not found`);
 
-         if (consumer.appData.mediaKind === "microphone") {
-            sourcePlayer.setGain(undefined, preference?.microphoneVolume);
-         } else if (consumer.appData.mediaKind === "stream_audio") {
-            sourcePlayer.setGain(undefined, preference?.streamVolume);
-         }
+         if (consumer.appData.mediaKind === "microphone") sourcePlayer.setGain(undefined, preference?.microphoneVolume);
+         // stream_audio
+         else sourcePlayer.setGain(undefined, preference?.streamVolume);
       }
    }
 
    private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
-      log("app:voice-bridge", "default", "open microphone", "did:", microphoneDeviceId, "vol:", microphoneVolume, "ns:", noiseSuppression);
-
       const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
       const audioTrack = otherStream.getAudioTracks()[0];
 
@@ -251,16 +312,10 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   public async startAudioLoopback(processTitle?: string, processId?: string) {
-      log("app:voice-bridge", "default", "start audio loopback", "ptit:", processTitle, "pid:", processId);
+   public async startAudioLoopback(mode: "system" | "application", processId?: number) {
+      if (!window.electronAPI) return;
 
-      if (!window.electronAPI) {
-         return;
-      }
-
-      const result = await window.electronAPI.startAudioLoopback(processTitle, processId);
-
-      if (!result) throw new Error(`Process audio loopback with title: ${processTitle} or id: ${processId} failed`);
+      window.electronAPI.startAudioLoopback(mode, processId);
 
       const { sampleRate, numChannels } = { sampleRate: 48000, numChannels: 2 };
       /* @ts-ignore */
@@ -268,6 +323,7 @@ export class VoiceBridge extends Voice {
       const writer: WritableStreamDefaultWriter = audioGenerator.writable.getWriter();
 
       this.loopbackDataUnlisten?.();
+      /* v8 ignore next */
       this.loopbackDataUnlisten = window.electronAPI.onLoopbackData(async (_, d) => {
          const float32 = new Float32Array(d.length / 2);
          const view = new DataView(d.buffer);
@@ -297,49 +353,9 @@ export class VoiceBridge extends Voice {
    }
 
    public async stopAudioLoopback() {
-      log("app:voice-bridge", "default", "stop audio loopback");
-
       if (window.electronAPI) {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
-      }
-   }
-
-   public updateVoicePreference(userId: Snowflake, options: { microphoneVolume?: number; streamVolume?: number }) {
-      log("app:voice-bridge", "voice-preference", "update", "uid:", userId, "opts:", JSON.stringify(options));
-
-      const voicePreferences = storageStore.getState().getCachedValue("voice-preferences");
-      const updatedVoicePreferences = produce(voicePreferences, (draft) => {
-         const existingIndex = draft.findIndex((x) => x.userId === userId);
-         if (existingIndex !== -1) {
-            draft[existingIndex] = { ...draft[existingIndex], ...options };
-         } else {
-            if (!options.microphoneVolume || !options.streamVolume) {
-               throw new Error("Creating new voice preference requires both microphone and screen share volumes");
-            }
-
-            draft.push({
-               userId,
-               microphoneVolume: options.microphoneVolume,
-               streamVolume: options.streamVolume,
-            });
-         }
-      });
-
-      storageStore.getState().setCachedValue("voice-preferences", updatedVoicePreferences);
-
-      const userPreference = updatedVoicePreferences.find((x) => x.userId === userId);
-      const microphonePlayer = this.audioSourcePlayers.find((x) => x.kind === "microphone" && x.userId === userId);
-      const streamAudioPlayer = this.audioSourcePlayers.find((x) => x.kind === "stream_audio" && x.userId === userId);
-
-      if (!userPreference) throw new Error(`User preference for user ${userId} was not found`);
-
-      if (microphonePlayer) {
-         microphonePlayer.setGain(undefined, userPreference.microphoneVolume);
-      }
-
-      if (streamAudioPlayer) {
-         streamAudioPlayer.setGain(undefined, userPreference.streamVolume);
       }
    }
 }

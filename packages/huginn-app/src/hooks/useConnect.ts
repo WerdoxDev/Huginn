@@ -1,4 +1,4 @@
-import type { InitializationResult } from "@huginn/api";
+import type { InitializationResult } from "@huginnjs/api";
 
 import { useCallback } from "react";
 

@@ -1,12 +1,12 @@
 {
    "name": "@huginn/voice",
-   "version": "0.18.0",
+   "version": "0.19.1",
    "type": "module",
    "imports": {
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "start": "node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/index.ts",
+      "start": "node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
       "dev": "node --import=tsx --watch --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
       "bun-dev": "bun ./src/index.ts"
    },
@@ -19,7 +19,7 @@
       "dotenv": "^17.4.2",
       "elysia": "^1.4.29",
       "envalid": "^8.2.0",
-      "mediasoup": "^3.20.10",
+      "mediasoup": "^3.21.0",
       "srvx": "^0.11.17"
    },
    "devDependencies": {

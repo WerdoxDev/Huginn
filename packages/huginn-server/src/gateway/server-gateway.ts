@@ -22,6 +22,7 @@ import {
    type GatewayUpdateVoiceStateData,
    merge,
    recordSpanError,
+   type Snowflake,
    WorkerID,
 } from "@huginn/shared";
 
@@ -33,14 +34,12 @@ import { PresenceManager } from "./presence-manager";
 import { VoiceManager } from "./voice-manager";
 
 export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload> {
-   public presenceManager: PresenceManager;
-   public voiceManager: VoiceManager;
+   public presenceManager: PresenceManager = new PresenceManager();
+   public voiceManager: VoiceManager = new VoiceManager();
+   public voiceTokenExpiresAt: Map<Snowflake, number> = new Map();
 
    public constructor() {
-      super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY }, ClientSession);
-
-      this.presenceManager = new PresenceManager();
-      this.voiceManager = new VoiceManager();
+      super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY, sessionSentMessagesLimit: 20 }, ClientSession);
    }
 
    public onOpen(session: ClientSession) {
@@ -214,6 +213,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             // Settings
             const settings = await prisma.settings.getOrCreateSettings(user.id);
 
+            this.presenceManager.setUserPresence(user.id, session, settings);
+
             const readyData: GatewayPayload = {
                op: GatewayOperations.DISPATCH,
                t: "ready",
@@ -226,11 +227,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                   readStates: finalReadStates,
                   callStates: this.voiceManager.getCallStates(userChannels.map((x) => x.id)),
                   voiceStates: this.voiceManager.getVoiceStates(userChannels.map((x) => x.id)),
+                  sessions: this.presenceManager.getUserSessions(user.id)!,
                },
             };
 
             session.send(readyData, true, false);
-            this.presenceManager.setUserPresence(user.id, session, settings);
+
+            this.presenceManager.sendUserPresenceUpdate(user.id);
+            this.presenceManager.sendUserSessionUpdate(user.id);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -240,7 +244,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
    private async handleResume(session: ClientSession, data: GatewayResumeData) {
       return await analytics.startActiveSpan("gateway.handleResume", async (span) => {
-         span.setAttributes({ ...session.getDefaultAttributes(), "params.session_id": data.sessionId, "params.seq": data.seq });
+         span.setAttributes({ ...session.getDefaultAttributes(), "params.session.id": data.sessionId, "params.seq": data.seq });
          try {
             const { valid, payload } = await verifyToken("user-access", data.token);
             span.setAttribute("token.valid", valid);
@@ -266,6 +270,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
             result.oldSession.send(resumedData, true, false);
             this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
+            this.presenceManager.sendUserPresenceUpdate(result.user.id);
+            this.presenceManager.sendUserSessionUpdate(result.user.id);
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -277,8 +283,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       return await analytics.startActiveSpan("gateway.handleUpdateVoiceState", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
-            "params.channel_id": data.channelId ?? "null",
-            "params.guild_id": data.guildId ?? "null",
+            "params.channel.id": data.channelId ?? "null",
+            "params.guild.id": data.guildId ?? "null",
             "params.is_audio_deafened": data.isAudioDeafened,
             "params.is_audio_muted": data.isAudioMuted,
             "params.is_camera_on": data.isCameraOn,
@@ -293,10 +299,20 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const previousState = this.voiceManager.getVoiceState(userId);
             this.voiceManager.updateVoiceState({ userId, ...data, sessionId: session.sessionId });
 
+            const tokenExpired = (this.voiceTokenExpiresAt.get(session.sessionId) ?? 0) <= Date.now();
+            const needsToken =
+               data.channelId && (previousState?.channelId !== data.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
+
             // If the new place is a valid channel and is not the same as before
-            if (data.channelId && (previousState?.channelId !== data.channelId || previousState.sessionId !== session.sessionId)) {
-               const token = await createToken("voice", { userId });
+            if (needsToken) {
+               const token = await createToken("voice", { userId }, CONSTANTS.VOICE_TOKEN_EXPIRE_TIME);
                dispatchToTopic(session.sessionId, "voice_server_update", { token });
+               this.voiceTokenExpiresAt.set(session.sessionId, Date.now() + CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS);
+            }
+
+            const newState = this.voiceManager.getVoiceState(userId);
+            if (!newState?.channelId) {
+               this.voiceTokenExpiresAt.delete(session.sessionId);
             }
          } catch (e) {
             recordSpanError(e);
@@ -305,8 +321,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       });
    }
 
-   private async handleUpdatePresence(session: ClientSession, data: GatewayUpdatePresenceData) {
-      return await analytics.startActiveSpan("gateway.handleUpdatePresence", (span) => {
+   private handleUpdatePresence(session: ClientSession, data: GatewayUpdatePresenceData) {
+      return analytics.startActiveSpan("gateway.handleUpdatePresence", (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
             "params.status": data.status,
@@ -317,8 +333,13 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const userId = session.user?.id;
 
             // Make sure the status is valid.
-            if (["offline", "online", "dnd", "idle"].includes(data.status) && userId) {
-               this.presenceManager.updateUserPresence(userId, session, undefined, data.status, data.activities);
+            if (["invisible", "online", "dnd", "idle"].includes(data.status) && userId) {
+               this.presenceManager.updateUserPresence(userId, {
+                  session: session,
+                  status: data.status,
+                  activities: data.activities,
+                  overallStatus: data.overallStatus,
+               });
             }
          } catch (e) {
             recordSpanError(e);

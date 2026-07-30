@@ -4,7 +4,7 @@ import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type 
 
 import type { CommonPayload } from "#types";
 
-export abstract class CommonClientSession<Payload extends CommonPayload, Properties = undefined> {
+export abstract class CommonClientSession<Payload extends CommonPayload, Properties extends Record<string, string | number | boolean> | undefined = undefined> {
    public sessionId: Snowflake;
    public peer: Peer;
    public properties?: Properties;
@@ -17,15 +17,17 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    private heartbeatTimeout?: NodeJS.Timeout;
    private sentMessages: Map<number, Payload>;
    private queue: Promise<void> = Promise.resolve();
+   private sentMessagesLimit: number;
 
    public get authenticated() {
       return !!this.user;
    }
 
-   public constructor(peer: Peer, sessionId: Snowflake, workerId: WorkerID) {
+   public constructor(peer: Peer, sessionId: Snowflake, workerId: WorkerID, sentMessagesLimit: number) {
       this.peer = peer;
       this.sessionId = sessionId;
       this.workerId = workerId;
+      this.sentMessagesLimit = sentMessagesLimit;
       this.sentMessages = new Map();
 
       this.resetHeartbeatTimeout();
@@ -33,7 +35,14 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
 
    public send(data: Payload, increaseSequence: boolean, resumable: boolean) {
       if (increaseSequence) data.s = this.getIncreasedSequence();
-      if (resumable && data.s) this.sentMessages.set(data.s, data);
+      if (resumable && data.s) {
+         if (this.sentMessages.size >= this.sentMessagesLimit) {
+            const firstKey = this.sentMessages.keys().next().value;
+            if (firstKey !== undefined) this.sentMessages.delete(firstKey);
+         }
+
+         this.sentMessages.set(data.s, data);
+      }
 
       this.peer.send(JSON.stringify(data));
    }
@@ -122,6 +131,15 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
          [`${prefix}.sequence`]: this.sequence !== undefined ? this.sequence : "null",
          [`${prefix}.is_authenticated`]: this.authenticated,
          [`${prefix}.is_stale`]: this.isStale,
+         ...(this.properties && typeof this.properties === "object"
+            ? Object.entries(this.properties).reduce(
+                 (acc, [key, value]) => {
+                    acc[`${prefix}.properties.${key}`] = value;
+                    return acc;
+                 },
+                 {} as Record<string, string | number | boolean>,
+              )
+            : {}),
       };
    }
 }

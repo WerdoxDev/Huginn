@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.2.0...assets@v0.3.0) (2026-07-17)
+
+
+### Features
+
+* **assets:** small tweak in color palette ([6e6ee2c](https://github.com/WerdoxDev/Huginn/commit/6e6ee2cd3e86b24ff16f7f856dad96c6b64e878b))
+
+## [0.2.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.1.0...assets@v0.2.0) (2026-07-05)
+
+
+### Features
+
+* **assets:** add icon and palette generator ([e2cacb7](https://github.com/WerdoxDev/Huginn/commit/e2cacb7c5db6f8b02a8ed600741da9c039dc896f))
+
 ## 0.1.0 (2026-07-02)
 
 

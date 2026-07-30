@@ -30,7 +30,7 @@ function getSessionRedirect() {
    return redirect ? (JSON.parse(redirect) as { pathname: string; requiresAuth: boolean }) : null;
 }
 
-function reducer(state: State, action: Action): State {
+export function reducer(state: State, action: Action): State {
    switch (action.type) {
       case "SET":
          return {
@@ -40,8 +40,6 @@ function reducer(state: State, action: Action): State {
          };
       case "FAIL":
          return { ...state, status: "error", error: action.error };
-      default:
-         return state;
    }
 }
 
@@ -51,7 +49,7 @@ export const Route = createFileRoute("/_app/_start/")({
    component: IndexComponent,
 });
 
-function IndexComponent() {
+export function IndexComponent() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
    const settings = useStorage("settings");
@@ -76,7 +74,7 @@ function IndexComponent() {
    const [state, dispatch] = useReducer(reducer, {
       current: "none",
       status: "none",
-      error: undefined,
+      error: "",
       text: "",
    });
 
@@ -86,9 +84,9 @@ function IndexComponent() {
    const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
    const updateProgressText = useMemo(() => {
-      if (huginnWindow.environment === "desktop")
-         return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
-      if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
+      // if (huginnWindow.environment === "desktop")
+      return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+      // if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
    }, [progress]);
 
    const { errorTitle, errorDescription } = useMemo(() => {
@@ -265,8 +263,8 @@ function IndexComponent() {
       <StartWrapper transitionName="start-index" className="mx-10 w-auto! bg-transparent! p-0! shadow-none!">
          <div className="flex w-full flex-col items-center select-none">
             {state.status === "error" ? (
-               <div ref={iconRef} className="bg-negative-600 rounded-full p-2.5">
-                  <div className="bg-negative-200 rounded-full p-2.5">
+               <div ref={iconRef} className="bg-negative-700 rounded-full p-2.5">
+                  <div className="bg-negative-500 rounded-full p-2.5">
                      <IconMingcuteAlertLine className="size-7 text-white" />
                   </div>
                </div>
@@ -326,7 +324,7 @@ function IndexComponent() {
             {state.current === "update" && progress !== 0 && (
                <div className="mt-3 flex flex-col">
                   <div className="bg-surface-deep relative h-6 w-56 rounded-md p-0.5">
-                     <div className="bg-positive-600 h-full rounded-sm" style={{ width: `${progress}%` }} />
+                     <div className="bg-positive-700 h-full rounded-sm" style={{ width: `${progress}%` }} />
                      <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-text px-2 py-1 text-xs">{updateProgressText}</div>
                      </div>

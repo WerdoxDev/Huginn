@@ -1,5 +1,74 @@
 # Changelog
 
+## [0.84.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.83.0...app@v0.84.0) (2026-07-28)
+
+
+### Features
+
+* **app:** add banner and avatar previews when cropping + much better accent and banner color selection ([fddb815](https://github.com/WerdoxDev/Huginn/commit/fddb815054ea21dcdcbd0bd78a6d8d1c52b0d434))
+* **app:** add bunch of new context menu options for gifs, videos and images ([5caa816](https://github.com/WerdoxDev/Huginn/commit/5caa81693912e21a47cba44dce3a3e3681c4b6ee))
+* **app:** Audio player + mobile file picker ([9e399a7](https://github.com/WerdoxDev/Huginn/commit/9e399a7acc8690d45080474075aaa10d8c6e141a))
+
+
+### Bug Fixes
+
+* **app:** potential fix for empty notification body ([7c71e25](https://github.com/WerdoxDev/Huginn/commit/7c71e257a3878f2fff70618c5c4096f3056a1df0))
+
+## [0.83.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.82.0...app@v0.83.0) (2026-07-22)
+
+
+### Features
+
+* **app:** much better looking voice debug + ping derived from webrtc RTT ([cb72099](https://github.com/WerdoxDev/Huginn/commit/cb72099b42d0f2dcd62ccd737ffb29731c750309))
+* **app:** use new loopback-capture package ([fcd3251](https://github.com/WerdoxDev/Huginn/commit/fcd325168083352c1fe753610416b0ff7a84d753))
+
+## [0.82.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.81.0...app@v0.82.0) (2026-07-20)
+
+
+### Features
+
+* **app:** handle new presence model ([e96aa1b](https://github.com/WerdoxDev/Huginn/commit/e96aa1b30d74023bf74df2ac01cb7f62e77af3a9))
+
+## [0.81.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.80.0...app@v0.81.0) (2026-07-17)
+
+
+### Features
+
+* **app:** new voice element design ([76941ce](https://github.com/WerdoxDev/Huginn/commit/76941ce7ecd854ec09c648159d1cbe518ded3053))
+* **app:** remove constant desktopCapturer.getSources calls + complete rework of audio stream modal ([22087d5](https://github.com/WerdoxDev/Huginn/commit/22087d58f7c2447017316efe4722f5839992bf2e))
+* **app:** remove refresh button from audio and video streams in favor of live updates ([0016d11](https://github.com/WerdoxDev/Huginn/commit/0016d11e7d47940db4aec9e62e3eca47dfb4de83))
+
+
+### Bug Fixes
+
+* **app:** revert package json version change ([7f275b4](https://github.com/WerdoxDev/Huginn/commit/7f275b404ebdcee590bb659016b747ff623057c9))
+
+## [0.80.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.79.0...app@v0.80.0) (2026-07-11)
+
+
+### Features
+
+* **app:** 100% test coverage for audio level checker, source player and voice input device ([54d2c96](https://github.com/WerdoxDev/Huginn/commit/54d2c96027d2e2feee47a878ce1d476b639943e3))
+* **app:** 100% voice-bridge test coverage ([e5fa7c5](https://github.com/WerdoxDev/Huginn/commit/e5fa7c5f3984d4061a7c4400aea4e5f0bb7b8bec))
+* **app:** action messages RTL tests ([79f1f47](https://github.com/WerdoxDev/Huginn/commit/79f1f476d4375de3a93f85032f8f5e24a09b473a))
+* **app:** add expression panel for gifs, emojis and... ([df3b9ed](https://github.com/WerdoxDev/Huginn/commit/df3b9ed6ddcf044bd34ba7bd528ba6de34b97358))
+* **app:** alsmost 100% test coverage on some other files ([50013d5](https://github.com/WerdoxDev/Huginn/commit/50013d5c0a8d62c9785de662755ecf6e9d171375))
+* **app:** full gif sending implementation with favoutite gifs ([d86ee8a](https://github.com/WerdoxDev/Huginn/commit/d86ee8ad6a03c502c78359fd9c03927c8220371d))
+* **app:** use new native addon methods ([136248d](https://github.com/WerdoxDev/Huginn/commit/136248ddded3e854835f7ea3ae5fec65a7133e03))
+
+## [0.79.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.78.0...app@v0.79.0) (2026-07-05)
+
+
+### Features
+
+* **app:** finish mention ui implementation + new token replacement methods ([4bd8b69](https://github.com/WerdoxDev/Huginn/commit/4bd8b6907b181d4d83108261a7fafbe55e8f29d8))
+* **app:** implement mentions on ui + updated all color themes to use oklch ([72d3141](https://github.com/WerdoxDev/Huginn/commit/72d31412cf03717926ab120549f284fb00143036))
+
+
+### Bug Fixes
+
+* wrong package overrides ([c00d7dd](https://github.com/WerdoxDev/Huginn/commit/c00d7dd6f10c8eec6561996da849eb96334d98b9))
+
 ## [0.78.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.77.1...app@v0.78.0) (2026-07-02)
 
 

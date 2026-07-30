@@ -5,11 +5,12 @@ import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
-import { MessageType, type Snowflake } from "@huginn/shared";
+import { ChannelType, MessageType, type Snowflake } from "@huginn/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
+import { useThisUser } from "@stores/userStore";
 import { useQueryClient, useSuspenseInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import moment from "moment";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -38,6 +39,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    const client = useClient();
    const queryClient = useQueryClient();
    const isMobile = useIsMobile();
+   const { user } = useThisUser();
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
@@ -71,6 +73,12 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
          const hasNewAuthor = message.authorId !== lastMessage?.authorId;
          const isActionType = message.isPreview ? false : ACTION_MESSAGE_TYPES.includes(message.type);
          const isReplyType = message.isPreview ? !!message.referencedMessage : message.type === MessageType.REPLY;
+         const isMentioned = message.isPreview
+            ? false
+            : (((message.mentions?.some((mention) => mention === user?.id) ?? false) ||
+                 message.mentionEveryone ||
+                 (message.mentionOwner && props.channel.type === ChannelType.GROUP_DM && props.channel.ownerId === user?.id)) ??
+              false);
 
          const nextProcessed: ProcessedMessage = {
             ...message,
@@ -79,6 +87,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
             hasNewAuthor,
             isActionType,
             isReplyType,
+            isMentioned,
             isUnread: firstUnreadMessageId === message.id,
             isEditing: currentEditingMessageId === message.id,
             isReplying: currentReplyingMessageId === message.id,
@@ -231,14 +240,10 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
 
    return (
       <div className="relative h-full overflow-y-hidden">
-         <div className="h-full w-full overflow-x-hidden overflow-y-scroll [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
+         <div className="h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
             <div className="flex min-h-full flex-col justify-end">
-               {hasPreviousPage && (
-                  <div ref={ghostTopRef}>
-                     <GhostMessages position="top" />
-                  </div>
-               )}
-               <ol className="min-h-0 overflow-hidden pr-0 pb-7" ref={listRef}>
+               {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
+               <ol className="min-h-0 pr-0 pb-7" ref={listRef}>
                   {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
                         <div className="bg-surface text-text flex items-center justify-center gap-x-2 rounded-lg p-2 pr-3 italic underline">
@@ -267,11 +272,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
                      />
                   ))}
                </ol>
-               {hasNextPage && (
-                  <div ref={ghostBottomRef}>
-                     <GhostMessages position="bottom" />
-                  </div>
-               )}
+               {hasNextPage && <GhostMessages ref={ghostBottomRef} />}
             </div>
          </div>
          {!hasLatestMessageInList && (

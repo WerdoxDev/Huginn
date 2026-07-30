@@ -316,6 +316,8 @@ export async function createTestMessages(channelId: bigint, authorId: bigint, am
          timestamp: new Date(),
          pinned: false,
          flags: 0,
+         mentionEveryone: false,
+         mentionOwner: false,
       });
    }
 

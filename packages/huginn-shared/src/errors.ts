@@ -117,6 +117,7 @@ export enum VoiceSignallingError {
    UNKNOWN_MEDIA_KIND = 1004,
    WRONG_TRANSPORT_DIRECTION = 2001,
    ROUTER_CANT_CONSUME = 2002,
+   WRONG_STATE = 2003,
 }
 
 export enum OAuthCode {

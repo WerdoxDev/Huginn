@@ -4,12 +4,12 @@ import { useClientStore } from "@stores/clientStore";
 import clsx from "clsx";
 
 const statuses: Record<GatewayStatus, { text: string; color?: string }> = {
-   connected: { text: "Connected - Not Authenticated", color: "bg-caution-100" },
-   authenticated: { text: "Connected - Authenticated", color: "bg-positive-100" },
-   connecting: { text: "Connecting", color: "bg-caution-100" },
-   disconnected: { text: "Disconnected", color: "bg-negative-100" },
-   helloed: { text: "Connected - Not Authenticated", color: "bg-caution-100" },
-   idle: { text: "Not Initialized", color: "bg-caution-100" },
+   connected: { text: "Connected - Not Authenticated", color: "bg-caution-300" },
+   authenticated: { text: "Connected - Authenticated", color: "bg-positive-300" },
+   connecting: { text: "Connecting", color: "bg-caution-300" },
+   disconnected: { text: "Disconnected", color: "bg-negative-300" },
+   helloed: { text: "Connected - Not Authenticated", color: "bg-caution-300" },
+   idle: { text: "Not Initialized", color: "bg-caution-300" },
 };
 
 export default function ConnectionStatus() {

@@ -1,13 +1,13 @@
 {
    "name": "native-addon",
-   "version": "0.5.0",
+   "version": "0.7.0",
    "description": "",
    "keywords": [],
    "license": "ISC",
    "author": "",
    "binary": {
       "napi_versions": [
-         8
+         9
       ]
    },
    "type": "module",

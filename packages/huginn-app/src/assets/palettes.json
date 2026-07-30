@@ -1,0 +1,88 @@
+{
+  "semantic": {
+    "positive": {
+      "positive-100": "oklch(0.85 0.135 145)",
+      "positive-300": "oklch(0.735 0.135 145)",
+      "positive-500": "oklch(0.625 0.135 145)",
+      "positive-700": "oklch(0.51 0.135 145)",
+      "positive-900": "oklch(0.4 0.126 145)"
+    },
+    "negative": {
+      "negative-100": "oklch(0.85 0.082 30)",
+      "negative-300": "oklch(0.735 0.135 30)",
+      "negative-500": "oklch(0.625 0.135 30)",
+      "negative-700": "oklch(0.51 0.135 30)",
+      "negative-900": "oklch(0.4 0.135 30)"
+    },
+    "caution": {
+      "caution-100": "oklch(0.85 0.117 70)",
+      "caution-300": "oklch(0.735 0.135 70)",
+      "caution-500": "oklch(0.625 0.135 70)",
+      "caution-700": "oklch(0.51 0.110 70)",
+      "caution-900": "oklch(0.4 0.087 70)"
+    },
+    "other": {
+      "surface": "oklch(0.31 0.000 0)",
+      "surface-alt": "oklch(0.27 0.000 0)",
+      "surface-deep": "oklch(0.23 0.000 0)",
+      "surface-void": "oklch(0.19 0.000 0)",
+      "text": "oklch(0.93 0.032 107)"
+    }
+  },
+  "primary": {
+    "cerulean": {
+      "primary-300": "oklch(0.8 0.096 240)",
+      "primary-400": "oklch(0.725 0.136 240)",
+      "primary-500": "oklch(0.65 0.127 240)",
+      "primary-600": "oklch(0.575 0.112 240)",
+      "primary-700": "oklch(0.5 0.097 240)",
+      "primary-800": "oklch(0.425 0.083 240)",
+      "primary-900": "oklch(0.35 0.068 240)"
+    },
+    "pine-green": {
+      "primary-300": "oklch(0.8 0.110 159)",
+      "primary-400": "oklch(0.725 0.100 159)",
+      "primary-500": "oklch(0.65 0.090 159)",
+      "primary-600": "oklch(0.575 0.079 159)",
+      "primary-700": "oklch(0.5 0.069 159)",
+      "primary-800": "oklch(0.425 0.059 159)",
+      "primary-900": "oklch(0.35 0.048 159)"
+    },
+    "plum": {
+      "primary-300": "oklch(0.8 0.104 355)",
+      "primary-400": "oklch(0.725 0.156 355)",
+      "primary-500": "oklch(0.65 0.213 355)",
+      "primary-600": "oklch(0.575 0.189 355)",
+      "primary-700": "oklch(0.5 0.164 355)",
+      "primary-800": "oklch(0.425 0.140 355)",
+      "primary-900": "oklch(0.35 0.115 355)"
+    },
+    "coffee": {
+      "primary-300": "oklch(0.8 0.073 45)",
+      "primary-400": "oklch(0.725 0.108 45)",
+      "primary-500": "oklch(0.65 0.112 45)",
+      "primary-600": "oklch(0.575 0.099 45)",
+      "primary-700": "oklch(0.5 0.086 45)",
+      "primary-800": "oklch(0.425 0.073 45)",
+      "primary-900": "oklch(0.35 0.060 45)"
+    },
+    "violet": {
+      "primary-300": "oklch(0.8 0.059 300)",
+      "primary-400": "oklch(0.725 0.084 300)",
+      "primary-500": "oklch(0.65 0.111 300)",
+      "primary-600": "oklch(0.575 0.139 300)",
+      "primary-700": "oklch(0.5 0.133 300)",
+      "primary-800": "oklch(0.425 0.113 300)",
+      "primary-900": "oklch(0.35 0.093 300)"
+    },
+    "rose": {
+      "primary-300": "oklch(0.8 0.092 20)",
+      "primary-400": "oklch(0.725 0.137 20)",
+      "primary-500": "oklch(0.65 0.190 20)",
+      "primary-600": "oklch(0.575 0.185 20)",
+      "primary-700": "oklch(0.5 0.161 20)",
+      "primary-800": "oklch(0.425 0.137 20)",
+      "primary-900": "oklch(0.35 0.112 20)"
+    }
+  }
+}

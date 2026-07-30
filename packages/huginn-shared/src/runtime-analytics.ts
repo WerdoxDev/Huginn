@@ -9,7 +9,7 @@ import { NodeSDK } from "@opentelemetry/sdk-node";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { PostHog } from "posthog-node";
 
-import { Analytics, logLevelToSeverityNumber, recordSpanError, type LogLevel } from "#analytics";
+import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
 
 type Options = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: string; serviceName: string; clientId?: string };
 

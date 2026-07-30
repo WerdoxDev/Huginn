@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, recordSpanError } from "@huginn/shared";
+import { analytics, EventEmitter, recordSpanError, type HMediaKind, type VoiceError, type VoiceReadyData } from "@huginn/shared";
 
 import type { HuginnClient, VoiceOptions, VoiceStatus } from ".";
 
@@ -8,11 +8,13 @@ import { VoiceSignalingClient } from "./voice-signaling-client";
 import { VoiceStreamManager } from "./voice-stream-manager";
 import { VoiceTransportManager } from "./voice-transport-manager";
 
+type UpdateVoiceStateResult = undefined | VoiceError;
 type Events = {
    status_changed: VoiceStatus;
    ready: undefined;
    disconnected: undefined;
    reset: undefined;
+   update_voice_state: { mediaKind: HMediaKind; isProducing: boolean; callback: (d: undefined | { error: number }) => void };
 };
 
 export class Voice extends EventEmitter<Events> {
@@ -23,7 +25,7 @@ export class Voice extends EventEmitter<Events> {
    public stream: VoiceStreamManager;
 
    private options: VoiceOptions;
-   private wasReady = false;
+   private canEmitReady: boolean = true;
 
    private _status: VoiceStatus = "idle";
    public get status(): VoiceStatus {
@@ -61,22 +63,15 @@ export class Voice extends EventEmitter<Events> {
                "params.status": d,
             });
 
-            try {
-               this.recalculateStatus();
+            this.recalculateStatus();
 
-               // If transport is restarting ice and voice gets disconnected, cancel ice restart and it should be restarted again when voice gets connected again
-               if (d === "disconnected" && this.transport.status === "restarting") {
-                  this.transport.cancelRestartIce();
-               }
+            // If transport is restarting ice and voice gets disconnected, cancel ice restart and it should be restarted again when voice gets connected again
+            if (d === "disconnected" && this.transport.status === "restarting") {
+               this.transport.cancelRestartIce();
+            }
 
-               if (d === "authenticated" && this.transport.status === "disconnected") {
-                  await this.transport.checkAndRestartIce();
-               }
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
+            if (d === "authenticated" && this.transport.status === "disconnected") {
+               await this.transport.checkAndRestartIce();
             }
          });
       });
@@ -85,49 +80,11 @@ export class Voice extends EventEmitter<Events> {
          if (type === "hard" || type === "session") {
             this.transport.reset();
             this.emit("reset", undefined);
-            this.wasReady = false;
+            this.canEmitReady = true;
          }
       });
 
-      this.signaling.on("ready", async (d) => {
-         return await analytics.startActiveSpan("apiVoice.signalingReady", async (span) => {
-            span.setAttributes({
-               ...this.getDefaultAttributes(),
-               "params.producer_count": d.producers.length,
-               "params.consumer_count": d.consumers.length,
-            });
-
-            try {
-               await this.transport.initializeDevice(d.rtpCapabilities);
-               const sendResult = await this.signaling.sendCreateTransport("send");
-               const recvResult = await this.signaling.sendCreateTransport("recv");
-
-               if ("error" in sendResult) {
-                  throw new Error(`Creating send transport failed: ${sendResult.error}`);
-               }
-
-               if ("error" in recvResult) {
-                  throw new Error(`Creating receive transport failed: ${recvResult.error}`);
-               }
-
-               await this.transport.createSendTransport(sendResult.params);
-               await this.transport.createRecvTransport(recvResult.params);
-
-               for (const producer of d.producers) {
-                  this.transport.addRemoteProducer(producer);
-               }
-
-               for (const consumer of d.consumers) {
-                  this.transport.addRemoteConsumer(consumer);
-               }
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
-         });
-      });
+      this.signaling.on("ready", async (d) => await this.handleSignalingReady(d));
 
       this.signaling.on("producer_created", (d) => {
          this.transport.addRemoteProducer(d);
@@ -165,32 +122,25 @@ export class Voice extends EventEmitter<Events> {
                "params.consumer_count": d.consumerIds.length,
             });
 
-            try {
-               for (const producerId of d.producerIds) {
-                  this.transport.removeRemoteProducer(producerId);
+            for (const producerId of d.producerIds) {
+               this.transport.removeRemoteProducer(producerId);
 
-                  const consumers = this.transport.getConsumers().filter((x) => x.producerId === producerId);
-                  for (const consumer of consumers) {
-                     await this.transport.closeConsumer(consumer.id, true);
-                  }
+               const consumers = this.transport.getConsumers().filter((x) => x.producerId === producerId);
+               for (const consumer of consumers) {
+                  await this.transport.closeConsumer(consumer.id, true);
                }
+            }
 
-               // Remove the user's consumers
-               for (const consumerId of d.consumerIds) {
-                  this.transport.removeRemoteConsumer(consumerId);
-               }
+            // Remove the user's consumers
+            for (const consumerId of d.consumerIds) {
+               this.transport.removeRemoteConsumer(consumerId);
+            }
 
-               // Remove remote consumers of the left peer's producers
-               for (const consumer of this.transport.remoteConsumers.values()) {
-                  if (d.producerIds.includes(consumer.producerId)) {
-                     this.transport.removeRemoteConsumer(consumer.consumerId);
-                  }
+            // Remove remote consumers of the left peer's producers
+            for (const consumer of this.transport.remoteConsumers.values()) {
+               if (d.producerIds.includes(consumer.producerId)) {
+                  this.transport.removeRemoteConsumer(consumer.consumerId);
                }
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
             }
          });
       });
@@ -204,17 +154,10 @@ export class Voice extends EventEmitter<Events> {
                "params.status": d,
             });
 
-            try {
-               this.recalculateStatus();
+            this.recalculateStatus();
 
-               if (this.signaling.status === "authenticated" && d === "disconnected") {
-                  await this.transport.checkAndRestartIce();
-               }
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
+            if (this.signaling.status === "authenticated" && d === "disconnected") {
+               await this.transport.checkAndRestartIce();
             }
          });
       });
@@ -226,15 +169,8 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
-            try {
-               const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
+            const result = await this.signaling.sendConnectTransport(d.transportId, d.dtlsParameters);
+            d.callback(result);
          });
       });
 
@@ -246,15 +182,16 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
-            try {
-               const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
+            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
+               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: true, callback: res }),
+            );
+            if (stateResult?.error) {
+               d.callback({ error: stateResult.error });
+               return;
             }
+
+            const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
+            d.callback(result);
          });
       });
 
@@ -265,15 +202,16 @@ export class Voice extends EventEmitter<Events> {
                "params.producer_id": d.id,
             });
 
-            try {
-               const result = await this.signaling.sendCloseProducer(d.id);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
+            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
+               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: false, callback: res }),
+            );
+            if (stateResult?.error) {
+               d.callback({ error: stateResult.error });
+               return;
             }
+
+            const result = await this.signaling.sendCloseProducer(d.id);
+            d.callback(result);
          });
       });
 
@@ -285,15 +223,8 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
-            try {
-               const result = await this.signaling.sendCreateConsumer(d.producerId, d.transportId, d.rtpCapabilities);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
+            const result = await this.signaling.sendCreateConsumer(d.producerId, d.transportId, d.rtpCapabilities);
+            d.callback(result);
          });
       });
 
@@ -304,15 +235,20 @@ export class Voice extends EventEmitter<Events> {
                "params.consumer_id": d.id,
             });
 
-            try {
-               const result = await this.signaling.sendResumeConsumer(d.id);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
+            const result = await this.signaling.sendResumeConsumer(d.id);
+            d.callback(result);
+         });
+      });
+
+      this.transport.on("pause_consumer", async (d) => {
+         return await analytics.startActiveSpan("apiVoice.transportPauseConsumer", async (span) => {
+            span.setAttributes({
+               ...this.getDefaultAttributes(),
+               "params.consumer_id": d.id,
+            });
+
+            const result = await this.signaling.sendPauseConsumer(d.id);
+            d.callback(result);
          });
       });
 
@@ -323,15 +259,8 @@ export class Voice extends EventEmitter<Events> {
                "params.consumer_id": d.id,
             });
 
-            try {
-               const result = await this.signaling.sendCloseConsumer(d.id);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
+            const result = await this.signaling.sendCloseConsumer(d.id);
+            d.callback(result);
          });
       });
 
@@ -342,16 +271,49 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
-            try {
-               const result = await this.signaling.sendRestartIce(d.transportId);
-               d.callback(result);
-            } catch (e) {
-               recordSpanError(e);
-               throw e;
-            } finally {
-               span.end();
-            }
+            const result = await this.signaling.sendRestartIce(d.transportId);
+            d.callback(result);
          });
+      });
+   }
+
+   private async handleSignalingReady(d: VoiceReadyData) {
+      return await analytics.startActiveSpan("apiVoice.signalingReady", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.producer_count": d.producers.length,
+            "params.consumer_count": d.consumers.length,
+         });
+
+         try {
+            await this.transport.initializeDevice(d.rtpCapabilities);
+            const sendResult = await this.signaling.sendCreateTransport("send");
+            const recvResult = await this.signaling.sendCreateTransport("recv");
+
+            if ("error" in sendResult) {
+               throw new Error(`Creating send transport failed: ${sendResult.error}`);
+            }
+
+            if ("error" in recvResult) {
+               throw new Error(`Creating receive transport failed: ${recvResult.error}`);
+            }
+
+            await this.transport.createSendTransport(sendResult.params);
+            await this.transport.createRecvTransport(recvResult.params);
+
+            for (const producer of d.producers) {
+               this.transport.addRemoteProducer(producer);
+            }
+
+            for (const consumer of d.consumers) {
+               this.transport.addRemoteConsumer(consumer);
+            }
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         } finally {
+            span.end();
+         }
       });
    }
 
@@ -359,7 +321,7 @@ export class Voice extends EventEmitter<Events> {
       const transportStatus = this.transport.status;
       const signalingStatus = this.signaling.status;
 
-      let finalStatus: VoiceStatus;
+      let finalStatus: VoiceStatus = "idle";
 
       if (signalingStatus === "idle" && transportStatus === "idle") {
          finalStatus = "idle";
@@ -367,12 +329,12 @@ export class Voice extends EventEmitter<Events> {
          finalStatus = "disconnected";
       } else if (signalingStatus !== "authenticated") {
          finalStatus = "connecting";
+      } else if (transportStatus === "restarting") {
+         finalStatus = "connecting";
       } else if (transportStatus !== "ready") {
          finalStatus = "signaling";
-      } else if (signalingStatus === "authenticated" && transportStatus === "ready") {
-         finalStatus = "ready";
       } else {
-         finalStatus = "idle";
+         finalStatus = "ready";
       }
 
       if (finalStatus !== this._status) {
@@ -390,9 +352,9 @@ export class Voice extends EventEmitter<Events> {
             // case "idle":
             // case "signaling":
             case "ready":
-               if (!this.wasReady) {
+               if (this.canEmitReady) {
                   this.emit("ready", undefined);
-                  this.wasReady = true;
+                  this.canEmitReady = false;
                }
                break;
             case "disconnected":

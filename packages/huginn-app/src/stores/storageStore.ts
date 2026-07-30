@@ -2,7 +2,7 @@ import { analyticsShim } from "@huginn/shared";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import type { StorageMap, FileType } from "@/types";
+import type { AppSettings, StorageMap, FileType } from "@/types";
 
 import { BridgeStorage } from "../../shared/bridge-storage";
 import { LocalStorage } from "../../shared/local-storage";
@@ -35,16 +35,17 @@ const store = createStore(
             const cache = get().cache[type];
             await storage.saveFile(type, cache);
          },
-         // updateSettings: (update: Partial<AppSettings>) => {
-         //    const cache = get().cache["settings"];
-         //    set((state) => ({ cache: { ...state.cache, settings: { ...cache, ...update } } }));
-         // },
+         updateSettings: async (update: Partial<AppSettings>) => {
+            const settings = { ...get().cache.settings, ...update };
+            set((state) => ({ cache: { ...state.cache, settings } }));
+            await storage.saveFile("settings", settings);
+         },
       })),
    ),
 );
 
 export async function initStorageStoreEarly() {
-   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "voice-preferences", "pinned-channels"];
+   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "pinned-channels"];
    const cache = {} as StorageMap;
 
    await storage.mergeNewProperties();
@@ -124,6 +125,7 @@ function registerChangeHandlers() {
    store.subscribe(
       (state) => state.cache,
       async (state, prevState) => {
+         if (!window.electronAPI) return;
          if (state.settings.useProxy !== prevState.settings?.useProxy) {
             await window.electronAPI.setProxy(state.settings.useProxy);
          }

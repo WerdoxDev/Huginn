@@ -35,7 +35,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
    const sortedRecipients = useMemo(
       () =>
          [user, ...recipients].filter((x) => x !== undefined && x.username !== undefined).toSorted((a, b) => (a!.username! > b!.username! ? 1 : -1)),
-      [user, props.channel.recipientIds],
+      [user, props.channel.recipientIds, recipients],
    );
 
    function handleAddMember() {

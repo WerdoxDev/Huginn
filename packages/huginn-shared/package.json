@@ -1,6 +1,6 @@
 {
    "name": "@huginn/shared",
-   "version": "0.40.0",
+   "version": "0.41.0",
    "type": "module",
    "main": "./src/index.ts",
    "imports": {
@@ -30,12 +30,14 @@
       "@std/encoding": "npm:@jsr/std__encoding",
       "emojibase-data": "^17.0.0",
       "file-type": "^22.0.1",
+      "highlight.js": "^11.11.1",
+      "marked": "^18.0.5",
       "ohash": "^2.0.11",
       "posthog-js": "^1.396.2",
       "posthog-node": "^5.38.8"
    },
    "devDependencies": {
       "@types/bun": "latest",
-      "mediasoup": "^3.20.10"
+      "mediasoup": "^3.21.0"
    }
 }

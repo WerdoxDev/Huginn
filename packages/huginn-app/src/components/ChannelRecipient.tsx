@@ -77,7 +77,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
          ) : (
             props.isOwner && (
                <Tooltip>
-                  <Tooltip.Trigger className="text-positive-100 mr-2 ml-auto">
+                  <Tooltip.Trigger className="text-positive-300 mr-2 ml-auto">
                      <IconSolarSledgehammerBold className="size-5" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>Channel Owner</Tooltip.Content>

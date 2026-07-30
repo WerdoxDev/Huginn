@@ -9,8 +9,6 @@ export enum VoiceOperations {
    HEARTBEAT = 2,
    HEARTBEAT_ACK = 3,
    DISPATCH = 4,
-   PING = 5,
-   PONG = 6,
    RESUME = 7,
 }
 
@@ -20,8 +18,6 @@ export type VoiceOperationTypes = {
    [VoiceOperations.HEARTBEAT]: VoiceHeartbeat;
    [VoiceOperations.HEARTBEAT_ACK]: VoiceHeartbeatAck;
    [VoiceOperations.DISPATCH]: VoiceDispatch;
-   [VoiceOperations.PING]: VoicePing;
-   [VoiceOperations.PONG]: VoicePong;
    [VoiceOperations.RESUME]: VoiceResume;
 };
 
@@ -68,6 +64,9 @@ export type VoiceWebsocketEvents = {
 
    resume_consumer: VoiceResumeConsumerData;
    resume_consumer_result: VoiceResumeConsumerResult;
+
+   pause_consumer: VoicePauseConsumerData;
+   pause_consumer_result: VoicePauseConsumerResult;
 
    close_consumer: VoiceCloseConsumerData;
    close_consumer_result: VoiceCloseConsumerResult;
@@ -154,14 +153,6 @@ export type VoiceIdentifyData = {
    token: string;
    channelId: Snowflake;
    guildId: Snowflake | null;
-};
-
-export type VoicePing = {
-   op: VoiceOperations.PING;
-};
-
-export type VoicePong = {
-   op: VoiceOperations.PONG;
 };
 
 export type VoiceReadyData = {
@@ -260,6 +251,18 @@ export type VoiceResumeConsumerData = {
 
 export type VoiceResumeConsumerResult = VoiceError | VoiceResumeConsumerResultData;
 export type VoiceResumeConsumerResultData = {
+   consumerId: string;
+   nonce?: Snowflake;
+};
+
+export type VoicePauseConsumerData = {
+   channelId: Snowflake;
+   consumerId: string;
+   nonce?: Snowflake;
+};
+
+export type VoicePauseConsumerResult = VoiceError | VoicePauseConsumerResultData;
+export type VoicePauseConsumerResultData = {
    consumerId: string;
    nonce?: Snowflake;
 };

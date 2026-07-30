@@ -1,7 +1,7 @@
 import { resolveFile, resolveImage, toDataUrl } from "@huginn/shared";
 import { decodeBase64 } from "@std/encoding";
-import { describe, expect, test } from "bun:test";
 import path from "node:path";
+import { describe, expect, test } from "vitest";
 
 describe("file resolver", () => {
    test("should resolve a file using it's system path", async () => {

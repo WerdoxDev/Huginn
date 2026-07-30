@@ -1,10 +1,10 @@
 import type { LogArgs } from "@huginn/shared";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { AppInfo, ProcessInfo } from "native-addon";
+import type { ProcessInfo } from "native-addon";
 
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult } from "@/types";
+import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult, ApplicationInfo, OsInfo } from "@/types";
 
 export const electronAPI = {
    // Window
@@ -27,11 +27,10 @@ export const electronAPI = {
    // Display & Audio source
    getDisplaySources: () => ipcRenderer.invoke("window:get-display-sources") as Promise<DisplaySource[]>,
    getAudioSources: () => ipcRenderer.invoke("window:get-audio-sources") as Promise<AudioSource[]>,
-   setSelectedDisplaySource: (sourceId: string) => ipcRenderer.send("window:set-selected-display-source", sourceId),
+   setSelectedDisplaySource: (source: DisplaySource) => ipcRenderer.send("window:set-selected-display-source", source),
 
    // Loopback
-   startAudioLoopback: (processTitle?: string, processId?: string) =>
-      ipcRenderer.invoke("audio:start-loopback", processTitle, processId) as Promise<boolean>,
+   startAudioLoopback: (mode: "system" | "application", processId?: number) => ipcRenderer.send("audio:start-loopback", mode, processId),
    stopAudioLoopback: () => ipcRenderer.invoke("audio:stop-loopback") as Promise<void>,
    onLoopbackData: (callback: (_event: Electron.IpcRendererEvent, data: Uint8Array) => void) => {
       ipcRenderer.on("audio:loopback-data", callback);
@@ -58,7 +57,11 @@ export const electronAPI = {
       return () => ipcRenderer.off("update:progress", callback);
    },
 
+   // Shell
    openExternal: (url: string) => ipcRenderer.send("shell:open-external", url),
+   getOsInfo: () => ipcRenderer.invoke("shell:get-os-info") as Promise<OsInfo>,
+
+   // CLI
    getArgs: () => ipcRenderer.invoke("cli:get-args") as Promise<string[]>,
    onDeepLink: (callback: (_event: Electron.IpcRendererEvent, cmd: string) => void) => {
       ipcRenderer.on("cli:deep-link", callback);
@@ -85,9 +88,9 @@ export const electronAPI = {
    },
 
    // Native
-   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ProcessInfo[]>,
-   getApplicationInfo: (exePath: string, processId: number) =>
-      ipcRenderer.invoke("native:get-application-info", exePath, processId) as Promise<AppInfo>,
+   getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ApplicationInfo[]>,
+   // getApplicationInfo: (processId: number) =>
+   //    ipcRenderer.invoke("native:get-application-info", processId) as Promise<{ displayName: string | null; icon: string | null }>,
 
    // Voice debug
    openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),
@@ -96,6 +99,9 @@ export const electronAPI = {
 
    // App
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),
+
+   // Media
+   downloadMedia: (url: string, filename: string) => ipcRenderer.invoke("media:download", { url, filename }),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

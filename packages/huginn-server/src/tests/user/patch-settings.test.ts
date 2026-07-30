@@ -57,7 +57,7 @@ describe("PATCH /users/@me/settings", () => {
          theme: "pine-green",
          pinnedChannels: [],
       });
-      expectUserSettingsExactSchema(result, { status: "offline", theme: "pine-green", pinnedChannels: [] });
+      expectUserSettingsExactSchema(result, { status: "offline", theme: "pine-green", pinnedChannels: [], favoriteGifs: [] });
       tryDone();
    });
 });

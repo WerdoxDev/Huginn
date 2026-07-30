@@ -1,6 +1,6 @@
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
-import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { LiveUpdate } from "@capawesome/capacitor-live-update";
 import { analytics } from "@huginn/shared";
 import { runPendingActions } from "@lib/actions";
 import { SplashScreen } from "@lib/capacitor/splash-screen";
@@ -8,7 +8,7 @@ import { initAnalytics } from "@lib/web-analytics";
 import { clientStore } from "@stores/clientStore";
 import { initStorageStoreEarly } from "@stores/storageStore";
 import { ThemeProvider } from "@stores/themeStore";
-import { initWindowStore } from "@stores/windowStore";
+import { initWindowStore, windowStore } from "@stores/windowStore";
 import { RouterProvider } from "@tanstack/react-router";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
@@ -16,18 +16,26 @@ import { createRoot } from "react-dom/client";
 
 import { router } from "./router";
 
-CapacitorUpdater.notifyAppReady();
+// CapacitorUpdater.notifyAppReady();
 
 if (import.meta.env.DEV) {
    document.addEventListener("keypress", (e) => {
       if (e.key === "\\") {
-         clientStore.getState().client?.gateway.close();
-         setTimeout(async () => {
-            clientStore.getState().client?.gateway.connect();
-            await clientStore.getState().client?.gateway.authenticate();
-         }, 2000);
+         // clientStore.getState().client?.gateway.close();
+         clientStore.getState().client?.gateway.socket?.close();
+         // setTimeout(async () => {
+         //    clientStore.getState().client?.gateway.connect();
+         //    await clientStore.getState().client?.gateway.authenticate();
+         // }, 2000);
       }
       if (e.key === "]") {
+         // clientStore.getState().client?.voice.signaling.socket?.close();
+         const conn = { ...clientStore.getState().client?.voice.signaling.connectionData! };
+         clientStore.getState().client?.voice.signaling.close();
+         setTimeout(async () => {
+            await clientStore.getState().client?.voice.signaling.connect(conn.token, conn.channelId, conn.guildId);
+         }, 2000);
+      } else if (e.key === "[") {
          clientStore.getState().client?.voice.signaling.socket?.close();
       }
    });
@@ -41,9 +49,23 @@ window.addEventListener("unhandledrejection", (d) => {
    });
 });
 
+await initWindowStore();
+
+if (windowStore.getState().environment === "android") {
+   const result = await LiveUpdate.ready();
+   if (result.currentBundleId) {
+      console.log(`The app is now using the bundle with the identifier ${result.currentBundleId}.`);
+   }
+   if (result.previousBundleId) {
+      console.log(`The app was using the bundle with the identifier ${result.previousBundleId}.`);
+   }
+   if (result.rollback) {
+      console.log("The app was reset to the default bundle.");
+   }
+}
+
 await initStorageStoreEarly();
 await runPendingActions();
-await initWindowStore();
 initAnalytics();
 
 if (__IS_CAPACITOR__) {

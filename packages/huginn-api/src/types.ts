@@ -1,4 +1,4 @@
-import type { ResponseLike, Snowflake } from "@huginn/shared";
+import type { GatewayIdentifyProperties, ResponseLike, Snowflake } from "@huginn/shared";
 
 import type { Voice } from "./voice";
 
@@ -23,6 +23,7 @@ export type GatewayOptions = {
    url: string;
    // TODO: Actually implement intents
    intents: number;
+   properties: GatewayIdentifyProperties;
    createSocket(url: string): WebSocket;
 };
 
@@ -48,3 +49,12 @@ export type VoiceStreamOptions = {
    maxVideoBitrate?: number;
    maxAudioBitrate?: number;
 };
+
+export class TransportError extends Error {
+   public code?: number;
+   constructor(message: string, code?: number) {
+      super(message);
+      this.name = "TransportError";
+      this.code = code;
+   }
+}

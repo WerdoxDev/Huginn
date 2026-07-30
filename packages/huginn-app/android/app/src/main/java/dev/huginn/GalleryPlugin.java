@@ -97,30 +97,21 @@ public class GalleryPlugin extends Plugin {
 
     @PluginMethod
     public void getMediaThumbnail(PluginCall call) {
-        boolean hasPermission = checkMediaPermissionState(call);
-        if (!hasPermission) {
-            return;
-        }
-
-        String idString = call.getString("id");
         String uri = call.getString("uri");
         Integer size = call.getInt("size");
         Integer quality = call.getInt("quality");
 
-        if (idString == null || uri == null || size == null || quality == null) {
+        if (uri == null || size == null || quality == null) {
             call.reject("Incorrect parameters");
             return;
         }
 
-        long id = Long.parseLong(idString);
-
         call.setKeepAlive(true);
-        ;
 
         bridge.execute(() -> {
             try {
                 ContentResolver cr = getContext().getContentResolver();
-                String base64 = generateThumbnail(cr, Uri.parse(uri), id, size, quality);
+                String base64 = generateThumbnail(cr, Uri.parse(uri), size, quality);
 
                 JSObject data = new JSObject();
                 data.put("base64", base64);
@@ -280,7 +271,7 @@ public class GalleryPlugin extends Plugin {
         }
     }
 
-    private String generateThumbnail(ContentResolver cr, Uri uri, long id, int size, int quality) {
+    private String generateThumbnail(ContentResolver cr, Uri uri, int size, int quality) {
         Bitmap bmp = null;
         try {
             bmp = cr.loadThumbnail(uri, new Size(size, size), null);

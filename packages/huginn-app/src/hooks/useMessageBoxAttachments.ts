@@ -1,9 +1,10 @@
 import type { ClipboardEvent } from "react";
 
-import { isImageMediaType } from "@huginn/shared";
+import { isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { getAudioCovertArt, getVideoThumbnail } from "@lib/utils";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import type { AppMessage, AppAttachment, AttachmentInput } from "@/types";
+import type { AppAttachment, AttachmentInput } from "@/types";
 
 function getUniqueFilename(name: string, used: Set<string>) {
    if (!used.has(name)) {
@@ -37,8 +38,57 @@ export function useMessageBoxAttachments() {
          const pendingAttachments: Array<Omit<AppAttachment, "key"> & { key?: string }> = [];
 
          for (const file of input) {
-            // const arrayBuffer = await file.arrayBuffer();
-            if (!isImageMediaType(file.type)) {
+            if (isImageMediaType(file.type)) {
+               let previewDataUrl: string | undefined = file.previewDataUrl;
+
+               if (!previewDataUrl) {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(new Blob([await file.arrayBuffer()]));
+
+                  previewDataUrl = await new Promise<string>((res, rej) => {
+                     reader.onload = (readerEvent) => {
+                        const content = readerEvent.target?.result;
+                        if (typeof content === "string") {
+                           res(content);
+                        }
+                     };
+
+                     reader.onerror = () => {
+                        rej();
+                     };
+                  });
+               }
+
+               pendingAttachments.push({
+                  key: file.key,
+                  filename: file.name,
+                  data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
+                  previewDataUrl: previewDataUrl,
+                  contentType: file.type,
+               });
+            } else if (isVideoMediaType(file.type)) {
+               const blob = new Blob([await file.arrayBuffer()]);
+               const previewDataUrl = await getVideoThumbnail(blob, 1);
+
+               pendingAttachments.push({
+                  key: file.key,
+                  filename: file.name,
+                  data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
+                  previewDataUrl: previewDataUrl,
+                  contentType: file.type,
+               });
+            } else if (isAudioMediaType(file.type)) {
+               const blob = new Blob([await file.arrayBuffer()]);
+               const previewDataUrl = await getAudioCovertArt(blob);
+
+               pendingAttachments.push({
+                  key: file.key,
+                  filename: file.name,
+                  data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
+                  previewDataUrl: previewDataUrl,
+                  contentType: file.type,
+               });
+            } else {
                pendingAttachments.push({
                   key: file.key,
                   filename: file.name,
@@ -46,36 +96,7 @@ export function useMessageBoxAttachments() {
                   contentType: file.type,
                   previewDataUrl: file.previewDataUrl,
                });
-               continue;
             }
-
-            let dataUrl: string | undefined = file.previewDataUrl;
-
-            if (!dataUrl) {
-               const reader = new FileReader();
-               reader.readAsDataURL(new Blob([await file.arrayBuffer()]));
-
-               dataUrl = await new Promise<string>((res, rej) => {
-                  reader.onload = (readerEvent) => {
-                     const content = readerEvent.target?.result;
-                     if (typeof content === "string") {
-                        res(content);
-                     }
-                  };
-
-                  reader.onerror = () => {
-                     rej();
-                  };
-               });
-            }
-
-            pendingAttachments.push({
-               key: file.key,
-               filename: file.name,
-               data: file.previewDataUrl ? file.arrayBuffer : await file.arrayBuffer(),
-               previewDataUrl: dataUrl,
-               contentType: file.type,
-            });
          }
 
          setAttachments((currentAttachments) => {

@@ -1,6 +1,7 @@
 import Tooltip from "@components/tooltip/Tooltip";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
+import { useIsRTL } from "@hooks/useIsRTL";
 import { MessageType, type Snowflake } from "@huginn/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
@@ -27,6 +28,8 @@ export default function ActionMessage() {
       () => (!message.isPreview && message.type === MessageType.CHANNEL_PINNED_MESSAGE ? message.messageReference : undefined),
       [message],
    );
+
+   const isContentRTL = useIsRTL(message.content);
 
    const callParticipants = useUsers(call?.participants);
 
@@ -71,10 +74,10 @@ export default function ActionMessage() {
          )}
       >
          {type === MessageType.RECIPIENT_REMOVE && (
-            <IconMingcuteArrowLeftFill className="text-negative-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+            <IconMingcuteArrowLeftFill className="text-negative-300 mr-1.5 inline-block size-5 shrink-0 align-middle" />
          )}
          {type === MessageType.RECIPIENT_ADD && (
-            <IconMingcuteArrowRightFill className="text-positive-100 mr-1.5 inline-block size-5 shrink-0 align-middle" />
+            <IconMingcuteArrowRightFill className="text-positive-300 mr-1.5 inline-block size-5 shrink-0 align-middle" />
          )}
          {type === MessageType.CHANNEL_NAME_CHANGED && (
             <IconMingcuteEdit2Fill className="text-text/80 mr-1.5 inline-block size-5 shrink-0 align-middle" />
@@ -130,7 +133,7 @@ export default function ActionMessage() {
             ) : (
                <>
                   <span className="text-text/50"> changed the channel name: </span>
-                  <span className="text-text font-bold">{message.content}</span>
+                  <span className={clsx("text-text font-bold", isContentRTL && "[unicode-bidi:plaintext]")}>{message.content}</span>
                </>
             ))}
          {mentionUsers[0] ? (

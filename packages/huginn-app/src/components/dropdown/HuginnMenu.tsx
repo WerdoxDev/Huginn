@@ -11,7 +11,7 @@ type Tone = "default" | "negative";
 const MenuContext = createContext<{ onClose?: () => void; isMobile: boolean } | null>(undefined!);
 
 const popupClass = clsx(
-   "flex flex-col rounded-lg bg-zinc-900 p-2 shadow-lg outline-hidden",
+   "bg-surface-void flex flex-col rounded-lg p-2 shadow-lg outline-hidden",
    "transition-[opacity_transform] duration-200",
    "data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-sm",
    "data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-sm",
@@ -130,7 +130,7 @@ function Item(props: { onClick?: () => void; label?: string; color?: Tone; endSl
       (!props.color || props.color === "default") &&
          "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 data-disabled:text-white/50",
       props.color === "negative" &&
-         "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
+         "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50",
       props.className,
    );
 
@@ -181,7 +181,7 @@ function SubmenuTrigger(props: {
       (!props.color || props.color === "default") &&
          "data-highlighted:bg-surface-alt active:bg-surface-alt text-white/90 data-highlighted:text-white/90",
       props.color === "negative" &&
-         "text-negative-100 data-highlighted:bg-negative-100/10 active:bg-negative-100/10 data-disabled:text-negative-100/50",
+         "text-negative-300 data-highlighted:bg-negative-300/10 active:bg-negative-300/10 data-disabled:text-negative-300/50",
       props.className,
    );
 

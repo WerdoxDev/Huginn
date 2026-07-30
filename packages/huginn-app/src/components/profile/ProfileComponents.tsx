@@ -5,7 +5,7 @@ import { useElapsedTime } from "@hooks/useElapsedTime";
 import { type Activity, ActivityType } from "@huginn/shared";
 import clsx from "clsx";
 
-export function ProfileAboutMe(props: { accentColor: string; headerRight?: ReactNode; children: ReactNode }) {
+export function ProfileAboutMe(props: { accentColor?: string | null; headerRight?: ReactNode; children: ReactNode }) {
    return (
       <div className="bg-surface rounded-md px-3 py-2.5">
          <div className="mb-1 flex items-center justify-between">
@@ -23,7 +23,7 @@ function getActivityTypeLabel(type: ActivityType): string {
 
 export function ProfileActivity(props: {
    activity: Pick<Activity, "type" | "name" | "iconUrl" | "startedAt">;
-   accentColor: string;
+   accentColor?: string | null;
    className?: string;
 }) {
    const { activity } = props;
@@ -46,7 +46,7 @@ export function ProfileActivity(props: {
             </div>
             <div className="flex flex-col truncate">
                <div className="truncate text-sm font-semibold text-white">{activity.name}</div>
-               <div className="text-positive-100 flex items-center gap-x-1 text-xs">
+               <div className="text-positive-300 flex items-center gap-x-1 text-xs">
                   <IconMingcuteGame2Fill />
                   <span>{getFormattedDuration()}</span>
                </div>

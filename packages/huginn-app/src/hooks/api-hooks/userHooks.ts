@@ -2,11 +2,17 @@ import type { Snowflake } from "@huginn/shared";
 
 import { getUserOptions, getUserProfileOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
-import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useUser(id: Snowflake) {
    const client = useClient();
    const { data } = useSuspenseQuery(getUserOptions(client!, id));
+   return data;
+}
+
+export function useMaybeUser(id?: Snowflake) {
+   const client = useClient();
+   const { data } = useQuery({ ...getUserOptions(client!, id ?? "0"), enabled: false });
    return data;
 }
 

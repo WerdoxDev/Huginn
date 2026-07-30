@@ -1,5 +1,7 @@
 import type { Configuration } from "electron-builder";
 
+import "dotenv/config";
+
 export default {
    productName: "Huginn",
    appId: "dev.huginn.desktop",
@@ -8,10 +10,10 @@ export default {
 
    win: {
       target: { target: "nsis", arch: ["x64"] },
-      icon: "electron-assets/icon.ico",
+      icon: "src/assets/icons/default/outline-thick/outline-thick.ico",
       publish: {
          provider: "generic",
-         url: "https://midgard.huginn.dev/api/update/${os}",
+         url: process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
          useMultipleRangeRequest: false,
       },
    },
@@ -22,7 +24,7 @@ export default {
       "dist/**/*",
       "!dist/electron",
       "!node_modules",
-      "node_modules/application-loopback/**/*",
+      "node_modules/loopback-capture/**/*",
       "node_modules/native-addon/**/*",
       "node_modules/emojibase-data/**/*",
       ".electron/**/*",
@@ -30,6 +32,6 @@ export default {
    directories: {
       output: "dist/electron",
    },
-   icon: "electron-assets/icon.ico",
+   icon: "src/assets/icons/default/outline-thick/outline-thick.ico",
    extraResources: ["electron-assets"],
 } as Configuration;

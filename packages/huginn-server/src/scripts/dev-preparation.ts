@@ -25,6 +25,7 @@ for (const user of users) {
             username: user,
             displayName: user,
             password: await Bun.password.hash(user),
+            emailVerifiedAt: new Date(),
          },
       }),
    );

@@ -1,4 +1,3 @@
-import type { Popover } from "@base-ui/react";
 import type { AddChannelRecipientMutationVars } from "@hooks/mutations/useAddChannelRecipient";
 import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMChannel";
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
@@ -20,8 +19,14 @@ import type {
    Snowflake,
    UserPresence,
    MessageFlags,
+   ThemeType,
+   ChannelType,
+   FavoriteGif,
+   GatewaySession,
 } from "@huginn/shared";
-import type { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
+import type { Gateway } from "@huginnjs/api";
+import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
+import type { ProcessInfo } from "native-addon";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
@@ -104,6 +109,8 @@ export type ColorTheme = {
    surface: string;
    "surface-alt": string;
    "surface-deep": string;
+   "surface-void": string;
+   text: string;
 
    "primary-300": string;
    "primary-400": string;
@@ -114,39 +121,23 @@ export type ColorTheme = {
    "primary-900": string;
 
    "positive-100": string;
-   "positive-200": string;
    "positive-300": string;
-   "positive-400": string;
    "positive-500": string;
-   "positive-600": string;
    "positive-700": string;
-   "positive-800": string;
    "positive-900": string;
 
    "negative-100": string;
-   "negative-200": string;
    "negative-300": string;
-   "negative-400": string;
    "negative-500": string;
-   "negative-600": string;
    "negative-700": string;
-   "negative-800": string;
    "negative-900": string;
 
    "caution-100": string;
-   "caution-200": string;
    "caution-300": string;
-   "caution-400": string;
    "caution-500": string;
-   "caution-600": string;
    "caution-700": string;
-   "caution-800": string;
    "caution-900": string;
-
-   text: string;
 };
-
-export type ThemeType = "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
 
 export type ContextMenuProps<T> = {
    // label?: string;
@@ -172,6 +163,7 @@ export type ContextMenuItemProps = {
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
+export type ContextMenuGif = Omit<FavoriteGif, "timestamp">;
 export type ContextMenuVoiceElement = {
    user: AppUser;
    guildId: Snowflake | null;
@@ -181,8 +173,12 @@ export type ContextMenuVoiceElement = {
 };
 export type ContextMenuMessage = {
    message: AppMessage;
+   gif?: ContextMenuGif;
    url?: string;
-   imgRef?: RefObject<HTMLImageElement | null>;
+   imgElement?: HTMLImageElement;
+   mediaUrl?: string;
+   mediaFilename?: string;
+   videoElement?: HTMLVideoElement;
 };
 
 export type PopoverStateProps<T = unknown> = {
@@ -201,6 +197,7 @@ export type ProcessedMessage = AppMessage & {
    isEditing: boolean;
    isReplying: boolean;
    isJumpHighlighted: boolean;
+   isMentioned: boolean;
 };
 
 export type MutationKinds = {
@@ -275,22 +272,6 @@ export type AppAttachment = {
    description?: string;
 };
 
-export type MarkedToken = {
-   type: string;
-   mark?: string | null;
-   text?: string;
-   start: number;
-   end: number;
-   line: number;
-   raw: string;
-   code?: { lang?: string; tokens?: Array<MarkedCodeToken> };
-   link?: { href: string };
-   list?: { ordered: boolean; index?: number };
-   emoji?: { id?: string; slug: string; unicode?: string; initial: "slug" | "emoji" };
-};
-
-export type MarkedCodeToken = { line: number; start: number; end: number; types: string[]; text: string };
-
 // export type AppAttachment = {
 //    id: number;
 //    dataUrl?: string;
@@ -318,19 +299,18 @@ export type UploadProgress = {
 };
 
 export type DisplaySource = {
-   thumbnail: string;
-   appIcon?: string;
+   thumbnail: string | null;
+   appIcon?: string | null;
    name: string;
-   id: string;
+   electronId: string;
+   processId?: number;
 };
 
 export type AudioSource = {
    appIcon?: string;
    name: string;
-   processId: string;
+   processId: number;
 };
-
-export type VoicePreference = { userId: Snowflake; microphoneVolume: number; streamVolume: number };
 
 export type HostnamePreset = {
    name: string;
@@ -353,15 +333,19 @@ export type AppSettings = {
    cameraDeviceId: string;
    inputVolume: number;
    outputVolume: number;
+   mediaVolume: number;
    inputThreshold: number;
    noiseSuppression: boolean;
    screenShareFramerate: string;
    screenShareQuality: string;
+   audioStreamQuality: string;
    screenShareAudio: boolean;
    screenShareSimulcast: boolean;
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
    useProxy: boolean;
+   isVoiceMuted: boolean;
+   isVoiceDeafened: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
@@ -382,7 +366,6 @@ export type ClientInfo = {
 
 export type StorageMap = {
    settings: AppSettings;
-   "voice-preferences": VoicePreference[];
    keybinds: Keybind[];
    "known-applications": APIGetKnownApplicationsResult;
    "custom-applications": CustomApplication[];
@@ -475,6 +458,7 @@ export type ConsumerStats = {
       remoteCandidate?: CandidateData;
    };
    transport?: {
+      id: string;
       bytesReceived?: number;
       bytesSent?: number;
       packetsReceived?: number;
@@ -515,6 +499,7 @@ export type ProducerStats = {
       remoteCandidate?: CandidateData;
    };
    transport?: {
+      id: string;
       bytesReceived?: number;
       bytesSent?: number;
       packetsReceived?: number;
@@ -594,6 +579,7 @@ export type Environment = "desktop" | "browser" | "android";
 
 export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
 export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];
+export type AudioQuality = (typeof AUDIO_QUALITIES)[number]["value"];
 
 export type UseHuginnFormSetCustomMessage<TFieldValues extends FieldValues> = <TFieldName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(
    name: TFieldName,
@@ -604,4 +590,39 @@ export type AnimatedMode = "hover" | "always" | "never";
 
 export type UpdateInfo = {
    version: string;
+};
+
+type AutocompleteUserItem = {
+   type: "user";
+   id: Snowflake;
+   username: string;
+   displayName?: string | null;
+   avatarHash?: string | null;
+};
+
+export type AutocompleteSpecialItem = {
+   type: "special";
+   ids: string[];
+   channelType: ChannelType;
+   label: string;
+   description: string;
+};
+
+export type AutocompleteItem = AutocompleteUserItem | AutocompleteSpecialItem;
+export type AutocompleteType = AutocompleteItem["type"];
+export type AutocompleteState = {
+   isOpen: boolean;
+   type: AutocompleteType | null;
+   query: string;
+   selectedIndex: number;
+};
+
+export type ApplicationInfo = ProcessInfo & { icon: string | null; displayName: string | null };
+
+export type OsInfo = {
+   platform: string;
+   arch: string;
+   version: string;
+   chromeVersion: string;
+   electronVersion: string;
 };

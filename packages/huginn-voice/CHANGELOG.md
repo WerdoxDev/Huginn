@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.19.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.19.0...voice@v0.19.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **voice:** analytic name changes ([6103b4d](https://github.com/WerdoxDev/Huginn/commit/6103b4da5db826cde5f3f777ac5579c7973fe352))
+
+## [0.19.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.1...voice@v0.19.0) (2026-07-17)
+
+
+### Features
+
+* **voice:** add limit to client sent messages ([96c2b21](https://github.com/WerdoxDev/Huginn/commit/96c2b2172aa6813c5260d912dd9d9229918c733b))
+
+## [0.18.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.18.0...voice@v0.18.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **voice:** incorrect consumer closed message being sent ([327a7a5](https://github.com/WerdoxDev/Huginn/commit/327a7a5ca1ad83452bb279dfec28a9cc9098a33d))
+
 ## [0.18.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.17.1...voice@v0.18.0) (2026-07-02)
 
 

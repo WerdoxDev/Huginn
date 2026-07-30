@@ -1,5 +1,7 @@
 import type { Snowflake } from "./snowflake";
 
+export type ThemeType = "cerulean" | "pine-green" | "plum" | "coffee" | "violet" | "rose";
+
 export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
@@ -117,8 +119,8 @@ export type APIPostOAuthConfirmJSONBody = {
    avatar: string | null;
 };
 
-export type APIPostLoginResult = (APIUser & Tokens) | { pendingEmail: string };
-export type APIPostRegisterResult = APIUser & Partial<Tokens> & { pendingEmail?: string };
+export type APIPostLoginResult = APIUser & (Tokens | { pendingEmail: string });
+export type APIPostRegisterResult = APIUser & { pendingEmail?: string };
 export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
@@ -136,7 +138,7 @@ export type APIRelationship = {
    id: Snowflake;
    type: RelationshipType;
    nickname: string;
-   since: Date | null;
+   since: Date | string | null;
    user: APIRelationUser;
    owner: APIRelationUser;
 };
@@ -214,7 +216,7 @@ export type APIGetUserChannelsResult = DirectChannel[];
 //#endregion
 
 //#region MESSAGE
-type APIBaseMessage = {
+export type APIBaseMessage = {
    id: Snowflake;
    type: MessageType;
    channelId: Snowflake;
@@ -226,6 +228,9 @@ type APIBaseMessage = {
    embeds: APIEmbed[];
    pinned: boolean;
    mentions: APIMessageUser[];
+   mentionEveryone: boolean;
+   mentionOwner: boolean;
+   call?: APIMessageCall;
    flags?: MessageFlags | null;
    nonce?: string;
    reactions?: APIReaction[];
@@ -288,7 +293,7 @@ export type APIMessageReference = {
 
 export type APIEmbed = {
    title?: string;
-   type: "rich" | "video" | "image" | (string & {});
+   type: "rich" | "video" | "image" | "gifv" | (string & {});
    description?: string;
    url?: string;
    timestamp?: string;
@@ -373,29 +378,39 @@ export enum MessageType {
    CHANNEL_ICON_CHANGED = 5,
    CHANNEL_PINNED_MESSAGE = 6,
    CHANNEL_OWNER_CHANGED = 7,
-   USER_JOIN = 8,
+   // USER_JOIN = 8,
    REPLY = 9,
 }
 //#endregion
 
-export type PresenceStatus = "offline" | "online" | "dnd" | "idle";
+export type ClientStatusKey = "desktop" | "mobile" | "web";
+export type ClientStatus = Partial<Record<ClientStatusKey, PresenceStatus>>;
+export type PresenceStatus = "offline" | "online" | "dnd" | "idle" | "invisible";
 export type UserPresence = {
    user: PresenceUser;
    status: PresenceStatus;
+   clientStatus: ClientStatus;
    activities: Activity[];
-   activeSessions: ActiveSession[];
 };
 
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
-export type UserSettings = {
-   theme?: "cerulean" | "pine-green" | "eggplant" | "coffee" | "charcoal" | "scarlet";
-   status: PresenceStatus;
-   pinnedChannels?: Snowflake[];
+export type FavoriteGif = { url: string; src: string; width: number; height: number; timestamp: number };
+
+export type VoicePreference = {
+   userId: Snowflake;
+   microphoneVolume: number;
+   streamVolume: number;
+   isMicrophoneMuted: boolean;
+   isStreamMuted: boolean;
 };
 
-export type ActiveSession = {
-   sessionId: Snowflake;
+export type UserSettings = {
+   theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
+   status: PresenceStatus;
+   pinnedChannels?: Snowflake[];
+   favoriteGifs?: FavoriteGif[];
+   voicePreferences?: VoicePreference[];
 };
 
 export enum ActivityType {
@@ -410,10 +425,10 @@ export type Activity = {
    startedAt?: number;
    applicationId?: number;
    iconUrl?: string;
-   sessionId: Snowflake;
+   sessionId?: Snowflake;
 };
 
-export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
+// export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
 
 export type OAuthType = "google" | "github";
 export type OAuthFlow = "browser" | "desktop";
@@ -433,7 +448,7 @@ export type APIReadState = {
 
 export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
 
-export type APIPatchUserSettingsJSONBody = Partial<UserSettings>;
+export type APIPatchUserSettingsJSONBody = Partial<Omit<UserSettings, "favoriteGifs"> & { favoriteGifs?: FavoriteGif[] }>;
 export type APIPatchUserSettingsResult = UserSettings;
 
 export type APIKnownApplication = {
@@ -507,3 +522,21 @@ export type APIReaction = {
    emoji: APIEmoji;
    me: boolean;
 };
+
+export type APIGif = {
+   id: number;
+   title: string;
+   url: string;
+   src: string;
+   width: number;
+   height: number;
+   preview: string;
+};
+
+export type APIGetGifCategoriesResult = {
+   categories: Array<{ name: string; src: string }>;
+   trendingGif: APIGif;
+};
+
+export type APIGetTrendingGifsResult = APIGif[];
+export type APIGetSearchGifsResult = APIGif[];

@@ -1,37 +1,35 @@
 import HuginnButton from "@components/button/HuginnButton";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
+import ColorPicker from "@components/ColorPicker";
 import HuginnLabel from "@components/HuginnLabel";
-import LoadingBackground from "@components/LoadingBackground";
-import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
+import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
-import { getUserBannerOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
+import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
-import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
+
+import * as palette from "@/assets/palettes.json";
 
 type EditingField = "username" | "displayName" | "email" | "password";
 
 export default function SettingsProfileTab() {
-   const client = useClient();
    const { user, tokenPayload } = useThisUser();
    const { updateModals } = useModals();
    const isOAuth = useIsOAuth();
    const { openFileDialog } = useFileDialog("image");
 
-   const { data: originalBanner, isLoading: isBannerLoading } = useQuery(getUserBannerOptions(user?.id, user?.banner, client));
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
-   const [accentColor, setAccentColor] = useState(() => user?.accentColor ?? "");
+   const [accentColor, setAccentColor] = useState(() => user?.accentColor);
    const [bio, setBio] = useState(() => user?.bio ?? "");
    const [isEditing, setIsEditing] = useState(false);
    const [pendingAvatar, setPendingAvatar] = useState<string | null | undefined>(undefined);
@@ -72,7 +70,7 @@ export default function SettingsProfileTab() {
    }
 
    function handleResetAccentColor() {
-      setAccentColor("");
+      setAccentColor(null);
    }
 
    async function handleEditField(field: EditingField) {
@@ -92,6 +90,11 @@ export default function SettingsProfileTab() {
             originalImageData: result.dataUrl,
             cropType: "avatar",
             mimeType: result.mimeType,
+            profilePreview: {
+               userId: user!.id,
+               avatarImageSrc: pendingAvatar,
+               bannerImageSrc: pendingBanner,
+            },
             callback: (data) => {
                setPendingAvatar(data);
                updateModals({ imageCrop: { isOpen: false } });
@@ -110,6 +113,11 @@ export default function SettingsProfileTab() {
             originalImageData: result.dataUrl,
             mimeType: result.mimeType,
             cropType: "banner",
+            profilePreview: {
+               userId: user!.id,
+               avatarImageSrc: pendingAvatar,
+               bannerImageSrc: pendingBanner,
+            },
             callback: (data) => {
                setPendingBanner(data);
                setShowBanner(true);
@@ -175,9 +183,19 @@ export default function SettingsProfileTab() {
 
    const avatarOverride = pendingAvatar !== undefined ? pendingAvatar : undefined;
    const hasAvatarPreview = pendingAvatar !== undefined ? !!pendingAvatar : !!user?.avatar;
-   const displayBanner = pendingBanner !== undefined ? pendingBanner : originalBanner;
-   const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
-   const isBannerTall = !!displayBanner || isImageBannerLoading;
+   const hasBannerPreview = pendingBanner !== undefined ? !!pendingBanner : !!user?.banner;
+   const bannerOverride = pendingBanner !== undefined ? pendingBanner : undefined;
+   const avatarMaskStyle = isEditing
+      ? createRadialMaskStyle(
+           hasAvatarPreview
+              ? [
+                   { radius: "1.25rem", x: "calc(50% - 1.125rem)", y: "calc(100% - 0.375rem + 4px)" },
+                   { radius: "1.25rem", x: "calc(50% + 1.125rem)", y: "calc(100% - 0.375rem + 4px)" },
+                ]
+              : [{ radius: "1.25rem", x: "50%", y: "calc(100% - 0.375rem + 4px)" }],
+        )
+      : undefined;
+   // const isImageBannerLoading = showBanner && isBannerLoading && pendingBanner === undefined && !!user?.banner;
    const hasChanges =
       bannerColor !== (user?.bannerColor ?? "") ||
       accentColor !== (user?.accentColor ?? "") ||
@@ -195,7 +213,7 @@ export default function SettingsProfileTab() {
                   <ColorSelector
                      color={bannerColor}
                      onChange={handleBannerColorChange}
-                     disabled={!!displayBanner}
+                     disabled={!!hasBannerPreview}
                      label="banner"
                      disabledReason="Remove banner image to use banner color."
                   />
@@ -225,24 +243,12 @@ export default function SettingsProfileTab() {
             )}
 
             <div className="bg-surface-alt relative mb-4 overflow-hidden rounded-lg border-2" style={{ borderColor: accentColor || "transparent" }}>
-               <div className={clsx("group relative transition-all", showBanner ? (isBannerTall ? "h-32" : "h-20") : "h-0")}>
-                  {displayBanner ? (
-                     <>
-                        <img alt="user-banner" className="h-full w-full object-cover" src={displayBanner} />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-                     </>
-                  ) : (
-                     !isImageBannerLoading && (
-                        <>
-                           <div className="h-full w-full" style={{ backgroundColor: bannerColor || "transparent" }} />
-                           <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                        </>
-                     )
-                  )}
-                  <LoadingBackground hasError={false} isLoaded={!isImageBannerLoading} />
+               <div className={clsx("group relative transition-all", showBanner ? (hasBannerPreview ? "h-32" : "h-20") : "h-0")}>
+                  <UserBanner userId={user.id} bannerColor={bannerColor} bannerHash={user.banner} imageSrc={bannerOverride} animatedMode="always" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
                   {isEditing && (
                      <div className={clsx("absolute top-2 right-2 flex gap-x-1 transition-opacity", !showBanner ? "opacity-0" : "opacity-100")}>
-                        {displayBanner && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}
+                        {hasBannerPreview && <ImagePickerDeleteButton onClick={handleDeleteBanner} />}
                         <ImagePickerEditButton onClick={handleEditBanner} />
                      </div>
                   )}
@@ -261,10 +267,11 @@ export default function SettingsProfileTab() {
                               size={5.5}
                               hideStatus
                               animatedMode="always"
+                              maskStyle={avatarMaskStyle}
                            />
                         </div>
                         {isEditing && (
-                           <div className="absolute -top-1 -right-1 z-20 flex gap-x-1">
+                           <div className="absolute right-0 -bottom-2.5 left-0 z-20 flex justify-center gap-x-1">
                               {hasAvatarPreview && <ImagePickerDeleteButton onClick={handleDeleteAvatar} />}
                               <ImagePickerEditButton onClick={handleEditAvatar} />
                            </div>
@@ -289,7 +296,7 @@ export default function SettingsProfileTab() {
                      <ProfileAboutMe
                         accentColor={accentColor}
                         headerRight={
-                           <span className={clsx("text-xs", bio.length > CONSTANTS.BIO_MAX_LENGTH ? "text-negative-100" : "text-text/40")}>
+                           <span className={clsx("text-xs", bio.length > CONSTANTS.BIO_MAX_LENGTH ? "text-negative-300" : "text-text/40")}>
                               {bio.length}/{CONSTANTS.BIO_MAX_LENGTH}
                            </span>
                         }
@@ -422,47 +429,53 @@ function ChangeButton(props: { onClick?: () => void }) {
 //    return <ProfileBadges badges={profile.badges} />;
 // }
 
-const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
+// const COLOR_PRESETS = ["#00dabd", "#00bbea", "#9b59b6", "#e91e63", "#e74c3c", "#e67e22", "#f1c40f", "#a3804f", "#517889"];
+const COLOR_PRESETS = Object.values(palette.primary).map((x) => x["primary-500"]);
 
-function ColorSelector(props: { onChange?: (color: string) => void; color: string; disabled?: boolean; label: string; disabledReason?: string }) {
-   function handleHexInputChange(value: string) {
-      props.onChange?.(value);
-   }
-
+function ColorSelector(props: {
+   onChange?: (color: string) => void;
+   color?: string | null;
+   disabled?: boolean;
+   label: string;
+   disabledReason?: string;
+}) {
    return (
-      <div className={clsx("flex w-full items-center gap-x-2", props.disabled && "opacity-50")}>
-         <HuginnLabel className="text-tiny mb-0!">{props.label}</HuginnLabel>
-         {props.disabled && (
-            <Tooltip>
-               <Tooltip.Trigger>
-                  <IconMingcuteInformationFill className="text-caution-100 size-3.5" />
-               </Tooltip.Trigger>
-               <Tooltip.Content>{props.disabledReason}</Tooltip.Content>
-            </Tooltip>
-         )}
-         {/* <span className="text-tiny w-20 shrink-0 font-semibold text-text/80 uppercase">Accent</span> */}
-         <div className={clsx("ml-auto flex gap-x-1.5", props.disabled && "pointer-events-none")}>
-            {COLOR_PRESETS.map((color) => (
-               <button
-                  key={color}
-                  type="button"
-                  className="size-5 shrink-0 cursor-pointer rounded-full transition-all hover:scale-110"
-                  style={{ backgroundColor: color }}
-                  onClick={() => props.onChange?.(color)}
-               />
-            ))}
-         </div>
-         <input
-            type="text"
-            className={clsx(
-               "bg-surface-alt w-24 shrink-0 rounded-md px-2 py-1 text-xs text-white outline-none placeholder:text-white/30",
-               props.disabled && "pointer-events-none",
+      <div className={clsx("flex w-full items-start gap-2", props.disabled && "opacity-50")}>
+         <div className="flex min-w-14 items-center gap-x-1 pt-1.5">
+            <HuginnLabel className="text-tiny mb-0!">{props.label}</HuginnLabel>
+            {props.disabled && (
+               <Tooltip>
+                  <Tooltip.Trigger>
+                     <IconMingcuteInformationFill className="text-caution-100 size-3.5" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{props.disabledReason}</Tooltip.Content>
+               </Tooltip>
             )}
-            placeholder="#000000"
-            maxLength={16}
-            value={props.color}
-            onChange={(e) => handleHexInputChange(e.currentTarget.value)}
-         />
+         </div>
+         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
+               {COLOR_PRESETS.map((color) => {
+                  const isSelected = color.toLowerCase() === props.color?.toLowerCase();
+
+                  return (
+                     <button
+                        key={color}
+                        type="button"
+                        className={clsx(
+                           "size-5 shrink-0 cursor-pointer rounded-full transition-transform hover:scale-110",
+                           isSelected && "ring-1 ring-white",
+                        )}
+                        style={{ backgroundColor: color }}
+                        onClick={() => props.onChange?.(color)}
+                        disabled={props.disabled}
+                        aria-label={`Use ${color} for ${props.label}`}
+                        aria-pressed={isSelected}
+                     />
+                  );
+               })}
+            </div>
+            <ColorPicker color={props.color} label={props.label} onChange={props.onChange} disabled={props.disabled} />
+         </div>
       </div>
    );
 }

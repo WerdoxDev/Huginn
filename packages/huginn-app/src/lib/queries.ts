@@ -1,4 +1,4 @@
-import type { HuginnClient } from "@huginn/api";
+import type { HuginnClient } from "@huginnjs/api";
 
 import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginn/shared";
 import { clientStore } from "@stores/clientStore";
@@ -60,7 +60,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
       queryFn: async ({ pageParam }) => {
          const messages = await client.channels.getMessages(
             channelId,
-            50,
+            20,
             pageParam.before.toString() || undefined,
             pageParam.after.toString() || undefined,
          );
@@ -76,7 +76,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
       },
       getPreviousPageParam(first) {
          const earliestMessage = first[0];
-         return earliestMessage && first.length >= 50 ? { before: earliestMessage.id, after: "" } : undefined;
+         return earliestMessage && first.length >= 20 ? { before: earliestMessage.id, after: "" } : undefined;
       },
       getNextPageParam(last) {
          const channels: APIGetUserChannelsResult | undefined = queryClient.getQueryData(["channels", "@me"]);
@@ -92,7 +92,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
          // ? { after: latestMessage.id, before: "" }
          // : undefined;
       },
-      maxPages: 2,
+      maxPages: 4,
       retry: false,
       enabled,
    });
@@ -102,7 +102,6 @@ export function getPinnedMessagesOptions(client: HuginnClient, channelId: Snowfl
    return infiniteQueryOptions({
       queryKey: ["pinned-messages", channelId],
       queryFn: async ({ pageParam }) => {
-         new Promise((resolve) => setTimeout(resolve, 3000)); // Artificial delay to prevent hitting rate limits when scrolling fast
          const pins = await client.channels.getPinnedMessages(channelId, limit, pageParam || undefined);
          return pins.map((pin) => ({
             ...pin,
@@ -201,6 +200,37 @@ export function getMobileFilesOptions(limit: number) {
       getNextPageParam: (lastPage) => {
          if (lastPage.media.length < limit) return undefined;
          return lastPage.cursor.toString();
+      },
+   });
+}
+
+export function getGifCategoriesOptions(client: HuginnClient) {
+   return queryOptions({
+      queryKey: ["gif-categories"],
+      queryFn: async () => await client.gifs.getCategories(),
+   });
+}
+
+export function getTrendingGifsOptions(client: HuginnClient, limit = 25) {
+   return infiniteQueryOptions({
+      queryKey: ["trending-gifs"],
+      queryFn: async ({ pageParam }) => await client.gifs.getTrending(limit, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _allPages, lastParams) => {
+         if (lastPage.length < limit) return undefined;
+         return lastParams + 1;
+      },
+   });
+}
+
+export function getSearchGifsOptions(client: HuginnClient, query: string, limit = 25) {
+   return infiniteQueryOptions({
+      queryKey: ["search-gifs", query],
+      queryFn: async ({ pageParam }) => await client.gifs.search(query, limit, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _allPages, lastParams) => {
+         if (lastPage.length < limit) return undefined;
+         return lastParams + 1;
       },
    });
 }

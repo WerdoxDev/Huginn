@@ -16,20 +16,6 @@ const colors = {
 
 export default function HuginnButton(props: HuginnButtonProps) {
    const { color, className, children, disabled, type, onClick, ...rest } = props;
-   // const colorClassNames = useMemo(() => {
-   //    switch (props.color) {
-   //       case "primary":
-   //          return "bg-primary-700 hover:bg-primary-800 enabled:active:bg-primary-900 disabled:bg-primary-900";
-   //       case "surface":
-   //          return "bg-surface hover:bg-surface/80  enabled:active:bg-surface/50 disabled:bg-surface/50";
-   //       case "surface-alt":
-   //          return "bg-surface-alt hover:bg-surface-alt/80  enabled:active:bg-surface-alt/50 disabled:bg-surface-alt/50";
-   //       case "surface-deep":
-   //          return "bg-surface-deep hover:bg-surface-deep/80  enabled:active:bg-surface-deep/50 disabled:bg-surface-deep/50";
-   //       default:
-   //          return "";
-   //    }
-   // }, [props.className]);
 
    return (
       <button
@@ -38,13 +24,11 @@ export default function HuginnButton(props: HuginnButtonProps) {
             className,
             colors[color ?? "none"],
          )}
-         // ref={props.ref}
          type={type}
          disabled={disabled}
          onClick={onClick}
          {...rest}
       >
-         {/* <div className={clsx("text-white opacity-100", props.innerClassName)}>{props.children}</div> */}
          {children}
       </button>
    );

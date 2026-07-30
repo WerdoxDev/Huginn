@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.6.0...native-addon@v0.7.0) (2026-07-17)
+
+
+### Features
+
+* **native:** add window and screen thumbnail generation ([d91198b](https://github.com/WerdoxDev/Huginn/commit/d91198b8675b03db879aa1bef0fd4f832587bdb3))
+* **native:** move heavy synchronous functions to an async worker class with Napi ([eddf9bd](https://github.com/WerdoxDev/Huginn/commit/eddf9bdba19a06749ad5e0eb8dee85f7975ce322))
+
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.5.0...native-addon@v0.6.0) (2026-07-11)
+
+
+### Features
+
+* **native:** add much better application icon detection logic ([7a6f4a6](https://github.com/WerdoxDev/Huginn/commit/7a6f4a69662c1234457a2066f0b2a74a116575fe))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.4.0...native-addon@v0.5.0) (2026-07-02)
 
 

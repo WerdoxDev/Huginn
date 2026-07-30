@@ -6,7 +6,7 @@ import Elysia, { t } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { filterMessage, sendMessagePushNotification } from "#utils/helpers";
-import { generateEmbedsFromContent, processAttachments, processEmbeds } from "#utils/route-utils";
+import { getMessageTokens, generateEmbedsFromContent, processAttachments, processEmbeds, processMentions } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
@@ -68,12 +68,12 @@ export const postChannelMessage = new Elysia()
             }
          }
 
+         const tokens = body.content ? getMessageTokens(body.content) : [];
          const messageId = snowflake.generate(WorkerID.MESSAGE);
 
          const processedAttachments = await processAttachments(body.attachments, body.files, channelId, messageId.toString());
-
-         // Fetch image data from embeds
          const processedEmbeds = await processEmbeds(body.embeds);
+         const processedMentions = await processMentions(tokens);
 
          const dbMessage = await prisma.message.createOne(
             {
@@ -85,6 +85,9 @@ export const postChannelMessage = new Elysia()
                attachments: processedAttachments,
                messageReference: body.messageReference,
                embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
+               mentions: processedMentions.userMentions,
+               mentionEveryone: processedMentions.everyoneMentions.length > 0,
+               mentionOwner: processedMentions.ownerMentions.length > 0,
                flags: body.flags,
             },
             { select: selectAllMessage },
@@ -101,7 +104,7 @@ export const postChannelMessage = new Elysia()
             // dispatchToTopic(tokenPayload.id, "message_ack", { channelId, messageId: message.id });
 
             // Embed generation from urls inside the message content
-            const embeds = await generateEmbedsFromContent(body.content);
+            const embeds = await generateEmbedsFromContent(tokens);
 
             if (!embeds?.length) {
                return;

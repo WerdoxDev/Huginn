@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.20.2](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.20.1...cdn@v0.20.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* **cdn:** support range for audio files ([62949dc](https://github.com/WerdoxDev/Huginn/commit/62949dc3e82a30cdd611f54583fe6a898167e4e2))
+
+## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.20.0...cdn@v0.20.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **cdn:** small bug fix on files sent with capitilized extensions ([6a09917](https://github.com/WerdoxDev/Huginn/commit/6a0991741ce0cd8eadb711845b1a620555d88d94))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.19.0...cdn@v0.20.0) (2026-07-02)
 
 

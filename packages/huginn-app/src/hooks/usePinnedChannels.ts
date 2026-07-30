@@ -4,11 +4,14 @@ import { clientStore, useClient } from "@stores/clientStore";
 import { useCallback } from "react";
 import { useStore } from "zustand";
 
+import { useEditSettings } from "./mutations/useEditSettings";
+
 export function usePinnedChannels(channelIds?: Snowflake[]) {
    const pinnedChannelIds = useStore(clientStore, (state) => state.userSettings?.pinnedChannels);
    const client = useClient();
 
    const isPinned = useCallback((id: Snowflake) => pinnedChannelIds?.includes(id), [pinnedChannelIds]);
+   const mutation = useEditSettings();
 
    const togglePin = useCallback(
       async (id: Snowflake) => {
@@ -17,7 +20,7 @@ export function usePinnedChannels(channelIds?: Snowflake[]) {
          // Remove IDs that no longer correspond to an open channel
          const cleaned = channelIds ? next.filter((x) => channelIds.includes(x)) : next;
 
-         await client?.users.editSettings({ pinnedChannels: cleaned });
+         await mutation.mutateAsync({ pinnedChannels: cleaned });
       },
       [client, channelIds, pinnedChannelIds],
    );

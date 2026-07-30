@@ -5,21 +5,22 @@ import { usePinMessage } from "@hooks/mutations/usePinMessage";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useOpen } from "@hooks/useOpen";
 import { useRecentEmojis } from "@hooks/useRecentEmojis";
-import { error } from "@huginn/shared";
 import { deleteAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { usePopover } from "@stores/popoverStore";
 import { useThisUser } from "@stores/userStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import ContextMenu from "./ContextMenu";
+import { GifFavoriteContextMenuItem } from "./GifContextMenu";
 
 export default function MessageContextMenu() {
    const { data, close } = useContextMenu("message");
-   const { toggle: toggleEmojiPicker } = usePopover("emoji_picker");
+   const { toggle: toggleExpression } = usePopover("expression");
    const { openUrl } = useOpen();
    const { showError } = useModals();
    const queryClient = useQueryClient();
@@ -30,44 +31,77 @@ export default function MessageContextMenu() {
    const unpinMessageMutation = useUnpinMessage();
    const addReactionMutation = useAddReaction();
    const { recentEmojis, addRecentEmoji } = useRecentEmojis();
+   const huginnWindow = useHuginnWindow();
 
    const isAuthor = useMemo(() => data?.message.authorId === user?.id, [user, data]);
    const isPinned = useMemo(() => data?.message.isPreview === false && data.message.pinned, [data]);
    const isPinning = pinMessageMutation.isPending || unpinMessageMutation.isPending;
 
-   function copyImage() {
-      const img = data?.imgRef?.current;
-
-      if (!img) {
-         return;
-      }
+   async function copyImage() {
+      const img = data?.imgElement;
+      if (!img) return;
 
       const canvas = document.createElement("canvas");
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const context = canvas.getContext("2d");
-
-      if (!context) {
-         return;
-      }
+      if (!context) return;
 
       context.drawImage(img, 0, 0);
 
       try {
-         canvas.toBlob(async (blob) => {
-            if (!blob) {
-               return;
-            }
+         const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
+         if (!blob) throw new Error("Could not create an image blob");
 
-            try {
-               await navigator.clipboard.write([new ClipboardItem({ [blob?.type]: blob })]);
-            } catch (e) {
-               console.log(e);
-            }
-         });
-      } catch (e) {
+         await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      } catch (error) {
+         console.error(error);
          showError("Failed to copy image");
-         error("app:general", e);
+      }
+   }
+
+   async function getMediaBlob() {
+      if (!data?.mediaUrl) throw new Error("Missing media URL");
+
+      const response = await fetch(data.mediaUrl);
+      if (!response.ok) throw new Error(`Failed to fetch media: ${response.status}`);
+
+      return response.blob();
+   }
+
+   function getMediaFilename(kind: "image" | "video") {
+      if (data?.mediaFilename) return data.mediaFilename;
+
+      try {
+         const filename = decodeURIComponent(new URL(data?.mediaUrl ?? "").pathname.split("/").pop() ?? "");
+         if (filename) return filename;
+      } catch {
+         // Use a generic filename below.
+      }
+
+      return kind;
+   }
+
+   async function saveMedia(kind: "image" | "video") {
+      if (!data?.mediaUrl) return;
+
+      if (huginnWindow.environment === "desktop") {
+         return await window.electronAPI.downloadMedia(data?.mediaUrl ?? "", getMediaFilename(kind));
+      }
+
+      try {
+         const blob = await getMediaBlob();
+         const url = URL.createObjectURL(blob);
+         const anchor = document.createElement("a");
+         anchor.href = url;
+         anchor.download = getMediaFilename(kind);
+         document.body.append(anchor);
+         anchor.click();
+         anchor.remove();
+         window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      } catch (error) {
+         console.error(error);
+         showError(`Failed to save ${kind}`);
       }
    }
 
@@ -135,7 +169,7 @@ export default function MessageContextMenu() {
                {recentEmojis.slice(0, 6).map((emoji) => (
                   <button
                      key={emoji.slugs[0]}
-                     className="hover:bg-surface-alt active:bg-surface-alt bg-surface-deep shrink-0 cursor-pointer rounded p-3 lg:p-1.5"
+                     className="hover:bg-surface-alt active:bg-surface-alt bg-surface-deep shrink-0 cursor-pointer rounded p-3 outline-none lg:p-1.5"
                      onClick={() => handleEmojiSelect(emoji.slugs[0], emoji.unicode)}
                   >
                      <EmojiImg unicode={emoji.unicode} className="size-6 lg:size-5.5" />
@@ -143,7 +177,7 @@ export default function MessageContextMenu() {
                ))}
             </div>
          )}
-         <ContextMenu.Item label="Add Reaction" onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: handleEmojiSelect })}>
+         <ContextMenu.Item label="Add Reaction" onClick={(e) => toggleExpression(e, { type: "emoji", onEmojiSelect: handleEmojiSelect })}>
             <IconMingcuteEmoji2Fill />
          </ContextMenu.Item>
          {isAuthor && !data.message.isPreview && (
@@ -178,10 +212,31 @@ export default function MessageContextMenu() {
                </ContextMenu.Item>
             </>
          )}
-         {data.imgRef?.current && (
+         {data.imgElement && (
             <>
                <ContextMenu.Divider />
                <ContextMenu.Item label="Copy Image" onClick={copyImage} />
+               <ContextMenu.Item
+                  label="Copy Image Link"
+                  onClick={() => navigator.clipboard.writeText(data.mediaUrl ?? data.imgElement?.currentSrc ?? "")}
+               />
+               <ContextMenu.Item label="Save Image" onClick={() => saveMedia("image")} />
+            </>
+         )}
+         {data.videoElement && (
+            <>
+               <ContextMenu.Divider />
+               <ContextMenu.Item
+                  label="Copy Video Link"
+                  onClick={() => navigator.clipboard.writeText(data.mediaUrl ?? data.videoElement?.currentSrc ?? "")}
+               />
+               <ContextMenu.Item label="Save Video" onClick={() => saveMedia("video")} />
+            </>
+         )}
+         {data.gif && (
+            <>
+               <ContextMenu.Divider />
+               <GifFavoriteContextMenuItem gif={data.gif} />
             </>
          )}
          {data.url && (

@@ -43,7 +43,7 @@ export const postLogin = new Elysia().use(globalPlugin).post(
 
          global.waitUntil(async () => await sendVerificationEmail(user.email, code));
 
-         const json: APIPostLoginResult = { pendingEmail: user.email };
+         const json: APIPostLoginResult = { ...user, pendingEmail: user.email };
          return status("Accepted", json);
       }
 

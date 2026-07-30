@@ -32,6 +32,7 @@ export const env = cleanEnv(process.env, {
    FIREBASE_PROJECT_ID: str(),
    FIREBASE_CLIENT_EMAIL: str(),
    FIREBASE_PRIVATE_KEY: str(),
+   KLIPY_KEY: str(),
 });
 
 initAnalytics(

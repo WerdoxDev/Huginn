@@ -38,17 +38,17 @@ function Content(
    const { extraStyle, ...rest } = props;
    return (
       <BaseTooltip.Portal keepMounted={false}>
-         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8} className="z-50">
+         <BaseTooltip.Positioner side={props.side} align={props.align} sideOffset={8} className="z-999">
             <BaseTooltip.Popup
                {...rest}
                className={clsx(
-                  "border-surface rounded-md border bg-zinc-900 px-2.5 py-1 text-base whitespace-nowrap text-white/80 shadow-lg transition-opacity duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0",
+                  "border-surface bg-surface-void rounded-md border px-2.5 py-1 text-base whitespace-nowrap text-white/80 shadow-lg transition-opacity duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0",
                   props.className,
                )}
                style={extraStyle}
             >
                {props.children}
-               <BaseTooltip.Arrow className="border-surface flex h-2.5 w-2.5 rounded-br-full border-t border-l bg-zinc-900 data-[side=bottom]:-top-1 data-[side=bottom]:rotate-45 data-[side=left]:-right-1.25 data-[side=left]:rotate-45 data-[side=right]:-left-1.25 data-[side=right]:-rotate-45 data-[side=top]:-bottom-1 data-[side=top]:-rotate-135" />
+               <BaseTooltip.Arrow className="border-surface bg-surface-void flex h-2.5 w-2.5 rounded-br-full border-t border-l data-[side=bottom]:-top-1 data-[side=bottom]:rotate-45 data-[side=left]:-right-1.25 data-[side=left]:rotate-45 data-[side=right]:-left-1.25 data-[side=right]:-rotate-45 data-[side=top]:-bottom-1 data-[side=top]:-rotate-135" />
             </BaseTooltip.Popup>
          </BaseTooltip.Positioner>
       </BaseTooltip.Portal>

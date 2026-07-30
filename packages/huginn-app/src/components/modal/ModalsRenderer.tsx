@@ -2,8 +2,8 @@ import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { lazy } from "react";
 
+import AudioStreamModal from "./AudioStreamModal";
 import BaseModal from "./BaseModal";
-import StreamAudioModal from "./StreamAudioModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));
@@ -11,7 +11,7 @@ const ImageCropModal = lazy(() => import("./ImageCropModal"));
 const EditGroupModal = lazy(() => import("./EditGroupModal"));
 const AddRecipientModal = lazy(() => import("./AddRecipientModal"));
 const InfoModal = lazy(() => import("./InfoModal"));
-const MagnifiedImageModal = lazy(() => import("./MagnifiedImageModal"));
+const MagnifiedImageModal = lazy(() => import("./MagnifiedMediaModal"));
 const NewsModal = lazy(() => import("./NewsModal"));
 const ScreenShareModal = lazy(() => import("./ScreenShareModal"));
 
@@ -31,10 +31,10 @@ export default function ModalsRenderer() {
       imageCrop,
       info,
       settings,
-      magnifiedImage,
+      magnifiedMedia,
       news,
       screenShare,
-      streamAudio,
+      audioStream,
       updateModals,
       changeUsername,
       changeDisplayName,
@@ -54,13 +54,13 @@ export default function ModalsRenderer() {
          <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
             renderChildren={<MagnifiedImageModal />}
-            modal={magnifiedImage}
-            onClose={() => updateModals({ magnifiedImage: { isOpen: false } })}
+            modal={magnifiedMedia}
+            onClose={() => updateModals({ magnifiedMedia: { isOpen: false } })}
             backgroundClassName="bg-black/70"
             headless
          />
          <BaseModal renderChildren={<ScreenShareModal />} modal={screenShare} onClose={() => updateModals({ screenShare: { isOpen: false } })} />
-         <BaseModal renderChildren={<StreamAudioModal />} modal={streamAudio} onClose={() => updateModals({ streamAudio: { isOpen: false } })} />
+         <BaseModal renderChildren={<AudioStreamModal />} modal={audioStream} onClose={() => updateModals({ audioStream: { isOpen: false } })} />
          <BaseModal renderChildren={<NewsModal />} modal={news} onClose={() => updateModals({ news: { isOpen: false } })} />
          <BaseModal
             renderChildren={<VerifyEmailModal />}

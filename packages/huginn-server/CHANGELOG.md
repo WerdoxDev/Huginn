@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.47.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.47.0...server@v0.47.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **server:** use new android update flow ([2983fa8](https://github.com/WerdoxDev/Huginn/commit/2983fa8fa28ee02167ac5c1b0da97e43218eabd2))
+
+## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.46.0...server@v0.47.0) (2026-07-22)
+
+
+### Features
+
+* **server:** keep track of voice tokens and issue new ones when old ones are expired ([892ec4c](https://github.com/WerdoxDev/Huginn/commit/892ec4cac1ccb3f760ec11153ed91ecd171693e6))
+
+## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.45.0...server@v0.46.0) (2026-07-20)
+
+
+### Features
+
+* **server:** new presence handling model ([e004fae](https://github.com/WerdoxDev/Huginn/commit/e004fae9212ef0d0fe485059e0cc7429ebae48b7))
+
+## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.44.0...server@v0.45.0) (2026-07-17)
+
+
+### Features
+
+* **server:** add limit to client sent messages ([2e56fde](https://github.com/WerdoxDev/Huginn/commit/2e56fde4579cc5f76a32cf9a45a56c0023d5363a))
+* **server:** download github releases on server first and stream them instead of redirecting user ([05cb033](https://github.com/WerdoxDev/Huginn/commit/05cb033ee84234e62e1e63b4b082ae06313cd2ab))
+
+## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.1...server@v0.44.0) (2026-07-11)
+
+
+### Features
+
+* **server:** add klipy gif provider routes ([05c2584](https://github.com/WerdoxDev/Huginn/commit/05c2584a8dbe320e1afac98220c41e5036cc03dd))
+
+## [0.43.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.43.0...server@v0.43.1) (2026-07-05)
+
+
+### Bug Fixes
+
+* **server:** only accept new theme types ([c900932](https://github.com/WerdoxDev/Huginn/commit/c900932ee932a92e8ca946da351b9997b91a9c0b))
+* **server:** unknown users shouldn't return 404 in mentions ([4fbbd20](https://github.com/WerdoxDev/Huginn/commit/4fbbd203913bfba743c91698d4af537a716848b7))
+
 ## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.42.0...server@v0.43.0) (2026-07-02)
 
 

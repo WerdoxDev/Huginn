@@ -124,6 +124,7 @@ export function initReadStateStore() {
 
                   switch (data.message.type) {
                      case MessageType.DEFAULT:
+                     case MessageType.REPLY:
                         if (data.message.content) {
                            content = data.message.content;
                         } else if (data.message.attachments.length !== 0) {

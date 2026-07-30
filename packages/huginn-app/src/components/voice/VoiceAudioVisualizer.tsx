@@ -1,5 +1,5 @@
-import { remap } from "@huginn/shared";
-import { hexToRgbObject, useTheme } from "@stores/themeStore";
+import { parseOklchToRgb, remap } from "@huginn/shared";
+import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -43,6 +43,10 @@ export default function VoiceAudioVisualizer(props: { track?: MediaStreamTrack }
             return;
          }
 
+         const colorArray = parseOklchToRgb(currentTheme.theme["primary-700"]);
+         if (!colorArray) return;
+         const color = { r: colorArray[0], g: colorArray[1], b: colorArray[2] };
+
          canvasRef.current.width = containerRef.current.clientWidth - 20;
          canvasRef.current.height = containerRef.current.clientHeight;
 
@@ -68,7 +72,6 @@ export default function VoiceAudioVisualizer(props: { track?: MediaStreamTrack }
          for (let i = 0; i < bufferLength; i++) {
             // Make bar height proportional to canvas height
             barHeight = (dataArray[i] / 255) * (height / 2.5); // Normalize to half canvas height
-            const color = hexToRgbObject(currentTheme.theme["primary-700"]);
             canvasContext.fillStyle = `rgb(${remap(dataArray[i], 0, 255, 128, color?.r)} ${remap(dataArray[i], 0, 255, 128, color?.g)} ${remap(dataArray[i], 0, 255, 128, color?.b)})`;
 
             // Draw upper bar (mirrored)

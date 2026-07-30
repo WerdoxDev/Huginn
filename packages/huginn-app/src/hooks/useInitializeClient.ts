@@ -1,4 +1,4 @@
-import type { InitializationResult } from "@huginn/api";
+import type { InitializationResult } from "@huginnjs/api";
 
 import { analytics } from "@huginn/shared";
 import { initNotifications } from "@lib/notification";
@@ -62,7 +62,10 @@ export function useInitializeClient() {
                   username: client?.currentUser?.username,
                   displayName: client?.currentUser?.displayName,
                   email: client?.currentUser?.email,
+                  gateway: client.gateway.options.properties,
                });
+
+               analytics.setDefaultAttributes({ "user.id": client.currentUser?.id ?? "null", ...client.gateway.options.properties });
 
                const token = await initNotifications();
                if (token && huginnWindow.deviceId) {

@@ -24,6 +24,7 @@ jobs:
       runs-on: ubuntu-latest
       outputs:
          app_release_created: ${{ steps.outputs.outputs.app_release_created }}
+         api_release_created: ${{ steps.release.outputs['packages/huginn-api--release_created'] || 'false' }}
          app_version: ${{ steps.outputs.outputs.app_version }}
 
       steps:
@@ -113,6 +114,8 @@ jobs:
          RELEASE_KEY_PASSWORD: ${{secrets.RELEASE_KEY_PASSWORD}}
          RELEASE_STORE_FILE: ${{github.workspace}}/packages/huginn-app/android/app/certs/huginn-release.keystore
          CI: ${{github.env.CI}}
+         CAPAWESOME_PRIVATE_KEY: ${{secrets.CAPAWESOME_PRIVATE_KEY}}
+         CAPAWESOME_PUBLIC_KEY: ${{secrets.CAPAWESOME_PUBLIC_KEY}}
       steps:
          - uses: actions/checkout@v4
 
@@ -146,3 +149,26 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            run: cd packages/huginn-app && bun run scripts/upload.ts --mode android
+
+   publish-api:
+      runs-on: ubuntu-latest
+      needs: release-please
+      if: ${{needs.release-please.outputs.api_release_created == 'true'}}
+      steps:
+         - uses: actions/checkout@v4
+
+         - name: Install PNPM
+           uses: pnpm/action-setup@v4
+
+         - name: Set up Node.js
+           uses: actions/setup-node@v4
+           with:
+              node-version: "26"
+              registry-url: "https://registry.npmjs.org"
+              cache: "pnpm"
+
+         - name: Publish API
+           run: |
+              cd packages/huginn-api && pnpm install --frozen-lockfile
+              cd packages/huginn-api && pnpm run build
+              cd packages/huginn-api && pnpm publish --no-git-checks --access public

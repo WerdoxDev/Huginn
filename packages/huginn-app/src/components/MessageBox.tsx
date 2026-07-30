@@ -6,8 +6,8 @@ import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
+import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
-import { MessageFlags } from "@huginn/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -15,17 +15,18 @@ import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Editable, Slate, ReactEditor, type RenderPlaceholderProps } from "slate-react";
 
-import type { AppMessage } from "@/types";
+import type { AppMessage, AutocompleteItem } from "@/types";
 
 import AttachmentsPreview from "./AttachmentsPreview";
-import EmojiPickerButton from "./button/EmojiPickerButton";
+import ExpressionButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
 import HuginnButton from "./button/HuginnButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
-import EmojiPickerRawPanel from "./popover/EmojiPickerRawPanel";
+import { MessageAutocomplete } from "./MessageAutocomplete";
+import { ExpressionRawPanel } from "./popover/ExpressionRawPanel";
 // import EmojiPickerPanel from "./popover/EmojiPickerPanel";
 // import EmojiPickerPopover from "./popover/EmojiPickerPopover";
 import ReplyingPreview from "./ReplyingPreview";
@@ -60,7 +61,25 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const isMobileEnvironment = huginnWindow.environment === "android";
    const isMobile = useIsMobile();
    const { setMessageBoxHeight } = useChannelStore();
-   const { decorate, editor, renderElement, renderLeaf, handleEditorOnChange } = usePreviewMessageRenderer();
+   const {
+      autocompleteKeyIntercept,
+      state: autocompleteState,
+      items: autocompleteItems,
+      containerRef: autocompleteContainerRef,
+      handleSet,
+      handleClose,
+      handleSelectIndex,
+      handleSelect,
+   } = useMessageBoxAutocomplete({
+      channelId: currentChannel?.id,
+      onSelect: tempHandleAutocompleteSelect,
+   });
+   const { decorate, editor, renderElement, renderLeaf, handleEditorChange, handleEditorClick, handleAutocompleteSelect } = usePreviewMessageRenderer(
+      {
+         onSetAutocomplete: handleSet,
+         onCloseAutocomplete: handleClose,
+      },
+   );
    const editorRef = useRef<HTMLDivElement | null>(null);
 
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
@@ -75,15 +94,16 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       channelId,
       resetState,
       insertEmoji,
-   } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments });
+      sendGif,
+   } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, autocompleteKeyIntercept });
 
-   const { toggle: toggleEmojiPicker, popover: emojiPickerPopover } = usePopover("emoji_picker");
+   const { toggle: toggleExpression, popover: expressionPopover } = usePopover("expression");
 
    const { isKeyboardOpen, lastKeyboardHeight, focusedElementRef } = useInset();
-   const [activeMobilePanel, setActiveMobilePanel] = useState<"emoji" | "files" | null>(null);
+   const [activeMobilePanel, setActiveMobilePanel] = useState<"expression" | "files" | null>(null);
 
-   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || (isKeyboardOpen && ReactEditor.isFocused(editor)));
    const isKeyboardOpenOnEditor = isKeyboardOpen && focusedElementRef?.current === editorRef.current;
+   const shouldShowMobilePanel = isMobileEnvironment && (activeMobilePanel !== null || isKeyboardOpenOnEditor);
 
    // Focus on the message box when we change channel
    useEffect(() => {
@@ -96,7 +116,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       requestAnimationFrame(() => {
          if (editor.children.length !== 0) ReactEditor.focus(editor);
       });
-   }, [currentChannel?.id, isMobile]);
+   }, [currentChannel?.id]);
 
    // Track message box height for scroll calculations
    useEffect(() => {
@@ -126,8 +146,8 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   (e.relatedTarget as HTMLElement).closest("[data-keyboard-no-close]") ||
                   (e.relatedTarget as HTMLElement)?.hasAttribute("data-keyboard-no-close"))
             ) {
-               ReactEditor.focus(editor);
                e.preventDefault();
+               ReactEditor.focus(editor);
             }
          },
          { signal: controller.signal },
@@ -143,7 +163,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       }
    });
 
-   function handleMobilePanelClick(panel: "emoji" | "files") {
+   function handleMobilePanelClick(panel: "expression" | "files") {
       const prevState = activeMobilePanel;
       let newState = prevState === panel ? null : panel;
       if (!newState && !isKeyboardOpen) {
@@ -156,6 +176,15 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       setActiveMobilePanel(newState);
    }
 
+   function tempHandleAutocompleteSelect(item: AutocompleteItem) {
+      handleAutocompleteSelect(item);
+   }
+
+   function handleSendGif(url: string) {
+      sendGif(url);
+      setActiveMobilePanel(null);
+   }
+
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
@@ -165,6 +194,15 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
          <ChannelTypingIndicator channelId={channelId!} />
          <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
+            <MessageAutocomplete
+               state={autocompleteState}
+               items={autocompleteItems}
+               onSelectIndex={handleSelectIndex}
+               onSelect={handleSelect}
+               onClose={handleClose}
+               editorRef={editorRef}
+               containerRef={autocompleteContainerRef}
+            />
             <div
                className={clsx(
                   "bg-surface-alt border-surface mx-2 mb-2 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
@@ -180,7 +218,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   show={!!currentReplyingMessageId}
                />
                <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
-               <div className="flex h-full items-start">
+               <div className="flex h-full items-end lg:items-start">
                   <div className="flex gap-x-2 py-2 pl-2">
                      {!currentEditingMessageId &&
                         (isMobileEnvironment ? (
@@ -197,22 +235,25 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </Tooltip>
                         ))}
                      {isMobileEnvironment && (
-                        <EmojiPickerButton
-                           onClick={() => handleMobilePanelClick("emoji")}
-                           isActive={activeMobilePanel === "emoji" && !isKeyboardOpenOnEditor}
-                        />
+                        <ExpressionButton
+                           onClick={() => handleMobilePanelClick("expression")}
+                           isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
+                        >
+                           <IconMingcuteEmoji2Fill className="text-text size-full" />
+                        </ExpressionButton>
                      )}
                   </div>
                   <div className="h-full w-full overflow-hidden">
-                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorOnChange}>
+                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange}>
                         <Editable
                            ref={editorRef}
                            onPaste={onPaste}
                            placeholder={`Message ${currentChannel?.name}`}
                            className={clsx(
-                              "h-full shrink-0 py-4.25 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
+                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
                               currentEditingMessageId && "pl-2.25",
                            )}
+                           onClick={handleEditorClick}
                            renderLeaf={renderLeaf}
                            renderElement={renderElement}
                            decorate={decorate}
@@ -223,13 +264,31 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         />
                      </Slate>
                   </div>
-                  <div className="flex gap-x-2 p-2">
+                  <div className="flex gap-x-2 p-2 pl-1">
                      {!isMobileEnvironment && (
-                        <EmojiPickerButton
-                           onClick={(e) => toggleEmojiPicker(e, { onEmojiSelect: insertEmoji })}
-                           // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
-                           isActive={emojiPickerPopover?.isOpen && !emojiPickerPopover.data?.messageId}
-                        />
+                        <>
+                           <ExpressionButton
+                              onClick={(e) =>
+                                 toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: handleSendGif, activeTab: "gif" })
+                              }
+                              // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
+                              isActive={
+                                 expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "gif"
+                              }
+                           >
+                              <span className="box-exact text-sm">GIF</span>
+                           </ExpressionButton>
+                           <ExpressionButton
+                              onClick={(e) =>
+                                 toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: handleSendGif, activeTab: "emoji" })
+                              }
+                              isActive={
+                                 expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "emoji"
+                              }
+                           >
+                              <IconMingcuteEmoji2Fill className="text-text size-full" />
+                           </ExpressionButton>
+                        </>
                      )}
                      <HuginnButton
                         color="primary"
@@ -244,7 +303,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
             </div>
             <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
-               {activeMobilePanel === "emoji" && <EmojiPickerRawPanel onEmojiSelect={insertEmoji} />}
+               {activeMobilePanel === "expression" && <ExpressionRawPanel onEmojiSelect={insertEmoji} onGifSelect={handleSendGif} type="full" />}
             </div>
             <FilePickerDrawer
                attachments={attachments}

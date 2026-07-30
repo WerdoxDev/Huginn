@@ -94,7 +94,6 @@ model Message {
    content             String
    timestamp           DateTime
    editedTimestamp     DateTime?
-   // deletedTimestamp    DateTime?
    embeds              Embed[]
    attachments         Attachment[]
    call                Call?
@@ -104,6 +103,9 @@ model Message {
    lastReadMessages    ReadState[]
    lastMessageChannels Channel[]    @relation("channel_last_message")
    pin                 MessagePin?
+
+   mentionEveryone Boolean @default(false)
+   mentionOwner    Boolean @default(false)
 
    reactions          Reaction[]
    reactionAggregates ReactionAggregate[]

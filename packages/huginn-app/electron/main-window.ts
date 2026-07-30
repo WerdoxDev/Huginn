@@ -1,31 +1,35 @@
-import { CacheStorage, findClosestString } from "@huginn/shared";
-import { getActiveWindowProcessIds, startAudioCapture, stopAudioCapture } from "application-loopback";
-import { app, desktopCapturer, ipcMain, nativeImage, session, shell, type BrowserWindow } from "electron";
+import { analytics } from "@huginn/shared";
+import { app, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
+import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";
-import native, { type AppInfo } from "native-addon";
+import loopback, { type LoopbackCapture } from "loopback-capture";
+import native from "native-addon";
 import path from "node:path";
 
-import type { AudioSource, DisplaySource } from "@/types";
+import type { AudioSource, DisplaySource, OsInfo } from "@/types";
 
 import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
+import { ScreenManager } from "./screen-manager";
 import { VoiceDebugWindow } from "./voice-debug-window";
 
 const { autoUpdater } = electronUpdater;
 
 export class MainWindow extends BaseWindow {
-   private selectedSourceId?: string;
+   private selectedDisplaySource?: DisplaySource;
    private previousProcessId: string | undefined;
-   private notificationController: NotificationController;
    private voiceDebugWindow?: VoiceDebugWindow;
+   private notificationController: NotificationController = new NotificationController();
+   private screenManager: ScreenManager = new ScreenManager();
+   private loopbackCapture: LoopbackCapture | undefined;
 
    public constructor() {
       super("main", {
-         minWidth: 850,
-         minHeight: 380,
-         width: 1200,
-         height: 670,
+         minWidth: 1024,
+         minHeight: 500,
+         width: 1280,
+         height: 700,
          fullscreen: false,
          frame: false,
          titleBarStyle: "hidden",
@@ -37,8 +41,6 @@ export class MainWindow extends BaseWindow {
          },
          show: false,
       });
-
-      this.notificationController = new NotificationController();
    }
 
    public override registerEvents(window: BrowserWindow): void {
@@ -53,19 +55,26 @@ export class MainWindow extends BaseWindow {
       this.registerNativeEvents();
       this.registerSessionEvents();
       this.registerVoiceDebugEvents();
+      this.registerMediaEvents(window);
    }
 
    private registerSessionEvents() {
       session.defaultSession.setDisplayMediaRequestHandler(async (request, callback) => {
-         const sources = await desktopCapturer.getSources({
-            types: ["screen", "window"],
-            thumbnailSize: { height: 0, width: 0 },
-            fetchWindowIcons: false,
-         });
-         const source = sources.find((x) => x.id === this.selectedSourceId);
+         try {
+            if (!this.selectedDisplaySource) {
+               callback({});
+               return;
+            }
 
-         const audio = request.audioRequested && source?.id.includes("screen") ? "loopback" : undefined;
-         callback({ video: source, ...(audio ? { audio: audio } : {}), enableLocalEcho: false });
+            callback({
+               video: request.videoRequested ? { id: this.selectedDisplaySource.electronId, name: this.selectedDisplaySource.name } : undefined,
+               audio: undefined,
+               enableLocalEcho: false,
+            });
+         } catch (e) {
+            console.error("Error handling display media request:", e);
+            callback({});
+         }
       });
    }
 
@@ -132,53 +141,78 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.handle("window:get-display-sources", async () => {
-         const sources = await desktopCapturer.getSources({
-            types: ["screen", "window"],
-            fetchWindowIcons: true,
-            thumbnailSize: { width: 300, height: 300 },
-         });
+         return await analytics.startActiveSpan("electronMain.getDisplaySources", async (span) => {
+            const screens = screen.getAllDisplays();
 
-         return sources
-            .filter((x) => !x.thumbnail.isEmpty())
-            .map(
+            span.setAttribute("screen.count", screens.length);
+
+            const applications = await Promise.all(
+               native.getOpenApplications().map(async (x) => {
+                  const [icon, thumbnail] = await Promise.all([
+                     native.getProcessIconBase64(x.processId),
+                     native.getWindowThumbnailBase64(x.hwnd, 256, 256),
+                  ]);
+                  return { ...x, icon, thumbnail };
+               }),
+            );
+
+            span.setAttribute("application.count", applications.length);
+
+            const screenSources: DisplaySource[] = await Promise.all(
+               screens.map(async (x, i) => {
+                  const rect = screen.dipToScreenRect(null, x.bounds);
+                  const thumbnail = await native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height);
+                  const electronId = this.screenManager.getDisplaySourceId(x.id);
+                  return {
+                     thumbnail: thumbnail,
+                     electronId: `${electronId}`,
+                     name: `Screen ${i + 1}`,
+                     processId: undefined,
+                  } as DisplaySource;
+               }),
+            );
+
+            span.setAttribute("screen_source.count", screenSources.length);
+
+            const applicationSources: DisplaySource[] = applications.map(
                (x) =>
                   ({
-                     thumbnail: x.thumbnail.toDataURL(),
-                     id: x.id,
-                     name: x.name,
-                     appIcon: x.appIcon?.toDataURL(),
+                     thumbnail: x.thumbnail,
+                     electronId: `window:${x.hwnd}:0`,
+                     name: x.windowTitle,
+                     appIcon: x.icon,
+                     processId: x.processId,
                   }) as DisplaySource,
             );
+
+            span.setAttribute("application_source.count", applicationSources.length);
+
+            return [...screenSources, ...applicationSources];
+         });
       });
 
       ipcMain.handle("window:get-audio-sources", async () => {
-         const sources = await desktopCapturer.getSources({
-            types: ["window"],
-            fetchWindowIcons: true,
-            thumbnailSize: { width: 300, height: 300 },
-         });
-         const processes = await getActiveWindowProcessIds();
+         const applications = await Promise.all(
+            native.getOpenApplications().map(async (x) => {
+               const icon = await native.getProcessIconBase64(x.processId);
+               return { ...x, icon };
+            }),
+         );
 
-         return sources
-            .map((source) => {
-               const bestTitleMatch = findClosestString(
-                  source.name,
-                  processes.map((x) => x.title),
-               );
-               const process = processes.find((x) => x.title === bestTitleMatch.match);
-               return process
-                  ? {
-                       processId: process.processId,
-                       name: source.name,
-                       appIcon: source.appIcon?.toDataURL(),
-                    }
-                  : null;
-            })
-            .filter((x) => x !== null && !sources[0].thumbnail.isEmpty()) as AudioSource[];
+         const audioSources: AudioSource[] = applications.map(
+            (x) =>
+               ({
+                  processId: x.processId,
+                  name: x.windowTitle,
+                  appIcon: x.icon,
+               }) as AudioSource,
+         );
+
+         return audioSources;
       });
 
-      ipcMain.on("window:set-selected-display-source", (_, sourceId: string) => {
-         this.selectedSourceId = sourceId;
+      ipcMain.on("window:set-selected-display-source", (_, source: DisplaySource) => {
+         this.selectedDisplaySource = source;
       });
 
       ipcMain.on("window:relaunch", () => {
@@ -196,6 +230,9 @@ export class MainWindow extends BaseWindow {
    }
 
    private registerUpdateEvents(window: BrowserWindow) {
+      log.transports.file.level = "debug";
+      autoUpdater.logger = log;
+
       ipcMain.handle("update:check", async () => {
          const result = await autoUpdater.checkForUpdates();
          return result?.updateInfo;
@@ -207,6 +244,7 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.on("update:set-url", (_, url: string) => {
+         if (process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) return;
          autoUpdater.setFeedURL({ provider: "generic", url, useMultipleRangeRequest: false });
       });
 
@@ -218,6 +256,16 @@ export class MainWindow extends BaseWindow {
    private registerShellEvents() {
       ipcMain.on("shell:open-external", (_, url: string) => {
          shell.openExternal(url);
+      });
+
+      ipcMain.handle("shell:get-os-info", () => {
+         return {
+            platform: process.platform,
+            arch: process.arch,
+            version: process.getSystemVersion(),
+            chromeVersion: process.versions.chrome,
+            electronVersion: process.versions.electron,
+         } as OsInfo;
       });
    }
 
@@ -244,50 +292,46 @@ export class MainWindow extends BaseWindow {
    }
 
    private registerAudioEvents(window: BrowserWindow) {
-      ipcMain.handle("audio:start-loopback", async (_, processTitle?: string, processId?: string) => {
-         let foundProcessId: string | undefined;
-         if (processTitle) {
-            const processIds = await getActiveWindowProcessIds();
-            const bestTitleMatch = findClosestString(
-               processTitle,
-               processIds.map((x) => x.title),
-            );
-            foundProcessId = processIds.find((x) => x.title === bestTitleMatch.match)?.processId;
-         } else if (processId) {
-            foundProcessId = processId;
-         }
+      ipcMain.on("audio:start-loopback", (_, mode: "system" | "application", processId?: number) => {
+         this.loopbackCapture = new loopback.LoopbackCapture();
 
-         if (foundProcessId) {
-            startAudioCapture(foundProcessId, {
-               onData(data) {
-                  window.webContents.send("audio:loopback-data", data);
-               },
+         if (mode === "application" && processId) {
+            this.loopbackCapture.start(processId, true, (data) => {
+               window.webContents.send("audio:loopback-data", data);
             });
-
-            this.previousProcessId = foundProcessId;
-            return true;
          } else {
-            return false;
+            this.loopbackCapture.startSystemAudio((data) => {
+               window.webContents.send("audio:loopback-data", data);
+            });
          }
       });
 
       ipcMain.handle("audio:stop-loopback", () => {
-         if (this.previousProcessId) {
-            stopAudioCapture(this.previousProcessId);
+         if (this.loopbackCapture) {
+            this.loopbackCapture.stop();
+            this.loopbackCapture = undefined;
          }
       });
    }
 
    private registerNativeEvents() {
-      ipcMain.handle("native:get-open-applications", () => {
-         const applications = native.getOpenApplications();
+      ipcMain.handle("native:get-open-applications", async () => {
+         const applications = await Promise.all(
+            native.getOpenApplications().map(async (x) => {
+               const [icon, displayName] = await Promise.all([native.getProcessIconBase64(x.processId), native.getPackageDisplayName(x.processId)]);
+               return { ...x, icon, displayName };
+            }),
+         );
 
          return applications;
       });
 
-      const applicationIconCache = new CacheStorage<number, AppInfo>(600);
-      ipcMain.handle("native:get-application-info", async (_, exePath: string, processId: number) => {
-         const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(exePath, processId));
+      // const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
+      ipcMain.handle("native:get-application-info", async (_, processId: number) => {
+         // const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(processId));
+         const icon = await native.getProcessIconBase64(processId);
+         const displayName = native.getPackageDisplayName(processId);
+         const info = { displayName, icon };
          return info;
       });
    }
@@ -313,6 +357,24 @@ export class MainWindow extends BaseWindow {
 
       ipcMain.handle("voice-debug:is-open", () => {
          return this.voiceDebugWindow && this.voiceDebugWindow.window.isVisible();
+      });
+   }
+
+   private registerMediaEvents(window: BrowserWindow) {
+      ipcMain.handle("media:download", async (_event, input: { url: string; filename: string }) => {
+         const url = new URL(input.url);
+
+         if (url.protocol !== "https:" && url.protocol !== "http:") {
+            throw new Error("Unsupported media URL");
+         }
+
+         window.webContents.session.once("will-download", (_event, item) => {
+            item.setSaveDialogOptions({
+               defaultPath: path.basename(input.filename),
+            });
+         });
+
+         window.webContents.downloadURL(url.toString());
       });
    }
 }

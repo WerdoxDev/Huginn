@@ -1,4 +1,4 @@
-import { getCodeLanguage } from "@lib/marked-utils";
+import { getCodeLanguage } from "@huginn/shared";
 import hljs from "highlight.js";
 import { useState, useMemo } from "react";
 

@@ -11,6 +11,7 @@ const SliderContext = createContext<{
    maxValue?: number;
    step?: number;
    defaultValue?: number;
+   value?: number;
    onChange?: (value: number) => void;
    getTooltipText?: (value: number, percentage: number) => string;
 }>({
@@ -24,6 +25,7 @@ export default function HuginnSlider(props: {
    maxValue?: number;
    step?: number;
    children?: ReactNode;
+   value?: number;
    onChange?: (value: number) => void;
    getTooltipText?: (value: number, percentage: number) => string;
 }) {
@@ -38,6 +40,7 @@ export default function HuginnSlider(props: {
             maxValue: props.maxValue,
             minValue: props.minValue,
             step: props.step,
+            value: props.value,
             onChange: props.onChange,
          }}
       >
@@ -49,13 +52,15 @@ export default function HuginnSlider(props: {
 function Input(props: { className?: string; backgroundClassName?: string; fillClassName?: string; children?: ReactNode }) {
    const rangeContext = useContext(SliderContext);
 
-   const [value, setValue] = useState(rangeContext.defaultValue ?? rangeContext.minValue ?? 0);
+   const [ourValue, setOurValue] = useState(rangeContext.defaultValue ?? rangeContext.minValue ?? 0);
 
    function handleChange(newValue: number) {
-      setValue(newValue);
+      setOurValue(newValue);
       rangeContext.onChange?.(newValue);
    }
    const [showTooltip, setShowTooltip] = useState(false);
+
+   const value = rangeContext.value ?? ourValue;
 
    return (
       <Slider.Root
@@ -66,11 +71,13 @@ function Input(props: { className?: string; backgroundClassName?: string; fillCl
          thumbAlignment="edge-client-only"
          min={rangeContext.minValue}
          max={rangeContext.maxValue}
+         step={rangeContext.step}
       >
          <Slider.Control
             className="group flex h-full w-full cursor-w-resize items-center"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
+            onTouchStart={(e) => e.stopPropagation()}
          >
             <Slider.Track className={clsx("bg-surface-alt h-1 w-full rounded-full transition-[height] group-hover:h-2", props.backgroundClassName)}>
                <Slider.Indicator className={clsx("bg-primary-500 rounded-full select-none", props.fillClassName)} />

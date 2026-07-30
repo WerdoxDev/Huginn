@@ -24,8 +24,20 @@ export const defaultClientOptions = {
       },
    } as RESTOptions,
    cdn: { url: "https://midgard.huginn.dev" } as CDNOptions,
-   gateway: { url: "wss://midgard.huginn.dev/gateway", intents: 0 } as GatewayOptions,
-   voice: { url: "wss://midgard.huginn.dev/voice-gateway" } as VoiceOptions,
+   gateway: {
+      url: "wss://midgard.huginn.dev/gateway",
+      intents: 0,
+      properties: { os: "unknown", browser: "unknown", device: "unknown" },
+      createSocket(url) {
+         return new WebSocket(url);
+      },
+   } as GatewayOptions,
+   voice: {
+      url: "wss://midgard.huginn.dev/voice-gateway",
+      createSocket(url) {
+         return new WebSocket(url);
+      },
+   } as VoiceOptions,
 } as const;
 
 export async function defaultMakeRequest(url: string, init: RequestInit): Promise<ResponseLike> {

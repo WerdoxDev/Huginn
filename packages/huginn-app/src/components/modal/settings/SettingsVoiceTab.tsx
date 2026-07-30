@@ -82,6 +82,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
    useEffect(() => {
       return () => {
+         audioLevel.current?.stopChecking();
+         inputDevice.current?.close();
          stopCameraTest();
       };
    }, []);
@@ -205,7 +207,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
                   getTooltipText={(percentage) => `${remap(percentage, 0, 100, -100, 0)}db`}
                >
                   <HuginnSlider.Label>Input Threshold</HuginnSlider.Label>
-                  <HuginnSlider.Input backgroundClassName="bg-positive-400!" fillClassName="bg-negative-100!">
+                  <HuginnSlider.Input backgroundClassName="bg-positive-300!" fillClassName="bg-negative-300!">
                      <div
                         className="bg-surface-alt/50 absolute top-0 left-0 h-full transition-all duration-100"
                         style={{ width: `${remap(inputDb, -100, 0, 0, 100)}%` }}

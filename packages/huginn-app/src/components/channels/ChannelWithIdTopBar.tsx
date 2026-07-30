@@ -5,12 +5,14 @@ import TopBarButton from "@components/button/TopBarButton";
 import TopBar from "@components/TopBar";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { ChannelType } from "@huginn/shared";
+import { useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { usePopover } from "@stores/popoverStore";
 
 import type { AppDirectChannel } from "@/types";
 
-import ChannelName from "./ChannelName";
+import CurrentChannelInfo from "./CurrentChannelInfo";
 
 export default function ChannelWithIdTopBar(props: {
    channel: AppDirectChannel;
@@ -21,6 +23,8 @@ export default function ChannelWithIdTopBar(props: {
    const { isRightOpen, resetToCenter } = useMobileMenuStore();
    const isMobile = useIsMobile();
    const { toggle } = usePopover("pinned_messages");
+   const client = useClient();
+   const { updateModals } = useModals();
 
    function handleBack() {
       resetToCenter();
@@ -36,7 +40,7 @@ export default function ChannelWithIdTopBar(props: {
             ) : (
                <MobileMenuButton />
             ))}
-         <ChannelName />
+         <CurrentChannelInfo iconZoomable />
          {/* {(!isMobile || !isRightOpen) && ( */}
          <div className="ml-auto flex shrink-0 gap-x-5">
             <TopBarButton tooltip="Start Call" onClick={props.onCallClick}>

@@ -104,7 +104,7 @@ export class HuginnApp {
    }
 
    private createTray() {
-      const iconName = "icon.ico";
+      const iconName = "tray.ico";
       this.tray = new Tray(
          app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : path.join(__dirname, "../", "electron-assets", iconName),
       );

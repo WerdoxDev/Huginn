@@ -12,8 +12,10 @@ cache
 builds
 target
 certs
+coverage
 
 emoji-out
+icon-out
 
 *.env
 
@@ -54,3 +56,7 @@ playwright/.cache/
 .vs
 
 generated
+
+.pnpm-store
+
+update-keys

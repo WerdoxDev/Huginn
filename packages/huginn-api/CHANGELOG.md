@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.1...api@v0.42.0) (2026-07-22)
+
+
+### Features
+
+* **api:** fix bunch of unhandled promise rejection stuff + handle voice token expiration ([08a94d6](https://github.com/WerdoxDev/Huginn/commit/08a94d617cb962d179b7da5dd7a0757bc0b029b7))
+* **api:** remove constant ping pong messaging ([3247c27](https://github.com/WerdoxDev/Huginn/commit/3247c27397b36c1c4da3f04950bb17892ee20228))
+
+## [0.41.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.0...api@v0.41.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **api:** some analytic fixes ([22fbf66](https://github.com/WerdoxDev/Huginn/commit/22fbf6636ff1a0c6a73bb42b6a1b27a3286c365f))
+
+## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.40.0...api@v0.41.0) (2026-07-17)
+
+
+### Features
+
+* **api:** add pause consumer and move voice preferences to user settings ([cc1363f](https://github.com/WerdoxDev/Huginn/commit/cc1363f72000b35cbf9f26c0a34af7ddd4097879))
+
+
+### Bug Fixes
+
+* **api:** pause created consumers and manage its state later on applyVoiceState ([ad8e9f9](https://github.com/WerdoxDev/Huginn/commit/ad8e9f9ff0fa971924d8d932f0c41c4269eb67b6))
+
+## [0.40.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.39.0...api@v0.40.0) (2026-07-11)
+
+
+### Features
+
+* **api:** 100% voice stream, device manager, state and manager test coverages ([231bd6e](https://github.com/WerdoxDev/Huginn/commit/231bd6e6278731d4b3a3c4899915baa1c9d02f9d))
+* **api:** 100% voice-signaling-client coverage ([76847bb](https://github.com/WerdoxDev/Huginn/commit/76847bba8f5db9d75000093ba53db9799e91b246))
+* **api:** 100% voice-transport-manager coverage tests ([bf4c149](https://github.com/WerdoxDev/Huginn/commit/bf4c14970e8c39b4de2d1eebd40e0ebef26f76e6))
+* **api:** add mostly 100% coverage tests for client, gateway, voice and rest ([2e3e4e6](https://github.com/WerdoxDev/Huginn/commit/2e3e4e6fe5e66df31e99ed5676225d423a3fce7e))
+* **api:** add new api for gifs ([3596b28](https://github.com/WerdoxDev/Huginn/commit/3596b28743585d0ef2a06fbd900fbef41aa79d80))
+* **app:** alsmost 100% test coverage on some other files ([50013d5](https://github.com/WerdoxDev/Huginn/commit/50013d5c0a8d62c9785de662755ecf6e9d171375))
+
 ## [0.39.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.38.0...api@v0.39.0) (2026-07-02)
 
 

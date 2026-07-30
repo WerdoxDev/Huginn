@@ -1,3 +1,4 @@
+import GifPlayer from "@components/GifPlayer";
 import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
@@ -5,9 +6,10 @@ import { useOpen } from "@hooks/useOpen";
 import { CONSTANTS, constrainImageSize } from "@huginn/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, type MouseEvent } from "react";
 
 export default function EmbedElement(props: {
+   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
    thumbnail?: { url: string; width?: number; height?: number };
    video?: { url: string; width?: number; height?: number };
    title?: string;
@@ -18,8 +20,8 @@ export default function EmbedElement(props: {
    const { openUrl } = useOpen();
    const context = useContext(MessageContext);
    const barebone = useMemo(
-      () => props.description === undefined && props.title === undefined && (props.thumbnail || props.video),
-      [props.description, props.title, props.thumbnail, props.video],
+      () => props.embedType === "gifv" || (props.description === undefined && props.title === undefined && (props.thumbnail || props.video)),
+      [props.embedType, props.description, props.title, props.thumbnail, props.video],
    );
    const dimensions = useMemo(
       () =>
@@ -32,24 +34,78 @@ export default function EmbedElement(props: {
       [props.thumbnail, props.video],
    );
 
+   function handleGifContextMenu(e: MouseEvent<HTMLVideoElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            gif: {
+               url: props.url ?? props.video?.url ?? "",
+               src: props.video?.url ?? "",
+               width: props.video?.width ?? 0,
+               height: props.video?.height ?? 0,
+            },
+         },
+         e,
+      );
+   }
+
+   function handleImageContextMenu(e: MouseEvent<HTMLDivElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            imgElement: e.currentTarget as HTMLImageElement,
+            mediaUrl: props.thumbnail?.url ?? "",
+         },
+         e,
+      );
+   }
+
+   function handleVideoContextMenu(e: MouseEvent<HTMLVideoElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            videoElement: e.currentTarget,
+            mediaUrl: props.video?.url ?? "",
+         },
+         e,
+      );
+   }
+
+   function handleContextMenu(e: MouseEvent<HTMLDivElement>) {
+      e.stopPropagation();
+      open({ message: context.message, url: props.url }, e);
+   }
+
    return (
-      <div
-         contentEditable={false}
-         style={{ maxWidth: barebone ? `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH}px` : `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}
-      >
-         <div className={clsx("mt-1 mb-1 flex max-w-md flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
-            {props.title && (
+      <div contentEditable={false} style={{ maxWidth: barebone ? `${dimensions.width}px` : `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
+         <div className={clsx("mt-1 mb-1 flex flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
+            {props.title && props.embedType !== "gifv" && (
                <span
-                  onContextMenu={(e) => (context.options?.disableContextMenu ? undefined : open({ message: context.message, url: props.url }, e))}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleContextMenu}
                   className={clsx(props.url && "text-primary-500 cursor-pointer hover:underline", props.description ? "mb-1" : "mb-2")}
                   onClick={props.url ? () => openUrl(props.url!) : undefined}
                >
                   {props.title}
                </span>
             )}
-            {props.description && <span className={clsx("text-sm", props.thumbnail && "mb-2")}>{props.description}</span>}
-            {/* <div className="relative "> */}
-            {props.thumbnail && (
+            {props.description && props.embedType !== "gifv" && (
+               <span className={clsx("text-sm", props.thumbnail && "mb-2")}>{props.description}</span>
+            )}
+
+            {props.embedType === "gifv" && props.video ? (
+               <GifPlayer
+                  originalWidth={props.video.width ?? 0}
+                  originalHeight={props.video.height ?? 0}
+                  height={dimensions.height}
+                  width={dimensions.width}
+                  src={props.video.url ?? ""}
+                  url={props.url ?? props.video.url ?? ""}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleGifContextMenu}
+               />
+            ) : props.thumbnail ? (
                <ImagePreview
                   width={dimensions.width}
                   height={dimensions.height}
@@ -57,10 +113,18 @@ export default function EmbedElement(props: {
                   originalHeight={props.thumbnail.height ?? 0}
                   url={props.thumbnail.url}
                   disableQuery
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
                />
+            ) : (
+               props.video && (
+                  <VideoPlayer
+                     url={props.video.url}
+                     width={dimensions.width}
+                     height={dimensions.height}
+                     onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
+                  />
+               )
             )}
-            {props.video && <VideoPlayer url={props.video.url} width={dimensions.width} height={dimensions.height} />}
-            {/* </div> */}
          </div>
       </div>
    );

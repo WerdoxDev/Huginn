@@ -44,30 +44,25 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             "voice.stream.scalability_mode": scalabilityMode,
          });
 
-         try {
-            if (videoTrack) {
-               // ENCODING ORDERING MATTERS FOR SIMULCAST
-               const encodings: RtpEncodingParameters[] = useSimulcast
-                  ? [
-                       { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
-                       { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
-                    ]
-                  : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
-               await this.transport.createProducer("stream_video", videoTrack, {
-                  encodings,
-                  codecOptions: { videoGoogleStartBitrate: 1000 },
-               });
-            }
+         if (videoTrack) {
+            // ENCODING ORDERING MATTERS FOR SIMULCAST
+            const encodings: RtpEncodingParameters[] = useSimulcast
+               ? [
+                    { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
+                    { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
+                 ]
+               : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
+            await this.transport.createProducer("stream_video", videoTrack, {
+               encodings,
+               codecOptions: { videoGoogleStartBitrate: 1000 },
+            });
+         }
 
-            if (audioTrack) {
-               await this.transport.createProducer("stream_audio", audioTrack, {
-                  encodings: [{ maxBitrate: maxAudioBitrate }],
-                  codecOptions: { opusStereo: true },
-               });
-            }
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+         if (audioTrack) {
+            await this.transport.createProducer("stream_audio", audioTrack, {
+               encodings: [{ maxBitrate: maxAudioBitrate }],
+               codecOptions: { opusStereo: true },
+            });
          }
       });
    }
@@ -98,13 +93,10 @@ export class VoiceStreamManager extends EventEmitter<Events> {
 
             const settings = track.getSettings();
             const constraints: MediaTrackConstraints = {};
-            // if (width !== undefined || height !== undefined) {
+
             constraints.width = width ?? settings.width;
             constraints.height = height ?? settings.height;
-            // }
-            // if (frameRate !== undefined) {
             constraints.frameRate = frameRate ?? settings.frameRate;
-            // }
 
             await track.applyConstraints(constraints);
 
@@ -150,7 +142,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             if (params.encodings.length > 1) {
                params.encodings[0].maxBitrate = clampedBitrate / 3;
                params.encodings[1].maxBitrate = clampedBitrate;
-            } else if (params.encodings.length > 0) {
+            } else {
                params.encodings[0].maxBitrate = clampedBitrate;
             }
 
@@ -189,9 +181,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
                throw new Error("Failed to get RTP parameters");
             }
 
-            if (params.encodings.length > 0) {
-               params.encodings[0].maxBitrate = clampedBitrate;
-            }
+            params.encodings[0].maxBitrate = clampedBitrate;
 
             await producer.rtpSender?.setParameters(params);
 
@@ -215,21 +205,16 @@ export class VoiceStreamManager extends EventEmitter<Events> {
          if (options.frameRate) span.setAttribute("params.frame_rate", options.frameRate);
          if (options.maxBitrate) span.setAttribute("params.max_bitrate", options.maxBitrate);
 
-         try {
-            const { width, height, frameRate, maxBitrate } = options;
+         const { width, height, frameRate, maxBitrate } = options;
 
-            // Update constraints if any are provided
-            if (width !== undefined || height !== undefined || frameRate !== undefined) {
-               await this.updateVideoConstraints(width, height, frameRate);
-            }
+         // Update constraints if any are provided
+         if (width !== undefined || height !== undefined || frameRate !== undefined) {
+            await this.updateVideoConstraints(width, height, frameRate);
+         }
 
-            // Update bitrate if provided
-            if (maxBitrate !== undefined) {
-               await this.updateVideoBitrate(maxBitrate);
-            }
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+         // Update bitrate if provided
+         if (maxBitrate !== undefined) {
+            await this.updateVideoBitrate(maxBitrate);
          }
       });
    }
@@ -243,12 +228,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             "voice.track.kind": track.kind,
          });
 
-         try {
-            await this.transport.replaceProducerTrack("stream_video", track);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.replaceProducerTrack("stream_video", track);
       });
    }
 
@@ -261,12 +241,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             "voice.track.kind": track.kind,
          });
 
-         try {
-            await this.transport.replaceProducerTrack("stream_audio", track);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.replaceProducerTrack("stream_audio", track);
       });
    }
 
@@ -277,12 +252,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             "voice.media.kind": "stream_audio",
          });
 
-         try {
-            await this.transport.closeProducer("stream_audio");
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.closeProducer("stream_audio");
       });
    }
 
@@ -293,12 +263,7 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             "voice.media.kind": "stream_video",
          });
 
-         try {
-            await this.transport.closeProducer("stream_video");
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await this.transport.closeProducer("stream_video");
       });
    }
 
@@ -306,18 +271,16 @@ export class VoiceStreamManager extends EventEmitter<Events> {
       return await analytics.startActiveSpan("api.voiceStream.closeStream", async (span) => {
          const hasAudio = !!this.transport.getProducer("stream_audio");
          const hasVideo = !!this.transport.getProducer("stream_video");
+
+         console.log(hasAudio, hasVideo);
+
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "voice.stream.has_audio": hasAudio,
             "voice.stream.has_video": hasVideo,
          });
 
-         try {
-            await Promise.all([hasAudio && this.transport.closeProducer("stream_audio"), hasVideo && this.transport.closeProducer("stream_video")]);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         await Promise.all([hasAudio && this.transport.closeProducer("stream_audio"), hasVideo && this.transport.closeProducer("stream_video")]);
       });
    }
 }

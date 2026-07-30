@@ -1,13 +1,11 @@
-import type { ProcessInfo } from "native-addon";
-
-import { ActivityType, error, log, type APIKnownApplication, type Snowflake } from "@huginn/shared";
-import { convertToAppPresence } from "@lib/utils";
+import { ActivityType, error, type APIKnownApplication, type GatewaySession, type Snowflake } from "@huginn/shared";
+import { convertToAppPresence, convertToAppSession } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import type { AppPresence, CustomApplication } from "@/types";
+import type { ApplicationInfo, AppPresence, CustomApplication } from "@/types";
 
 import { clientStore } from "./clientStore";
 import { storageStore } from "./storageStore";
@@ -15,7 +13,7 @@ import { windowStore } from "./windowStore";
 
 const initialStore = () => ({
    presences: [] as AppPresence[],
-   thisPresence: {} as AppPresence,
+   session: {} as GatewaySession,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -47,15 +45,13 @@ export function initPresenceStore() {
       const thisStore = store.getState();
       store.setState({ presences: [] });
 
-      const presence: AppPresence = {
-         userId: d.user.id,
-         status: d.userSettings.status || "online",
-         activities: [],
-         activeSessions: [{ sessionId: client.gateway.sessionId! }],
-      };
+      const session = d.sessions.find((x) => x.sessionId === client.gateway.sessionId);
+      if (!session) return;
 
+      const presence = convertToAppPresence({ user: { id: d.user.id }, activities: session.activities, status: session.status, clientStatus: {} });
+
+      store.setState({ session: convertToAppSession(session) });
       thisStore.updatePresence(d.user.id, presence);
-      store.setState({ thisPresence: presence });
 
       if (d.presences) {
          for (const presence of d.presences) {
@@ -71,27 +67,19 @@ export function initPresenceStore() {
    });
 
    const unlisten3 = client.gateway.listen("session_update", (d) => {
-      if (!d.status || !client.currentUser) {
-         return;
-      }
+      const session = d.find((x) => x.sessionId === client.gateway.sessionId);
+
+      if (!client.currentUser || !session) return;
 
       const presence = convertToAppPresence({
          user: { id: client.currentUser.id },
-         activeSessions: [],
-         activities: d.activities,
-         status: d.status,
+         activities: session.activities,
+         status: session.status,
+         clientStatus: {},
       });
-      store.setState((state) => ({
-         thisPresence: {
-            ...state.thisPresence,
-            status: presence.status,
-            activities: presence.activities,
-         },
-      }));
-      store.getState().updatePresence(client.currentUser.id, {
-         status: presence.status,
-         activities: presence.activities,
-      });
+
+      store.setState({ session: convertToAppSession(session) });
+      store.getState().updatePresence(client.currentUser.id, presence);
    });
 
    const unlisten4 = client.gateway.listen("disconnected", () => {
@@ -108,7 +96,6 @@ export function initPresenceStore() {
 
 let activityInterval: number | undefined;
 function startCheckingForActivity() {
-   log("app:presence-store", "default", "start activity checking");
    if (windowStore.getState().environment !== "desktop") {
       return;
    }
@@ -116,14 +103,11 @@ function startCheckingForActivity() {
    stopCheckingForActivity();
 
    activityInterval = window.setInterval(async () => {
-      log("app:presence-store", "default", "check activity");
       try {
-         const presence = store.getState().thisPresence;
+         const session = store.getState().session;
          const client = clientStore.getState().client;
 
-         if (!client?.gateway.isAuthenticated) {
-            return;
-         }
+         if (!client?.gateway.isAuthenticated || !client.gateway.sessionId) return;
 
          const knownApplications = storageStore.getState().getCachedValue("known-applications").applications;
          const customApplications = storageStore.getState().getCachedValue("custom-applications");
@@ -132,21 +116,21 @@ function startCheckingForActivity() {
          const knownMatch = detectKnownApplication(openApplications, knownApplications);
          const customMatch = detectCustomApplication(openApplications, customApplications);
 
-         const ourActivities = presence.activities.filter((x) => x.sessionId === client.gateway.sessionId);
+         const ourActivities = session.activities.filter((x) => x.sessionId === client.gateway.sessionId);
 
          if (!knownMatch && !customMatch) {
             // Nothing detected -> clear presence if it was set before
             if (ourActivities.length !== 0) {
                client.gateway.updatePresence({
                   activities: [],
-                  status: presence.status,
+                  status: session.status,
                });
             }
             return;
          }
 
          const match: {
-            detected: ProcessInfo;
+            detected: ApplicationInfo;
             custom?: CustomApplication;
             known?: APIKnownApplication;
          } = knownMatch ?? customMatch;
@@ -164,24 +148,9 @@ function startCheckingForActivity() {
             }
          }
 
-         log(
-            "app:presence-store",
-            "default",
-            "new activity",
-            "kid:",
-            match.known?.id,
-            "kn:",
-            match.known?.names,
-            "ctit:",
-            match.custom?.title,
-            "cexe:",
-            match.custom?.exePath,
-         );
-
-         const info = await window.electronAPI.getApplicationInfo(match.detected.exePath, match.detected.processId);
          let iconHash;
-         if (info.icon) {
-            iconHash = await client.applications.uploadIcon({ icon: info.icon });
+         if (match.detected.icon) {
+            iconHash = await client.applications.uploadIcon({ icon: match.detected.icon });
          }
 
          client.gateway.updatePresence({
@@ -195,7 +164,7 @@ function startCheckingForActivity() {
                   applicationId: match.known?.id,
                },
             ],
-            status: presence.status,
+            status: session.status,
          });
       } catch (e) {
          error("app:presence-store", "Error when checking activity:", e);
@@ -210,7 +179,7 @@ function stopCheckingForActivity() {
    }
 }
 
-function detectKnownApplication(applications: ProcessInfo[], knownApplications: APIKnownApplication[]) {
+function detectKnownApplication(applications: ApplicationInfo[], knownApplications: APIKnownApplication[]) {
    const match = applications.flatMap((x) => {
       const exeName = x.exePath.split(/[/\\]+/).pop();
       const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
@@ -222,7 +191,7 @@ function detectKnownApplication(applications: ProcessInfo[], knownApplications: 
    return match;
 }
 
-function detectCustomApplication(applications: ProcessInfo[], customApplications: CustomApplication[]) {
+function detectCustomApplication(applications: ApplicationInfo[], customApplications: CustomApplication[]) {
    const match = applications.flatMap((x) => {
       const found = customApplications?.find((y) => y.exePath === x.exePath);
       return found ? [{ detected: x, custom: found }] : [];

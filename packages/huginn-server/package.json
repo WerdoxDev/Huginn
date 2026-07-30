@@ -1,6 +1,6 @@
 {
    "name": "@huginn/server",
-   "version": "0.43.0",
+   "version": "0.47.1",
    "type": "module",
    "imports": {
       "#*": "./src/*.ts"
@@ -25,13 +25,11 @@
       "@std/encoding": "npm:@jsr/std__encoding",
       "@std/text": "npm:@jsr/std__text",
       "@types/jsdom": "^28.0.3",
-      "@types/markdown-it": "^14.1.2",
       "crossws": "^0.4.4",
       "elysia": "^1.4.29",
       "envalid": "^8.2.0",
       "firebase-admin": "^14.0.0",
       "jsdom": "^29.1.1",
-      "markdown-it": "^14.1.1",
       "notion-to-md": "^4.0.0-alpha.7",
       "octokit": "^5.0.5",
       "pathe": "^2.0.3",

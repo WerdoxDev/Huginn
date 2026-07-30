@@ -84,7 +84,7 @@ function initElectronNotifications() {
 let canSend = true;
 
 export function sendNotification(payload: string, title: string, text: string, icon?: string) {
-   const thisPresence = presenceStore.getState().thisPresence;
+   const thisPresence = presenceStore.getState().session;
 
    if (!canSend || thisPresence.status === "dnd") {
       return;

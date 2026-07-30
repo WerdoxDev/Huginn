@@ -395,10 +395,14 @@ export default function SettingsAdvancedTab(props: SettingsTabProps) {
                   </HuginnButton>
                )}
             </form>
-            <div className="bg-surface-alt h-px w-full" />
-            <HuginnCheckbox checked={settings.useProxy} onChange={handleUseProxyChanged}>
-               <HuginnCheckbox.Input>Use System Proxy</HuginnCheckbox.Input>
-            </HuginnCheckbox>
+            {huginnWindow.environment === "desktop" && (
+               <>
+                  <div className="bg-surface-alt h-px w-full" />
+                  <HuginnCheckbox checked={settings.useProxy} onChange={handleUseProxyChanged}>
+                     <HuginnCheckbox.Input>Use System Proxy</HuginnCheckbox.Input>
+                  </HuginnCheckbox>
+               </>
+            )}
          </div>
       </div>
    );
@@ -409,7 +413,7 @@ function PresetItem(props: { name: string; isSelected: boolean; isPending?: bool
       <div
          className={clsx(
             "transition-ring flex overflow-hidden rounded-md",
-            props.isSelected && (props.isPending ? "ring-caution-600 ring" : "ring-positive-600 ring"),
+            props.isSelected && (props.isPending ? "ring-caution-700 ring" : "ring-positive-700 ring"),
          )}
       >
          <HuginnButton

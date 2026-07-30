@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.30.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.1...backend-shared@v0.30.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **backend-shared:** remove old migrations and start new one ([e0f7386](https://github.com/WerdoxDev/Huginn/commit/e0f73867b8726d6e4010fbcd67b4cc79066b210c))
+
+## [0.30.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.0...backend-shared@v0.30.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **backend-shared:** update message shouldn't always set updated timestamp ([dfe9c94](https://github.com/WerdoxDev/Huginn/commit/dfe9c94fa0c6da5b3e3f0e50c51a9286d51341eb))
+
+## [0.30.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.29.0...backend-shared@v0.30.0) (2026-07-05)
+
+
+### Features
+
+* **backend-shared:** add new mention properties in prisma schema ([1972418](https://github.com/WerdoxDev/Huginn/commit/197241892cdf8b98251530985036cd98e1f6ebd3))
+
 ## [0.29.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.28.1...backend-shared@v0.29.0) (2026-07-02)
 
 

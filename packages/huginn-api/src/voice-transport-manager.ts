@@ -9,6 +9,7 @@ import type {
    TransportOptions,
    RtpEncodingParameters,
    ConnectionState,
+   DeviceOptions,
 } from "mediasoup-client/types";
 
 import {
@@ -27,14 +28,15 @@ import {
    type VoiceCloseProducerResult,
    type VoiceConnectTransportResult,
    type VoiceConsumeResult,
-   type VoiceConsumeResultData,
+   type VoicePauseConsumerResult,
+   type VoicePreference,
    type VoiceProduceResult,
    type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
 } from "@huginn/shared";
 import * as mediasoupClient from "mediasoup-client";
 
-import type { HuginnClient } from ".";
+import { TransportError, type HuginnClient } from ".";
 
 type Events = {
    send_transport_ready: undefined;
@@ -52,7 +54,7 @@ type Events = {
       rtpParameters: RtpParameters;
       callback: (d: VoiceProduceResult) => void;
    };
-   close_producer: { id: string; callback: (d: VoiceCloseProducerResult) => void };
+   close_producer: { id: string; kind: HMediaKind; callback: (d: VoiceCloseProducerResult) => void };
    producer_updated: { id: string; kind: HMediaKind; track: MediaStreamTrack | null };
    producer_created: Producer<MediasoupAppData>;
    producer_closed: ProducerData;
@@ -63,10 +65,11 @@ type Events = {
       producerId: string;
       transportId: string;
       rtpCapabilities: RtpCapabilities;
-      callback: (d: VoiceConsumeResultData) => void;
+      callback: (d: VoiceConsumeResult) => void;
       // errback: (d: VoiceConsumeResultData) => void;
    };
    resume_consumer: { id: string; callback: (d: VoiceResumeConsumerResult) => void };
+   pause_consumer: { id: string; callback: (d: VoicePauseConsumerResult) => void };
    close_consumer: { id: string; callback: (d: VoiceCloseConsumerResult) => void };
    consumer_created: Consumer<MediasoupAppData>;
    consumer_closed: ConsumerData;
@@ -81,15 +84,20 @@ type Events = {
 
 type TransportManagerStatus = "idle" | "disconnected" | "ready" | "restarting";
 
+type Options = {
+   deviceOptions?: DeviceOptions;
+};
+
 export class VoiceTransportManager extends EventEmitter<Events> {
    private client: HuginnClient;
    public device?: mediasoupClient.Device;
-   public sendTransport?: Transport<MediasoupAppData>;
+   public sendTransport?: Transport;
    public recvTransport?: Transport;
    public remoteProducers: Map<string, ProducerData> = new Map();
    public remoteConsumers: Map<string, ConsumerData> = new Map();
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
+   private options?: Options;
 
    private pendingRemoteProducers = new Map<string, ProducerData>();
 
@@ -98,9 +106,10 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return this._status;
    }
 
-   public constructor(client: HuginnClient) {
+   public constructor(client: HuginnClient, options?: Options) {
       super();
       this.client = client;
+      this.options = options;
    }
 
    private getDefaultAttributes() {
@@ -139,7 +148,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       }
    }
 
-   private async onTransportStateChanged(state: ConnectionState, direction: "send" | "recv") {
+   private async onTransportStateChanged(state: ConnectionState, _direction: "send" | "recv") {
       if ((state === "disconnected" || state === "failed") && this.status !== "restarting") {
          this.setStatus("disconnected");
       } else {
@@ -152,7 +161,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            this.checkTransports();
+            this.checkRecvTransport();
+            this.checkSendTransport();
             const sendStatus = this.sendTransport.connectionState;
             const recvStatus = this.recvTransport.connectionState;
 
@@ -175,19 +185,24 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       device: mediasoupClient.Device;
    } {
       if (!this.device) {
-         throw new Error("Transport manager's device is not initialized");
+         throw new TransportError("Transport manager's device is not initialized");
       }
    }
 
-   public checkTransports(): asserts this is this & {
+   public checkSendTransport(): asserts this is this & {
       device: mediasoupClient.Device;
       sendTransport: Transport<MediasoupAppData>;
+   } {
+      this.checkDevice();
+      if (!this.sendTransport) throw new TransportError("Transport manager's send transport is not initialized");
+   }
+
+   public checkRecvTransport(): asserts this is this & {
+      device: mediasoupClient.Device;
       recvTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.sendTransport || !this.recvTransport) {
-         throw new Error("Transport manager's transports are not initialized");
-      }
+      if (!this.recvTransport) throw new TransportError("Transport manager's recv transport is not initialized");
    }
 
    public async initializeDevice(rtpCapabilities: RtpCapabilities): Promise<void> {
@@ -195,7 +210,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            this.device = new mediasoupClient.Device();
+            this.device = new mediasoupClient.Device(this.options?.deviceOptions);
             await this.device.load({ routerRtpCapabilities: rtpCapabilities });
          } catch (e) {
             recordSpanError(e);
@@ -204,7 +219,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createSendTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
+   public async createSendTransport(options: TransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createSendTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -225,7 +240,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   dtlsParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to connect send transport: ${d.error}`));
+                        errback(new TransportError(`Failed to connect send transport: ${d.error}`, d.error));
                         return;
                      }
                      callback();
@@ -242,7 +257,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   rtpParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to create producer: ${d.error}`));
+                        errback(new TransportError(`Failed to create producer: ${d.error}`, d.error));
                         return;
                      }
 
@@ -260,7 +275,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createRecvTransport(options: TransportOptions<MediasoupAppData>): Promise<void> {
+   public async createRecvTransport(options: TransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createRecvTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -271,7 +286,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const iceServers = await this.fetchTurnCredentials();
-            const transport = this.device.createRecvTransport({ ...options, iceServers });
+            const finalOptions = { ...options, iceServers };
+            const transport = this.device.createRecvTransport(finalOptions);
             this.recvTransport = transport;
             this.emit("recv_transport_ready", undefined);
 
@@ -281,7 +297,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                   dtlsParameters,
                   callback: (d) => {
                      if ("error" in d) {
-                        errback(new Error(`Failed to connect receive transport: ${d.error}`));
+                        errback(new TransportError(`Failed to connect receive transport: ${d.error}`, d.error));
                         return;
                      }
                      callback();
@@ -303,21 +319,21 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            const id = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
-            const token = import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
+            const id = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
+            const token = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
             span.setAttributes({
                "turn.has_id": !!id,
                "turn.has_token": !!token,
             });
-            const data = { ttl: 86400 };
 
+            const data = { ttl: 86400 };
             const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                body: JSON.stringify(data),
                method: "POST",
             });
-
-            return (await response.json()).iceServers;
+            const json = await response.json();
+            return json.iceServers;
          } catch (e) {
             recordSpanError(e);
             return undefined;
@@ -329,7 +345,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       kind: HMediaKind,
       track: MediaStreamTrack,
       options?: { codecOptions?: ProducerCodecOptions; encodings?: RtpEncodingParameters[] },
-   ): Promise<Producer<MediasoupAppData> | undefined> {
+   ): Promise<Producer<MediasoupAppData>> {
       return await analytics.startActiveSpan("apiVoiceTransport.createProducer", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -339,9 +355,9 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            this.checkSendTransport();
 
-            if (this.producers.has(kind)) throw new Error(`Producer with kind ${kind} already exists`);
+            if (this.producers.has(kind)) throw new TransportError(`Producer with kind ${kind} already exists`);
 
             const producer = await this.sendTransport.produce<MediasoupAppData>({
                codecOptions: options?.codecOptions,
@@ -375,14 +391,14 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new Error(`Producer of kind ${kind} doesn't exist`);
+            if (!producer) throw new TransportError(`Producer of kind ${kind} doesn't exist`);
 
             const result = await new Promise<VoiceCloseProducerResult>((res) => {
-               this.emit("close_producer", { id: producer.id, callback: res });
+               this.emit("close_producer", { id: producer.id, kind: producer.appData.mediaKind, callback: res });
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to close producer: ${result.error}`);
+               throw new TransportError(`Failed to close producer: ${result.error}`, result.error);
             }
 
             producer.close();
@@ -408,22 +424,22 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            this.checkRecvTransport();
 
             const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
-            if (!remoteProducer) throw new Error(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
+            if (!remoteProducer) throw new TransportError(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
 
             const createResult = await new Promise<VoiceConsumeResult>((res) => {
                this.emit("create_consumer", {
                   producerId: remoteProducer.producerId,
-                  rtpCapabilities: this.device.rtpCapabilities,
+                  rtpCapabilities: this.device.recvRtpCapabilities,
                   transportId: this.recvTransport.id,
                   callback: res,
                });
             });
 
             if ("error" in createResult) {
-               throw new Error(`Failed to create consumer: ${createResult.error}`);
+               throw new TransportError(`Failed to create consumer: ${createResult.error}`, createResult.error);
             }
 
             const consumer = await this.recvTransport.consume({
@@ -437,22 +453,67 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             // To avoid a race condition that could happen when consumer is created and right after that the producer is removed
             if (!this.remoteProducers.has(remoteProducer.producerId)) {
                consumer.close();
-               throw new Error(`Remote producer with id ${remoteProducer.producerId} was deleted`);
+               throw new TransportError(`Remote producer with id ${remoteProducer.producerId} was deleted`);
             }
 
             this.consumers.set(consumer.id, consumer);
-
             this.emit("consumer_created", consumer);
 
-            const resumeResult = await new Promise<VoiceResumeConsumerResult>((res) => {
-               this.emit("resume_consumer", { id: consumer.id, callback: res });
-            });
+            consumer.pause();
 
-            if ("error" in resumeResult) {
-               throw new Error(`Failed to resume consumer ${resumeResult.error}`);
-            }
+            // await this.resumeConsumer(consumer.id);
 
             return consumer;
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public async resumeConsumer(consumerId: string): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceTransport.resumeConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer.id": consumerId,
+         });
+
+         try {
+            const consumer = this.consumers.get(consumerId);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
+
+            const result = await new Promise<VoiceResumeConsumerResult>((res) => {
+               this.emit("resume_consumer", { id: consumerId, callback: res });
+            });
+
+            if ("error" in result) {
+               throw new TransportError(`Failed to resume consumer: ${result.error}`, result.error);
+            }
+         } catch (e) {
+            recordSpanError(e);
+            throw e;
+         }
+      });
+   }
+
+   public async pauseConsumer(consumerId: string): Promise<void> {
+      return await analytics.startActiveSpan("apiVoiceTransport.pauseConsumer", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.consumer.id": consumerId,
+         });
+
+         try {
+            const consumer = this.consumers.get(consumerId);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
+
+            const result = await new Promise<VoicePauseConsumerResult>((res) => {
+               this.emit("pause_consumer", { id: consumerId, callback: res });
+            });
+
+            if ("error" in result) {
+               throw new TransportError(`Failed to pause consumer: ${result.error}`, result.error);
+            }
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -472,7 +533,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new Error(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
 
             if (!skipSignalling) {
                const result = await new Promise<VoiceCloseConsumerResult>((res) => {
@@ -480,7 +541,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                });
 
                if ("error" in result) {
-                  throw new Error(`Failed to close consumer: ${result.error}`);
+                  throw new TransportError(`Failed to close consumer: ${result.error}`, result.error);
                }
             }
 
@@ -507,13 +568,17 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          });
 
          try {
-            this.checkTransports();
+            if (direction === "send") {
+               this.checkSendTransport();
+            } else {
+               this.checkRecvTransport();
+            }
 
             // It could happen that restarting a transport causes the other one to also reconnect
             this.checkAndSetStatus();
             if (this.status === "ready") return;
 
-            const transport = direction === "send" ? this.sendTransport : this.recvTransport;
+            const transport = (direction === "send" ? this.sendTransport : this.recvTransport)!;
 
             this.setStatus("restarting");
 
@@ -522,7 +587,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             });
 
             if ("error" in result) {
-               throw new Error(`Failed to restart ice server for ${direction} transport: ${result.error}`);
+               throw new TransportError(`Failed to restart ice server for ${direction} transport: ${result.error}`, result.error);
             }
 
             await transport.restartIce({ iceParameters: result.iceParameters });
@@ -533,43 +598,55 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public applyVoiceState(gatewayVoiceState: GatewayVoiceStateFlags, localVoiceState: LocalVoiceState): void {
+   public async applyVoiceState(
+      gatewayVoiceState: GatewayVoiceStateFlags,
+      localVoiceState: LocalVoiceState,
+      voicePreferences: VoicePreference[],
+   ): Promise<void> {
       const micProducer = this.producers.get("microphone");
 
       if (micProducer) {
-         // If state is paused, mic is not paused, pause mic
-         if (localVoiceState.isAudioPaused === true && !micProducer?.paused) {
-            micProducer.pause();
-         }
-         // If state is not paused, state is not muted, mic is paused, resume mic
-         else if (localVoiceState.isAudioPaused === false && !gatewayVoiceState?.isAudioMuted && micProducer.paused) {
-            micProducer.resume();
-         }
+         const shouldBePaused = localVoiceState.isAudioPaused === true || gatewayVoiceState.isAudioMuted === true;
 
-         // If state is muted, mic is not paused, pause mic
-         if (gatewayVoiceState.isAudioMuted === true && !micProducer.paused) {
+         if (shouldBePaused && !micProducer.paused) {
             micProducer.pause();
-         }
-         // If state is not muted, state is not paused, mic is paused, resume mic
-         else if (gatewayVoiceState.isAudioMuted === false && !localVoiceState.isAudioPaused && micProducer.paused) {
+         } else if (!shouldBePaused && micProducer.paused) {
             micProducer.resume();
          }
       }
 
+      let promises: Promise<void>[] = [];
       for (const consumer of this.consumers.values()) {
          if (consumer.appData.mediaKind !== "stream_audio" && consumer.appData.mediaKind !== "microphone") {
+            // no other kind of consumer should be paused.
+            if (consumer.paused) {
+               promises.push(this.resumeConsumer(consumer.id));
+               consumer.resume();
+            }
             continue;
          }
 
+         const voicePreference = voicePreferences.find((x) => x.userId === consumer.appData.userId);
+         const isMuted =
+            consumer.appData.mediaKind === "microphone"
+               ? voicePreference?.isMicrophoneMuted
+               : consumer.appData.mediaKind === "stream_audio"
+                 ? voicePreference?.isStreamMuted
+                 : false;
+
          // If state is deafened consume is not paused, pause consumer
-         if (gatewayVoiceState.isAudioDeafened === true && !consumer.paused) {
+         if ((gatewayVoiceState.isAudioDeafened === true || isMuted === true) && !consumer.paused) {
+            promises.push(this.pauseConsumer(consumer.id));
             consumer.pause();
          }
          // If state is not deafened, consumer is paused, resume consumer
-         else if (gatewayVoiceState.isAudioDeafened === false && consumer.paused) {
+         else if (gatewayVoiceState.isAudioDeafened === false && isMuted === false && consumer.paused) {
+            promises.push(this.resumeConsumer(consumer.id));
             consumer.resume();
          }
       }
+
+      await Promise.all(promises);
    }
 
    public async replaceProducerTrack(kind: HMediaKind, track: MediaStreamTrack): Promise<void> {
@@ -583,7 +660,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new Error(`No producer with kind ${kind} was found`);
+            if (!producer) throw new TransportError(`No producer with kind ${kind} was found`);
 
             await producer.replaceTrack({ track });
             this.emit("producer_updated", { id: producer.id, kind: producer.appData.mediaKind, track });
@@ -627,18 +704,13 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.user.id": producer.userId,
          });
 
-         try {
-            if (!this.recvTransport) {
-               this.pendingRemoteProducers?.set(producer.producerId, producer);
-               return;
-            }
-
-            this.remoteProducers.set(producer.producerId, producer);
-            this.emit("remote_producer_created", producer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
+         if (!this.recvTransport) {
+            this.pendingRemoteProducers?.set(producer.producerId, producer);
+            return;
          }
+
+         this.remoteProducers.set(producer.producerId, producer);
+         this.emit("remote_producer_created", producer);
       });
    }
 
@@ -652,13 +724,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.user.id": consumer.userId,
          });
 
-         try {
-            this.remoteConsumers.set(consumer.consumerId, consumer);
-            this.emit("remote_consumer_created", consumer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteConsumers.set(consumer.consumerId, consumer);
+         this.emit("remote_consumer_created", consumer);
       });
    }
 
@@ -669,16 +736,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.producer.id": producerId,
          });
 
-         try {
-            const producer = this.remoteProducers.get(producerId);
-            if (!producer) return;
+         const producer = this.remoteProducers.get(producerId);
+         if (!producer) return;
 
-            this.remoteProducers.delete(producerId);
-            this.emit("remote_producer_closed", producer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteProducers.delete(producerId);
+         this.emit("remote_producer_closed", producer);
       });
    }
 
@@ -689,16 +751,11 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             "params.consumer.id": consumerId,
          });
 
-         try {
-            const consumer = this.remoteConsumers.get(consumerId);
-            if (!consumer) return;
+         const consumer = this.remoteConsumers.get(consumerId);
+         if (!consumer) return;
 
-            this.remoteConsumers.delete(consumerId);
-            this.emit("remote_consumer_closed", consumer);
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.remoteConsumers.delete(consumerId);
+         this.emit("remote_consumer_closed", consumer);
       });
    }
 
@@ -706,26 +763,21 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       analytics.startActiveSpan("apiVoiceTransport.reset", (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
-         try {
-            this.sendTransport?.close();
-            this.recvTransport?.close();
-         } catch (e) {
-            recordSpanError(e);
-         } finally {
-            this.device = undefined;
-            this.sendTransport = undefined;
-            this.recvTransport = undefined;
+         this.sendTransport?.close();
+         this.recvTransport?.close();
 
-            this.remoteProducers.clear();
-            this.remoteConsumers.clear();
+         this.device = undefined;
+         this.sendTransport = undefined;
+         this.recvTransport = undefined;
 
-            this.producers.clear();
-            this.consumers.clear();
+         this.remoteProducers.clear();
+         this.remoteConsumers.clear();
 
-            this.setStatus("idle");
-            this.emit("reset", undefined);
-            span.end();
-         }
+         this.producers.clear();
+         this.consumers.clear();
+
+         this.setStatus("idle");
+         this.emit("reset", undefined);
       });
    }
 }

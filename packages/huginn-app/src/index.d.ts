@@ -36,6 +36,7 @@ type CodespanElement = {
 
 type EmbedElement = {
    type: "embed";
+   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
    thumbnail?: { url: string; width?: number; height?: number };
    video?: { url: string; width?: number; height?: number };
    title?: string;
@@ -65,6 +66,27 @@ export type EmojiElement = {
    children: Descendant[];
 };
 
+export type UserMentionElement = {
+   mentionType: "user";
+   userId: Snowflake;
+} & MentionElementBase;
+
+export type EveryoneMentionElement = {
+   mentionType: "everyone";
+   usedText: string;
+} & MentionElementBase;
+
+export type OwnerMentionElement = {
+   mentionType: "owner";
+   usedText: string;
+} & MentionElementBase;
+
+type MentionElementBase = {
+   type: "mention";
+   children: Descendant[];
+};
+export type MentionElement = UserMentionElement | EveryoneMentionElement | OwnerMentionElement;
+
 type ListElement = {
    type: "unordered-list" | "ordered-list";
    children: Descendant[];
@@ -85,7 +107,8 @@ type CustomElement =
    | CodespanElement
    | EmojiElement
    | ListElement
-   | ListItemElement;
+   | ListItemElement
+   | MentionElement;
 
 type TextFormats = {
    bold?: boolean;
@@ -100,6 +123,7 @@ type TextFormats = {
    codeLanguage?: boolean;
    list?: boolean;
    throwaway?: boolean;
+   escape?: boolean;
 };
 export type FormattedText = { text: string } & TextFormats;
 
