@@ -1,20 +1,20 @@
 {
    "rewrites": [
       {
+         "source": "/docs/:path*",
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/docs/:path*"
+      },
+      {
+         "source": "/docs/",
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/docs"
+      },
+      {
          "source": "/app/:path*",
          "destination": "https://huginn-app-werdoxs-projects.vercel.app/:path*"
       },
       {
          "source": "/app/",
          "destination": "https://huginn-app-werdoxs-projects.vercel.app"
-      },
-      {
-         "source": "/docs/:path*",
-         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/:path*"
-      },
-      {
-         "source": "/docs/",
-         "destination": "https://huginn-docs-werdoxs-projects.vercel.app"
       },
       {
          "source": "/:path*",
