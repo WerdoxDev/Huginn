@@ -1,15 +1,5 @@
-# huginn-client
+# @huginnjs/api
 
-To install dependencies:
+Typed TypeScript client for Huginn's HTTP API, realtime gateway, CDN, and WebRTC voice stack.
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.0.7. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+See the [Huginn documentation](https://huginn.dev/docs/api/) for installation, guides, and API reference.
