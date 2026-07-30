@@ -1,6 +1,6 @@
 import type { ClipboardEvent } from "react";
 
-import { isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { getAudioCovertArt, getVideoThumbnail } from "@lib/utils";
 import { useEffect, useRef, useState, useTransition } from "react";
 

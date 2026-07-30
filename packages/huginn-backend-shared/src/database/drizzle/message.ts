@@ -1,4 +1,4 @@
-import { analytics, idFix, MessageType, recordSpanError, snowflake, WorkerID, type APIPostMessageReferenceJSONBody, type Snowflake } from "@huginn/shared";
+import { analytics, idFix, MessageType, recordSpanError, snowflake, WorkerID, type APIPostMessageReferenceJSONBody, type Snowflake } from "@huginnjs/shared";
 import { PaginationType, type ScalarWhereField } from "better-drizzle";
 
 import { assertExists, assertId, assertObj } from "#database/error";

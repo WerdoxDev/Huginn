@@ -114,7 +114,7 @@ await client.voice.stream.openStream(videoTrack, audioTrack, {
 You can actually open an audio only stream for something like music sharing
 :::
 
-Bitrates are clamped to the limits in `@huginn/shared`. Simulcast creates low- and full-resolution video encodings.
+Bitrates are clamped to the limits in `@huginnjs/shared`. Simulcast creates low- and full-resolution video encodings.
 
 Update a live stream:
 

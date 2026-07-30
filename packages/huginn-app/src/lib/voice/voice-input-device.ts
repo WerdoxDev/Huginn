@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginnjs/api";
 
-import { log } from "@huginn/shared";
+import { log } from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 

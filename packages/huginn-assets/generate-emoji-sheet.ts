@@ -1,4 +1,4 @@
-import type { EmojiMapMeta, EmojiPosition } from "@huginn/shared";
+import type { EmojiMapMeta, EmojiPosition } from "@huginnjs/shared";
 
 import fs from "fs/promises";
 import path from "path";

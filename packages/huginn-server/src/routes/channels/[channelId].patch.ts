@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, missingPermission, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
-import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginn/shared";
+import { CDNRoutes, Errors, MessageFlags, MessageType, getFileHash, toArrayBuffer } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { channelWithoutRecipient, dispatchChannel, dispatchMessage, filterChannel } from "#utils/helpers";

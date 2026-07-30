@@ -4,7 +4,7 @@
    "private": true,
    "type": "module",
    "dependencies": {
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "culori": "^4.0.2",
       "emojibase": "^17.0.0",
       "emojibase-data": "^17.0.0",

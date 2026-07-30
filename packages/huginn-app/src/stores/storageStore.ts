@@ -1,4 +1,4 @@
-import { analyticsShim } from "@huginn/shared";
+import { analyticsShim } from "@huginnjs/shared";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 

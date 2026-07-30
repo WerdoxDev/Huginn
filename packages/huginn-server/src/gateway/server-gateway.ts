@@ -24,7 +24,7 @@ import {
    recordSpanError,
    type Snowflake,
    WorkerID,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { filterChannel } from "#utils/helpers";
 

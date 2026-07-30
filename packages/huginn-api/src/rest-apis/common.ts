@@ -1,6 +1,6 @@
-import type { APIGetChangelogResult, APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@huginn/shared";
+import type { APIGetChangelogResult, APIPostUniqueUsernameJSONBody, APIPostUniqueUsernameResult } from "@huginnjs/shared";
 
-import { Routes } from "@huginn/shared";
+import { Routes } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

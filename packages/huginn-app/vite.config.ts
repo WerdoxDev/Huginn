@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
          // bundledDev: true,
       },
       publicDir: "public",
-      // optimizeDeps: ["@huginn/shared"],
+      // optimizeDeps: ["@huginnjs/shared"],
       plugins: [
          // basicSsl({ domains: ["192.168.178.21"] }),
          // reactRouterDevTools(),

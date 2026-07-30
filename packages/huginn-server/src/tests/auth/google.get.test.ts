@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { generateRandomString } from "@huginn/shared";
+import { generateRandomString } from "@huginnjs/shared";
 import { encodeBase64 } from "@std/encoding";
 import { describe, expect, test } from "bun:test";
 

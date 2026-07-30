@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { compareArrayBuffers } from "@huginn/shared";
+import { compareArrayBuffers } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import path from "node:path";
 

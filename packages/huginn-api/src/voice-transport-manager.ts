@@ -33,7 +33,7 @@ import {
    type VoiceProduceResult,
    type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import * as mediasoupClient from "mediasoup-client";
 
 import { TransportError, type HuginnClient } from ".";

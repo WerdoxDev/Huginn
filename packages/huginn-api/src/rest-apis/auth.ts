@@ -6,9 +6,9 @@ import type {
    APIPostRefreshTokenResult,
    APIPostRegisterJSONBody,
    APIPostRegisterResult,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
-import { Routes } from "@huginn/shared";
+import { Routes } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

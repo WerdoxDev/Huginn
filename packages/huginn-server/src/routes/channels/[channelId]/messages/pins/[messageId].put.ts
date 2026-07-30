@@ -1,7 +1,7 @@
 import { missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectMessagePin } from "@huginn/backend-shared/database/common";
-import { MessageFlags, MessageType, type APIPutChannelPinResult } from "@huginn/shared";
+import { MessageFlags, MessageType, type APIPutChannelPinResult } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";

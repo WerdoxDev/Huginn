@@ -1,6 +1,6 @@
 import { globalPlugin, hRateLimit, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors, type EmailVerificationPurpose } from "@huginn/shared";
+import { CONSTANTS, Errors, type EmailVerificationPurpose } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";

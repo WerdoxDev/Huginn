@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelDefaults } from "@huginn/backend-shared/database/common";
-import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginn/shared";
+import { type APIPostDMChannelResult, ChannelType, Errors } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";

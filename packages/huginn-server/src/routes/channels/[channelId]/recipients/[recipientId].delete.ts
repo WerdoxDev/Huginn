@@ -1,7 +1,7 @@
 import { missingAccess, missingPermission, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectChannelRecipients } from "@huginn/backend-shared/database/common";
-import { ChannelType, Errors, MessageFlags, MessageType } from "@huginn/shared";
+import { ChannelType, Errors, MessageFlags, MessageType } from "@huginnjs/shared";
 import { Elysia } from "elysia";
 
 import { gateway } from "#server";

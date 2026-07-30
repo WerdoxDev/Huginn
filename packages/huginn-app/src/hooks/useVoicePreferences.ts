@@ -1,4 +1,4 @@
-import type { Snowflake, VoicePreference } from "@huginn/shared";
+import type { Snowflake, VoicePreference } from "@huginnjs/shared";
 
 import { clientStore, useClient, useClientStore } from "@stores/clientStore";
 import { produce } from "immer";

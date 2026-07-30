@@ -1,4 +1,4 @@
-import { CONSTANTS, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginn/shared";
+import { CONSTANTS, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginnjs/shared";
 
 import type { CDNOptions } from "./types";
 

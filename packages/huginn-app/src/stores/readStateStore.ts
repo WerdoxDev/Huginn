@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { analytics, ChannelType, MessageType, recordSpanError, RelationshipType, type Snowflake } from "@huginn/shared";
+import { analytics, ChannelType, MessageType, recordSpanError, RelationshipType, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { listenEvent } from "@lib/event-handler";
 import { sendNotification } from "@lib/notification";

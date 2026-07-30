@@ -1,4 +1,4 @@
-import { type Snowflake } from "@huginn/shared";
+import { type Snowflake } from "@huginnjs/shared";
 import { listenEvent } from "@lib/event-handler";
 import { useChannelReadState } from "@stores/readStateStore";
 import { useThisUser } from "@stores/userStore";

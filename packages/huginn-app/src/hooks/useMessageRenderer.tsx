@@ -10,7 +10,7 @@ import MessageLeaf from "@components/editor/MessageLeaf";
 import MessageMentionElement from "@components/editor/MessageMentionElement";
 import ParagraphElement from "@components/editor/ParagraphElement";
 import SpoilerElement from "@components/editor/SpoilerElement";
-import { CONSTANTS, marked, organizeMarkedTokens, type MarkedToken } from "@huginn/shared";
+import { CONSTANTS, marked, organizeMarkedTokens, type MarkedToken } from "@huginnjs/shared";
 import { useMemo } from "react";
 import { Element, Text, type Descendant } from "slate";
 

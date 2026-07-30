@@ -1,4 +1,4 @@
-import { log, type HMediaKind } from "@huginn/shared";
+import { log, type HMediaKind } from "@huginnjs/shared";
 
 export class AudioLevelChecker {
    private volumeNode: AudioWorkletNode | undefined;

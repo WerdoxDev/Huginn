@@ -1,6 +1,6 @@
 import type { PayloadForArgs, SelectInput } from "better-drizzle";
 
-import { idFix, type BigIntToString, type Snowflake } from "@huginn/shared";
+import { idFix, type BigIntToString, type Snowflake } from "@huginnjs/shared";
 
 import { schema } from "./db";
 

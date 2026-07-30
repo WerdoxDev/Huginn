@@ -1,4 +1,4 @@
-import { snowflake } from "@huginn/shared";
+import { snowflake } from "@huginnjs/shared";
 import { createScope, createTimeline, splitText, stagger, type Scope } from "animejs";
 import moment from "moment";
 import { useEffect, useMemo, useRef } from "react";

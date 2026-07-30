@@ -12,7 +12,7 @@ import {
    RelationshipType,
    type Snowflake,
    type UserSettings,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { expect } from "bun:test";
 
 import { containsId } from "./utils";

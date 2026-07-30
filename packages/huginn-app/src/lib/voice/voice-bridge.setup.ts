@@ -1,4 +1,4 @@
-import { EventEmitter } from "@huginn/shared";
+import { EventEmitter } from "@huginnjs/shared";
 import { vi } from "vitest";
 
 class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {

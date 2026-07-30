@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState, type VoicePreference } from "@huginn/shared";
+import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState, type VoicePreference } from "@huginnjs/shared";
 
 type Events = {
    update_gateway_voice_state: {

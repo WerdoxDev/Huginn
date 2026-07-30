@@ -6,7 +6,7 @@ import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";

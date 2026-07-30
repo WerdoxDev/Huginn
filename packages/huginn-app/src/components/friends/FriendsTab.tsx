@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { Tabs } from "@base-ui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";

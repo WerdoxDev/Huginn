@@ -9,7 +9,7 @@
    },
    "dependencies": {
       "@huginn/runtime-shared": "workspace:*",
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "@opentui/core": "^0.1.57",
       "@opentui/core-linux-x64": "^0.1.62",
       "@opentui/react": "^0.1.57",

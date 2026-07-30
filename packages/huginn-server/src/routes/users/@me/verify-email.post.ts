@@ -1,6 +1,6 @@
 import { createToken, singleError } from "@huginn/backend-shared";
 import { prisma, selectPrivateUser } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors, type APIPostVerifyEmailResult } from "@huginn/shared";
+import { CONSTANTS, Errors, type APIPostVerifyEmailResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({

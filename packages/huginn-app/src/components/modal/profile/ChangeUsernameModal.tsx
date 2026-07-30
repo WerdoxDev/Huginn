@@ -9,7 +9,7 @@ import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginn/shared";
+import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";

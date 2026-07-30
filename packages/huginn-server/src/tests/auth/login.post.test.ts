@@ -1,4 +1,4 @@
-import type { APIPostLoginResult, LoginCredentials } from "@huginn/shared";
+import type { APIPostLoginResult, LoginCredentials } from "@huginnjs/shared";
 
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";

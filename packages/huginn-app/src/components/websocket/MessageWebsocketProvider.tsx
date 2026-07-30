@@ -7,7 +7,7 @@ import {
    type GatewayMessageDeleteData,
    type GatewayMessageReactionAddData,
    type GatewayMessageUpdateData,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import {
    appendAppMessage,

@@ -1,4 +1,4 @@
-import { omit } from "@huginn/shared";
+import { omit } from "@huginnjs/shared";
 import clsx from "clsx";
 
 import type { HuginnLoadingButtonProps } from "@/types";

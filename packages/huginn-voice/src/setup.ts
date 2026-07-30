@@ -1,5 +1,5 @@
-import { initAnalytics } from "@huginn/shared";
-import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
+import { initAnalytics } from "@huginnjs/shared";
+import { RuntimeAnalytics } from "@huginnjs/shared/runtime-analytics";
 
 import { env } from "#env";
 

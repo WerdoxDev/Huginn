@@ -1,4 +1,4 @@
-import { MessageType } from "@huginn/shared";
+import { MessageType } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useEffect } from "react";
 

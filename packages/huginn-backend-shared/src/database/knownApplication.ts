@@ -1,4 +1,4 @@
-import { analytics, idFix, recordSpanError, type Snowflake } from "@huginn/shared";
+import { analytics, idFix, recordSpanError, type Snowflake } from "@huginnjs/shared";
 
 import { assertExists, assertId, assertObj, prisma, Prisma, type KnownApplicationArgs, type KnownApplicationPayload } from "#database";
 import { DBErrorType } from "#types";

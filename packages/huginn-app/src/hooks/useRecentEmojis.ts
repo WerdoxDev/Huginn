@@ -1,4 +1,4 @@
-import { getEmojiBySlug } from "@huginn/shared";
+import { getEmojiBySlug } from "@huginnjs/shared";
 import { useMemo, useState } from "react";
 
 const RECENT_EMOJIS_KEY = "recent-emojis";

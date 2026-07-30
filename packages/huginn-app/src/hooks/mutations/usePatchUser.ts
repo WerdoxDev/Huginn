@@ -1,5 +1,5 @@
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
-import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData, omit } from "@huginn/shared";
+import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData, omit } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 

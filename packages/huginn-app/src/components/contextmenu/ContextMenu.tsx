@@ -5,7 +5,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";

@@ -1,4 +1,4 @@
-import { type HMediaKind, type Snowflake } from "@huginn/shared";
+import { type HMediaKind, type Snowflake } from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
 
 export class AudioSourcePlayer {

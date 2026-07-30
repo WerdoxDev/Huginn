@@ -4,7 +4,7 @@ import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useRemoveChannelRecipient } from "@hooks/mutations/useRemoveChannelRecipient";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";

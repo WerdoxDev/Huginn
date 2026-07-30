@@ -1,4 +1,4 @@
-import type { APIGetCurrentUserResult } from "@huginn/shared";
+import type { APIGetCurrentUserResult } from "@huginnjs/shared";
 
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";

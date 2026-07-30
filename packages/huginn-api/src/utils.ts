@@ -1,4 +1,4 @@
-import type { ResponseLike, UserTokenPayload } from "@huginn/shared";
+import type { ResponseLike, UserTokenPayload } from "@huginnjs/shared";
 
 import * as jose from "jose";
 

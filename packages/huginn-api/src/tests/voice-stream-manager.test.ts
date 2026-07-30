@@ -1,4 +1,4 @@
-import { CONSTANTS, type MediasoupAppData } from "@huginn/shared";
+import { CONSTANTS, type MediasoupAppData } from "@huginnjs/shared";
 import { FakeMediaStreamTrack } from "fake-mediastreamtrack";
 import { testFakeParameters } from "mediasoup-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";

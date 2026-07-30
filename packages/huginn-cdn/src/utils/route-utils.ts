@@ -1,4 +1,4 @@
-import { type ImageFormats } from "@huginn/shared";
+import { type ImageFormats } from "@huginnjs/shared";
 
 import type { FileCategory } from "#utils/types";
 

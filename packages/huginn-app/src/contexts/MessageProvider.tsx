@@ -1,6 +1,6 @@
 import MessageRenderer from "@components/message/MessageRenderer";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
-import { snowflake, WorkerID, type Snowflake } from "@huginn/shared";
+import { snowflake, WorkerID, type Snowflake } from "@huginnjs/shared";
 import { deleteAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";

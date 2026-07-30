@@ -1,7 +1,7 @@
 import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { LiveUpdate } from "@capawesome/capacitor-live-update";
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { runPendingActions } from "@lib/actions";
 import { SplashScreen } from "@lib/capacitor/splash-screen";
 import { initAnalytics } from "@lib/web-analytics";

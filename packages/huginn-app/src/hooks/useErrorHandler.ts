@@ -1,4 +1,4 @@
-import { HTTPError, HuginnAPIError } from "@huginn/shared";
+import { HTTPError, HuginnAPIError } from "@huginnjs/shared";
 import { ErrorMessages } from "@lib/error-messages";
 import { useModals } from "@stores/modalsStore";
 

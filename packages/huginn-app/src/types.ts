@@ -3,6 +3,7 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
+import type { Gateway } from "@huginnjs/api";
 import type {
    APICallMessage,
    APIDefaultMessage,
@@ -23,8 +24,7 @@ import type {
    ChannelType,
    FavoriteGif,
    GatewaySession,
-} from "@huginn/shared";
-import type { Gateway } from "@huginnjs/api";
+} from "@huginnjs/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
 import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";

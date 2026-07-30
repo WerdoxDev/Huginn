@@ -1,4 +1,4 @@
-import type { GatewayIdentifyProperties, ResponseLike, Snowflake } from "@huginn/shared";
+import type { GatewayIdentifyProperties, ResponseLike, Snowflake } from "@huginnjs/shared";
 
 import type { Voice } from "./voice";
 

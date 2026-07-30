@@ -4,7 +4,7 @@ import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import HuginnLabel from "@components/HuginnLabel";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import { usePopovers } from "@stores/popoverStore";
 import clsx from "clsx";
 import { createContext, type ReactNode, useContext, useState } from "react";

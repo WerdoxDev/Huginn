@@ -1,4 +1,4 @@
-import { CONSTANTS, Fields } from "@huginn/shared";
+import { CONSTANTS, Fields } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
 import { useFormState, type Control, type FieldValues } from "react-hook-form";
 

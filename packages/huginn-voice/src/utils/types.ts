@@ -1,4 +1,4 @@
-import type { APIUser, MediasoupAppData, Snowflake } from "@huginn/shared";
+import type { APIUser, MediasoupAppData, Snowflake } from "@huginnjs/shared";
 import type { Consumer, Producer, Router, Transport, WebRtcTransport } from "mediasoup/types";
 
 export type ClientSessionProperties = {

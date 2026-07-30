@@ -1,6 +1,6 @@
 import type { RtpEncodingParameters } from "mediasoup-client/types";
 
-import { analytics, clamp, CONSTANTS, EventEmitter, recordSpanError } from "@huginn/shared";
+import { analytics, clamp, CONSTANTS, EventEmitter, recordSpanError } from "@huginnjs/shared";
 
 import type { VoiceStreamOptions } from ".";
 import type { VoiceTransportManager } from "./voice-transport-manager";

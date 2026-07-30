@@ -1,5 +1,5 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
-import { MessageReferenceType, type APIPostMessageReferenceJSONBody } from "@huginn/shared";
+import { MessageReferenceType, type APIPostMessageReferenceJSONBody } from "@huginnjs/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";

@@ -1,6 +1,6 @@
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
-import { MessageType, type APIDefaultMessage, type APIPublicUser, type Snowflake } from "@huginn/shared";
+import { MessageType, type APIDefaultMessage, type APIPublicUser, type Snowflake } from "@huginnjs/shared";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";

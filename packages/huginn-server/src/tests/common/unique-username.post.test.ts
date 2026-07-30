@@ -1,4 +1,4 @@
-import type { APIPostUniqueUsernameResult } from "@huginn/shared";
+import type { APIPostUniqueUsernameResult } from "@huginnjs/shared";
 
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";

@@ -1,4 +1,4 @@
-import { ChannelType, type Snowflake, WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginn/shared";
+import { ChannelType, type Snowflake, WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginnjs/shared";
 
 import { assertExists, Prisma, prisma, type ChannelArgs, type ChannelPayload } from "#database";
 import { DBErrorType } from "#types";

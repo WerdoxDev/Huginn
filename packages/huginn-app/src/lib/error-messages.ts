@@ -1,4 +1,4 @@
-import { JsonCode } from "@huginn/shared";
+import { JsonCode } from "@huginnjs/shared";
 
 export const ErrorMessages = {
    connectionLostError() {

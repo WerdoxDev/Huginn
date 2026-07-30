@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
-import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginn/shared";
+import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";

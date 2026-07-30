@@ -2,7 +2,7 @@ import Tooltip from "@components/tooltip/Tooltip";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser, useUsers } from "@hooks/api-hooks/userHooks";
 import { useIsRTL } from "@hooks/useIsRTL";
-import { MessageType, type Snowflake } from "@huginn/shared";
+import { MessageType, type Snowflake } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import moment from "moment";

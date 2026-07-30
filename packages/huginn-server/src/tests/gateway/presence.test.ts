@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginn/shared";
+import { ActivityType, GatewayCode, GatewayOperations, type APIPatchCurrentUserJSONBody, type GatewayPayload } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectPresenceExactSchema, expectSessionUpdateExactSchema } from "#tests/expect-utils";

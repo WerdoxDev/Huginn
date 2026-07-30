@@ -1,5 +1,5 @@
 import { useFullscreen } from "@hooks/useFullscreen";
-import { formatSeconds } from "@huginn/shared";
+import { formatSeconds } from "@huginnjs/shared";
 import clsx from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 

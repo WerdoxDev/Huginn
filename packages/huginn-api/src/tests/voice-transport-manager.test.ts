@@ -1,6 +1,6 @@
 import type { Consumer, TransportOptions } from "mediasoup-client/types";
 
-import { VoiceSignallingError, type HMediaKind } from "@huginn/shared";
+import { VoiceSignallingError, type HMediaKind } from "@huginnjs/shared";
 import { FakeMediaStreamTrack } from "fake-mediastreamtrack";
 import { FakeHandler, testFakeParameters } from "mediasoup-client";
 import { http, HttpResponse } from "msw";

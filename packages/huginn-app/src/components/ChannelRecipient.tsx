@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";

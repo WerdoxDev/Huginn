@@ -1,4 +1,4 @@
-import type { APIRelease } from "@huginn/shared";
+import type { APIRelease } from "@huginnjs/shared";
 
 import { Popover, Transition } from "@headlessui/react";
 import { Icon } from "@iconify/react";

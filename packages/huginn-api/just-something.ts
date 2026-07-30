@@ -1,4 +1,4 @@
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 
 import { HuginnClient } from "./src";
 

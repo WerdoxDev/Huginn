@@ -17,7 +17,7 @@ import {
    isOpcode,
    snowflake,
    omitArray,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { gateway } from "#server";
 import { env } from "#setup";

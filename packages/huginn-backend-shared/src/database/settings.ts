@@ -1,4 +1,4 @@
-import { DEFAULT_SERVER_SETTINGS, analytics, recordSpanError, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginn/shared";
+import { DEFAULT_SERVER_SETTINGS, analytics, recordSpanError, type APIPatchUserSettingsJSONBody, type Snowflake, type UserSettings } from "@huginnjs/shared";
 
 import { assertExists, assertId, assertObj, prisma, Prisma } from "#database";
 import { DBErrorType } from "#types";

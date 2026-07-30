@@ -1,4 +1,11 @@
-import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, generateRandomString, type OAuthFlow, type OAuthType, Routes } from "@huginn/shared";
+import {
+   type APIPostOAuthConfirmJSONBody,
+   type APIPostOAuthConfirmResult,
+   generateRandomString,
+   type OAuthFlow,
+   type OAuthType,
+   Routes,
+} from "@huginnjs/shared";
 import { encodeBase64 } from "@std/encoding";
 
 import type { Gateway } from "../gateway";

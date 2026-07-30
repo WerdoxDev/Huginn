@@ -3,7 +3,7 @@ import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginn/shared";
+import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";

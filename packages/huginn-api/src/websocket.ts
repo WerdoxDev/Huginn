@@ -1,4 +1,4 @@
-import { EventEmitter } from "@huginn/shared";
+import { EventEmitter } from "@huginnjs/shared";
 
 export class SharedWebsocket<Events> extends EventEmitter<Events> {
    /**

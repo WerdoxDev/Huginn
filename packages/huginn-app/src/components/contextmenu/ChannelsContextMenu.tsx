@@ -1,7 +1,7 @@
 import UserProfilePreview from "@components/profile/UserProfilePreview";
 import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { usePinnedChannels } from "@hooks/usePinnedChannels";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 

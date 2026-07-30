@@ -1,7 +1,7 @@
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitRelationshipUserIds, selectRelationshipUser } from "@huginn/backend-shared/database/common";
-import { type APIGetUserRelationshipByIdResult } from "@huginn/shared";
+import { type APIGetUserRelationshipByIdResult } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 export const getUserRelationship = new Elysia()

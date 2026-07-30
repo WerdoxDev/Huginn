@@ -1,7 +1,7 @@
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { omitChannelRecipient } from "@huginn/backend-shared/database/common";
-import { merge } from "@huginn/shared";
+import { merge } from "@huginnjs/shared";
 import { Elysia } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";

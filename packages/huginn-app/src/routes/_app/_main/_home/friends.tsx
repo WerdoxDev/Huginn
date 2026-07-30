@@ -6,7 +6,7 @@ import FriendsTabItem from "@components/friends/FriendsTabItem";
 import PendingFriendsTab from "@components/friends/PendingFriendsTab";
 import TopBar from "@components/TopBar";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { getRelationshipsOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { usePresences } from "@stores/presenceStore";

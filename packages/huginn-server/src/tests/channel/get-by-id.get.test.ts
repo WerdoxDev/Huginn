@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { type APIGetChannelByIdResult, ChannelType, type DirectChannel } from "@huginn/shared";
+import { type APIGetChannelByIdResult, ChannelType, type DirectChannel } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectChannelExactRecipients, expectChannelExactSchema } from "#tests/expect-utils";

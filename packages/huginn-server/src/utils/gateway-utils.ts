@@ -1,5 +1,5 @@
 // import { logGatewaySend } from "@huginn/backend-shared";
-import { type GatewayWebsocketEvents, GatewayOperations, type GatewayPayload, analytics } from "@huginn/shared";
+import { type GatewayWebsocketEvents, GatewayOperations, type GatewayPayload, analytics } from "@huginnjs/shared";
 
 import { gateway } from "#server";
 

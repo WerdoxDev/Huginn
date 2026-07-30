@@ -1,4 +1,4 @@
-import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginn/shared";
+import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginnjs/shared";
 import { join } from "pathe";
 
 let _hostname = "";

@@ -78,7 +78,7 @@ unlisten();
 | Calls         | `call_create`, `call_update`, `call_delete`, `voice_state_update`, `voice_server_update`                  |
 | Account       | `settings_update`, `session_update`                                                                       |
 
-Event payload types are defined in `@huginn/shared` as `GatewayWebsocketEvents`.
+Event payload types are defined in `@huginnjs/shared` as `GatewayWebsocketEvents`.
 
 ## Presence
 

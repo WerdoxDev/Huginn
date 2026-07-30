@@ -1,4 +1,4 @@
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useNavigate } from "@tanstack/react-router";

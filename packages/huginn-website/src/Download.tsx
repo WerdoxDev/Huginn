@@ -1,4 +1,4 @@
-import type { APIGetAllReleasesResult, APIGetLatestReleaseResult } from "@huginn/shared";
+import type { APIGetAllReleasesResult, APIGetLatestReleaseResult } from "@huginnjs/shared";
 
 import { useEffect, useState } from "react";
 

@@ -1,4 +1,4 @@
-import { CONSTANTS } from "@huginn/shared";
+import { CONSTANTS } from "@huginnjs/shared";
 
 import type { StorageMap } from "../src/types";
 

@@ -1,4 +1,4 @@
-import { getEmojiCodepoint } from "@huginn/shared";
+import { getEmojiCodepoint } from "@huginnjs/shared";
 import { clsx } from "clsx";
 import { useMemo } from "react";
 

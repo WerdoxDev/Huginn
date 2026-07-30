@@ -1,4 +1,4 @@
-import type { HuginnErrorData } from "@huginn/shared";
+import type { HuginnErrorData } from "@huginnjs/shared";
 
 import { isWorthyHuginnError } from "@lib/utils";
 import { type QueryClient, type UseMutationOptions, type UseMutationResult, useMutation } from "@tanstack/react-query";

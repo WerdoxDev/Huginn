@@ -1,6 +1,6 @@
 import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
 
-import { Errors, JsonCode, type HuginnErrorData } from "@huginn/shared";
+import { Errors, JsonCode, type HuginnErrorData } from "@huginnjs/shared";
 
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
 import { CDNErrorType, DBErrorType } from "#types";

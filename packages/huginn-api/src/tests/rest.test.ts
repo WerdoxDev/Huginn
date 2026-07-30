@@ -1,5 +1,5 @@
-import * as shared from "@huginn/shared";
-import { HTTPError, HuginnAPIError, type HuginnErrorData, JsonCode, parseResponse, type RequestMethod, resolveImage, resolveRequest } from "@huginn/shared";
+import * as shared from "@huginnjs/shared";
+import { HTTPError, HuginnAPIError, type HuginnErrorData, JsonCode, parseResponse, type RequestMethod, resolveImage, resolveRequest } from "@huginnjs/shared";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import { HuginnClient } from "../huginn-client";

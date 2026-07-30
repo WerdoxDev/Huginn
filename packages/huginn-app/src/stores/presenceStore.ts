@@ -1,4 +1,4 @@
-import { ActivityType, error, type APIKnownApplication, type GatewaySession, type Snowflake } from "@huginn/shared";
+import { ActivityType, error, type APIKnownApplication, type GatewaySession, type Snowflake } from "@huginnjs/shared";
 import { convertToAppPresence, convertToAppSession } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";

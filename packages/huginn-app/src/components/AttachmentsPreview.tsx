@@ -1,5 +1,5 @@
 import { useIsMobile } from "@hooks/useIsMobile";
-import { CONSTANTS, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { CONSTANTS, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";

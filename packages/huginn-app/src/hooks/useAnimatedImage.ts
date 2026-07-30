@@ -1,4 +1,4 @@
-import type { ImageSize, Snowflake } from "@huginn/shared";
+import type { ImageSize, Snowflake } from "@huginnjs/shared";
 
 import { useClient } from "@stores/clientStore";
 import { useHuginnWindow } from "@stores/windowStore";

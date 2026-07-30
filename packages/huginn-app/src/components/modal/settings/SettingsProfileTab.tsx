@@ -11,7 +11,7 @@ import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
-import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginn/shared";
+import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginnjs/shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";

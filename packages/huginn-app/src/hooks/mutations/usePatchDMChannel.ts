@@ -1,4 +1,4 @@
-import type { APIPatchDMChannelJSONBody, HuginnErrorData } from "@huginn/shared";
+import type { APIPatchDMChannelJSONBody, HuginnErrorData } from "@huginnjs/shared";
 
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useClient } from "@stores/clientStore";

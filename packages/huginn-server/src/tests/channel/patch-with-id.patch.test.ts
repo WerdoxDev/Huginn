@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
+import { type APIPatchDMChannelResult, ChannelType, getFileHash, resolveImage, toArrayBuffer } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
 

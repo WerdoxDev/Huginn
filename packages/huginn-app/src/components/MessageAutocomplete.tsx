@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { useInset } from "@contexts/InsetContext";
 import { useChannelStore } from "@stores/channelStore";

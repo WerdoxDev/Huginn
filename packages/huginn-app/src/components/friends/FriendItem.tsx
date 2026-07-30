@@ -1,11 +1,11 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import ActivityPreview from "@components/ActivityPreview";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { type MouseEvent, useMemo, useState } from "react";

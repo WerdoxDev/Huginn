@@ -1,4 +1,4 @@
-import type { APIGif, Snowflake } from "@huginn/shared";
+import type { APIGif, Snowflake } from "@huginnjs/shared";
 
 import { env } from "#setup";
 

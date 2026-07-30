@@ -1,7 +1,7 @@
 import type { Peer } from "crossws";
 
 import { CommonClientSession } from "@huginn/backend-shared";
-import { WorkerID, type Snowflake, type VoicePayload } from "@huginn/shared";
+import { WorkerID, type Snowflake, type VoicePayload } from "@huginnjs/shared";
 
 import type { ClientSessionProperties } from "#utils/types";
 

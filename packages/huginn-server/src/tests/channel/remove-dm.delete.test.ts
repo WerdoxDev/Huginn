@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginn/shared";
+import { type APIDeleteDMChannelResult, type APIPostDMChannelResult, ChannelType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectChannelExactRecipients, expectChannelExactSchema, expectReadStatesExactSchema } from "#tests/expect-utils";

@@ -1,4 +1,4 @@
-import type { FavoriteGif } from "@huginn/shared";
+import type { FavoriteGif } from "@huginnjs/shared";
 
 import { clientStore, useClient } from "@stores/clientStore";
 import { useCallback, useMemo } from "react";

@@ -1,4 +1,4 @@
-import type { APIGetTrendingGifsResult } from "@huginn/shared";
+import type { APIGetTrendingGifsResult } from "@huginnjs/shared";
 
 import { verifyJwt } from "@huginn/backend-shared";
 import Elysia, { t } from "elysia";

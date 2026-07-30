@@ -6,7 +6,7 @@ outline: deep
 
 # REST APIs
 
-Every namespace delegates to `client.rest`, supplies the corresponding route, and returns types from `@huginn/shared`. Unless noted otherwise, methods require an authenticated access token.
+Every namespace delegates to `client.rest`, supplies the corresponding route, and returns types from `@huginnjs/shared`. Unless noted otherwise, methods require an authenticated access token.
 
 ## Authentication
 

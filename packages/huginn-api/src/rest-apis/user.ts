@@ -11,7 +11,7 @@ import {
    Routes,
    type Snowflake,
    resolveImage,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

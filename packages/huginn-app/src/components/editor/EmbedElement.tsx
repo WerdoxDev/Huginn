@@ -3,7 +3,7 @@ import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { CONSTANTS, constrainImageSize } from "@huginn/shared";
+import { CONSTANTS, constrainImageSize } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
 import { useContext, useMemo, type MouseEvent } from "react";

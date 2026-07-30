@@ -1,7 +1,7 @@
 import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
 
 import { logger } from "@huginn/backend-shared/logger";
-import { analytics, GatewayCode, recordSpanError, type Snowflake } from "@huginn/shared";
+import { analytics, GatewayCode, recordSpanError, type Snowflake } from "@huginnjs/shared";
 import mediasoup from "mediasoup";
 
 import type { ClientSession } from "#client-session";

@@ -4,7 +4,7 @@ import type { TextUnitAdjustment } from "slate";
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
-import { MessageFlags, MessageReferenceType, MessageType } from "@huginn/shared";
+import { MessageFlags, MessageReferenceType, MessageType } from "@huginnjs/shared";
 import { createPreviewMessage, serializeSlate } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";

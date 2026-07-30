@@ -1,4 +1,4 @@
-import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake, UserPresence, WorkerID } from "@huginn/shared";
+import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake, UserPresence, WorkerID } from "@huginnjs/shared";
 
 export enum DBErrorType {
    INVALID_ID = "INVALID_ID",

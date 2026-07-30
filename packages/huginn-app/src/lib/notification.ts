@@ -1,5 +1,5 @@
 import { PushNotifications } from "@capacitor/push-notifications";
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { presenceStore } from "@stores/presenceStore";
 import { windowStore } from "@stores/windowStore";
 

@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { authHeader, createTestChannel, createTestMessagePin, createTestMessages, createTestUsers } from "#tests/utils";

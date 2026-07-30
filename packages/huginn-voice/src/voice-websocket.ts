@@ -25,7 +25,7 @@ import {
    WorkerID,
    recordSpanError,
    type VoicePauseConsumerData,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import type { RouterData, RTCPeer } from "#utils/types";
 

@@ -1,6 +1,6 @@
-import type { GatewayRelationshipCreateData, Snowflake } from "@huginn/shared";
+import type { GatewayRelationshipCreateData, Snowflake } from "@huginnjs/shared";
 
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { convertToAppRelationship } from "@lib/utils";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStateStore";

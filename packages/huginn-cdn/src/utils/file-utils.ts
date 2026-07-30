@@ -1,5 +1,5 @@
 import { CDNErrorType, CDNError } from "@huginn/backend-shared";
-import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginn/shared";
+import { type FileContentTypes, type ImageFormats, fileTypes } from "@huginnjs/shared";
 // import { Readable, Writable } from "node:stream";
 import PQueue from "p-queue";
 

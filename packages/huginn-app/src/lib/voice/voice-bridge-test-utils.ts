@@ -1,4 +1,4 @@
-import type { HMediaKind, Snowflake } from "@huginn/shared";
+import type { HMediaKind, Snowflake } from "@huginnjs/shared";
 
 import type { AppSettings, VoicePreference } from "@/types";
 

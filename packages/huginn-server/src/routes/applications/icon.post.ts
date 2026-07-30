@@ -1,5 +1,5 @@
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
-import { CDNRoutes, getFileHash, toArrayBuffer, type APIPostApplicationIconResult } from "@huginn/shared";
+import { CDNRoutes, getFileHash, toArrayBuffer, type APIPostApplicationIconResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { cdnUpload } from "#utils/server-request";

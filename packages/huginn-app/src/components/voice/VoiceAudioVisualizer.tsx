@@ -1,4 +1,4 @@
-import { parseOklchToRgb, remap } from "@huginn/shared";
+import { parseOklchToRgb, remap } from "@huginnjs/shared";
 import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";

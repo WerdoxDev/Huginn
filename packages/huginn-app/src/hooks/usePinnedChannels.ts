@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { clientStore, useClient } from "@stores/clientStore";
 import { useCallback } from "react";

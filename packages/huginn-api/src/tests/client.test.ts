@@ -8,7 +8,7 @@
  * deliberate — `HuginnClient`'s constructor eagerly calls
  * `this.gateway.connect()`, and its real job here is orchestration
  * (session restore, token bookkeeping, cleanup ordering), not network I/O.
- * `jose`'s `decodeJwt` and `@huginn/shared`'s `snowflake` are left real
+ * `jose`'s `decodeJwt` and `@huginnjs/shared`'s `snowflake` are left real
  * since they're pure/local and exercising them is part of the point.
  *
  * Assumptions (adjust if your layout differs):
@@ -21,7 +21,7 @@
  *     for `./gateway` / `./rest-apis/auth`.
  */
 
-import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
+import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginnjs/shared";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

@@ -1,6 +1,6 @@
 import type { InitializationResult } from "@huginnjs/api";
 
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { initNotifications } from "@lib/notification";
 import { useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";

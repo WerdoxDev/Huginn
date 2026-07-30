@@ -4,7 +4,7 @@ import LoadingIcon from "@components/LoadingIcon";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";

@@ -7,7 +7,7 @@ import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useRecentEmojis } from "@hooks/useRecentEmojis";
-import { type Emoji, getAllEmojis, getEmojiByCodepoint } from "@huginn/shared";
+import { type Emoji, getAllEmojis, getEmojiByCodepoint } from "@huginnjs/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";
 import emojiMessages from "emojibase-data/en/messages.json";

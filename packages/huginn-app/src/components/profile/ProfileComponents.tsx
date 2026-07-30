@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import HuginnLabel from "@components/HuginnLabel";
 import { useElapsedTime } from "@hooks/useElapsedTime";
-import { type Activity, ActivityType } from "@huginn/shared";
+import { type Activity, ActivityType } from "@huginnjs/shared";
 import clsx from "clsx";
 
 export function ProfileAboutMe(props: { accentColor?: string | null; headerRight?: ReactNode; children: ReactNode }) {

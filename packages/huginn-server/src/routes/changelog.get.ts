@@ -1,6 +1,6 @@
 import type { PageObjectResponse } from "@notionhq/client";
 
-import { CacheStorage, type APIGetChangelogResult } from "@huginn/shared";
+import { CacheStorage, type APIGetChangelogResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 import * as semver from "semver";
 

@@ -1,4 +1,4 @@
-import type { APIGif, FavoriteGif } from "@huginn/shared";
+import type { APIGif, FavoriteGif } from "@huginnjs/shared";
 
 import HuginnTab from "@components/HuginnTab";
 import HuginnInput from "@components/input/HuginnInput";

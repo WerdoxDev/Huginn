@@ -1,5 +1,5 @@
-import { analytics, analyticsShim, initAnalytics } from "@huginn/shared";
-import { RuntimeAnalytics } from "@huginn/shared/runtime-analytics";
+import { analytics, analyticsShim, initAnalytics } from "@huginnjs/shared";
+import { RuntimeAnalytics } from "@huginnjs/shared/runtime-analytics";
 import { Tray, app, Menu, ipcMain, session } from "electron";
 import updater from "electron-updater";
 import path from "node:path";

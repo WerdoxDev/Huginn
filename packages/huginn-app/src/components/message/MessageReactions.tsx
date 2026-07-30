@@ -1,7 +1,7 @@
 import EmojiImg from "@components/EmojiImg";
 import { useAddReaction } from "@hooks/mutations/useAddReaction";
 import { useRemoveReaction } from "@hooks/mutations/useRemoveReaction";
-import { clamp, type APIReaction } from "@huginn/shared";
+import { clamp, type APIReaction } from "@huginnjs/shared";
 import { clsx } from "clsx";
 import { type RefObject } from "react";
 

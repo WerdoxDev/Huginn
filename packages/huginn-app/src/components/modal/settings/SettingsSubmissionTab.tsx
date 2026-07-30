@@ -5,7 +5,7 @@ import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
-import { JsonCode } from "@huginn/shared";
+import { JsonCode } from "@huginnjs/shared";
 import { APIMessages } from "@lib/error-messages";
 import { isWorthyHuginnError } from "@lib/utils";
 import { useModals } from "@stores/modalsStore";

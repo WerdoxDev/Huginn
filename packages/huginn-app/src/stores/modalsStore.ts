@@ -1,4 +1,4 @@
-import type { DeepPartial, Snowflake } from "@huginn/shared";
+import type { DeepPartial, Snowflake } from "@huginnjs/shared";
 import type { ReactNode } from "react";
 
 import { produce } from "immer";

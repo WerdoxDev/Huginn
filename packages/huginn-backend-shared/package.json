@@ -17,7 +17,7 @@
       "./types": "./src/types.ts"
    },
    "dependencies": {
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "@neondatabase/serverless": "^1.1.0",
       "@prisma/adapter-neon": "^7.8.0",
       "@prisma/adapter-pg": "^7.7.0",

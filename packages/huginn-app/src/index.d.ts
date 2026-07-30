@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 

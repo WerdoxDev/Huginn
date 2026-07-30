@@ -1,4 +1,4 @@
-import { CacheStorage } from "@huginn/shared";
+import { CacheStorage } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 import fs from "node:fs/promises";
 import pathe from "pathe";

@@ -8,7 +8,7 @@ import {
    ChannelType,
    MessageReferenceType,
    MessageType,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import { resolve } from "pathe";
 

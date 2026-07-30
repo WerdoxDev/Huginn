@@ -1,4 +1,4 @@
-import type { HMediaKind } from "@huginn/shared";
+import type { HMediaKind } from "@huginnjs/shared";
 
 import { useMemo, type RefObject } from "react";
 

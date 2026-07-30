@@ -1,7 +1,7 @@
 import EditorLeaf from "@components/editor/EditorLeaf";
 import PreviewEmojiElement from "@components/editor/PreviewEmojiElement";
 import PreviewMentionElement from "@components/editor/PreviewMentionElement";
-import { marked, organizeMarkedTokens, type MarkedToken } from "@huginn/shared";
+import { marked, organizeMarkedTokens, type MarkedToken } from "@huginnjs/shared";
 import { getUser } from "@lib/query-utils";
 import { serializeSlate } from "@lib/utils";
 import { useCallback, useMemo, useRef, useState } from "react";

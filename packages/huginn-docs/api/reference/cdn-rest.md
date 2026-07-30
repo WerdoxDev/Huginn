@@ -14,17 +14,17 @@ The root client exposes lower-level CDN and HTTP helpers for features that do no
 
 ### Asset helpers
 
-| Method | Description |
-| --- | --- |
-| `avatar(id, hash, options?)` | Build a user avatar URL. |
-| `banner(id, hash, options?)` | Build a banner URL. |
+| Method                            | Description               |
+| --------------------------------- | ------------------------- |
+| `avatar(id, hash, options?)`      | Build a user avatar URL.  |
+| `banner(id, hash, options?)`      | Build a banner URL.       |
 | `channelIcon(id, hash, options?)` | Build a channel icon URL. |
-| `emoji(id)` | Build an SVG emoji URL. |
+| `emoji(id)`                       | Build an SVG emoji URL.   |
 
 ```ts
 const avatarUrl = client.cdn.avatar(user.id, user.avatar, {
-  format: "webp",
-  size: 256,
+   format: "webp",
+   size: 256,
 });
 ```
 
@@ -47,33 +47,29 @@ dynamicMakeURL(
 Uses GIF format for hashes beginning with `a_`, unless `forceStatic` is true.
 
 ```ts
-client.cdn.dynamicMakeURL(
-  `/avatars/${user.id}/${user.avatar}`,
-  user.avatar,
-  { size: 512 },
-);
+client.cdn.dynamicMakeURL(`/avatars/${user.id}/${user.avatar}`, user.avatar, { size: 512 });
 ```
 
 ## Raw REST
 
 `client.rest` provides direct HTTP methods:
 
-| Method | Signature |
-| --- | --- |
-| `get` | `get(fullRoute, options?): Promise<unknown>` |
-| `post` | `post(fullRoute, options?): Promise<unknown>` |
-| `put` | `put(fullRoute, options?): Promise<unknown>` |
-| `patch` | `patch(fullRoute, options?): Promise<unknown>` |
-| `delete` | `delete(fullRoute, options?): Promise<unknown>` |
-| `request` | `request(options): Promise<unknown>` |
+| Method    | Signature                                       |
+| --------- | ----------------------------------------------- |
+| `get`     | `get(fullRoute, options?): Promise<unknown>`    |
+| `post`    | `post(fullRoute, options?): Promise<unknown>`   |
+| `put`     | `put(fullRoute, options?): Promise<unknown>`    |
+| `patch`   | `patch(fullRoute, options?): Promise<unknown>`  |
+| `delete`  | `delete(fullRoute, options?): Promise<unknown>` |
+| `request` | `request(options): Promise<unknown>`            |
 
-Use `Routes` and request types from `@huginn/shared`:
+Use `Routes` and request types from `@huginnjs/shared`:
 
 ```ts
-import { Routes } from "@huginn/shared";
+import { Routes } from "@huginnjs/shared";
 
 const result = await client.rest.get(Routes.user("@me"), {
-  auth: true,
+   auth: true,
 });
 ```
 
@@ -83,10 +79,10 @@ Common request options include `body`, `query`, `auth`, `token`, `files`, and br
 
 ```ts
 const result = await client.rest.request({
-  method: "POST",
-  fullRoute: "/experiments",
-  auth: true,
-  body: { enabled: true },
+   method: "POST",
+   fullRoute: "/experiments",
+   auth: true,
+   body: { enabled: true },
 });
 ```
 

@@ -1,4 +1,4 @@
-import { MessageType, type Snowflake } from "@huginn/shared";
+import { MessageType, type Snowflake } from "@huginnjs/shared";
 import { getPinnedMessagesOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";

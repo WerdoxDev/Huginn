@@ -1,4 +1,4 @@
-import { error, type LogArgs, type Logger } from "@huginn/shared";
+import { error, type LogArgs, type Logger } from "@huginnjs/shared";
 
 type LogEntry = {
    type: "log" | "error";

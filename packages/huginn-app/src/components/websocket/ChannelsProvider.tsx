@@ -4,7 +4,7 @@ import type {
    GatewayDMChannelDeleteData,
    GatewayDMChannelRecipientAddData,
    GatewayDMChannelUpdateData,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { getChannelComputedName } from "@lib/query-utils";

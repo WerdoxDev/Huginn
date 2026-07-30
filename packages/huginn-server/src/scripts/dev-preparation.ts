@@ -1,5 +1,5 @@
 import { prisma } from "@huginn/backend-shared/database";
-import { ChannelType, MessageType, snowflake, UserFlags, WorkerID } from "@huginn/shared";
+import { ChannelType, MessageType, snowflake, UserFlags, WorkerID } from "@huginnjs/shared";
 
 const users = ["user", "user2", "user3", "user4"];
 const internalUsers = ["internal", "internal2"];

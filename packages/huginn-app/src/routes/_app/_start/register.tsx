@@ -1,4 +1,4 @@
-import type { APIPostRegisterJSONBody, OAuthType } from "@huginn/shared";
+import type { APIPostRegisterJSONBody, OAuthType } from "@huginnjs/shared";
 
 import HuginnButton from "@components/button/HuginnButton";
 import LinkButton from "@components/button/LinkButton";

@@ -6,7 +6,7 @@ import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
 import { useMediaSources } from "@hooks/voice/useMediaSources";
-import { analytics, CONSTANTS, recordSpanError } from "@huginn/shared";
+import { analytics, CONSTANTS, recordSpanError } from "@huginnjs/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useClient } from "@stores/clientStore";
 import { useDevice } from "@stores/deviceStore";

@@ -11,7 +11,7 @@ import {
    analytics,
    pick,
    recordSpanError,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { presenceLogger } from "#loggers";
 import { dispatchToTopic } from "#utils/gateway-utils";

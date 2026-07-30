@@ -1,4 +1,4 @@
-import type { LogArgs } from "@huginn/shared";
+import type { LogArgs } from "@huginnjs/shared";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { ProcessInfo } from "native-addon";
 

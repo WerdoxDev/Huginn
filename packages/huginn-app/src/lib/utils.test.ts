@@ -11,7 +11,7 @@ import {
    type DirectChannel,
    type PresenceUser,
    type UserPresence,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { describe, expect, test } from "vitest";
 
 import { createTestChannel, createTestMessage, createTestRelationship, createTestUser } from "@/test-utils";

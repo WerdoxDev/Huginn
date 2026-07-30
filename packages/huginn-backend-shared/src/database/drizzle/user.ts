@@ -9,7 +9,7 @@ import {
    type APIPatchCurrentUserJSONBody,
    type APIPostLoginJSONBody,
    type Snowflake,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { assertCondition, assertExists, assertId, assertObj } from "#database/error";
 import { DBErrorType } from "#types";

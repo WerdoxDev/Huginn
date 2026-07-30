@@ -1,6 +1,6 @@
 import { createToken, unauthorized, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CONSTANTS, type APIPostRefreshTokenResult } from "@huginn/shared";
+import { CONSTANTS, type APIPostRefreshTokenResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 const schema = t.Object({ refreshToken: t.String() });

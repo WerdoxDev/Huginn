@@ -1,4 +1,4 @@
-import { ActivityType } from "@huginn/shared";
+import { ActivityType } from "@huginnjs/shared";
 import clsx from "clsx";
 
 import type { AppPresence } from "@/types";

@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { ChannelType, GatewayCode, GatewayOperations, type GatewayPayload, type GatewayUpdateVoiceState, MessageType, type Snowflake } from "@huginn/shared";
+import { ChannelType, GatewayCode, GatewayOperations, type GatewayPayload, type GatewayUpdateVoiceState, MessageType, type Snowflake } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceStateExactSchema } from "#tests/expect-utils";

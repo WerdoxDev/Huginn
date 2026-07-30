@@ -1,4 +1,4 @@
-import type { GatewayTypingStartData, Snowflake } from "@huginn/shared";
+import type { GatewayTypingStartData, Snowflake } from "@huginnjs/shared";
 
 import { listenEvent } from "@lib/event-handler";
 import { produce } from "immer";

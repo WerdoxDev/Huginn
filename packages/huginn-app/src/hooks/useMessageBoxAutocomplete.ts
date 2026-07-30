@@ -1,4 +1,4 @@
-import { ChannelType, type Snowflake } from "@huginn/shared";
+import { ChannelType, type Snowflake } from "@huginnjs/shared";
 import { useEffect, useMemo, useReducer, useRef, type KeyboardEvent } from "react";
 
 import type { AppDirectChannel, AppUser, AutocompleteItem, AutocompleteSpecialItem, AutocompleteState, AutocompleteType } from "@/types";

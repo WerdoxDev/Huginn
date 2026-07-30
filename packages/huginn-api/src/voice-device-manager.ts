@@ -1,4 +1,4 @@
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 
 import type { VoiceTransportManager } from "./voice-transport-manager";
 

@@ -1,5 +1,5 @@
 import { getCurrentSpan } from "@elysia/opentelemetry";
-import { error, type OAuthTokenPayload, type UserTokenPayload } from "@huginn/shared";
+import { error, type OAuthTokenPayload, type UserTokenPayload } from "@huginnjs/shared";
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";

@@ -5,7 +5,7 @@ import {
    type APIPostApplicationIconResult,
    type APIPostKnownApplicationJSONBody,
    type APIPostKnownApplicationResult,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

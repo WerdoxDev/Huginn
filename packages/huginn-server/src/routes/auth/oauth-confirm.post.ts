@@ -13,7 +13,7 @@ import {
    snowflake,
    toArrayBuffer,
    type OAuthType,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { cdnUpload } from "#utils/server-request";

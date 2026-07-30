@@ -1,4 +1,4 @@
-import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginnjs/shared";
 
 import { useUser } from "@hooks/api-hooks/userHooks";
 import clsx from "clsx";

@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { authHeader, createTestRelationships, createTestUsers } from "#tests/utils";

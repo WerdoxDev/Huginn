@@ -1,4 +1,4 @@
-import type { ImageSize, Snowflake } from "@huginn/shared";
+import type { ImageSize, Snowflake } from "@huginnjs/shared";
 
 import { useAnimatedImage } from "@hooks/useAnimatedImage";
 import { useClient } from "@stores/clientStore";

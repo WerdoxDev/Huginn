@@ -5,7 +5,7 @@ import {
    type VoiceCreateTransportResult,
    type VoiceCreateTransportResultData,
    type VoiceReadyData,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { testFakeParameters } from "mediasoup-client";
 import { type RtpParameters } from "mediasoup-client/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -34,7 +34,7 @@ vi.mock("../voice-stream-manager", () => {
 });
 
 vi.mock("../voice-signaling-client", async () => {
-   const { EventEmitter } = await import("@huginn/shared");
+   const { EventEmitter } = await import("@huginnjs/shared");
    class VoiceSignalingClient extends EventEmitter<Record<string, unknown>> {
       public status = "idle";
 

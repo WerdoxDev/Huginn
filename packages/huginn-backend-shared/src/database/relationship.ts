@@ -1,4 +1,4 @@
-import { RelationshipType, analytics, type Snowflake, WorkerID, idFix, snowflake, recordSpanError } from "@huginn/shared";
+import { RelationshipType, analytics, type Snowflake, WorkerID, idFix, snowflake, recordSpanError } from "@huginnjs/shared";
 
 import { assertExists, assertId, assertObj, prisma, type RelationshipArgs, type RelationshipPayload, Prisma } from "#database";
 import { DBErrorType } from "#types";

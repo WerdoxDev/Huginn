@@ -1,6 +1,6 @@
 import HuginnLabel from "@components/HuginnLabel";
 import StatusMessage from "@components/StatusMessage";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import clsx from "clsx";
 import {
    type ChangeEvent,

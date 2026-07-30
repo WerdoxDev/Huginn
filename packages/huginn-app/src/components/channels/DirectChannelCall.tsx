@@ -1,4 +1,4 @@
-import type { Snowflake, Unpacked } from "@huginn/shared";
+import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
 import LoadingIcon from "@components/LoadingIcon";
 import VoiceElement from "@components/voice/VoiceElement";

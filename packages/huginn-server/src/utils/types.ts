@@ -1,4 +1,4 @@
-import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake } from "@huginn/shared";
+import type { APIEmbed, APIPostAttachmentJSONBody, APIThumbnail, APIVideo, Snowflake } from "@huginnjs/shared";
 
 export type ServerGatewayOptions = {
    logHeartbeat: boolean;

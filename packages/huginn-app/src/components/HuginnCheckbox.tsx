@@ -1,5 +1,5 @@
 import { Checkbox } from "@base-ui/react";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import clsx from "clsx";
 import { createContext, useContext, useState, type MouseEvent, type ReactNode } from "react";
 

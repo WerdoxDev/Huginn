@@ -1,4 +1,4 @@
-import { analytics, idFix, recordSpanError, type Snowflake } from "@huginn/shared";
+import { analytics, idFix, recordSpanError, type Snowflake } from "@huginnjs/shared";
 
 import { prisma } from "#database";
 import { Prisma } from "#prisma/client";

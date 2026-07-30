@@ -1,5 +1,5 @@
 import { prisma } from "@huginn/backend-shared/database";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 
 import { cronLogger } from "./loggers";
 

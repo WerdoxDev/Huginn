@@ -1,6 +1,6 @@
 import { singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { Errors, RelationshipType } from "@huginn/shared";
+import { Errors, RelationshipType } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { createRelationship } from "../relationships.post";

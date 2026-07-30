@@ -1,5 +1,5 @@
-import { analytics, initAnalytics as externalInitAnalytics } from "@huginn/shared";
-import { WebAnalytics } from "@huginn/shared/web-analytics";
+import { analytics, initAnalytics as externalInitAnalytics } from "@huginnjs/shared";
+import { WebAnalytics } from "@huginnjs/shared/web-analytics";
 import { storageStore } from "@stores/storageStore";
 
 export function initAnalytics() {

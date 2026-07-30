@@ -1,4 +1,4 @@
-import { type BigIntToString, type Snowflake } from "@huginn/shared";
+import { type BigIntToString, type Snowflake } from "@huginnjs/shared";
 
 import type { Prisma } from "#database";
 

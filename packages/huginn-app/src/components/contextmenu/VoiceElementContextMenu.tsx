@@ -1,4 +1,4 @@
-import type { HMediaKind } from "@huginn/shared";
+import type { HMediaKind } from "@huginnjs/shared";
 
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";

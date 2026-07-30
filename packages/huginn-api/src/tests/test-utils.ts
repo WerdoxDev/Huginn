@@ -1,4 +1,4 @@
-import { type GatewayReadyData } from "@huginn/shared";
+import { type GatewayReadyData } from "@huginnjs/shared";
 import { expect } from "vitest";
 
 import { HuginnClient } from "../huginn-client";

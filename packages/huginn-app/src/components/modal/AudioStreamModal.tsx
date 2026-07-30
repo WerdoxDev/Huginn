@@ -3,7 +3,7 @@ import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
-import { analytics, recordSpanError } from "@huginn/shared";
+import { analytics, recordSpanError } from "@huginnjs/shared";
 import { AUDIO_QUALITIES } from "@lib/constants";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";

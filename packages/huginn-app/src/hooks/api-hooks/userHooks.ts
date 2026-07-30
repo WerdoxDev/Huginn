@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { getUserOptions, getUserProfileOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";

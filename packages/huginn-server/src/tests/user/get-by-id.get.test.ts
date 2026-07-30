@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { type APIGetUserByIdResult } from "@huginn/shared";
+import { type APIGetUserByIdResult } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectUserExactSchema } from "#tests/expect-utils";

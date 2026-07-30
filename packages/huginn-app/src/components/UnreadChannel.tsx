@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 
 import { useChannel, useChannelRecipients } from "@hooks/api-hooks/channelHooks";
-import { ChannelType, type Snowflake } from "@huginn/shared";
+import { ChannelType, type Snowflake } from "@huginnjs/shared";
 import { Link } from "@tanstack/react-router";
 
 import AttentionIndicator from "./AttentionIndicator";

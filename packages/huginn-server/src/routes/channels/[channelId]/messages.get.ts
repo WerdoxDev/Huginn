@@ -1,7 +1,7 @@
 import { missingAccess, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { type APIGetChannelMessagesResult } from "@huginn/shared";
+import { type APIGetChannelMessagesResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { filterMessage } from "#utils/helpers";

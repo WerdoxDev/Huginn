@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { ChannelType, MessageType, resolveImage } from "@huginn/shared";
+import { ChannelType, MessageType, resolveImage } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
 

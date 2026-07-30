@@ -5,7 +5,7 @@ import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
-import { ChannelType, MessageType, type Snowflake } from "@huginn/shared";
+import { ChannelType, MessageType, type Snowflake } from "@huginnjs/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { convertToAppMessage } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";

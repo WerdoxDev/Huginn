@@ -10,7 +10,7 @@
    "dependencies": {
       "@headlessui/react": "^2.2.10",
       "@headlessui/tailwindcss": "^0.2.1",
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "@iconify/react": "^4.1.1",
       "@rive-app/canvas": "^2.20.0",
       "@tailwindcss/vite": "^4.3.0",

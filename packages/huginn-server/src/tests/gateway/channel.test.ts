@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { describe, test } from "bun:test";
 
 import { expectChannelExactRecipients, expectChannelExactSchema, expectRecipientModifyExactSchema } from "#tests/expect-utils";

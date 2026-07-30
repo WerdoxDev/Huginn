@@ -1,4 +1,4 @@
-import { recordSpanError, type Analytics } from "@huginn/shared";
+import { recordSpanError, type Analytics } from "@huginnjs/shared";
 import { app, ipcMain } from "electron";
 import fs from "node:fs/promises";
 import path from "node:path";

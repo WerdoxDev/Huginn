@@ -1,4 +1,4 @@
-import { recordSpanError } from "@huginn/shared";
+import { recordSpanError } from "@huginnjs/shared";
 
 import type { StorageMap, FileType, LoadFileResult, SaveFileResult } from "@/types";
 

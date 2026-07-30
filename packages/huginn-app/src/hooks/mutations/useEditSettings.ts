@@ -1,4 +1,4 @@
-import type { APIPatchUserSettingsJSONBody } from "@huginn/shared";
+import type { APIPatchUserSettingsJSONBody } from "@huginnjs/shared";
 
 import { useClient } from "@stores/clientStore";
 import { useMutation } from "@tanstack/react-query";

@@ -1,7 +1,7 @@
 import { verifyJwt } from "@huginn/backend-shared";
 import { selectKnownApplication } from "@huginn/backend-shared/database/common";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { type APIGetKnownApplicationsResult } from "@huginn/shared";
+import { type APIGetKnownApplicationsResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { filterKnownApplication } from "#utils/helpers";

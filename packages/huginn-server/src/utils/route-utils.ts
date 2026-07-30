@@ -22,7 +22,7 @@ import {
    marked,
    organizeMarkedTokens,
    recordSpanError,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 import { getMessaging } from "firebase-admin/messaging";
 import { JSDOM } from "jsdom";
 import * as semver from "semver";

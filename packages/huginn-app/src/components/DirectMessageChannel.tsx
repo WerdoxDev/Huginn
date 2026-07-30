@@ -1,6 +1,6 @@
 import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";

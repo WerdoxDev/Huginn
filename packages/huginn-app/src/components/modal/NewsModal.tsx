@@ -1,7 +1,7 @@
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import LoadingIcon from "@components/LoadingIcon";
-import { marked } from "@huginn/shared";
+import { marked } from "@huginnjs/shared";
 import { getChangelogOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";

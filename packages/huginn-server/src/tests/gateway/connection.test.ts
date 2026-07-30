@@ -1,4 +1,4 @@
-import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginn/shared";
+import { ChannelType, GatewayCode, type GatewayIdentify, GatewayOperations, type GatewayResume, RelationshipType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { gateway } from "#server";

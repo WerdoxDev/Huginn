@@ -1,7 +1,7 @@
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
 import { usePrevious } from "@hooks/usePrevious";
-import { clamp, type Snowflake } from "@huginn/shared";
+import { clamp, type Snowflake } from "@huginnjs/shared";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";

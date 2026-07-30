@@ -1,4 +1,4 @@
-import { LOG_VALUES_MAP, type LogArgs } from "@huginn/shared";
+import { LOG_VALUES_MAP, type LogArgs } from "@huginnjs/shared";
 import { TextAttributes, type ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
 import moment from "moment";

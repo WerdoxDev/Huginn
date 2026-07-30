@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { useMessage } from "@hooks/api-hooks/messageHooks";
 import { useUser } from "@hooks/api-hooks/userHooks";

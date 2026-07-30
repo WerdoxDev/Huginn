@@ -1,4 +1,4 @@
-import type { APIPostRefreshTokenResult } from "@huginn/shared";
+import type { APIPostRefreshTokenResult } from "@huginnjs/shared";
 
 import { testHandler } from "@huginn/backend-shared";
 import { describe, expect, test } from "bun:test";

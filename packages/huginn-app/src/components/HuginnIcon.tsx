@@ -1,4 +1,4 @@
-import type { ThemeType } from "@huginn/shared";
+import type { ThemeType } from "@huginnjs/shared";
 
 import { useTheme } from "@stores/themeStore";
 import clsx from "clsx";

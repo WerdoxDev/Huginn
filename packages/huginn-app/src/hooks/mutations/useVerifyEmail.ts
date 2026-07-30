@@ -1,5 +1,5 @@
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
-import { type APIPostVerifyEmailJSONBody, type APIPostVerifyEmailResult, type HuginnErrorData } from "@huginn/shared";
+import { type APIPostVerifyEmailJSONBody, type APIPostVerifyEmailResult, type HuginnErrorData } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 

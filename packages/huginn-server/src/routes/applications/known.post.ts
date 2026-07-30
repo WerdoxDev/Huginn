@@ -1,6 +1,6 @@
 import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginn/shared";
+import { CONSTANTS, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";

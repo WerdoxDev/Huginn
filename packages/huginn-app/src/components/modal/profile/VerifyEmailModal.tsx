@@ -8,7 +8,7 @@ import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificati
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 import { useCountdown } from "@hooks/useCountdown";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { CONSTANTS } from "@huginn/shared";
+import { CONSTANTS } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useEffect } from "react";
 

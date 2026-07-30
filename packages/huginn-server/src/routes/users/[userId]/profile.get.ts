@@ -1,7 +1,7 @@
 import { verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectPublicUser } from "@huginn/backend-shared/database/common";
-import { type APIGetProfileResult, type APIPublicUser } from "@huginn/shared";
+import { type APIGetProfileResult, type APIPublicUser } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { getUserBadges } from "#utils/route-utils";

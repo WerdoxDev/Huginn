@@ -1,6 +1,6 @@
-import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginn/shared";
+import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginnjs/shared";
 
-import { type Snowflake, snowflake, WorkerID } from "@huginn/shared";
+import { type Snowflake, snowflake, WorkerID } from "@huginnjs/shared";
 import { decodeJwt } from "jose";
 
 import type { AuthenticationStatus, ClientOptions, VoiceConstructor } from ".";

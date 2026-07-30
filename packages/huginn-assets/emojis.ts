@@ -1,4 +1,4 @@
-import { type EmojiInfo, type NormalizedEmoji, getEmojiCodepoint } from "@huginn/shared";
+import { type EmojiInfo, type NormalizedEmoji, getEmojiCodepoint } from "@huginnjs/shared";
 import Bun from "bun";
 import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
 import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };

@@ -1,6 +1,6 @@
 import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { useMaybeUser } from "@hooks/api-hooks/userHooks";
-import { ChannelType, type Snowflake } from "@huginn/shared";
+import { ChannelType, type Snowflake } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { clsx } from "clsx";
 

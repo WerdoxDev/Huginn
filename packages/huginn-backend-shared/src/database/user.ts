@@ -10,7 +10,7 @@ import {
    type APIPostLoginJSONBody,
    type BigIntToString,
    type Snowflake,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma, assertExists } from "#database";
 import { DBErrorType } from "#types";

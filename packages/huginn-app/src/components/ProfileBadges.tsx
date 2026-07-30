@@ -1,4 +1,4 @@
-import type { APIBadge } from "@huginn/shared";
+import type { APIBadge } from "@huginnjs/shared";
 
 import Tooltip from "@components/tooltip/Tooltip";
 

@@ -1,6 +1,6 @@
 import type { Peer } from "crossws";
 
-import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type Snowflake, WorkerID } from "@huginn/shared";
+import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type Snowflake, WorkerID } from "@huginnjs/shared";
 
 import type { CommonPayload } from "#types";
 

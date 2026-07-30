@@ -1,4 +1,4 @@
-import type { PresenceStatus } from "@huginn/shared";
+import type { PresenceStatus } from "@huginnjs/shared";
 
 import { HuginnMenu } from "@components/dropdown/HuginnMenu";
 import { useEditSettings } from "@hooks/mutations/useEditSettings";

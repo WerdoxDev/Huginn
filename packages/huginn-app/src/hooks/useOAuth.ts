@@ -1,4 +1,4 @@
-import type { OAuthFlow, OAuthResult, OAuthType } from "@huginn/shared";
+import type { OAuthFlow, OAuthResult, OAuthType } from "@huginnjs/shared";
 
 import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";

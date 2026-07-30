@@ -45,7 +45,7 @@ const result = await client.register({
 `client.register()` does't act like login and never returns tokens. A new user always needs to verify the returned `pendingEmail`.
 :::
 
-The exact request and response shapes come from `@huginn/shared`.
+The exact request and response shapes come from `@huginnjs/shared`.
 
 ## Initialize a session
 

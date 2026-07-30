@@ -1,4 +1,4 @@
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { app, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
 import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";

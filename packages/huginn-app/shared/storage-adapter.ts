@@ -1,4 +1,4 @@
-import type { Analytics } from "@huginn/shared";
+import type { Analytics } from "@huginnjs/shared";
 
 import type { FileType, LoadFileResult, StorageMap, SaveFileResult } from "@/types";
 

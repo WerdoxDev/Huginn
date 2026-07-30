@@ -1,6 +1,6 @@
 import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { error, type Snowflake } from "@huginn/shared";
+import { error, type Snowflake } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";

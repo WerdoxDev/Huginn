@@ -1,4 +1,4 @@
-import { resolveFile, resolveImage, toDataUrl } from "@huginn/shared";
+import { resolveFile, resolveImage, toDataUrl } from "@huginnjs/shared";
 import { decodeBase64 } from "@std/encoding";
 import path from "node:path";
 import { describe, expect, test } from "vitest";

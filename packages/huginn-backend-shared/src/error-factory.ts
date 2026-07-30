@@ -1,4 +1,4 @@
-import type { HuginnError, HuginnErrorData, HuginnErrorFieldInformation, JsonCode } from "@huginn/shared";
+import type { HuginnError, HuginnErrorData, HuginnErrorFieldInformation, JsonCode } from "@huginnjs/shared";
 
 export class ErrorFactory {
    public message: string;

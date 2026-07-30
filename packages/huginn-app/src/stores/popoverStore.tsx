@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { createContext, type MouseEvent, type ReactNode, useEffect } from "react";
 import { createStore, useStore } from "zustand";

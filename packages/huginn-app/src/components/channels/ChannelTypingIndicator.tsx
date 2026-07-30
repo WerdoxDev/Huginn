@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import LoadingDot from "@components/LoadingDot";
 import { Transition } from "@headlessui/react";

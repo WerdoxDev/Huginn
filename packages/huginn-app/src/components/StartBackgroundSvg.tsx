@@ -1,4 +1,4 @@
-import { interpolateColor } from "@huginn/shared";
+import { interpolateColor } from "@huginnjs/shared";
 import { useTheme } from "@stores/themeStore";
 import { useMatch } from "@tanstack/react-router";
 import * as blobs2Animate from "blobs/v2/animate";

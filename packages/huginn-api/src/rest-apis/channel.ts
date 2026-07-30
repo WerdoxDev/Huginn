@@ -16,9 +16,9 @@ import type {
    APIPostDMChannelResult,
    RawFile,
    Snowflake,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
-import { Routes, resolveImage } from "@huginn/shared";
+import { Routes, resolveImage } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

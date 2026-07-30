@@ -4,7 +4,7 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { useMessageWidths } from "@hooks/useMessageWidths";
-import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginn/shared";
+import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";

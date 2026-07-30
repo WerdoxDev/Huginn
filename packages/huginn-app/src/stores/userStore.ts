@@ -1,4 +1,4 @@
-import type { APIUser, PresenceUser, UserTokenPayload } from "@huginn/shared";
+import type { APIUser, PresenceUser, UserTokenPayload } from "@huginnjs/shared";
 
 import { convertToAppUser } from "@lib/utils";
 import * as jose from "jose";

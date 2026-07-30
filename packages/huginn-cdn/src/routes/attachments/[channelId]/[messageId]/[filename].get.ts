@@ -1,7 +1,7 @@
 import type { S3Stats } from "bun";
 
 import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
-import { type ImageFormats, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { type ImageFormats, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import Elysia, { env, StatusMap, t } from "elysia";
 
 import { storage } from "#server";

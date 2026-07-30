@@ -1,8 +1,8 @@
-import type { RouteLike } from "@huginn/shared";
+import type { RouteLike } from "@huginnjs/shared";
 
-import { HTTPError, type HuginnErrorData, isBrowser, resolveRequest } from "@huginn/shared";
-import { type HandlerRequestData, type InternalRequest, type RequestData, type ResponseLike, parseResponse } from "@huginn/shared";
-import { HuginnAPIError } from "@huginn/shared";
+import { HTTPError, type HuginnErrorData, isBrowser, resolveRequest } from "@huginnjs/shared";
+import { type HandlerRequestData, type InternalRequest, type RequestData, type ResponseLike, parseResponse } from "@huginnjs/shared";
+import { HuginnAPIError } from "@huginnjs/shared";
 
 import type { HuginnClient } from ".";
 import type { RESTOptions } from "./types";

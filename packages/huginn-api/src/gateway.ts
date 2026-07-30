@@ -8,7 +8,7 @@ import type {
    GatewayVoiceState,
    GatewayVoiceStateFlags,
    Snowflake,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import {
    GatewayCode,
@@ -19,7 +19,7 @@ import {
    analytics,
    recordSpanError,
    SpanStatusCode,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import type { GatewayOptions } from "./types";
 

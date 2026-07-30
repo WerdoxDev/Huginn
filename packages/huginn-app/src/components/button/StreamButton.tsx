@@ -1,4 +1,4 @@
-import type { GatewayVoiceStateFlags } from "@huginn/shared";
+import type { GatewayVoiceStateFlags } from "@huginnjs/shared";
 
 import { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { useHuginnWindow } from "@stores/windowStore";

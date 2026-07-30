@@ -1,7 +1,7 @@
 <wizard-report>
 # PostHog post-wizard report
 
-The wizard completed a full PostHog analytics integration for the Huginn app. PostHog (`posthog-js`, `posthog-node`) was already installed and the `PostHogProvider` was wrapping the app in `main.tsx`, initialized via the `WebAnalytics` class in `@huginn/shared` with a reverse-proxy host (`https://e.huginn.dev`). Several `posthog.capture()` calls were already present across auth, messaging, and DM flows.
+The wizard completed a full PostHog analytics integration for the Huginn app. PostHog (`posthog-js`, `posthog-node`) was already installed and the `PostHogProvider` was wrapping the app in `main.tsx`, initialized via the `WebAnalytics` class in `@huginnjs/shared` with a reverse-proxy host (`https://e.huginn.dev`). Several `posthog.capture()` calls were already present across auth, messaging, and DM flows.
 
 This session added the following:
 

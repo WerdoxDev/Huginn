@@ -1,7 +1,7 @@
 import type { VoiceStreamOptions } from "@huginnjs/api";
 
 import { useFullscreen } from "@hooks/useFullscreen";
-import { analytics, type Snowflake } from "@huginn/shared";
+import { analytics, type Snowflake } from "@huginnjs/shared";
 import { getMediaErrorMessage } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";

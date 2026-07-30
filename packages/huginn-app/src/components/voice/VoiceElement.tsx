@@ -1,4 +1,4 @@
-import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginn/shared";
+import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginnjs/shared";
 
 import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";

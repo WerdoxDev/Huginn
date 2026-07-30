@@ -1,6 +1,6 @@
 import { createErrorFactory, createHuginnError, globalPlugin } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CONSTANTS, type APIPostRegisterResult, Errors } from "@huginn/shared";
+import { CONSTANTS, type APIPostRegisterResult, Errors } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";

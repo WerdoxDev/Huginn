@@ -13,7 +13,7 @@
    "dependencies": {
       "@huginn/backend-shared": "workspace:*",
       "@huginn/runtime-shared": "workspace:*",
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "@opentelemetry/instrumentation": "^0.218.0",
       "crossws": "^0.4.6",
       "dotenv": "^17.4.2",

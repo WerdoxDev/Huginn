@@ -6,7 +6,7 @@ import HuginnLabel from "@components/HuginnLabel";
 import "../../cropper.css";
 import UserProfilePreview from "@components/profile/UserProfilePreview";
 import VoiceElement from "@components/voice/VoiceElement";
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";

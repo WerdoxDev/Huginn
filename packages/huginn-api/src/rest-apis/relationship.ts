@@ -1,7 +1,7 @@
-import type { APIGetUserRelationshipByIdResult, APIGetUserRelationshipsResult, APIPostRelationshipJSONBody } from "@huginn/shared";
-import type { Snowflake } from "@huginn/shared";
+import type { APIGetUserRelationshipByIdResult, APIGetUserRelationshipsResult, APIPostRelationshipJSONBody } from "@huginnjs/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
-import { Routes } from "@huginn/shared";
+import { Routes } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

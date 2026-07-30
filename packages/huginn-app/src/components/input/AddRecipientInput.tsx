@@ -1,7 +1,7 @@
 import { Checkbox } from "@base-ui/react";
 import UserAvatar from "@components/UserAvatar";
 import { useUsers } from "@hooks/api-hooks/userHooks";
-import { RelationshipType, type Snowflake } from "@huginn/shared";
+import { RelationshipType, type Snowflake } from "@huginnjs/shared";
 import { useMemo, useState } from "react";
 
 import type { AppRelationship, AppUser } from "@/types";

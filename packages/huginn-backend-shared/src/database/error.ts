@@ -1,4 +1,4 @@
-import { recordSpanError, type Snowflake } from "@huginn/shared";
+import { recordSpanError, type Snowflake } from "@huginnjs/shared";
 
 import { Prisma, prisma } from "#database";
 import { DBError, isDBError } from "#elysia-errors";

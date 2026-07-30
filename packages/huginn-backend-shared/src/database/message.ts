@@ -1,7 +1,7 @@
-import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginn/shared";
+import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginnjs/shared";
 
-import { WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginn/shared";
-import { MessageType } from "@huginn/shared";
+import { WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginnjs/shared";
+import { MessageType } from "@huginnjs/shared";
 
 import { assertExists, assertId, assertObj, prisma, type MessageArgs, type MessagePayload, Prisma } from "#database";
 import { type Attachment, type Embed } from "#prisma/client";

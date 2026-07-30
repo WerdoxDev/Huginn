@@ -1,4 +1,4 @@
-import { type APIPostUniqueUsernameResult } from "@huginn/shared";
+import { type APIPostUniqueUsernameResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { validateUsernameUnique } from "#utils/validation";

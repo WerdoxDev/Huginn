@@ -1,4 +1,4 @@
-import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginn/shared";
+import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";

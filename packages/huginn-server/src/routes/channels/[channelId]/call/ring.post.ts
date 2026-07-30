@@ -1,6 +1,6 @@
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors } from "@huginn/shared";
+import { CONSTANTS, Errors } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";

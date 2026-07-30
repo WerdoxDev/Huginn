@@ -8,7 +8,7 @@ import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { ChannelType } from "@huginn/shared";
+import { ChannelType } from "@huginnjs/shared";
 import { getChannelIconOptions } from "@lib/queries";
 import { getGroupChannelName } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";

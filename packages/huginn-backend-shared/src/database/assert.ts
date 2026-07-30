@@ -1,4 +1,4 @@
-import { analytics, recordSpanError, type Snowflake } from "@huginn/shared";
+import { analytics, recordSpanError, type Snowflake } from "@huginnjs/shared";
 
 import { Prisma } from "#database";
 import { assertCondition, assertId, prisma } from "#database";

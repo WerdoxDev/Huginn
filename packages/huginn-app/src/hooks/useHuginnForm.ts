@@ -1,4 +1,4 @@
-import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginn/shared";
+import { type HuginnErrorData, type HuginnErrorGroupWrapper } from "@huginnjs/shared";
 import { APIMessages } from "@lib/error-messages";
 import { requiredFieldError } from "@lib/utils";
 import { useEffect, useState, type FocusEvent } from "react";

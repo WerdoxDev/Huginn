@@ -1,4 +1,4 @@
-import type { HuginnErrorData, Snowflake } from "@huginn/shared";
+import type { HuginnErrorData, Snowflake } from "@huginnjs/shared";
 
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useClient } from "@stores/clientStore";

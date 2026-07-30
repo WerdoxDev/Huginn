@@ -1,4 +1,4 @@
-import { EventEmitter, type GatewayVoiceStateFlags, type Snowflake } from "@huginn/shared";
+import { EventEmitter, type GatewayVoiceStateFlags, type Snowflake } from "@huginnjs/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VoiceConnectionData, VoiceStatus } from "../types";

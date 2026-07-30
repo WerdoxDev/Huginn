@@ -1,4 +1,4 @@
-import { analytics, EventEmitter, recordSpanError, type HMediaKind, type VoiceError, type VoiceReadyData } from "@huginn/shared";
+import { analytics, EventEmitter, recordSpanError, type HMediaKind, type VoiceError, type VoiceReadyData } from "@huginnjs/shared";
 
 import type { HuginnClient, VoiceOptions, VoiceStatus } from ".";
 

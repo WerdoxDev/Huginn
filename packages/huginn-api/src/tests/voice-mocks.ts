@@ -1,4 +1,4 @@
-import { EventEmitter } from "@huginn/shared";
+import { EventEmitter } from "@huginnjs/shared";
 import { Device, FakeHandler, testFakeParameters } from "mediasoup-client";
 import { type Producer, type Consumer, type RtpCapabilities, type Transport } from "mediasoup-client/types";
 import { vi, type Mock } from "vitest";

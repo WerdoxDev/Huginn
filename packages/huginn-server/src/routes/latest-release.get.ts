@@ -1,4 +1,4 @@
-import { type APIGetLatestReleaseResult } from "@huginn/shared";
+import { type APIGetLatestReleaseResult } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";

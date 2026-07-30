@@ -1,9 +1,9 @@
-import type { GatewayIdentifyProperties, GatewayPayload, Snowflake } from "@huginn/shared";
+import type { GatewayIdentifyProperties, GatewayPayload, Snowflake } from "@huginnjs/shared";
 import type { Peer } from "crossws";
 
 import { CommonClientSession } from "@huginn/backend-shared";
 import { prisma, selectRelationshipUser } from "@huginn/backend-shared/database";
-import { ChannelType, RelationshipType, WorkerID } from "@huginn/shared";
+import { ChannelType, RelationshipType, WorkerID } from "@huginnjs/shared";
 
 export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
    public get authenticated(): boolean {

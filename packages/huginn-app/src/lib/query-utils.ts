@@ -1,6 +1,6 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 
-import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginn/shared";
+import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginnjs/shared";
 import { produce } from "immer";
 
 import type { AppDirectChannel, AppMessage, AppUser } from "@/types";

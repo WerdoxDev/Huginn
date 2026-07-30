@@ -9,7 +9,7 @@ import {
    parseResponse,
    resolveRequest,
    analytics,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { env } from "#setup";
 

@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginnjs/api";
 
-import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginn/shared";
+import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStore";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 

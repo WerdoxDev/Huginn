@@ -1,4 +1,4 @@
-import type { OAuthTokenPayload, Snowflake, UserRefreshTokenPayload, UserTokenPayload } from "@huginn/shared";
+import type { OAuthTokenPayload, Snowflake, UserRefreshTokenPayload, UserTokenPayload } from "@huginnjs/shared";
 
 import * as jose from "jose";
 

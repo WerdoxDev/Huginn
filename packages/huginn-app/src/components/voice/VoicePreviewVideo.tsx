@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 import type { RefObject } from "react";
 
 import { motion, type Transition, type Variants } from "motion/react";

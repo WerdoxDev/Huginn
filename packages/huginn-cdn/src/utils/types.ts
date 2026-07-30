@@ -1,4 +1,4 @@
-import type { FileContentTypes, FileFormats } from "@huginn/shared";
+import type { FileContentTypes, FileFormats } from "@huginnjs/shared";
 
 export type FileInfo = {
    name: string;

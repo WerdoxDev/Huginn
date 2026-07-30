@@ -4,7 +4,7 @@ import Tooltip from "@components/tooltip/Tooltip";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginn/shared";
+import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { getSizeText } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useStorage } from "@stores/storageStore";

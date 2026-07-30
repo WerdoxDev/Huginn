@@ -1,5 +1,5 @@
 import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
-import { ChannelType, type DirectChannel, type Snowflake } from "@huginn/shared";
+import { ChannelType, type DirectChannel, type Snowflake } from "@huginnjs/shared";
 import { getChannelsOptions } from "@lib/queries";
 import { findChannel } from "@lib/query-utils";
 import { useClient } from "@stores/clientStore";

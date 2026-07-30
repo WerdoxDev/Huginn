@@ -1,4 +1,4 @@
-import { Routes, type APIGetGifCategoriesResult, type APIGetSearchGifsResult, type APIGetTrendingGifsResult } from "@huginn/shared";
+import { Routes, type APIGetGifCategoriesResult, type APIGetSearchGifsResult, type APIGetTrendingGifsResult } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { layout, prepare } from "@chenglou/pretext";
 import UserAvatar from "@components/UserAvatar";

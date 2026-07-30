@@ -6,8 +6,8 @@ export const external = [...builtins];
 
 const isProd = process.argv.includes("--prod");
 const noExternal = [
-   "@huginn/shared",
-   "@huginn/shared/runtime-analytics",
+   "@huginnjs/shared",
+   "@huginnjs/shared/runtime-analytics",
    "native-addon",
    "loopback-capture",
    "electron-updater",
@@ -24,7 +24,7 @@ await build({
 
    deps: {
       neverBundle: external,
-      alwaysBundle: isProd ? noExternal : ["@huginn/shared", "native-addon", "loopback-capture"],
+      alwaysBundle: isProd ? noExternal : ["@huginnjs/shared", "native-addon", "loopback-capture"],
 
       onlyBundle: false,
    },

@@ -1,4 +1,4 @@
-import type { ThemeType } from "@huginn/shared";
+import type { ThemeType } from "@huginnjs/shared";
 
 import { useStorage } from "@stores/storageStore";
 import { createContext, type ReactNode, useLayoutEffect } from "react";

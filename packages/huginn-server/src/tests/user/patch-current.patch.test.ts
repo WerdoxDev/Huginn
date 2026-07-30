@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginn/shared";
+import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
 

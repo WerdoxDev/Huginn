@@ -1,5 +1,5 @@
 import { testHandler } from "@huginn/backend-shared";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectRelationshipExactSchema } from "#tests/expect-utils";

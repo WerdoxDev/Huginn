@@ -1,5 +1,5 @@
 import { prisma, selectAllMessage } from "@huginn/backend-shared/database";
-import { analytics, recordSpanError, type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginn/shared";
+import { analytics, recordSpanError, type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginnjs/shared";
 
 import { voiceLogger } from "#loggers";
 import { dispatchToTopic } from "#utils/gateway-utils";

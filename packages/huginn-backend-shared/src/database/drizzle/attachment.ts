@@ -1,4 +1,4 @@
-import { analytics, recordSpanError, snowflake, WorkerID } from "@huginn/shared";
+import { analytics, recordSpanError, snowflake, WorkerID } from "@huginnjs/shared";
 
 import { drizzle } from "./db";
 

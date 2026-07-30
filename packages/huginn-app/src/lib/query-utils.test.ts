@@ -1,6 +1,6 @@
 import type { InfiniteData } from "@tanstack/react-query";
 
-import { ChannelType, MessageType } from "@huginn/shared";
+import { ChannelType, MessageType } from "@huginnjs/shared";
 import { describe, expect, test } from "vitest";
 
 import type { AppDirectChannel, AppMessage } from "@/types";

@@ -1,6 +1,6 @@
 import type { Message, Peer } from "crossws";
 
-import { analytics, GatewayCode, recordSpanError, type Snowflake, snowflake, validateGatewayData } from "@huginn/shared";
+import { analytics, GatewayCode, recordSpanError, type Snowflake, snowflake, validateGatewayData } from "@huginnjs/shared";
 
 import type { CommonPayload, WebsocketOptions } from "#types";
 

@@ -19,7 +19,7 @@
  *   bun run generate-icons.ts
  */
 
-import { parseOklchToRgb } from "@huginn/shared";
+import { parseOklchToRgb } from "@huginnjs/shared";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, existsSync, rmSync } from "node:fs";
 import path from "node:path";

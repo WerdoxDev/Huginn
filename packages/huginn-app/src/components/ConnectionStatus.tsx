@@ -1,4 +1,4 @@
-import type { GatewayStatus } from "@huginn/shared";
+import type { GatewayStatus } from "@huginnjs/shared";
 
 import { useClientStore } from "@stores/clientStore";
 import clsx from "clsx";

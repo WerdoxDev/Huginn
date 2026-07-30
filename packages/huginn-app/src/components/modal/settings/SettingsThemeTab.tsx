@@ -1,6 +1,6 @@
 import HuginnIcon from "@components/HuginnIcon";
 import HuginnLabel from "@components/HuginnLabel";
-import { parseOklchToRgb, type ThemeType } from "@huginn/shared";
+import { parseOklchToRgb, type ThemeType } from "@huginnjs/shared";
 import { mappedColorThemes, useTheme } from "@stores/themeStore";
 import { animate, createDraggable, createScope, Draggable, utils, type Scope } from "animejs";
 import clsx from "clsx";

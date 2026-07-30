@@ -1,4 +1,4 @@
-import { getEmojiCodepoint, getEmojiSlugsFromCodepoint, getEmojiUnicodeFromSlug } from "@huginn/shared";
+import { getEmojiCodepoint, getEmojiSlugsFromCodepoint, getEmojiUnicodeFromSlug } from "@huginnjs/shared";
 import { marked, type TokenizerExtension } from "marked";
 // import emojis from "unicode-emoji-json/data-by-emoji.json";
 

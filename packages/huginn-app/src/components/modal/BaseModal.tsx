@@ -3,7 +3,7 @@ import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import { useInset } from "@contexts/InsetContext";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 import clsx from "clsx";

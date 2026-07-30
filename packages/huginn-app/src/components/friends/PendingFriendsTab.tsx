@@ -1,10 +1,10 @@
-import type { Snowflake } from "@huginn/shared";
+import type { Snowflake } from "@huginnjs/shared";
 
 import { Tabs } from "@base-ui/react";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import { RelationshipType } from "@huginn/shared";
+import { RelationshipType } from "@huginnjs/shared";
 import { useMemo } from "react";
 
 import type { AppRelationship, AppUser } from "@/types";

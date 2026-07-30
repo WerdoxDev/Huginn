@@ -1,4 +1,4 @@
-import { analytics, recordSpanError } from "@huginn/shared";
+import { analytics, recordSpanError } from "@huginnjs/shared";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 

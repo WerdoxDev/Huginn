@@ -1,4 +1,4 @@
-import { analytics } from "@huginn/shared";
+import { analytics } from "@huginnjs/shared";
 import { Notification } from "electron";
 
 export class NotificationController {

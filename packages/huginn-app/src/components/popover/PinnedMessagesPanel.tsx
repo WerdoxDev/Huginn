@@ -4,7 +4,7 @@ import { MessageProvider } from "@contexts/MessageProvider";
 import { usePinnedMessages } from "@hooks/api-hooks/messageHooks";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
-import { type Snowflake } from "@huginn/shared";
+import { type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useModals } from "@stores/modalsStore";
 import { usePopover } from "@stores/popoverStore";

@@ -1,5 +1,5 @@
 {
-   "name": "@huginn/shared",
+   "name": "@huginnjs/shared",
    "version": "0.41.0",
    "type": "module",
    "main": "./src/index.ts",

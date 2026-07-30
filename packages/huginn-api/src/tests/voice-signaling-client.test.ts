@@ -1,4 +1,4 @@
-import { GatewayCode, VoiceOperations, type VoicePayload, type VoiceWebsocketEvents } from "@huginn/shared";
+import { GatewayCode, VoiceOperations, type VoicePayload, type VoiceWebsocketEvents } from "@huginnjs/shared";
 import { ws, type WebSocketHandlerConnection } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";

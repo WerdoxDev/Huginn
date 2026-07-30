@@ -1,4 +1,4 @@
-import { analytics, type Snowflake, recordSpanError, VoiceSignallingError, EventEmitter, CONSTANTS } from "@huginn/shared";
+import { analytics, type Snowflake, recordSpanError, VoiceSignallingError, EventEmitter, CONSTANTS } from "@huginnjs/shared";
 
 import type { HuginnClient, Voice } from ".";
 import type { Gateway } from "./gateway";

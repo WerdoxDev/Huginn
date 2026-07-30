@@ -2,7 +2,7 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";
-import { clamp, remap } from "@huginn/shared";
+import { clamp, remap } from "@huginnjs/shared";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useClient } from "@stores/clientStore";

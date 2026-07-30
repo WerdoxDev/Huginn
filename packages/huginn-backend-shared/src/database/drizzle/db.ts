@@ -1,4 +1,4 @@
-import { idFix } from "@huginn/shared";
+import { idFix } from "@huginnjs/shared";
 import { neon } from "@neondatabase/serverless";
 import { better } from "better-drizzle";
 import { drizzle } from "drizzle-orm/neon-http";

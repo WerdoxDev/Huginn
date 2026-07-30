@@ -1,4 +1,4 @@
-import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginn/shared";
+import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginnjs/shared";
 
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingButton from "@components/button/LoadingButton";

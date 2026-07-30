@@ -1,4 +1,4 @@
-import { Routes, type Snowflake } from "@huginn/shared";
+import { Routes, type Snowflake } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
 

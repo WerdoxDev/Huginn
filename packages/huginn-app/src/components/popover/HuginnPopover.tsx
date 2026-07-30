@@ -2,7 +2,7 @@ import { Drawer, Popover } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
-import { snowflake, WorkerID } from "@huginn/shared";
+import { snowflake, WorkerID } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { usePopovers } from "@stores/popoverStore";
 import clsx from "clsx";

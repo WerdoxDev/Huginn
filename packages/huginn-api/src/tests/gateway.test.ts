@@ -6,7 +6,7 @@
  *   - This file lives next to `gateway.ts`, e.g. `src/gateway.test.ts`.
  *   - `HuginnClient` is exported from the package's `index.ts` (`./`).
  *   - `GatewayOperations` / `GatewayCode` are the same runtime enums used
- *     inside `gateway.ts`, imported from `@huginn/shared` — the tests use
+ *     inside `gateway.ts`, imported from `@huginnjs/shared` — the tests use
  *     the real values instead of hard-coding numbers so they stay correct
  *     if the enum changes.
  *
@@ -18,9 +18,9 @@
  *     `globalThis.WebSocket` currently points to.
  */
 
-import type { GatewayPayload } from "@huginn/shared";
+import type { GatewayPayload } from "@huginnjs/shared";
 
-import { GatewayCode, GatewayOperations } from "@huginn/shared";
+import { GatewayCode, GatewayOperations } from "@huginnjs/shared";
 import { ws, type WebSocketHandlerConnection } from "msw";
 // import type { WebSocketClientConnection } from "msw";
 import { setupServer } from "msw/node";

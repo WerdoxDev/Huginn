@@ -1,4 +1,4 @@
-import { analytics, idFix, recordSpanError, type APIReadStateWithoutUser, type Snowflake } from "@huginn/shared";
+import { analytics, idFix, recordSpanError, type APIReadStateWithoutUser, type Snowflake } from "@huginnjs/shared";
 
 import { assertExists, assertId, assertObj, prisma, type ReadStatePayload, Prisma } from "#database";
 import { DBErrorType } from "#types";

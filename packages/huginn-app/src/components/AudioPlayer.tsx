@@ -1,5 +1,5 @@
 import { useOpen } from "@hooks/useOpen";
-import { formatSeconds } from "@huginn/shared";
+import { formatSeconds } from "@huginnjs/shared";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
 import { useStorage, useStorageStore } from "@/stores/storageStore";

@@ -27,7 +27,7 @@ import {
    pick,
    recordSpanError,
    type Snowflake,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import { env } from "#setup";
 

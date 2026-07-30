@@ -1,4 +1,4 @@
-import { WorkerID, analytics, recordSpanError, snowflake } from "@huginn/shared";
+import { WorkerID, analytics, recordSpanError, snowflake } from "@huginnjs/shared";
 
 import type { DBThumbnail, DBVideo } from "#types";
 

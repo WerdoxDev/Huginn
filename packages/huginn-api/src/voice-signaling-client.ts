@@ -21,7 +21,7 @@ import {
    type VoiceRestartIceResult,
    type VoiceResumeConsumerResult,
    type VoiceWebsocketEvents,
-} from "@huginn/shared";
+} from "@huginnjs/shared";
 
 import type { HuginnClient, VoiceConnectionData, VoiceOptions, VoiceSignallingResetType } from ".";
 

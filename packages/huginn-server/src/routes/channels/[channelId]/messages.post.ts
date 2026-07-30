@@ -1,7 +1,7 @@
 import { createErrorFactory, createHuginnError, globalPlugin, invalidBody, missingAccess, tryCatch, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import { selectAllMessage } from "@huginn/backend-shared/database/common";
-import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginn/shared";
+import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";

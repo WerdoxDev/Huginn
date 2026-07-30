@@ -1,6 +1,6 @@
 import { missingAccess, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
-import { decodeEmojiKey, Errors } from "@huginn/shared";
+import { decodeEmojiKey, Errors } from "@huginnjs/shared";
 import { Elysia } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";

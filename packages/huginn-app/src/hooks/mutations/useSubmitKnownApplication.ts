@@ -1,4 +1,4 @@
-import type { APIPostKnownApplicationJSONBody } from "@huginn/shared";
+import type { APIPostKnownApplicationJSONBody } from "@huginnjs/shared";
 
 import { useClient } from "@stores/clientStore";
 import { updateKnownApplications } from "@stores/storageStore";

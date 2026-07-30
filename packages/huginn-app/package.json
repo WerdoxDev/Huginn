@@ -48,7 +48,7 @@
       "@chenglou/pretext": "^0.0.7",
       "@headlessui/react": "^2.2.9",
       "@huginnjs/api": "workspace:*",
-      "@huginn/shared": "workspace:*",
+      "@huginnjs/shared": "workspace:*",
       "@posthog/rollup-plugin": "^1.4.7",
       "@rolldown/plugin-babel": "^0.2.3",
       "@svgr/core": "^8.1.0",

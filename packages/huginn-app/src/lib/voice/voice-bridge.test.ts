@@ -1,7 +1,7 @@
 import type { HuginnClient } from "@huginnjs/api";
 import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
-import * as shared from "@huginn/shared";
+import * as shared from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

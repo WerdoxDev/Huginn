@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { ChannelType, MessageType } from "@huginn/shared";
+import { ChannelType, MessageType } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { expectMessageExactSchema } from "#tests/expect-utils";
