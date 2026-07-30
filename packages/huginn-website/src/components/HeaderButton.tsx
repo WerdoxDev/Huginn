@@ -12,15 +12,14 @@ export default function HeaderButton({ link, text, onClick, anchor }: HeaderButt
    return (
       <button onClick={onClick} className="text-left" type="button">
          {anchor ? (
-            <a href={link} target="_blank" rel="noopener noreferrer" className="hover:text-accent text-2xl font-bold transition-all md:text-xl">
+            <a href={link} className="hover:text-accent text-2xl font-bold transition-all md:text-xl">
                {text}
             </a>
          ) : (
             <Link
                to={link}
-               className={({ isActive }) =>
-                  `hover:text-accent text-2xl font-bold transition-all md:text-xl ${isActive ? "text-accent underline underline-offset-4" : ""}`
-               }
+               activeProps={{ className: "text-accent underline underline-offset-4" }}
+               className="hover:text-accent text-2xl font-bold transition-all md:text-xl"
             >
                {text}
             </Link>
