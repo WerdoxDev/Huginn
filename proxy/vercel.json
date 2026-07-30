@@ -2,11 +2,11 @@
    "rewrites": [
       {
          "source": "/docs/:path*",
-         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/:path*"
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/docs/:path*"
       },
       {
          "source": "/docs/",
-         "destination": "https://huginn-docs-werdoxs-projects.vercel.app"
+         "destination": "https://huginn-docs-werdoxs-projects.vercel.app/docs"
       },
       {
          "source": "/app/:path*",
