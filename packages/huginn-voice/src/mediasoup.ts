@@ -1,3 +1,4 @@
+import "dotenv/config";
 import type { Router, RouterRtpCodecCapability, TransportProtocol, WebRtcServer, Worker } from "mediasoup/types";
 
 import { logger } from "@huginn/backend-shared/logger";
@@ -38,7 +39,7 @@ export async function runMediasoupWorker() {
    return analytics.startActiveSpan("mediasoup.runMediasoupWorker", async (span) => {
       try {
          worker = await mediasoup.createWorker({
-            logLevel: "warn",
+            logLevel: "debug",
          });
 
          const listenInfos = env.MEDIA_LISTEN_INFOS?.trim()
