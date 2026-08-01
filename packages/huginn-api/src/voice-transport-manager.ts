@@ -6,10 +6,9 @@ import type {
    RtpCapabilities,
    RtpParameters,
    Transport,
-   TransportOptions,
+   TransportOptions as MediasoupTransportOptions,
    RtpEncodingParameters,
    ConnectionState,
-   DeviceOptions,
 } from "mediasoup-client/types";
 
 import {
@@ -35,6 +34,8 @@ import {
    type VoiceResumeConsumerResult,
 } from "@huginnjs/shared";
 import * as mediasoupClient from "mediasoup-client";
+
+import type { TransportOptions } from "./types";
 
 import { TransportError, type HuginnClient } from ".";
 
@@ -84,10 +85,6 @@ type Events = {
 
 type TransportManagerStatus = "idle" | "disconnected" | "ready" | "restarting";
 
-type Options = {
-   deviceOptions?: DeviceOptions;
-};
-
 export class VoiceTransportManager extends EventEmitter<Events> {
    private client: HuginnClient;
    public device?: mediasoupClient.Device;
@@ -97,7 +94,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public remoteConsumers: Map<string, ConsumerData> = new Map();
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
-   private options?: Options;
+   private options?: TransportOptions;
 
    private pendingRemoteProducers = new Map<string, ProducerData>();
 
@@ -106,7 +103,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return this._status;
    }
 
-   public constructor(client: HuginnClient, options?: Options) {
+   public constructor(client: HuginnClient, options?: TransportOptions) {
       super();
       this.client = client;
       this.options = options;
@@ -219,7 +216,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createSendTransport(options: TransportOptions): Promise<void> {
+   public async createSendTransport(options: MediasoupTransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createSendTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -275,7 +272,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       });
    }
 
-   public async createRecvTransport(options: TransportOptions): Promise<void> {
+   public async createRecvTransport(options: MediasoupTransportOptions): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceTransport.createRecvTransport", async (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -631,8 +628,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             consumer.appData.mediaKind === "microphone"
                ? voicePreference?.isMicrophoneMuted
                : consumer.appData.mediaKind === "stream_audio"
-                  ? voicePreference?.isStreamMuted
-                  : false;
+                 ? voicePreference?.isStreamMuted
+                 : false;
 
          // If state is deafened consume is not paused, pause consumer
          if ((gatewayVoiceState.isAudioDeafened === true || isMuted === true) && !consumer.paused) {
