@@ -2,32 +2,32 @@ import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
 import LoadingIcon from "@components/LoadingIcon";
 import VoiceElement from "@components/voice/VoiceElement";
+import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
 import VoiceControls from "@components/VoiceControls";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
-import { useMediaSources } from "@hooks/voice/useMediaSources";
+import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
+import { isVoiceChildWindow } from "@lib/voice/voice-window";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { usePostHog } from "posthog-js/react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { MediaSource } from "@/types";
 
 const minHeight = 250;
 const maxHeightPercentage = 60;
+const isMainWindow = window.opener === null;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { voiceConnection, voiceState, voiceStates, callStates, speakingStates } = useVoiceStore();
 
    const client = useClient();
    const { user } = useThisUser();
-   const posthog = usePostHog();
-
-   const mediaSources = useMediaSources();
+   const { mediaSources, popoutState } = useVoiceSnapshot();
    const { voicePreferences } = useVoicePreferences();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
@@ -56,6 +56,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const isShown = useMemo(() => thisVoiceStates.length !== 0, [thisVoiceStates]);
    const isLoading = useMemo(() => !thisCallState, [thisCallState]);
 
+   useEffect(() => {
+      console.log(isShown, user);
+   }, [isShown, user]);
+
    const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
    const gridRef = useRef<HTMLDivElement>(null);
    const resizerRef = useRef<HTMLDivElement>(null);
@@ -67,14 +71,19 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       cols: number;
    }>();
    const [gridHeight, setGridHeight] = useState(250);
-   const { isFullscreen, toggleFullscreen } = useFullscreen();
+   const { isFullscreen: actualIsFullScreen, toggleFullscreen } = useFullscreen();
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
+   const isFullscreen = actualIsFullScreen || !isMainWindow;
 
    useEffect(() => {
       if (maximizedSource && !mediaSources.some((x) => x.producerId === maximizedSource.producerId)) {
          setMaximizedSource(undefined);
       }
    }, [mediaSources]);
+
+   useEffect(() => {
+      console.log(voiceState.isAudioDeafened, voiceState.isAudioMuted);
+   }, [voiceState]);
 
    useEffect(() => {
       if (!voiceConnection.channelId) {
@@ -134,27 +143,18 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }, [isShown, maximizedSource]);
 
    useEffect(() => {
-      const unlisten = client?.voice.transport.listen("producer_closed", (d) => {
-         if (d.producerId === maximizedSource?.producerId) {
-            setMaximizedSource(undefined);
-         }
-      });
+      if (maximizedSource && !mediaSources.some((source) => source.producerId === maximizedSource.producerId)) {
+         setMaximizedSource(undefined);
+      }
 
-      const unlisten2 = client?.voice.transport.listen("consumer_closed", (d) => {
-         if (d.producerId === maximizedSource?.producerId) {
-            setMaximizedSource(undefined);
-         }
-      });
-
-      return () => {
-         unlisten?.();
-         unlisten2?.();
-      };
-   }, [maximizedSource]);
+      if (popoutState.openMediaPopoutProducers.includes(maximizedSource?.producerId ?? "")) {
+         setMaximizedSource(undefined);
+      }
+   }, [maximizedSource, mediaSources, popoutState]);
 
    useLayoutEffect(() => {
       updateGridSize();
-   }, [mediaSources, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates, isGridView]);
+   }, [mediaSources, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates, isGridView, popoutState]);
 
    useEffect(() => {
       const controller = new AbortController();
@@ -206,18 +206,23 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       }
    }
 
-   function updateGridSize() {
+   const updateGridSize = useEffectEvent(() => {
       if (!gridRef.current) {
          return;
       }
 
       const store = voiceStore.getState();
+      const openMediaPopoutProducers = popoutState.openMediaPopoutProducers;
       const numBoxes = maximizedSource?.producerId
          ? 1
          : // People in voice
-           store.voiceStates.length +
+           store.voiceStates.filter((x) => !openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "")).length +
            // Streams
-           store.voiceStates.filter((x) => x.isAudioStreaming || x.isScreenSharing).length +
+           store.voiceStates.filter(
+              (x) =>
+                 (x.isAudioStreaming || x.isScreenSharing) &&
+                 !openMediaPopoutProducers.includes((streamVideoSources[x.userId] || streamAudioSources[x.userId])?.producerId ?? ""),
+           ).length +
            // People getting ringed
            (thisCallState?.ringing.length ?? 0);
 
@@ -271,7 +276,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       }
 
       setGridSize(best);
-   }
+   });
 
    if (!user || !isShown) {
       return;
@@ -288,6 +293,9 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          ref={containerRef}
       >
          <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 h-3 cursor-ns-resize" />
+
+         <VoicePopoutIndicator />
+
          <div
             className={clsx(
                "flex w-full shrink flex-wrap content-center items-center justify-center gap-3",
@@ -297,7 +305,9 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             ref={gridRef}
             style={{ height: !isFullscreen ? gridHeight : "100%" }}
          >
-            {isLoading ? (
+            {popoutState.isPopoutOpen && !isVoiceChildWindow() ? (
+               <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
+            ) : isLoading ? (
                <LoadingIcon className="size-16" />
             ) : (
                <>
@@ -305,6 +315,9 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                   {thisVoiceStates
                      .filter(
                         (x) =>
+                           !popoutState.openMediaPopoutProducers.includes(
+                              (streamVideoSources[x.userId] || streamAudioSources[x.userId])?.producerId ?? "",
+                           ) &&
                            (x.isAudioStreaming || x.isScreenSharing) &&
                            (maximizedSource
                               ? x.userId === maximizedSource.userId &&
@@ -333,7 +346,11 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                      ))}
                   {/* Normals user / cameras */}
                   {thisVoiceStates
-                     .filter((x) => (maximizedSource ? x.userId === maximizedSource.userId && maximizedSource.kind === "camera" : true))
+                     .filter(
+                        (x) =>
+                           !popoutState.openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "") &&
+                           (maximizedSource ? x.userId === maximizedSource.userId && maximizedSource.kind === "camera" : true),
+                     )
                      .map((x) => (
                         <VoiceElement
                            type="normal"
@@ -378,7 +395,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          {!isLoading && (
             <VoiceControls
                show={showControls || !isGridView}
-               isFullscreen={isFullscreen}
+               isFullscreen={actualIsFullScreen}
                isInVoice={voiceConnection.channelId === props.channelId}
                channelId={props.channelId}
                mediaSources={mediaSources}

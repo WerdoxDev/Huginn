@@ -390,12 +390,17 @@ export type MediaSource = {
    consumerId?: string;
    producerId?: string;
    consumerUserIds: string[];
-   track?: MediaStreamTrack | null;
+   // track?: MediaStreamTrack | null;
    trackSettings?: MediaTrackSettings;
    maxBitrate?: number;
    kind: HMediaKind;
    userId: Snowflake;
    type: "consuming" | "consumable" | "producing";
+};
+
+export type PopoutState = {
+   isPopoutOpen: boolean;
+   openMediaPopoutProducers: string[];
 };
 
 export type ALCData = {

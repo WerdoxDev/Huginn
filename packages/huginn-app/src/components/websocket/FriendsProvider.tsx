@@ -1,6 +1,7 @@
 import type { GatewayRelationshipCreateData, Snowflake } from "@huginnjs/shared";
 
 import { RelationshipType } from "@huginnjs/shared";
+import { persister } from "@lib/queries";
 import { convertToAppRelationship } from "@lib/utils";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStateStore";
@@ -30,11 +31,13 @@ export default function FriendsProvider(props: { children?: ReactNode }) {
       });
 
       queryClient.setQueryData<AppRelationship[]>(["relationships"], newFriends);
+      persister.persistQueryByKey(["relationships"], queryClient);
       setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
    }
 
    function onRelationshipDeleted(userId: Snowflake) {
       const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (old) => old?.filter((x) => x.userId !== userId));
+      persister.persistQueryByKey(["relationships"], queryClient);
       setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
    }
 

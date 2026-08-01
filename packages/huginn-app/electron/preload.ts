@@ -1,10 +1,10 @@
 import type { LogArgs } from "@huginnjs/shared";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
-import type { ProcessInfo } from "native-addon";
 
 import { contextBridge, ipcRenderer } from "electron";
 
 import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult, ApplicationInfo, OsInfo } from "@/types";
+console.log("electron preload.ts loaded");
 
 export const electronAPI = {
    // Window
@@ -12,6 +12,7 @@ export const electronAPI = {
    showMain: () => ipcRenderer.send("window:show-main"),
    hideMain: () => ipcRenderer.send("window:hide-main"),
    focusMain: () => ipcRenderer.send("window:focus-main"),
+   focusMediaPopout: (producerId: string) => ipcRenderer.send("window:focus-media-popout", producerId),
    relaunch: () => ipcRenderer.send("window:relaunch"),
    processId: () => ipcRenderer.invoke("window:process-id") as Promise<number>,
 
@@ -91,11 +92,6 @@ export const electronAPI = {
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ApplicationInfo[]>,
    // getApplicationInfo: (processId: number) =>
    //    ipcRenderer.invoke("native:get-application-info", processId) as Promise<{ displayName: string | null; icon: string | null }>,
-
-   // Voice debug
-   openVoiceDebug: () => ipcRenderer.send("voice-debug:open"),
-   closeVoiceDebug: () => ipcRenderer.send("voice-debug:close"),
-   isVoiceDebugOpen: () => ipcRenderer.invoke("voice-debug:is-open") as Promise<boolean>,
 
    // App
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),

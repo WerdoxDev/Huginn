@@ -1,5 +1,6 @@
 import type { APIUser, PresenceUser, UserTokenPayload } from "@huginnjs/shared";
 
+import { syncZustandStore } from "@lib/sync-zustand";
 import { convertToAppUser } from "@lib/utils";
 import * as jose from "jose";
 import { createStore, useStore } from "zustand";
@@ -49,5 +50,7 @@ export function initUserStore() {
 export function useThisUser() {
    return useStore(store);
 }
+
+syncZustandStore(store, { name: "userStore", partialize: (state) => ({ user: state.user, tokenPayload: state.tokenPayload }) });
 
 export const userStore = store;

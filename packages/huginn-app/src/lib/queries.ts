@@ -2,11 +2,26 @@ import type { HuginnClient } from "@huginnjs/api";
 
 import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStore";
+import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
+import { experimental_createQueryPersister } from "@tanstack/query-persist-client-core";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
+import { BroadcastStorage } from "./broadcast-storage";
 import { Gallery } from "./capacitor/gallery-plugin";
 import { updateUser } from "./query-utils";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
+import { getVoiceHostId } from "./voice/voice-window";
+
+const hostId = getVoiceHostId();
+const storage = new BroadcastStorage(`huginn-query-storage:${hostId}`);
+
+if (window.opener) {
+   await storage.ready;
+}
+
+export const persister = experimental_createQueryPersister({
+   storage: storage,
+});
 
 export const queryClient = new QueryClient({
    defaultOptions: {
@@ -15,9 +30,21 @@ export const queryClient = new QueryClient({
          refetchOnWindowFocus: false,
          refetchOnMount: false,
          staleTime: 60000,
+         persister: persister.persisterFn,
       },
    },
 });
+
+const stopBroadcast = broadcastQueryClient({
+   queryClient,
+   broadcastChannel: `tanstack-query:${hostId}`,
+});
+
+if (import.meta.hot) {
+   import.meta.hot.dispose(() => {
+      stopBroadcast?.();
+   });
+}
 
 export function getInitialChannels() {
    return clientStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x));

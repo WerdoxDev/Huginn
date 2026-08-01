@@ -1,4 +1,5 @@
 import { analyticsShim } from "@huginnjs/shared";
+import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
@@ -143,3 +144,5 @@ export function useStorage<K extends FileType>(type: K) {
 
 export type StorageStoreType = ReturnType<typeof useStorageStore>;
 export const storageStore = store;
+
+syncZustandStore(store, { name: "storageStore", partialize: (state) => ({ cache: state.cache }) });

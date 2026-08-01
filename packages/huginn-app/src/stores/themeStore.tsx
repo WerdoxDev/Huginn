@@ -1,5 +1,6 @@
 import type { ThemeType } from "@huginnjs/shared";
 
+import { syncZustandStore } from "@lib/sync-zustand";
 import { useStorage } from "@stores/storageStore";
 import { createContext, type ReactNode, useLayoutEffect } from "react";
 import { createStore, useStore } from "zustand";
@@ -92,3 +93,5 @@ export function useTheme() {
 }
 
 export const themeStore = store;
+
+syncZustandStore(store, { name: "themeStore", partialize: (state) => ({ themeType: state.themeType, theme: state.theme }) });

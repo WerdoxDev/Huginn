@@ -1,6 +1,7 @@
 import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { error, type Snowflake } from "@huginnjs/shared";
+import { VoiceClient } from "@lib/voice/voice-client";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -25,8 +26,18 @@ export default function VoiceControls(props: {
    const [forceShow, setForceShow] = useState(false);
    const [isMoving, setIsMoving] = useState(false);
    const [ref, isHovering] = useHover<HTMLDivElement>();
-   const { toggleDeafen, toggleMute, closeCamera, changeStream, updateStream, openCamera, openAudioStream, closeStream, openScreenShare } =
-      useVoiceUtils();
+   const {
+      toggleDeafen,
+      toggleMute,
+      closeCamera,
+      changeStream,
+      updateStream,
+      openCamera,
+      openAudioStream,
+      closeStream,
+      openScreenShare,
+      openPopout,
+   } = useVoiceUtils();
    const { voiceState } = useVoiceStore();
    const { updateModals } = useModals();
 
@@ -55,12 +66,12 @@ export default function VoiceControls(props: {
       };
    }, []);
 
-   function onStreamButtonOpenChanged(isOpen: boolean) {
+   function handleStreamButtonOpenChanged(isOpen: boolean) {
       setForceShow(isOpen);
    }
 
-   function onConnect() {
-      client?.voiceManager.connectVoice(null, props.channelId).catch((e) => {
+   function handleConnect() {
+      VoiceClient.sendMessage("connect_voice", { guildId: null, channelId: props.channelId }).catch((e) => {
          error("app:general", "Connecting to voice failed:", e);
          updateModals({
             info: {
@@ -73,8 +84,8 @@ export default function VoiceControls(props: {
       });
    }
 
-   async function onDisconnect() {
-      await client?.voiceManager.disconnectVoice();
+   async function handleDisconnect() {
+      await VoiceClient.sendMessage("disconnect_voice");
    }
 
    return (
@@ -123,7 +134,7 @@ export default function VoiceControls(props: {
                            onCloseStream={closeStream}
                            onChangeStream={changeStream}
                            onUpdateStream={updateStream}
-                           onOpenChanged={onStreamButtonOpenChanged}
+                           onOpenChanged={handleStreamButtonOpenChanged}
                            // menu={{ side: "top", align: "center", sideOffset: 12 }}
                         >
                            <VoiceControlButton
@@ -162,7 +173,7 @@ export default function VoiceControls(props: {
                   <VoiceControlButton
                      color="negative"
                      hoverColor="negative"
-                     onClick={onDisconnect}
+                     onClick={handleDisconnect}
                      tooltip="Disconnect"
                      className="rounded-xl px-5 py-2.5"
                   >
@@ -170,7 +181,7 @@ export default function VoiceControls(props: {
                   </VoiceControlButton>
                </>
             ) : (
-               <VoiceControlButton color="positive" hoverColor="positive" onClick={onConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
+               <VoiceControlButton color="positive" hoverColor="positive" onClick={handleConnect} tooltip="Join" className="rounded-xl px-5 py-2.5">
                   <IconMingcutePhoneFill className="size-6" />
                </VoiceControlButton>
             )}
@@ -181,12 +192,22 @@ export default function VoiceControls(props: {
                !props.isFullscreen && "rounded-xl",
             )}
          ></div>
-         <Tooltip>
-            <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text absolute right-2.5 bottom-2.5 size-7">
-               {!props.isFullscreen ? <IconMingcuteFullscreenFill className="size-7" /> : <IconMingcuteFullscreenExitFill className="size-7" />}
-            </Tooltip.Trigger>
-            <Tooltip.Content>{props.isFullscreen ? "Exit fullscreen" : "Fullscreen"}</Tooltip.Content>
-         </Tooltip>
+         <div className="absolute right-2.5 bottom-2.5 flex gap-x-2">
+            {client?.voice.popout && props.isInVoice && (
+               <Tooltip>
+                  <Tooltip.Trigger onClick={openPopout} className="text-text/60 hover:text-text size-7">
+                     <IconMingcuteLayoutBottomOpenFill className="size-7" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>Popout</Tooltip.Content>
+               </Tooltip>
+            )}
+            <Tooltip>
+               <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text size-7">
+                  {!props.isFullscreen ? <IconMingcuteFullscreenFill className="size-7" /> : <IconMingcuteFullscreenExitFill className="size-7" />}
+               </Tooltip.Trigger>
+               <Tooltip.Content>{props.isFullscreen ? "Exit fullscreen" : "Fullscreen"}</Tooltip.Content>
+            </Tooltip>
+         </div>
       </div>
    );
 }

@@ -43,7 +43,6 @@ export default function AudioPlayer(props: { url: string; filename: string }) {
       audio?.addEventListener(
          "timeupdate",
          () => {
-            console.log(audio.currentTime);
             setCurrentTime(audio.currentTime);
             setCurrentPercent(audio.duration > 0 ? (audio.currentTime / audio.duration) * 100 : 0);
          },

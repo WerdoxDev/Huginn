@@ -1,5 +1,6 @@
 import { Tabs, Accordion } from "@base-ui/react";
 import { useLookup } from "@hooks/useLookup";
+import { getVoiceHostId } from "@lib/voice/voice-window";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useEffect, useState, type ReactNode } from "react";
@@ -39,7 +40,7 @@ function VoiceDebugComponent() {
    const producersLookup = useLookup(data?.producersData, (x) => x.id);
 
    useEffect(() => {
-      const channel = new BroadcastChannel("voice-debug");
+      const channel = new BroadcastChannel(`voice-debug:${getVoiceHostId()}`);
 
       channel.onmessage = (d) => {
          setData(d.data);

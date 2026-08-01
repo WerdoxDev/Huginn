@@ -2,6 +2,7 @@ import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { dispatchEvent } from "@lib/event-handler";
+import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -102,3 +103,14 @@ export const windowStore = store;
 export function useHuginnWindow() {
    return useStore(store);
 }
+
+syncZustandStore(store, {
+   name: "windowStore",
+   partialize: (state) => ({
+      environment: state.environment,
+      maximized: state.maximized,
+      fullscreen: state.fullscreen,
+      browserFullscreen: state.browserFullscreen,
+      focused: state.focused,
+   }),
+});

@@ -11,7 +11,10 @@ import type { AppSettings } from "@/types";
 import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceDebugger } from "./voice-debugger";
+import { VoiceHost } from "./voice-host";
 import { VoiceInputDevice } from "./voice-input-device";
+import { VoicePopout } from "./voice-popout";
+import { getVoiceHostId } from "./voice-window";
 
 export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
@@ -20,6 +23,8 @@ export class VoiceBridge extends Voice {
    public readonly inputDevice: VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
+   public readonly popout?: VoicePopout;
+   public readonly host?: VoiceHost;
 
    /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
    public async getCurrentRoundTripTime(): Promise<number | undefined> {
@@ -61,6 +66,12 @@ export class VoiceBridge extends Voice {
 
       this.inputDevice = new VoiceInputDevice(client);
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
+
+      if (window.opener) return;
+
+      const hostId = getVoiceHostId();
+      this.popout = new VoicePopout(hostId);
+      this.host = new VoiceHost(hostId, this, client as HuginnClient<VoiceBridge>);
 
       this.on("ready", async () => await this.handleReady());
       this.on("reset", async () => await this.handleReset());
