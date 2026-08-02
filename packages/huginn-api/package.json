@@ -1,6 +1,6 @@
 {
    "name": "@huginnjs/api",
-   "version": "0.42.4",
+   "version": "0.43.0",
    "type": "module",
    "main": "./src/index.ts",
    "types": "./src/index.ts",
