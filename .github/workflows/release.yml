@@ -10,6 +10,11 @@ on:
             required: false
             type: boolean
 
+         force_api_publish:
+            description: "Force API publish even if no changes detected"
+            required: false
+            type: boolean
+
          app_version:
             description: "Override app version"
             required: false
@@ -24,7 +29,7 @@ jobs:
       runs-on: ubuntu-latest
       outputs:
          app_release_created: ${{ steps.outputs.outputs.app_release_created }}
-         api_release_created: ${{ steps.release.outputs['packages/huginn-api--release_created'] || 'false' }}
+         api_release_created: ${{ steps.outputs.outputs.api_release_created }}
          app_version: ${{ steps.outputs.outputs.app_version }}
 
       steps:
@@ -42,6 +47,12 @@ jobs:
          - name: Compute outputs
            id: outputs
            run: |
+              if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_api_publish }}" == "true" ]]; then
+                 echo "api_release_created=true" >> "$GITHUB_OUTPUT"
+              else
+                 echo "api_release_created=${{ steps.release.outputs['packages/huginn-api--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
+              fi
+
               if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.app_version }}" ]]; then
                  echo "app_release_created=${{ inputs.force_app_release }}" >> "$GITHUB_OUTPUT"
                  echo "app_version=${{ inputs.app_version }}" >> "$GITHUB_OUTPUT"
