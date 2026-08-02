@@ -236,6 +236,8 @@ export function useVoiceUtils() {
          });
 
          analytics.log({ level: "error", body: "failed to update stream", exception: e, attributes: { video, audio } });
+
+         await VoiceClient.sendMessage("close_stream").catch(() => undefined);
       }
    }
 
