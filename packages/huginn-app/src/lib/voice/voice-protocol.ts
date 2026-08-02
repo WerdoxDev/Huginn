@@ -1,5 +1,5 @@
 import type { VoiceStatus, VoiceStreamOptions } from "@huginnjs/api";
-import type { Snowflake } from "@huginnjs/shared";
+import type { Snowflake, VoicePreference } from "@huginnjs/shared";
 
 import type { MediaSource, PopoutState } from "@/types";
 
@@ -79,6 +79,10 @@ type VoiceProtocol = {
    focus_media_popout: {
       data: string;
       result: undefined;
+   };
+   update_voice_preference: {
+      data: Partial<VoicePreference> & { userId: Snowflake };
+      result: VoicePreference[];
    };
 };
 

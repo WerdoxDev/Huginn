@@ -2,7 +2,7 @@ import VoiceElement from "@components/voice/VoiceElement";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { useVoicePopoutBootstrap } from "@hooks/voice/useVoicePopoutBootstrap";
-import { getVoiceMediaTarget } from "@lib/voice/voice-window";
+import { getVoiceMediaTarget } from "@lib/child-window";
 import { useVoiceStore } from "@stores/voiceStore";
 import { createFileRoute } from "@tanstack/react-router";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";

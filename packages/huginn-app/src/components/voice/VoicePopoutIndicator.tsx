@@ -2,7 +2,7 @@ import { HuginnMenu } from "@components/dropdown/HuginnMenu";
 import { useMaybeUser } from "@hooks/api-hooks/userHooks";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { isVoiceChildWindow } from "@lib/voice/voice-window";
+import { isChildWindow } from "@lib/child-window";
 import { useMemo } from "react";
 
 import type { MediaSource } from "@/types";
@@ -20,7 +20,7 @@ export default function VoicePopoutIndicator() {
       [mediaSources, popoutState.openMediaPopoutProducers],
    );
 
-   if (poppedOutMedia.length === 0 || (popoutState.isPopoutOpen && !isVoiceChildWindow())) return null;
+   if (poppedOutMedia.length === 0 || (popoutState.isPopoutOpen && !isChildWindow())) return null;
 
    return (
       <div className="absolute top-3 right-3 z-30">

@@ -8,13 +8,13 @@ import { voiceStore } from "@stores/voiceStore";
 
 import type { AppSettings } from "@/types";
 
+import { getHostId } from "../child-window";
 import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceDebugger } from "./voice-debugger";
 import { VoiceHost } from "./voice-host";
 import { VoiceInputDevice } from "./voice-input-device";
 import { VoicePopout } from "./voice-popout";
-import { getVoiceHostId } from "./voice-window";
 
 export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
@@ -69,7 +69,7 @@ export class VoiceBridge extends Voice {
 
       if (window.opener) return;
 
-      const hostId = getVoiceHostId();
+      const hostId = getHostId();
       this.popout = new VoicePopout(hostId);
       this.host = new VoiceHost(hostId, this, client as HuginnClient<VoiceBridge>);
 

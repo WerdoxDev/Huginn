@@ -4,7 +4,7 @@ import type { MediaSource } from "@/types";
 
 import { router } from "@/router";
 
-import { addVoiceHostId, addVoiceMediaTarget } from "./voice-window";
+import { addHostId, addVoiceMediaTarget } from "../child-window";
 
 type Events = {
    popout_opened: undefined;
@@ -31,7 +31,7 @@ export class VoicePopout extends EventEmitter<Events> {
       const href = router.history.createHref(location.href);
 
       this.popoutWindow = window.open(
-         addVoiceHostId(href, this.hostId),
+         addHostId(href, this.hostId),
          `voice-popout-${this.hostId}`,
          "width=1024,height=720,popup=yes,scrollbars=no,resizable=yes",
       );
@@ -61,7 +61,7 @@ export class VoicePopout extends EventEmitter<Events> {
 
       const location = router.buildLocation({ to: "/media-popout" });
       const href = router.history.createHref(location.href);
-      const hostUrl = addVoiceHostId(href, this.hostId);
+      const hostUrl = addHostId(href, this.hostId);
       const mediaUrl = addVoiceMediaTarget(hostUrl, { userId: mediaSource.userId, producerId });
       const mediaWindow = window.open(
          mediaUrl,

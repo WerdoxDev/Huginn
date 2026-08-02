@@ -5,7 +5,6 @@ import { useInset } from "@contexts/InsetContext";
 import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
-import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
@@ -17,16 +16,12 @@ import { useEffect, useRef, useState, type TouchEvent } from "react";
 export const Route = createFileRoute("/_app/_main/_home")({
    component: HomeLayoutComponent,
    loader: async () => {
-      const client = clientStore.getState().client;
-      if (!client) return;
-
-      return await queryClient?.ensureQueryData(getChannelsOptions(client, "@me"));
+      return await queryClient?.ensureQueryData(getChannelsOptions("@me"));
    },
 });
 
 function HomeLayoutComponent() {
-   const client = useClient();
-   const { data } = useSuspenseQuery(getChannelsOptions(client!, "@me"));
+   const { data } = useSuspenseQuery(getChannelsOptions("@me"));
 
    const { user } = useThisUser();
    const {

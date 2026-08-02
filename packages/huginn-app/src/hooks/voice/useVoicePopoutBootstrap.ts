@@ -1,8 +1,8 @@
 import type { Snowflake } from "@huginnjs/shared";
 
+import { getHostId, isChildWindow } from "@lib/child-window";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { voiceSnapshotStore } from "@lib/voice/voice-snapshot-store";
-import { getVoiceHostId, isVoiceChildWindow } from "@lib/voice/voice-window";
 import { initializeClient } from "@stores/clientStore";
 import { useEffect, useState } from "react";
 
@@ -20,9 +20,9 @@ export function useVoicePopoutBootstrap(): VoicePopoutState {
 
       async function initialize() {
          try {
-            if (!isVoiceChildWindow()) throw new Error("This voice popout is not attached to a host window");
+            if (!isChildWindow()) throw new Error("This voice popout is not attached to a host window");
 
-            VoiceClient.configure(getVoiceHostId());
+            VoiceClient.configure(getHostId());
             const snapshot = await VoiceClient.sendMessage("get_snapshot");
             if (!snapshot.connection) throw new Error("The host window is not connected to voice");
 

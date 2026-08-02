@@ -3,7 +3,7 @@ import type { StoreApi } from "zustand";
 
 import { shallow } from "zustand/shallow";
 
-import { getVoiceHostId } from "./voice/voice-window";
+import { getHostId } from "./child-window";
 
 type SyncMessage<T> =
    | {
@@ -30,7 +30,7 @@ export function syncZustandStore<TState extends object, TSynced extends object>(
    }
 
    const source = crypto.randomUUID();
-   const channel = new BroadcastChannel(`zustand:${getVoiceHostId()}:${options.name}`);
+   const channel = new BroadcastChannel(`zustand:${getHostId()}:${options.name}`);
    const isMainWindow = window.opener === null;
 
    let lastSyncedState = options.partialize(store.getState());

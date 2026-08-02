@@ -1,6 +1,9 @@
-import type { HuginnClient, VoiceStreamOptions } from "@huginnjs/api";
+import type { HuginnClient, VoicePreference, VoiceStreamOptions } from "@huginnjs/api";
+import type { Snowflake } from "@huginnjs/shared";
 
+import { clientStore } from "@stores/clientStore";
 import { storageStore } from "@stores/storageStore";
+import { produce } from "immer";
 
 import type { MediaSource, PopoutState } from "@/types";
 
@@ -187,6 +190,10 @@ export class VoiceHost {
                case "focus_media_popout":
                   this.client.voice.popout?.focusMediaPopout(request.data);
                   this.sendResult(request, undefined);
+                  break;
+               case "update_voice_preference":
+                  const updatedVoicePreferences = this.handleUpdateVoicePreference(request.data);
+                  this.sendResult(request, updatedVoicePreferences);
                   break;
                default:
                   throw new Error(`Unsupported voice request: ${String((request as VoiceRequest).type)}`);
@@ -431,5 +438,37 @@ export class VoiceHost {
          isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
       });
       await store.setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
+   }
+
+   private handleUpdateVoicePreference(preference: Partial<VoicePreference> & { userId: Snowflake }): VoicePreference[] {
+      const store = clientStore.getState();
+      const voicePreferences = store.userSettings?.voicePreferences ?? [];
+
+      const updatedVoicePreferences = produce(voicePreferences, (draft) => {
+         const existingIndex = draft?.findIndex((x) => x.userId === preference.userId);
+
+         if (existingIndex !== undefined && existingIndex !== -1 && draft) {
+            draft[existingIndex] = { ...draft[existingIndex], ...preference };
+         } else {
+            if (preference.microphoneVolume === undefined || preference.streamVolume === undefined) {
+               throw new Error("Creating new voice preference requires both microphone and screen share volumes");
+            }
+
+            if (!draft) draft = [];
+
+            draft.push({
+               userId: preference.userId,
+               microphoneVolume: preference.microphoneVolume,
+               streamVolume: preference.streamVolume,
+               isMicrophoneMuted: preference.isMicrophoneMuted ?? false,
+               isStreamMuted: preference.isStreamMuted ?? false,
+            });
+         }
+      });
+
+      // optimistic update
+      store.setUserSettings({ voicePreferences: updatedVoicePreferences });
+
+      return updatedVoicePreferences;
    }
 }

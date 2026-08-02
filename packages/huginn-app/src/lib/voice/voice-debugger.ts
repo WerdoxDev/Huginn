@@ -22,8 +22,8 @@ import { router } from "@/router";
 
 import type { VoiceBridge } from "./voice-bridge";
 
+import { addHostId, getHostId } from "../child-window";
 import { WebRTCStatsParser } from "./stats-parser";
-import { addVoiceHostId, getVoiceHostId } from "./voice-window";
 
 export class VoiceDebugger {
    private client: HuginnClient<VoiceBridge>;
@@ -46,7 +46,7 @@ export class VoiceDebugger {
       const location = router.buildLocation({ to: "/voice-debug" });
       const href = router.history.createHref(location.href);
 
-      this.browserWindow = window.open(addVoiceHostId(href), `voice-debug-${getVoiceHostId()}`, "width=500,height=600");
+      this.browserWindow = window.open(addHostId(href), `voice-debug-${getHostId()}`, "width=500,height=600");
       if (!this.browserWindow) {
          throw new Error("Debugger window was not opened");
       }
@@ -64,7 +64,7 @@ export class VoiceDebugger {
    }
 
    private startDataInterval() {
-      this.channel = new BroadcastChannel(`voice-debug:${getVoiceHostId()}`);
+      this.channel = new BroadcastChannel(`voice-debug:${getHostId()}`);
 
       this.dataInterval = setInterval(async () => {
          if (!this.isDebuggerOpen()) {

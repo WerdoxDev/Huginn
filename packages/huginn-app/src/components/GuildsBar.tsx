@@ -1,5 +1,4 @@
 import { getChannelsOptions } from "@lib/queries";
-import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStateStore";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion, type Variants } from "motion/react";
@@ -10,9 +9,8 @@ import HomeButton from "./button/HomeButton";
 import UnreadChannel from "./UnreadChannel";
 
 export default function GuildsBar() {
-   const client = useClient();
    const { readStates } = useReadStates();
-   const { data: channels } = useQuery(getChannelsOptions(client!, "@me"));
+   const { data: channels } = useQuery(getChannelsOptions("@me"));
 
    const sortedReadStates = useMemo(
       () =>

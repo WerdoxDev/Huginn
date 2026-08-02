@@ -1,4 +1,4 @@
-export const VOICE_HOST_ID_PARAM = "voiceHostId";
+export const HOST_ID_PARAM = "hostId";
 export const VOICE_MEDIA_USER_ID_PARAM = "voiceMediaUserId";
 export const VOICE_MEDIA_PRODUCER_ID_PARAM = "voiceMediaProducerId";
 
@@ -7,27 +7,27 @@ export type VoiceMediaPopoutTarget = {
    producerId: string;
 };
 
-const requestedHostId = new URLSearchParams(window.location.search).get(VOICE_HOST_ID_PARAM);
+const requestedHostId = new URLSearchParams(window.location.search).get(HOST_ID_PARAM);
 const hostId = requestedHostId ?? crypto.randomUUID();
 
-export function getVoiceHostId(): string {
+export function getHostId(): string {
    return hostId;
 }
 
-export function isVoiceChildWindow(): boolean {
+export function isChildWindow(): boolean {
    return requestedHostId !== null && window.opener !== null;
 }
 
-export function addVoiceHostId(url: string, targetHostId = hostId): string {
+export function addHostId(url: string, targetHostId = hostId): string {
    const target = new URL(url, window.location.href);
-   target.searchParams.set(VOICE_HOST_ID_PARAM, targetHostId);
+   target.searchParams.set(HOST_ID_PARAM, targetHostId);
    return target.href;
 }
 
-export function addVoiceMediaTarget(url: string, stream: VoiceMediaPopoutTarget): string {
+export function addVoiceMediaTarget(url: string, media: VoiceMediaPopoutTarget): string {
    const target = new URL(url, window.location.href);
-   target.searchParams.set(VOICE_MEDIA_USER_ID_PARAM, stream.userId);
-   target.searchParams.set(VOICE_MEDIA_PRODUCER_ID_PARAM, stream.producerId);
+   target.searchParams.set(VOICE_MEDIA_USER_ID_PARAM, media.userId);
+   target.searchParams.set(VOICE_MEDIA_PRODUCER_ID_PARAM, media.producerId);
    return target.href;
 }
 

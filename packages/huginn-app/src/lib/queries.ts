@@ -1,6 +1,6 @@
 import type { HuginnClient } from "@huginnjs/api";
 
-import { type APIGetUserChannelsResult, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
+import { type APIGetUserChannelsResult, type APIPatchUserSettingsJSONBody, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStore";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { experimental_createQueryPersister } from "@tanstack/query-persist-client-core";
@@ -8,11 +8,12 @@ import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react
 
 import { BroadcastStorage } from "./broadcast-storage";
 import { Gallery } from "./capacitor/gallery-plugin";
+import { getHostId } from "./child-window";
+import { defineMutation, defineQuery } from "./query-bridge";
 import { updateUser } from "./query-utils";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
-import { getVoiceHostId } from "./voice/voice-window";
 
-const hostId = getVoiceHostId();
+const hostId = getHostId();
 const storage = new BroadcastStorage(`huginn-query-storage:${hostId}`);
 
 if (window.opener) {
@@ -46,6 +47,10 @@ if (import.meta.hot) {
    });
 }
 
+function getClient() {
+   return clientStore.getState().client!;
+}
+
 export function getInitialChannels() {
    return clientStore.getState().readyData?.privateChannels.map((x) => convertToAppDirectChannel(x));
 }
@@ -54,31 +59,32 @@ export function getInitialRelationships() {
    return clientStore.getState().readyData?.relationships.map((x) => convertToAppRelationship(x));
 }
 
-export function getUserOptions(client: HuginnClient, userId: Snowflake) {
-   return queryOptions({
-      queryKey: ["user", userId],
-      queryFn: async () => convertToAppUser(await client.users.get(userId)),
-   });
-}
+export const getUserOptions = defineQuery(
+   "user",
+   (userId: Snowflake) => [userId],
+   async (userId: Snowflake) => convertToAppUser(await getClient().users.get(userId)),
+);
 
-export function getUserProfileOptions(client: HuginnClient, userId: Snowflake) {
-   return queryOptions({
-      queryKey: ["user-profile", userId],
-      queryFn: async () => convertToAppUserProfile(await client.users.getProfile(userId)),
-   });
-}
+export const getUserProfileOptions = defineQuery(
+   "user-profile",
+   (userId: Snowflake) => [userId],
+   async (userId: Snowflake) => convertToAppUserProfile(await getClient().users.getProfile(userId)),
+);
 
-export function getChannelsOptions(client: HuginnClient, guildId: Snowflake) {
-   return queryOptions({
-      queryKey: ["channels", guildId],
-      queryFn: async () =>
-         // FIXME: This needs to change for when guilds are actually a thing
-         // if (guildId !== "@me") return undefined;
-         (await client.channels.getAll()).map((x) => convertToAppDirectChannel(x)),
+// export function getUserProfileOptions(client: HuginnClient, userId: Snowflake) {
+//    return ;
+//    // return queryOptions({
+//    //    queryKey: ["user-profile", userId],
+//    //    queryFn: async () => convertToAppUserProfile(await client.users.getProfile(userId)),
+//    // });
+// }
 
-      initialData: () => getInitialChannels(),
-   });
-}
+export const getChannelsOptions = defineQuery(
+   "channels",
+   (guildId: Snowflake) => [guildId],
+   async (guildId: Snowflake) => (await getClient().channels.getAll()).map((x) => convertToAppDirectChannel(x)),
+   { initialData: () => getInitialChannels() },
+);
 
 export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
    return infiniteQueryOptions({
@@ -114,10 +120,6 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
          return !latestMessage?.isPreview && latestMessage && !last.some((message) => message.id === targetChannel?.lastMessageId)
             ? { before: "", after: latestMessage.id }
             : undefined;
-
-         // return !latestMessage?.isPreview && latestMessage && (!targetChannel || targetChannel.lastMessageId !== latestMessage.id)
-         // ? { after: latestMessage.id, before: "" }
-         // : undefined;
       },
       maxPages: 4,
       retry: false,
@@ -261,3 +263,7 @@ export function getSearchGifsOptions(client: HuginnClient, query: string, limit 
       },
    });
 }
+
+export const editSettingsOptions = defineMutation("edit-settings", async (settings: APIPatchUserSettingsJSONBody) =>
+   getClient().users.editSettings(settings),
+);

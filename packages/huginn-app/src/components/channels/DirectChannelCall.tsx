@@ -9,7 +9,7 @@ import { useHover } from "@hooks/useHover";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
-import { isVoiceChildWindow } from "@lib/voice/voice-window";
+import { isChildWindow } from "@lib/child-window";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
@@ -56,10 +56,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const isShown = useMemo(() => thisVoiceStates.length !== 0, [thisVoiceStates]);
    const isLoading = useMemo(() => !thisCallState, [thisCallState]);
 
-   useEffect(() => {
-      console.log(isShown, user);
-   }, [isShown, user]);
-
    const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
    const gridRef = useRef<HTMLDivElement>(null);
    const resizerRef = useRef<HTMLDivElement>(null);
@@ -80,10 +76,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          setMaximizedSource(undefined);
       }
    }, [mediaSources]);
-
-   useEffect(() => {
-      console.log(voiceState.isAudioDeafened, voiceState.isAudioMuted);
-   }, [voiceState]);
 
    useEffect(() => {
       if (!voiceConnection.channelId) {
@@ -305,7 +297,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             ref={gridRef}
             style={{ height: !isFullscreen ? gridHeight : "100%" }}
          >
-            {popoutState.isPopoutOpen && !isVoiceChildWindow() ? (
+            {popoutState.isPopoutOpen && !isChildWindow() ? (
                <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
             ) : isLoading ? (
                <LoadingIcon className="size-16" />
