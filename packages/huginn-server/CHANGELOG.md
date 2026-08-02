@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.47.1...server@v0.48.0) (2026-08-02)
+
+
+### Features
+
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
 ## [0.47.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.47.0...server@v0.47.1) (2026-07-28)
 
 
