@@ -163,6 +163,9 @@ jobs:
 
    publish-api:
       runs-on: ubuntu-latest
+      permissions:
+         contents: read
+         id-token: write
       needs: release-please
       if: ${{needs.release-please.outputs.api_release_created == 'true'}}
       steps:
@@ -170,6 +173,8 @@ jobs:
 
          - name: Install PNPM
            uses: pnpm/action-setup@v4
+           with:
+              run_install: false
 
          - name: Set up Node.js
            uses: actions/setup-node@v4
@@ -180,6 +185,7 @@ jobs:
 
          - name: Publish API
            run: |
+              npm install -g npm@latest
               cd packages/huginn-api
               pnpm install --frozen-lockfile
               pnpm run build
