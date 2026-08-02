@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.3.0...assets@v0.4.0) (2026-08-02)
+
+
+### Features
+
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
+
+### Bug Fixes
+
+* **assets:** better .ico generation ([8b34b6e](https://github.com/WerdoxDev/Huginn/commit/8b34b6efa7821640ef81d9599c1fa8f8155650b9))
+
 ## [0.3.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.2.0...assets@v0.3.0) (2026-07-17)
 
 

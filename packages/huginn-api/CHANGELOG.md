@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.42.4...api@v0.43.0) (2026-08-02)
+
+
+### Features
+
+* **api:** add pause consumer and move voice preferences to user settings ([cc1363f](https://github.com/WerdoxDev/Huginn/commit/cc1363f72000b35cbf9f26c0a34af7ddd4097879))
+* **api:** add requried fields for publishing ([b9e299d](https://github.com/WerdoxDev/Huginn/commit/b9e299dcf63a197d48ce87be1ff1759e0b4a7a4f))
+* **api:** add transport options to voice options ([0e691ad](https://github.com/WerdoxDev/Huginn/commit/0e691ad85a3c16bce5ffd8b997978c3ead0dee0d))
+* **api:** fix bunch of unhandled promise rejection stuff + handle voice token expiration ([08a94d6](https://github.com/WerdoxDev/Huginn/commit/08a94d617cb962d179b7da5dd7a0757bc0b029b7))
+* **api:** remove constant ping pong messaging ([3247c27](https://github.com/WerdoxDev/Huginn/commit/3247c27397b36c1c4da3f04950bb17892ee20228))
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
+
+### Bug Fixes
+
+* **api:** add a small readme ([99c0310](https://github.com/WerdoxDev/Huginn/commit/99c0310c96a7bbc0c8b88d61ee2ddad35e29096b))
+* **api:** pause created consumers and manage its state later on applyVoiceState ([ad8e9f9](https://github.com/WerdoxDev/Huginn/commit/ad8e9f9ff0fa971924d8d932f0c41c4269eb67b6))
+* **api:** some analytic fixes ([22fbf66](https://github.com/WerdoxDev/Huginn/commit/22fbf6636ff1a0c6a73bb42b6a1b27a3286c365f))
+* remove @std/encoding from api and shared ([87903a3](https://github.com/WerdoxDev/Huginn/commit/87903a33f86904f37192221b729db7d78bc1b0dd))
+
 ## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.41.1...api@v0.42.0) (2026-07-22)
 
 

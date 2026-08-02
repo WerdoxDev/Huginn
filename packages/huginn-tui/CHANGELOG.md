@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/tui@v0.4.0...tui@v0.5.0) (2026-08-02)
+
+
+### Features
+
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/tui@v0.3.0...tui@v0.4.0) (2026-07-02)
 
 

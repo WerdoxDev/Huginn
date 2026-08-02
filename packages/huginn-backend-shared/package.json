@@ -1,6 +1,6 @@
 {
    "name": "@huginn/backend-shared",
-   "version": "0.30.2",
+   "version": "0.31.0",
    "private": true,
    "type": "module",
    "module": "src/index.ts",

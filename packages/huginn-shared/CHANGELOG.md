@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.41.0...shared@v0.42.0) (2026-08-02)
+
+
+### Features
+
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
+
+### Bug Fixes
+
+* remove @std/encoding from api and shared ([87903a3](https://github.com/WerdoxDev/Huginn/commit/87903a33f86904f37192221b729db7d78bc1b0dd))
+* **shared:** don't mask all text ([fee6002](https://github.com/WerdoxDev/Huginn/commit/fee600218822e367e913c39a54ec3c8c60424583))
+
 ## [0.41.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.40.0...shared@v0.41.0) (2026-07-05)
 
 

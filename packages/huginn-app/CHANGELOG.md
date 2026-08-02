@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.85.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.84.0...app@v0.85.0) (2026-08-02)
+
+
+### Features
+
+* **app:** add voice & media popout feature ([1fdb7a8](https://github.com/WerdoxDev/Huginn/commit/1fdb7a819e77e31549bb4e9cde7729946afd2a2e))
+* **app:** multi wndow query and mutation fetching ([b79f4dc](https://github.com/WerdoxDev/Huginn/commit/b79f4dc0f847e4519c20207f6ce27c723de3984f))
+* rename @huginn/shared to @huginnjs/shared + fix @huginnjs/api dependencies for npm ([7c0cb4c](https://github.com/WerdoxDev/Huginn/commit/7c0cb4c04be00fd8dc3fc23907dfaf368461cd1c))
+
+
+### Bug Fixes
+
+* **app:** close stream when update fails ([6600866](https://github.com/WerdoxDev/Huginn/commit/6600866c80c6dc1eb5bcce6a89f982af863af4aa))
+* **app:** small tooltip fix ([d5f9c5a](https://github.com/WerdoxDev/Huginn/commit/d5f9c5aea2e620e1236db1f9d705acfa556e87da))
+* remove @std/encoding from api and shared ([87903a3](https://github.com/WerdoxDev/Huginn/commit/87903a33f86904f37192221b729db7d78bc1b0dd))
+
 ## [0.84.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.83.0...app@v0.84.0) (2026-07-28)
 
 
