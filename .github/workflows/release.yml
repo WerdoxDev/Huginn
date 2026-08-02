@@ -163,12 +163,13 @@ jobs:
          - name: Set up Node.js
            uses: actions/setup-node@v4
            with:
-              node-version: "26"
+              node-version: "24"
               registry-url: "https://registry.npmjs.org"
               cache: "pnpm"
 
          - name: Publish API
            run: |
-              cd packages/huginn-api && pnpm install --frozen-lockfile
-              cd packages/huginn-api && pnpm run build
-              cd packages/huginn-api && pnpm publish --no-git-checks --access public
+              cd packages/huginn-api
+              pnpm install --frozen-lockfile
+              pnpm run build
+              pnpm publish --no-git-checks --access public
