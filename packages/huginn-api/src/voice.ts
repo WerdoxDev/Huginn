@@ -38,7 +38,7 @@ export class Voice extends EventEmitter<Events> {
       this.client = client;
 
       this.signaling = new VoiceSignalingClient(client, this.options);
-      this.transport = new VoiceTransportManager(client);
+      this.transport = new VoiceTransportManager(client, this.options.transportOptions);
       this.device = new VoiceDeviceManager(this.transport);
       this.stream = new VoiceStreamManager(this.transport);
 

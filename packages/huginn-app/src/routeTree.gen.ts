@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoiceDebugRouteImport } from './routes/voice-debug'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppPopoutRouteImport } from './routes/_app/popout'
+import { Route as AppMediaPopoutRouteImport } from './routes/_app/media-popout'
 import { Route as AppStartRouteImport } from './routes/_app/_start'
 import { Route as AppMainRouteImport } from './routes/_app/_main'
 import { Route as AppStartIndexRouteImport } from './routes/_app/_start/index'
@@ -30,6 +32,16 @@ const VoiceDebugRoute = VoiceDebugRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppPopoutRoute = AppPopoutRouteImport.update({
+  id: '/popout',
+  path: '/popout',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMediaPopoutRoute = AppMediaPopoutRouteImport.update({
+  id: '/media-popout',
+  path: '/media-popout',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppStartRoute = AppStartRouteImport.update({
   id: '/_start',
@@ -84,6 +96,8 @@ const AppMainHomeChannelsAtmeChannelIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppStartIndexRoute
   '/voice-debug': typeof VoiceDebugRoute
+  '/media-popout': typeof AppMediaPopoutRoute
+  '/popout': typeof AppPopoutRoute
   '/login': typeof AppStartLoginRoute
   '/oauth-redirect': typeof AppStartOauthRedirectRoute
   '/register': typeof AppStartRegisterRoute
@@ -94,6 +108,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppStartIndexRoute
   '/voice-debug': typeof VoiceDebugRoute
+  '/media-popout': typeof AppMediaPopoutRoute
+  '/popout': typeof AppPopoutRoute
   '/login': typeof AppStartLoginRoute
   '/oauth-redirect': typeof AppStartOauthRedirectRoute
   '/register': typeof AppStartRegisterRoute
@@ -107,6 +123,8 @@ export interface FileRoutesById {
   '/voice-debug': typeof VoiceDebugRoute
   '/_app/_main': typeof AppMainRouteWithChildren
   '/_app/_start': typeof AppStartRouteWithChildren
+  '/_app/media-popout': typeof AppMediaPopoutRoute
+  '/_app/popout': typeof AppPopoutRoute
   '/_app/_main/_home': typeof AppMainHomeRouteWithChildren
   '/_app/_start/login': typeof AppStartLoginRoute
   '/_app/_start/oauth-redirect': typeof AppStartOauthRedirectRoute
@@ -121,6 +139,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/voice-debug'
+    | '/media-popout'
+    | '/popout'
     | '/login'
     | '/oauth-redirect'
     | '/register'
@@ -131,6 +151,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/voice-debug'
+    | '/media-popout'
+    | '/popout'
     | '/login'
     | '/oauth-redirect'
     | '/register'
@@ -143,6 +165,8 @@ export interface FileRouteTypes {
     | '/voice-debug'
     | '/_app/_main'
     | '/_app/_start'
+    | '/_app/media-popout'
+    | '/_app/popout'
     | '/_app/_main/_home'
     | '/_app/_start/login'
     | '/_app/_start/oauth-redirect'
@@ -173,6 +197,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/popout': {
+      id: '/_app/popout'
+      path: '/popout'
+      fullPath: '/popout'
+      preLoaderRoute: typeof AppPopoutRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/media-popout': {
+      id: '/_app/media-popout'
+      path: '/media-popout'
+      fullPath: '/media-popout'
+      preLoaderRoute: typeof AppMediaPopoutRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/_start': {
       id: '/_app/_start'
@@ -295,11 +333,15 @@ const AppStartRouteWithChildren = AppStartRoute._addFileChildren(
 interface AppRouteChildren {
   AppMainRoute: typeof AppMainRouteWithChildren
   AppStartRoute: typeof AppStartRouteWithChildren
+  AppMediaPopoutRoute: typeof AppMediaPopoutRoute
+  AppPopoutRoute: typeof AppPopoutRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppMainRoute: AppMainRouteWithChildren,
   AppStartRoute: AppStartRouteWithChildren,
+  AppMediaPopoutRoute: AppMediaPopoutRoute,
+  AppPopoutRoute: AppPopoutRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

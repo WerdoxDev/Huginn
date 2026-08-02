@@ -1,74 +1,43 @@
-import type { VoiceStreamOptions } from "@huginnjs/api";
-
 import { useFullscreen } from "@hooks/useFullscreen";
 import { analytics, type Snowflake } from "@huginnjs/shared";
 import { getMediaErrorMessage } from "@lib/utils";
-import { useClient } from "@stores/clientStore";
+import { VoiceClient } from "@lib/voice/voice-client";
 import { useModals } from "@stores/modalsStore";
-import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
+
+import type { MediaSource } from "@/types";
+
+import { useVoiceSnapshot } from "./useMediaSources";
 
 export function useVoiceUtils() {
    const settings = useStorage("settings");
-   const { setValue } = useStorageStore();
-   const client = useClient();
-   // const posthog = usePostHog();
-   // const updateVoiceStateMutation = useUpdateVoiceState();
+   const { mediaSources } = useVoiceSnapshot();
    const { isFullscreen, toggleFullscreen } = useFullscreen();
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
 
+   function getVoiceHost() {
+      const hostId = VoiceClient.getHostId();
+      const localHost = window.voiceHost;
+      if (localHost && localHost.hostId === hostId) return localHost;
+
+      const openerHost = (window.opener as Window)?.voiceHost;
+      if (openerHost && openerHost.hostId === hostId) return openerHost;
+
+      throw new Error("The voice host window is unavailable");
+   }
+
    async function toggleMute() {
-      const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
-      const newMutedState = !(voiceState?.isAudioMuted ?? false);
-      const newDeafenedState = newMutedState ? (voiceState?.isAudioDeafened ?? false) : false;
-      await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioMuted: newMutedState,
-         isAudioDeafened: newDeafenedState,
-      });
-      await setValue("settings", { ...settings, isVoiceMuted: newMutedState, isVoiceDeafened: newDeafenedState });
+      await VoiceClient.sendMessage("toggle_mute");
    }
 
    async function toggleDeafen() {
-      const voiceState = client?.voiceManager.voiceState.gatewayVoiceState;
-      const newDeafenedState = !(voiceState?.isAudioDeafened ?? false);
-      await client?.voiceManager.voiceState.updateGatewayVoiceState({
-         isAudioDeafened: newDeafenedState,
-         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
-      });
-      await setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
+      await VoiceClient.sendMessage("toggle_deafen");
    }
 
    async function openScreenShare() {
-      const videoProducer = client?.voice.transport.getProducer("stream_video");
-      const audioProducer = client?.voice.transport.getProducer("stream_audio");
-
-      async function open(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) {
-         // Video is already open, replace it
-         if (videoProducer) {
-            await client?.voice.stream.replaceStreamVideoTrack(videoTrack);
-            if (options?.maxVideoBitrate) {
-               await client?.voice.stream.updateVideoBitrate(options?.maxVideoBitrate);
-            }
-         }
-         // If video is not there, audio is also not there. So start a stream
-         else {
-            await client?.voice.stream.openStream(videoTrack, audioTrack, options);
-            return;
-         }
-
-         // Audio is already open and audio track is given, replace it
-         if (audioProducer && audioTrack) {
-            await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
-            if (options?.maxAudioBitrate) {
-               await client?.voice.stream.updateAudioBitrate(options.maxAudioBitrate);
-            }
-         }
-         // Audio track is not given but it exists, so remove it.
-         else if (audioProducer && !audioTrack) await client?.voice.stream.closeStreamAudio();
-         // Audio is not open but track is given, so open audio
-         else await client?.voice.stream.openStream(undefined, audioTrack, options);
-      }
+      const videoProducer = mediaSources.find((source) => source.kind === "stream_video" && source.type === "producing");
 
       try {
          if (isFullscreen) toggleFullscreen();
@@ -81,7 +50,7 @@ export function useVoiceUtils() {
             const audioTrack = stream.getAudioTracks()[0];
             const videoTrack = stream.getVideoTracks()[0];
 
-            await open(videoTrack, audioTrack);
+            await getVoiceHost().openStream(videoTrack, audioTrack);
          } else {
             updateModals({
                screenShare: {
@@ -89,23 +58,7 @@ export function useVoiceUtils() {
                   type: videoProducer ? "change" : "create",
                   callback: async (options) => {
                      try {
-                        // Reset loopback even if we want to start a new one / end the last one
-                        await client?.voice.stopAudioLoopback();
-
-                        let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
-                        if (!audioTrack && options.isAudioEnabled && options.type !== "device") {
-                           audioTrack = await client?.voice.startAudioLoopback(
-                              options.type === "screen" ? "system" : "application",
-                              options.processId,
-                           );
-                        }
-
-                        const videoTrack = options.stream.getVideoTracks()[0];
-                        await open(videoTrack, audioTrack, {
-                           useSimulcast: options.isSimulcastEnabled,
-                           maxAudioBitrate: options.maxAudioBitrate,
-                           maxVideoBitrate: options.maxVideoBitrate,
-                        });
+                        await getVoiceHost().openCapturedStream(options);
                      } catch (e) {
                         updateModals({
                            info: {
@@ -118,8 +71,7 @@ export function useVoiceUtils() {
 
                         analytics.log({ level: "error", body: "failed to open screen share", exception: e, attributes: { options } });
 
-                        if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio"))
-                           await closeStream();
+                        await VoiceClient.sendMessage("close_stream").catch(() => undefined);
                      }
                   },
                   errback: ({ error }) => {
@@ -149,7 +101,7 @@ export function useVoiceUtils() {
 
          analytics.log({ level: "error", body: "failed to open screen share", exception: e });
 
-         if (client?.voice.transport.getProducer("stream_video") || client?.voice.transport.getProducer("stream_audio")) await closeStream();
+         await VoiceClient.sendMessage("close_stream").catch(() => undefined);
       }
    }
 
@@ -165,22 +117,7 @@ export function useVoiceUtils() {
             isOpen: true,
             callback: async (options) => {
                try {
-                  // Reset loopback even if we want to start a new one / end the last one
-                  await client?.voice.stopAudioLoopback();
-                  const audioTrack = await client?.voice.startAudioLoopback("application", options.processId);
-
-                  if (!audioTrack) throw new Error("Audio track was null when opening audio stream");
-
-                  const producer = client?.voice.transport.getProducer("stream_audio");
-
-                  if (producer) {
-                     await client?.voice.stream.replaceStreamAudioTrack(audioTrack);
-                     if (options.maxAudioBitrate) {
-                        await client?.voice.stream.updateAudioBitrate(options.maxAudioBitrate);
-                     }
-                  } else {
-                     await client?.voice.stream.openStream(undefined, audioTrack, { maxAudioBitrate: options.maxAudioBitrate });
-                  }
+                  await VoiceClient.sendMessage("open_audio_stream", options);
                } catch (e) {
                   updateModals({
                      info: {
@@ -193,7 +130,7 @@ export function useVoiceUtils() {
 
                   analytics.log({ level: "error", body: "failed to open audio stream", exception: e, attributes: { options } });
 
-                  if (client?.voice.transport.getProducer("stream_audio")) await closeStream();
+                  await VoiceClient.sendMessage("close_stream").catch(() => undefined);
                }
             },
             errback: ({ error }) => {
@@ -219,11 +156,7 @@ export function useVoiceUtils() {
          });
          const track = stream.getVideoTracks()[0];
 
-         if (client?.voice.transport.getProducer("camera")) {
-            await client.voice.device.replaceCameraTrack(track);
-         } else {
-            await client?.voice.device.openCamera(track);
-         }
+         await getVoiceHost().openCamera(track);
       } catch (e) {
          updateModals({
             info: {
@@ -236,29 +169,13 @@ export function useVoiceUtils() {
 
          analytics.log({ level: "error", body: "failed to open camera", exception: e });
 
-         if (client?.voice.transport.getProducer("camera")) await closeCamera();
+         await VoiceClient.sendMessage("close_camera").catch(() => undefined);
       }
    }
 
    async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
-      if (!client) return;
       try {
-         if (client.voice.status === "disconnected") throw new Error("Voice is disconnected");
-
-         if (client.voice.status !== "ready") {
-            await client.voiceManager.connectVoice(guildId, channelId);
-         }
-
-         const remoteProducers = client.voice.transport.getRemoteProducers();
-
-         if (remoteProducers?.some((x) => x.kind === "stream_video" && x.userId === userId)) {
-            await client.voice.transport.createConsumer(userId, "stream_video");
-         }
-         if (remoteProducers?.some((x) => x.kind === "stream_audio" && x.userId === userId)) {
-            await client.voice.transport.createConsumer(userId, "stream_audio");
-         }
-
-         await client.voiceManager.applyVoiceState();
+         await VoiceClient.sendMessage("consume_stream", { userId, guildId, channelId });
       } catch (e) {
          updateModals({
             info: {
@@ -271,22 +188,13 @@ export function useVoiceUtils() {
 
          analytics.log({ level: "error", body: "failed to consume stream", exception: e, attributes: { userId, guildId, channelId } });
 
-         if (client.voice.transport.getConsumer(userId, "stream_video") || client?.voice.transport.getConsumer(userId, "stream_audio"))
-            await unconsumeStream(userId);
+         await VoiceClient.sendMessage("unconsume_stream", { userId }).catch(() => undefined);
       }
    }
 
    async function unconsumeStream(userId: Snowflake) {
       try {
-         const videoConsumer = client?.voice.transport.getConsumer(userId, "stream_video");
-         const audioConsumer = client?.voice.transport.getConsumer(userId, "stream_audio");
-
-         if (videoConsumer) {
-            await client?.voice.transport.closeConsumer(videoConsumer.id);
-         }
-         if (audioConsumer) {
-            await client?.voice.transport.closeConsumer(audioConsumer.id);
-         }
+         await VoiceClient.sendMessage("unconsume_stream", { userId });
       } catch (e) {
          updateModals({
             info: {
@@ -302,8 +210,8 @@ export function useVoiceUtils() {
    }
 
    async function changeStream() {
-      const audioProducer = client?.voice.transport.getProducer("stream_audio");
-      const videoProducer = client?.voice.transport.getProducer("stream_video");
+      const audioProducer = mediaSources.find((source) => source.kind === "stream_audio" && source.type === "producing");
+      const videoProducer = mediaSources.find((source) => source.kind === "stream_video" && source.type === "producing");
 
       // Audio Stream
       if (audioProducer && !videoProducer) openAudioStream();
@@ -316,13 +224,7 @@ export function useVoiceUtils() {
       audio?: { maxBitrate?: number },
    ) {
       try {
-         if (video) {
-            await client?.voice.stream.updateVideoParameters(video);
-         }
-
-         if (audio && audio.maxBitrate) {
-            await client?.voice.stream.updateAudioBitrate(audio.maxBitrate);
-         }
+         await VoiceClient.sendMessage("update_stream", { video, audio });
       } catch (e) {
          updateModals({
             info: {
@@ -334,12 +236,14 @@ export function useVoiceUtils() {
          });
 
          analytics.log({ level: "error", body: "failed to update stream", exception: e, attributes: { video, audio } });
+
+         await VoiceClient.sendMessage("close_stream").catch(() => undefined);
       }
    }
 
    async function closeStream() {
       try {
-         await client?.voice.stream.closeStream();
+         await VoiceClient.sendMessage("close_stream");
       } catch (e) {
          updateModals({
             info: {
@@ -356,7 +260,7 @@ export function useVoiceUtils() {
 
    async function closeCamera() {
       try {
-         await client?.voice.device.closeCamera();
+         await VoiceClient.sendMessage("close_camera");
       } catch (e) {
          updateModals({
             info: {
@@ -371,6 +275,18 @@ export function useVoiceUtils() {
       }
    }
 
+   async function openPopout() {
+      await VoiceClient.sendMessage("open_popout");
+   }
+
+   async function openMediaPopout(mediaSource: MediaSource) {
+      await VoiceClient.sendMessage("open_media_popout", mediaSource);
+   }
+
+   async function focusMediaPopout(producerId: string) {
+      await VoiceClient.sendMessage("focus_media_popout", producerId);
+   }
+
    return {
       openCamera,
       openAudioStream,
@@ -383,5 +299,8 @@ export function useVoiceUtils() {
       closeCamera,
       toggleDeafen,
       toggleMute,
+      openPopout,
+      openMediaPopout,
+      focusMediaPopout,
    };
 }

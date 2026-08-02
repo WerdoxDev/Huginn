@@ -33,8 +33,8 @@ export class WebAnalytics extends Analytics {
          defaults: "2026-01-30",
          capture_exceptions: true,
          mask_all_element_attributes: true,
-         mask_all_text: true,
-         // enable_recording_console_log: false,
+         mask_all_text: false,
+         enable_recording_console_log: true,
          session_recording: {
             // Keep replay useful for layout and interaction debugging without
             // sending user-generated text, media, or input attributes.

@@ -5,8 +5,9 @@ import UserActionButton from "@components/button/UserActionButton";
 import VoiceControlButton from "@components/button/VoiceControlButton";
 import { HuginnMenu } from "@components/dropdown/HuginnMenu";
 import { useChannel } from "@hooks/api-hooks/channelHooks";
-import { useMediaSources } from "@hooks/voice/useMediaSources";
+import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { VoiceClient } from "@lib/voice/voice-client";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -37,7 +38,7 @@ export default function VoiceStatus() {
    const [rtt, setRtt] = useState(0);
    const posthog = usePostHog();
 
-   const mediaSources = useMediaSources();
+   const { mediaSources } = useVoiceSnapshot();
    const videoSource = mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
    const audioSource = mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
 
@@ -78,7 +79,7 @@ export default function VoiceStatus() {
 
    async function onDisconnect() {
       posthog.capture("voice:status_disconnect_button_click");
-      await client?.voiceManager.disconnectVoice();
+      await VoiceClient.sendMessage("disconnect_voice");
    }
 
    async function onDebug() {

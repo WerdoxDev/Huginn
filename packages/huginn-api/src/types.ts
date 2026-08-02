@@ -1,6 +1,7 @@
 import type { GatewayIdentifyProperties, ResponseLike, Snowflake } from "@huginnjs/shared";
 
 import type { Voice } from "./voice";
+import type { DeviceOptions } from "mediasoup-client/types";
 
 export type ClientOptions<V extends Voice = Voice> = {
    rest?: Partial<RESTOptions>;
@@ -29,10 +30,15 @@ export type GatewayOptions = {
 
 export type VoiceConstructor<V extends Voice> = new (...args: ConstructorParameters<typeof Voice>) => V;
 
+export type TransportOptions = {
+   deviceOptions?: DeviceOptions
+}
+
 export type VoiceOptions<V extends Voice = Voice> = {
    class: VoiceConstructor<V>;
    url: string;
    createSocket(url: string): WebSocket;
+   transportOptions?: TransportOptions
 };
 
 export type VoiceSignallingResetType = "hard" | "soft" | "session";

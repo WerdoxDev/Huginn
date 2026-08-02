@@ -2,7 +2,6 @@ import { useDeleteDMChannel } from "@hooks/mutations/useDeleteDMChannel";
 import { ChannelType, type DirectChannel, type Snowflake } from "@huginnjs/shared";
 import { getChannelsOptions } from "@lib/queries";
 import { findChannel } from "@lib/query-utils";
-import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useQuery } from "@tanstack/react-query";
@@ -11,11 +10,10 @@ import { useMemo } from "react";
 
 import type { AppUser } from "@/types";
 
-import { useUser, useUsers } from "./userHooks";
+import { useUsers } from "./userHooks";
 
 export function useChannel(channelId?: Snowflake, guildId = "@me") {
-   const client = useClient();
-   const { data } = useQuery(getChannelsOptions(client!, guildId));
+   const { data } = useQuery(getChannelsOptions(guildId));
 
    return useMemo(() => findChannel(data, channelId), [data, channelId]);
 }

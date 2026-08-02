@@ -76,7 +76,7 @@ services:
       environment:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
-         - MEDIA_LISTEN_INFOS=udp:44443:0.0.0.0:monolith.werdox.com;udp:44444:0.0.0.0:midgard.huginn.dev
+         - MEDIA_LISTEN_INFOS=udp:44443:0.0.0.0:midgard.huginn.dev;tcp:44443:0.0.0.0:midgard.huginn.dev;udp:44444:0.0.0.0:91.67.253.221;tcp:44444:0.0.0.0:91.67.253.221
          - OTEL_SERVICE_NAME=voice
       ports:
          - target: 44444
@@ -86,6 +86,10 @@ services:
          - target: 44443
            published: 44443
            protocol: udp
+           mode: host
+         - target: 44443
+           published: 44443
+           protocol: tcp
            mode: host
          - target: 44444
            published: 44444

@@ -5,12 +5,13 @@ import { produce } from "immer";
 
 import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
 
-import { queryClient as client } from "@/lib/queries";
+import { queryClient as client, persister } from "@/lib/queries";
 
 import { convertToAppUser } from "./utils";
 
 export function updateUser(user: PresenceUser, queryClient = client) {
    queryClient.setQueryData<AppUser>(["user", user.id], (old) => (old ? convertToAppUser({ ...old, ...user }) : convertToAppUser(user)));
+   persister.persistQueryByKey(["user", user.id], queryClient);
 }
 
 function resolveReplyReference(updatedMessage: AppMessage) {

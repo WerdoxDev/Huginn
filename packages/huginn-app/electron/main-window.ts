@@ -1,5 +1,5 @@
 import { analytics } from "@huginnjs/shared";
-import { app, ipcMain, nativeImage, session, shell, screen, type BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, nativeImage, session, shell, screen } from "electron";
 import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";
 import loopback, { type LoopbackCapture } from "loopback-capture";
@@ -12,14 +12,12 @@ import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
 import { ScreenManager } from "./screen-manager";
-import { VoiceDebugWindow } from "./voice-debug-window";
 
 const { autoUpdater } = electronUpdater;
 
 export class MainWindow extends BaseWindow {
    private selectedDisplaySource?: DisplaySource;
    private previousProcessId: string | undefined;
-   private voiceDebugWindow?: VoiceDebugWindow;
    private notificationController: NotificationController = new NotificationController();
    private screenManager: ScreenManager = new ScreenManager();
    private loopbackCapture: LoopbackCapture | undefined;
@@ -38,6 +36,7 @@ export class MainWindow extends BaseWindow {
             nodeIntegration: true,
             preload: path.join(import.meta.dirname, "preload.mjs"),
             backgroundThrottling: false,
+            nodeIntegrationInSubFrames: true,
          },
          show: false,
       });
@@ -54,7 +53,6 @@ export class MainWindow extends BaseWindow {
       this.registerNotificationEvents(window);
       this.registerNativeEvents();
       this.registerSessionEvents();
-      this.registerVoiceDebugEvents();
       this.registerMediaEvents(window);
    }
 
@@ -79,6 +77,26 @@ export class MainWindow extends BaseWindow {
    }
 
    private registerElectronWindowEvents(window: BrowserWindow) {
+      window.webContents.setWindowOpenHandler(({ features }) => {
+         const width = features.includes("width=") ? parseInt(features.split("width=")[1].split(",")[0]) : 1024;
+         const height = features.includes("height=") ? parseInt(features.split("height=")[1].split(",")[0]) : 700;
+
+         return {
+            action: "allow",
+            overrideBrowserWindowOptions: {
+               width: width,
+               height: height,
+               frame: true,
+               webPreferences: {
+                  contextIsolation: true,
+                  nodeIntegration: true,
+                  preload: path.join(import.meta.dirname, "preload.mjs"),
+                  backgroundThrottling: false,
+               },
+            },
+         };
+      });
+
       window.on("close", (e) => {
          e.preventDefault();
          window.hide();
@@ -126,6 +144,22 @@ export class MainWindow extends BaseWindow {
 
       ipcMain.on("window:focus-main", () => {
          window.focus();
+      });
+
+      ipcMain.on("window:focus-media-popout", (_, producerId: string) => {
+         const mediaWindow = BrowserWindow.getAllWindows().find((candidate) => {
+            try {
+               return new URL(candidate.webContents.getURL()).searchParams.get("voiceMediaProducerId") === producerId;
+            } catch {
+               return false;
+            }
+         });
+
+         if (!mediaWindow) return;
+         if (mediaWindow.isMinimized()) mediaWindow.restore();
+
+         mediaWindow.show();
+         mediaWindow.focus();
       });
 
       ipcMain.on("window:minimize", () => {
@@ -333,30 +367,6 @@ export class MainWindow extends BaseWindow {
          const displayName = native.getPackageDisplayName(processId);
          const info = { displayName, icon };
          return info;
-      });
-   }
-
-   private registerVoiceDebugEvents() {
-      ipcMain.on("voice-debug:open", () => {
-         if (this.voiceDebugWindow) {
-            this.voiceDebugWindow.window.destroy();
-         }
-         this.voiceDebugWindow = new VoiceDebugWindow();
-
-         this.voiceDebugWindow.window.on("close", () => {
-            this.voiceDebugWindow = undefined;
-         });
-      });
-
-      ipcMain.on("voice-debug:close", () => {
-         if (this.voiceDebugWindow) {
-            this.voiceDebugWindow.window.destroy();
-            this.voiceDebugWindow = undefined;
-         }
-      });
-
-      ipcMain.handle("voice-debug:is-open", () => {
-         return this.voiceDebugWindow && this.voiceDebugWindow.window.isVisible();
       });
    }
 

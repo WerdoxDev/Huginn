@@ -7,6 +7,7 @@ import type {
 } from "@huginnjs/shared";
 
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
+import { persister } from "@lib/queries";
 import { getChannelComputedName } from "@lib/query-utils";
 import { convertToAppDirectChannel } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
@@ -29,6 +30,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) =>
          old && !old.some((x) => x.id === d.id) ? [convertToAppDirectChannel(d), ...old] : old,
       );
+      persister.persistQueryByKey(["channels", "@me"], queryClient);
       addChannelToReadStates(d.id);
    }
 
@@ -47,6 +49,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
       queryClient.setQueryData<AppDirectChannel[]>(["channels", "@me"], (old) =>
          old?.map((channel) => (channel.id === d.id ? convertToAppDirectChannel(d) : channel)),
       );
+      persister.persistQueryByKey(["channels", "@me"], queryClient);
    }
 
    function onChannelRecipientAdded(d: GatewayDMChannelRecipientAddData) {
@@ -65,6 +68,7 @@ export default function ChannelsProvider(props: { children?: ReactNode }) {
             };
          }),
       );
+      persister.persistQueryByKey(["channels", "@me"], queryClient);
    }
 
    function onChannelRecipientRemoved(d: GatewayDMCannelRecipientRemoveData) {

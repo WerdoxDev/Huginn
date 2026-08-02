@@ -5,10 +5,10 @@ import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
-import { useMediaSources } from "@hooks/voice/useMediaSources";
+import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { analytics, CONSTANTS, recordSpanError } from "@huginnjs/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
-import { useClient } from "@stores/clientStore";
+import { VoiceClient } from "@lib/voice/voice-client";
 import { useDevice } from "@stores/deviceStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -29,7 +29,6 @@ const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
 }));
 
 export default function ScreenShareModal() {
-   const client = useClient();
    const { screenShare: modal, updateModals } = useModals();
    const { data, isLoading } = useQuery({
       queryKey: ["display-sources"],
@@ -39,7 +38,7 @@ export default function ScreenShareModal() {
    });
 
    const { inputDevices, cameraDevices } = useDevice();
-   const mediaSources = useMediaSources();
+   const { mediaSources } = useVoiceSnapshot();
    const videoProducer = useMemo(
       () => (modal.type === "change" ? mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing") : undefined),
       [mediaSources, modal],
@@ -128,9 +127,7 @@ export default function ScreenShareModal() {
 
             close();
             // This is to prevent Electron from giving the same video track back
-            const producer = client?.voice.transport.getProducer("stream_video");
-            producer?.track?.stop();
-            await new Promise((r) => setTimeout(r, 1000));
+            await VoiceClient.sendMessage("prepare_stream_replacement");
 
             let stream: MediaStream;
             if (source) {

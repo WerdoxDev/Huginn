@@ -13,6 +13,7 @@ import {
 } from "@huginnjs/shared";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
+import { syncZustandStore } from "@lib/sync-zustand";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
@@ -147,6 +148,8 @@ export async function initializeClient() {
    const huginnWindowStore = windowStore.getState();
    let thisStore = store.getState();
 
+   if (thisStore.client !== undefined) return;
+
    const osInfo = huginnWindowStore.environment === "desktop" ? await window.electronAPI.getOsInfo() : undefined;
    const deviceInfo = Capacitor.getPlatform() === "android" ? await Device.getInfo() : undefined;
    const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : (NAVIGATOR_PLATFORM_TO_OS[navigator.platform] ?? "unknown");
@@ -154,8 +157,6 @@ export async function initializeClient() {
    const chromeVersion = osInfo?.chromeVersion ?? getChromeVersion()?.toString() ?? undefined;
    const electronVersion = osInfo?.electronVersion ?? undefined;
    const osVersion = osInfo?.version ?? deviceInfo?.osVersion ?? undefined;
-
-   if (thisStore.client !== undefined) return;
 
    const client = new HuginnClient({
       rest: { api: `${thisStore.hostnames.api}/api` },
@@ -186,7 +187,10 @@ export async function initializeClient() {
          },
       },
    });
+
    store.setState({ client });
+
+   if (window.opener) return;
 
    await client?.connect();
 
@@ -285,3 +289,17 @@ export function useClientStore() {
 }
 
 export const clientStore = store;
+
+syncZustandStore(store, {
+   name: "clientStore",
+   partialize: (state) => ({
+      hostnames: state.hostnames,
+      voiceStatus: state.voiceStatus,
+      gatewayStatus: state.gatewayStatus,
+      readyData: state.readyData,
+      isInitialized: state.isInitialized,
+      userSettings: state.userSettings,
+      readyCount: state.readyCount,
+      androidUpdateUrl: state.androidUpdateUrl,
+   }),
+});

@@ -13,7 +13,7 @@ export function useIsMobile() {
    }, []);
 
    function checkMobile() {
-      return window.innerWidth < 1024;
+      return window.innerWidth < 1024 && window.opener === null;
    }
 
    return isMobile;

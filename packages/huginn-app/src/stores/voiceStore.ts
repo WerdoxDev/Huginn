@@ -1,5 +1,6 @@
 import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
+import { syncZustandStore } from "@lib/sync-zustand";
 import { clientStore } from "@stores/clientStore";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
@@ -187,3 +188,14 @@ export function useVoiceStore() {
 }
 
 export const voiceStore = store;
+
+syncZustandStore(store, {
+   name: "voiceStore",
+   partialize: (state) => ({
+      voiceConnection: state.voiceConnection,
+      voiceState: state.voiceState,
+      voiceStates: state.voiceStates,
+      callStates: state.callStates,
+      speakingStates: state.speakingStates,
+   }),
+});

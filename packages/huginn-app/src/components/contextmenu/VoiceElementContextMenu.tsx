@@ -3,7 +3,9 @@ import type { HMediaKind } from "@huginnjs/shared";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
+import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useMemo } from "react";
@@ -12,8 +14,9 @@ import ContextMenu from "./ContextMenu";
 
 export default function VoiceElementContextMenu() {
    const { data } = useContextMenu("voice_element");
-   const { consumeStream, unconsumeStream } = useVoiceUtils();
+   const { consumeStream, unconsumeStream, openMediaPopout } = useVoiceUtils();
    const { updateModals } = useModals();
+   const { popoutState } = useVoiceSnapshot();
 
    const { voicePreferences, setUserPreference } = useVoicePreferences();
 
@@ -45,6 +48,12 @@ export default function VoiceElementContextMenu() {
       );
    }
 
+   function popoutStream() {
+      const mediaSource = mediaSources.find((x) => x?.kind === "stream_audio" || x?.kind === "stream_video" || x?.kind === "camera");
+      if (!mediaSource) return;
+      openMediaPopout(mediaSource);
+   }
+
    async function consume() {
       if (!data) {
          return;
@@ -71,8 +80,24 @@ export default function VoiceElementContextMenu() {
                updateModals({ userProfile: { isOpen: true, userId: data.user.id } });
             }}
          />
+         {mediaSources.some(
+            (x) =>
+               (x?.kind === "stream_audio" || x?.kind === "stream_video" || x?.kind === "camera") &&
+               !popoutState.openMediaPopoutProducers.includes(x.producerId ?? ""),
+         ) && (
+            <>
+               <ContextMenu.Divider />
+               <ContextMenu.Item
+                  label={"Popout " + (mediaSources.some((x) => x?.kind === "stream_video" || x?.kind === "stream_audio") ? "Stream" : "Camera")}
+                  onClick={popoutStream}
+               >
+                  <IconMingcuteLayoutBottomOpenFill />
+               </ContextMenu.Item>
+            </>
+         )}
          {mediaSources.some((x) => x?.kind === "microphone") && (
             <>
+               <ContextMenu.Divider />
                <ContextMenu.Item label="Volume" className="mt-1 min-w-40 flex-col items-start! gap-y-1 px-1" preventClose>
                   <HuginnSlider
                      minValue={0}
@@ -100,27 +125,30 @@ export default function VoiceElementContextMenu() {
                         color="negative"
                         onClick={unconsume}
                      />
+                  </>
+               ) : (
+                  <ContextMenu.Item label={mediaSources.some((x) => x?.kind === "stream_video") ? "Watch" : "Listen"} onClick={consume} />
+               )}
+               {hasAudio && (
+                  <>
+                     <ContextMenu.Divider />
+                     <ContextMenu.Item label="Stream Volume" className="mt-1 min-w-40 flex-col items-start! gap-y-1 px-1" preventClose>
+                        <HuginnSlider
+                           minValue={0}
+                           maxValue={200}
+                           defaultValue={preference?.streamVolume}
+                           onChange={handleVolumeChange}
+                           getTooltipText={(v) => `${v}%`}
+                        >
+                           <HuginnSlider.Input backgroundClassName="bg-surface!" />
+                        </HuginnSlider>
+                     </ContextMenu.Item>
                      <ContextMenu.Item label="Muted" preventClose className="py-1!" onClick={() => handleMuteChange(!preference.isStreamMuted)}>
                         <HuginnCheckbox checked={preference.isStreamMuted}>
                            <HuginnCheckbox.Input innerClassName="bg-surface!" onClick={(e) => e.stopPropagation()} />
                         </HuginnCheckbox>
                      </ContextMenu.Item>
                   </>
-               ) : (
-                  <ContextMenu.Item label={mediaSources.some((x) => x?.kind === "stream_video") ? "Watch" : "Listen"} onClick={consume} />
-               )}
-               {hasAudio && (
-                  <ContextMenu.Item label="Stream Volume" className="mt-1 min-w-40 flex-col items-start! gap-y-1 px-1" preventClose>
-                     <HuginnSlider
-                        minValue={0}
-                        maxValue={200}
-                        defaultValue={preference?.streamVolume}
-                        onChange={handleVolumeChange}
-                        getTooltipText={(v) => `${v}%`}
-                     >
-                        <HuginnSlider.Input backgroundClassName="bg-surface!" />
-                     </HuginnSlider>
-                  </ContextMenu.Item>
                )}
             </>
          )}

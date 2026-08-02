@@ -3,6 +3,7 @@ import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
 import type { electronAPI } from "../electron/preload";
+import type { VoiceWindowHost } from "./lib/voice/voice-protocol";
 
 type CustomEditor = BaseEditor & ReactEditor;
 
@@ -143,6 +144,7 @@ declare global {
    // interface globalThis {
    interface Window {
       electronAPI: typeof electronAPI;
+      voiceHost?: VoiceWindowHost;
    }
 
    interface AudioContext {

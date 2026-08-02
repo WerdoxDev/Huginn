@@ -25,18 +25,21 @@ import { queryClient } from "@/lib/queries";
 
 export const Route = createFileRoute("/_app")({ component: AppLayoutComponent });
 
+const isMainWindow = window.opener === null;
+
 function AppLayoutComponent() {
    const huginnWindow = useHuginnWindow();
-
    useBackButtonManager();
 
-   useInitStorageStore();
-   useInitUserStore();
-   useInitReadStateStore();
-   useInitPresenceStore();
-   useInitTypingStore();
-   useInitVoiceStore();
-   useInitDeviceStore();
+   if (isMainWindow) {
+      useInitStorageStore();
+      useInitUserStore();
+      useInitReadStateStore();
+      useInitPresenceStore();
+      useInitTypingStore();
+      useInitVoiceStore();
+      useInitDeviceStore();
+   }
 
    return (
       <QueryClientProvider client={queryClient}>
@@ -46,13 +49,13 @@ function AppLayoutComponent() {
                   <PopoverProvider>
                      <InsetProvider>
                         <div className={clsx("flex h-full flex-col overflow-hidden")}>
-                           {!huginnWindow.browserFullscreen && <TitleBar />}
+                           {!huginnWindow.browserFullscreen && isMainWindow && <TitleBar />}
                            <div className="relative h-full w-full">
                               <div
                                  className={clsx("bg-surface-alt absolute inset-0", !huginnWindow.browserFullscreen && "top-6")}
                                  style={{ viewTransitionName: "start" }}
                               >
-                                 <StartBackground />
+                                 {isMainWindow && <StartBackground />}
                                  <Outlet />
                               </div>
                               {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" /> */}

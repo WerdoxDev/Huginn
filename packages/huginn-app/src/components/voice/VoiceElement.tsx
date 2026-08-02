@@ -44,7 +44,7 @@ export default function VoiceElement(props: {
 }) {
    const { open: openContextMenu } = useContextMenu("voice_element");
    const { consumeStream } = useVoiceUtils();
-   const { voiceStatus } = useClientStore();
+   const { client, voiceStatus } = useClientStore();
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
@@ -61,6 +61,11 @@ export default function VoiceElement(props: {
       () => (isCamera || isAudioStream || isScreenShare) && !props.mediaSource?.consumerId && props.userId !== thisUser?.id,
       [props.mediaSource, isCamera, isAudioStream, isScreenShare],
    );
+
+   const track = useMemo(() => {
+      const host = window.voiceHost ?? window.opener?.voiceHost;
+      return host?.getTrack(props.mediaSource?.consumerId ?? props.mediaSource?.producerId) ?? null;
+   }, [props.mediaSource]);
 
    const hasMutedIndicator = useMemo(
       () =>
@@ -104,24 +109,17 @@ export default function VoiceElement(props: {
       if (videoRef.current) {
          // Check if track is actually different
          const currentTrack = (videoRef.current.srcObject as MediaStream | undefined)?.getVideoTracks()[0];
-         if (currentTrack?.id === props.mediaSource?.track?.id) {
+         if (currentTrack?.id === track?.id) {
             return;
          }
 
-         const newStream = props.mediaSource?.track ? new MediaStream([props.mediaSource.track]) : null;
+         const newStream = track ? new MediaStream([track]) : null;
          videoRef.current.srcObject = newStream;
       }
-   }, [props.mediaSource, props.voiceState]);
+   }, [track]);
 
    const stateSize = 2;
    const stateRadius = stateSize / 2;
-   // const indicatorMask = createRadialMaskStyle([
-   //    {
-   //       radius: `${stateRadius + 0.25}rem`,
-   //       x: `calc(100% - 0.75rem + 2px)`,
-   //       y: `calc(100% - 0.75rem + 2px)`,
-   //    },
-   // ]);
    const indicatorMask = createRadialMaskStyle([
       {
          radius: `${stateRadius + 0.25}rem`,
@@ -180,10 +178,7 @@ export default function VoiceElement(props: {
          )}
          {!isCamera && !isAudioStream && !isScreenShare && !isPreview && (
             <div className={clsx("z-10 p-4.5", props.isRinging && "animate-pulse", props.isGridView && "w-max")}>
-               <div
-                  className="rounded-full"
-                  // style={!props.isGridView && hasMutedIndicator ? indicatorMask : undefined}
-               >
+               <div className="rounded-full">
                   <UserAvatar
                      userId={props.userId}
                      avatarHash={user?.avatar}
@@ -198,12 +193,7 @@ export default function VoiceElement(props: {
             </div>
          )}
          {!isPreview && !isLoadingStream && (isCamera || isScreenShare) && (
-            <VoiceVideoStats
-               hasAudio={hasScreenShareAudio}
-               kind={props.mediaSource?.kind}
-               videoRef={videoRef}
-               track={props.mediaSource?.track ?? undefined}
-            />
+            <VoiceVideoStats hasAudio={hasScreenShareAudio} kind={props.mediaSource?.kind} videoRef={videoRef} track={track ?? undefined} />
          )}
          {(isAudioStream || isScreenShare) && <VoiceStreamParticipants mediaSource={props.mediaSource} />}
          <VoiceLabel
@@ -238,16 +228,9 @@ export default function VoiceElement(props: {
             )
          )}
          {props.isConnected && (isCamera || isScreenShare) && !isPreview && (
-            <video
-               className={clsx("h-full w-full bg-black", !props.isMaximized && "rounded-lg")}
-               // style={{ width: props.gridElementWidth - 2, height: props.gridElementHeight - 2 }}
-               ref={videoRef}
-               autoPlay
-               playsInline
-               muted
-            />
+            <video className={clsx("h-full w-full bg-black", !props.isMaximized && "rounded-lg")} ref={videoRef} autoPlay playsInline muted />
          )}
-         {!isPreview && isAudioStream && <VoiceAudioVisualizer track={props.mediaSource?.track ?? undefined} />}
+         {!isPreview && isAudioStream && <VoiceAudioVisualizer track={track ?? undefined} />}
       </div>
    );
 }
