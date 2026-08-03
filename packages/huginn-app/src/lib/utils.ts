@@ -1,10 +1,8 @@
-import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 
 import { TransportError } from "@huginnjs/api";
 import {
    type APIMessage,
-   type APIPostMessageReferenceJSONBody,
    type APIRelationshipWithoutOwner,
    type APIUserProfile,
    ChannelType,
@@ -12,37 +10,31 @@ import {
    type GatewaySession,
    HuginnAPIError,
    type HuginnError,
-   MessageFlags,
    MessageType,
    type PresenceStatus,
    type PresenceUser,
-   type Snowflake,
    type UserPresence,
    VoiceSignallingError,
-   WorkerID,
    changeUrlBase,
    omit,
-   snowflake,
+   toDataUrl
 } from "@huginnjs/shared";
-import { clientStore } from "@stores/clientStore";
-import { parseBlob } from "music-metadata-browser";
+import { clientStore } from "@stores/clientStoreState";
 import { Children, isValidElement } from "react";
 import { Element, Text, type Descendant } from "slate";
 
 import type {
-   AppAttachment,
    AppDirectChannel,
    AppMessage,
    AppPresence,
    AppRelationship,
    AppUser,
    AppUserProfile,
-   AttachmentInput,
-   InputMessage,
+   InputMessage
 } from "@/types";
 
 import { APIMessages } from "./error-messages";
-import { getMessage } from "./query-utils";
+import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 
 export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
 
@@ -121,10 +113,10 @@ export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChan
       channel.type === ChannelType.DM
          ? (channel.recipients[0].displayName ?? channel.recipients[0].username)
          : channel.type === ChannelType.GROUP_DM
-           ? channel.name === null
-              ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
-              : channel.name
-           : "unknown";
+            ? channel.name === null
+               ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
+               : channel.name
+            : "unknown";
 
    const { recipients: _, ...rest } = channel;
    return {
@@ -145,8 +137,8 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
       ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
       ...(message.type === MessageType.REPLY
          ? {
-              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
-           }
+            referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
+         }
          : {}),
       authorId: message.author.id,
       mentions: message.mentions.map((x) => x.id),
@@ -214,59 +206,28 @@ export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "a
          return type === "camera"
             ? "Huginn doesn't have access to your camera. Please allow it and try again."
             : type === "audio"
-              ? "Huginn doesn't have access to your audio. Please allow it and try again."
-              : "Huginn doesn't have access to your screen. Please allow it and try again.";
+               ? "Huginn doesn't have access to your audio. Please allow it and try again."
+               : "Huginn doesn't have access to your screen. Please allow it and try again.";
       case "NotFoundError":
          return type === "camera" ? "No camera was found" : type === "audio" ? "No audio was found" : "No screens or windows were found";
       case "AbortError":
          return type === "camera"
             ? "Camera access was canceled before it started."
             : type === "audio"
-              ? "Audio access was canceled before it started."
-              : "Screen sharing was canceled before it started.";
+               ? "Audio access was canceled before it started."
+               : "Screen sharing was canceled before it started.";
       case "NotReadableError":
          return type === "camera"
             ? "Your system prevented access to your camera. Try restarting your browser/client."
             : type === "audio"
-              ? "Your system prevented audio access. Try restarting your browser/client."
-              : "Your system prevented screen sharing. Try restarting your browser/client.";
+               ? "Your system prevented audio access. Try restarting your browser/client."
+               : "Your system prevented screen sharing. Try restarting your browser/client.";
       case "SecurityError":
          return "Your browser blocked this action for security reasons. Try restarting your browser/client.";
 
       default:
          return defaultError;
    }
-}
-
-export function createPreviewMessage(
-   queryClient: QueryClient,
-   data: {
-      content: string;
-      channelId: Snowflake;
-      authorId: Snowflake;
-      nonce: Snowflake;
-      flags?: MessageFlags;
-      attachments?: AppAttachment[];
-      messageReference?: APIPostMessageReferenceJSONBody;
-   },
-) {
-   const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
-
-   const previewMessage: AppMessage = {
-      isPreview: true,
-      id: snowflake.generateString(WorkerID.APP),
-      timestamp: new Date().toISOString(),
-      content: data.content,
-      channelId: data.channelId,
-      authorId: data.authorId,
-      nonce: data.nonce,
-      flags: data.flags,
-      attachments: data.attachments,
-      referencedMessage: referencedMessage,
-      abortController: new AbortController(),
-   };
-
-   return previewMessage;
 }
 
 export function getDataURLFromSrc(src: string, circle: boolean = true): Promise<string> {
@@ -347,52 +308,29 @@ export function serializeSlate(nodes: Descendant[], options?: { emojiAsSlug?: bo
    return text;
 }
 
-export function getVideoThumbnail(blob: Blob, seekTo: number = 1) {
-   return new Promise<string>((resolve, reject) => {
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.muted = true;
-      video.playsInline = true;
+export async function getVideoThumbnail(blob: Blob, timestamp: number = 1) {
+   const input = new Input({ source: new BlobSource(blob), formats: ALL_FORMATS });
 
-      const url = URL.createObjectURL(blob);
-      video.src = url;
+   const videoTrack = (await input.getVideoTracks())[0];
+   if (!videoTrack) return undefined;
+   const decodable = await videoTrack?.canDecode();
+   if (!decodable) return undefined;
 
-      video.addEventListener("loadedmetadata", () => {
-         // don't seek past the end of short clips
-         const time = Math.min(seekTo, video.duration || seekTo);
-         video.currentTime = time;
-      });
-
-      video.addEventListener("seeked", () => {
-         const canvas = document.createElement("canvas");
-         canvas.width = video.videoWidth;
-         canvas.height = video.videoHeight;
-
-         const ctx = canvas.getContext("2d");
-         ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-         canvas.toBlob(
-            () => {
-               URL.revokeObjectURL(url);
-               resolve(canvas.toDataURL("image/jpeg", 0.8));
-            },
-            "image/jpeg",
-            0.8,
-         );
-      });
-
-      video.addEventListener("error", (e) => {
-         URL.revokeObjectURL(url);
-         reject(e);
-      });
-   });
+   const sink = new CanvasSink(videoTrack, { width: 320 });
+   const result = await sink.getCanvas(timestamp);
+   const canvas = result?.canvas as HTMLCanvasElement;;
+   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
 export async function getAudioCovertArt(blob: Blob) {
-   // const metadata = await parseBlob(blob);
-   // const picture = metadata.common.picture?.[0];
+   const input = new Input({ source: new BlobSource(blob), formats: ALL_FORMATS });
+   const audioTrack = (await input.getAudioTracks())[0];
+   if (!audioTrack) return "";
+   const decodable = await audioTrack?.canDecode();
+   if (!decodable) return "";
+   const metadata = await input.getMetadataTags();
+   const coverImage = metadata.images?.find(x => x.kind === "coverFront");
+   if (!coverImage) return undefined;
 
-   // console.log(URL.createObjectURL(blob));
-
-   return "";
+   return toDataUrl(coverImage?.data, "image/jpeg");
 }

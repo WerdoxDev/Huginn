@@ -1,56 +1,26 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
-import { HuginnClient, type VoiceStatus } from "@huginnjs/api";
+import { HuginnClient } from "@huginnjs/api";
 import {
    analytics,
    type APIPublicUser,
    error,
    type GatewayReadyData,
-   type GatewayStatus,
    recordSpanError,
    type Snowflake,
-   type UserSettings,
 } from "@huginnjs/shared";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
-import { syncZustandStore } from "@lib/sync-zustand";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
-import { createStore, useStore } from "zustand";
-import { combine, subscribeWithSelector } from "zustand/middleware";
+import { useStore } from "zustand";
 
 import type { Environment } from "@/types";
 
+import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
 
-const initialStore = () => ({
-   hostnames: {
-      api: "",
-      cdn: "",
-      voice: "",
-   },
-   voiceStatus: undefined as VoiceStatus | undefined,
-   gatewayStatus: undefined as GatewayStatus | undefined,
-   readyData: undefined as GatewayReadyData | undefined,
-   isInitialized: false,
-   userSettings: undefined as UserSettings | undefined,
-   client: undefined as HuginnClient<VoiceBridge> | undefined,
-   readyCount: 0,
-   androidUpdateUrl: undefined as string | undefined,
-});
-
-// type StoreType = ReturnType<typeof initialStore> & {
-//    setUserSettings: (settings: Partial<UserSettings>) => void;
-// };
-
-const store = createStore(
-   subscribeWithSelector(
-      combine(initialStore(), (set) => ({
-         setUserSettings: (settings: Partial<UserSettings>) =>
-            set((state) => ({ userSettings: state.userSettings ? { ...state.userSettings, ...settings } : undefined })),
-      })),
-   ),
-);
+const store = clientStore;
 
 export type ExternalHostnameStatus = "network_error" | "invalid_response" | "success";
 export type ExternalHostnameResult = {
@@ -288,18 +258,4 @@ export function useClientStore() {
    return useStore(store);
 }
 
-export const clientStore = store;
-
-syncZustandStore(store, {
-   name: "clientStore",
-   partialize: (state) => ({
-      hostnames: state.hostnames,
-      voiceStatus: state.voiceStatus,
-      gatewayStatus: state.gatewayStatus,
-      readyData: state.readyData,
-      isInitialized: state.isInitialized,
-      userSettings: state.userSettings,
-      readyCount: state.readyCount,
-      androidUpdateUrl: state.androidUpdateUrl,
-   }),
-});
+export { clientStore };

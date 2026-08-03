@@ -8,7 +8,7 @@ import type { AppSettings, StorageMap, FileType } from "@/types";
 import { BridgeStorage } from "../../shared/bridge-storage";
 import { LocalStorage } from "../../shared/local-storage";
 import { StorageController } from "../../shared/storage-controller";
-import { clientStore } from "./clientStore";
+import { clientStore } from "./clientStoreState";
 
 const storage = new StorageController(window.electronAPI ? new BridgeStorage(analyticsShim) : new LocalStorage(analyticsShim));
 const initialStore = () => ({

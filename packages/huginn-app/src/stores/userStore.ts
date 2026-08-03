@@ -8,7 +8,7 @@ import { combine } from "zustand/middleware";
 
 import type { AppUser } from "@/types";
 
-import { clientStore } from "./clientStore";
+import { clientStore } from "./clientStoreState";
 
 const store = createStore(
    combine(

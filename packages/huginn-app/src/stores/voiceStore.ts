@@ -1,7 +1,7 @@
 import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { syncZustandStore } from "@lib/sync-zustand";
-import { clientStore } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStoreState";
 import { produce } from "immer";
 import { createStore, useStore } from "zustand";
 import { combine, devtools } from "zustand/middleware";

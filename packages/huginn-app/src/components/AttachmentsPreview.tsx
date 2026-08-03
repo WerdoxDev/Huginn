@@ -81,12 +81,13 @@ function AttachmentItem(props: { attachment: AppAttachment; onRemove: (key: stri
             <div
                className={clsx(
                   "bg-surface-deep relative flex h-full min-h-0 w-full items-center justify-center gap-x-2 overflow-hidden",
-                  isMobile && !thumbnailOnly && "pr-4 pl-2",
+                  isMobile && !thumbnailOnly && "pr-4",
+                  isMobile && !thumbnailOnly && !props.attachment.previewDataUrl ? "pl-2" : "pl-0",
                )}
             >
                {props.attachment.previewDataUrl ? (
                   <img
-                     className="h-full w-full object-cover lg:object-contain"
+                     className={clsx("object-cover lg:object-contain", isMobile && !thumbnailOnly ? "size-17" : "h-full w-full")}
                      loading="lazy"
                      src={props.attachment.previewDataUrl}
                      alt={props.attachment.filename}

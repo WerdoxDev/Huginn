@@ -5,7 +5,7 @@ import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { MessageFlags, MessageReferenceType, MessageType } from "@huginnjs/shared";
-import { createPreviewMessage, serializeSlate } from "@lib/utils";
+import { serializeSlate } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
@@ -19,6 +19,7 @@ import { ReactEditor } from "slate-react";
 import type { AppMessage, AppAttachment } from "@/types";
 
 import { useIsMobile } from "./useIsMobile";
+import { createPreviewMessage } from "@lib/query-utils";
 
 const INTERCEPT_ELEMENT_TYPES = ["emoji", "mention"];
 
@@ -73,10 +74,10 @@ export function useMessageBoxActions(options: {
 
       const messageReference = currentReplyingMessageId
          ? {
-              messageId: currentReplyingMessageId,
-              channelId: channelId,
-              type: MessageReferenceType.DEFAULT,
-           }
+            messageId: currentReplyingMessageId,
+            channelId: channelId,
+            type: MessageReferenceType.DEFAULT,
+         }
          : undefined;
 
       const nonce = client.generateNonce();
@@ -120,10 +121,10 @@ export function useMessageBoxActions(options: {
 
       const messageReference = currentReplyingMessageId
          ? {
-              messageId: currentReplyingMessageId,
-              channelId: channelId,
-              type: MessageReferenceType.DEFAULT,
-           }
+            messageId: currentReplyingMessageId,
+            channelId: channelId,
+            type: MessageReferenceType.DEFAULT,
+         }
          : undefined;
 
       const nonce = client.generateNonce();

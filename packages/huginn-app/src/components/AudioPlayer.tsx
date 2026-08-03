@@ -1,5 +1,7 @@
+import { useAudioCoverImage } from "@hooks/useAudioMetadata";
 import { useOpen } from "@hooks/useOpen";
 import { formatSeconds } from "@huginnjs/shared";
+import { clsx } from "clsx";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
 import { useStorage, useStorageStore } from "@/stores/storageStore";
@@ -8,7 +10,7 @@ import HuginnMediaSlider from "./HuginnMediaSlider";
 import LoadingBackground from "./LoadingBackground";
 import VolumeSlider from "./VolumeSlider";
 
-export default function AudioPlayer(props: { url: string; filename: string }) {
+export default function AudioPlayer(props: { url: string; filename: string; onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void }) {
    const audioRef = useRef<HTMLAudioElement>(null);
    const [playing, setPlaying] = useState(false);
    const [currentPercent, setCurrentPercent] = useState(0);
@@ -20,6 +22,7 @@ export default function AudioPlayer(props: { url: string; filename: string }) {
    const { openUrl } = useOpen();
    const settings = useStorage("settings");
    const { updateSettings } = useStorageStore();
+   const coverImage = useAudioCoverImage(audioRef);
 
    useEffect(() => {
       if (audioRef.current) {
@@ -89,9 +92,15 @@ export default function AudioPlayer(props: { url: string; filename: string }) {
    }
 
    return (
-      <div className="bg-surface-alt flex w-[min(24rem,100%)] items-center gap-x-3 rounded-md px-3 py-3">
-         <button className="bg-primary-500 shrink-0 cursor-pointer rounded-md p-2 text-white/80 hover:text-white" onClick={togglePlaying}>
-            {playing ? <IconMingcutePauseFill className="size-8" /> : <IconMingcutePlayFill className="size-8" />}
+      <div className="bg-surface-alt flex w-[min(24rem,100%)] items-center gap-x-3 rounded-md px-3 py-3" onContextMenu={props.onContextMenu}>
+         <button
+            className="bg-primary-500 relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-md p-2 text-white/80 hover:text-white"
+            onClick={togglePlaying}
+         >
+            {coverImage && <img src={coverImage} className="absolute inset-0" />}
+            <div className={clsx("absolute inset-0 z-10 flex items-center justify-center", coverImage && "bg-black/20")}>
+               {playing ? <IconMingcutePauseFill className="size-8" /> : <IconMingcutePlayFill className="size-8" />}
+            </div>
          </button>
          {/* <button type="button" onClick={togglePlaying} className="bg-primary-500 h-max shrink-0 cursor-pointer text-white/80 hover:text-white">
          </button> */}

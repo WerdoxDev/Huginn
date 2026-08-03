@@ -1,7 +1,7 @@
 import type { HuginnClient } from "@huginnjs/api";
 
 import { type APIGetUserChannelsResult, type APIPatchUserSettingsJSONBody, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
-import { clientStore } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStoreState";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { experimental_createQueryPersister } from "@tanstack/query-persist-client-core";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";

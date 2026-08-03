@@ -7,10 +7,24 @@ import type { AppDirectChannel, AppMessage } from "@/types";
 
 import { createTestChannel, createTestQueryClient, makeAppMessage } from "@/test-utils";
 
-import { appendAppMessage, deleteAppMessage, updateAppMessage, updateChannelLastMessageId } from "./query-utils";
+import { appendAppMessage, createPreviewMessage, deleteAppMessage, updateAppMessage, updateChannelLastMessageId } from "./query-utils";
 import { convertToAppDirectChannel } from "./utils";
 
 describe("query-utils", () => {
+   describe("createPreviewMessage", () => {
+      test("should keep local cancellation state out of preview messages", () => {
+         const client = createTestQueryClient();
+         const previewMessage = createPreviewMessage(client, {
+            authorId: "123",
+            channelId: "456",
+            content: "Hello",
+            nonce: "789",
+         });
+
+         expect(previewMessage).not.toHaveProperty("abortController");
+      });
+   });
+
    describe("updateChannelLastMessageId", () => {
       test("should update channel's last message id", () => {
          const client = createTestQueryClient();
