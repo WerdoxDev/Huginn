@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.48.0...server@v0.48.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* **server:** filter properties in update voice state ([ba7a02b](https://github.com/WerdoxDev/Huginn/commit/ba7a02bfe606d99c215646c4735bebf4f8a753f0))
+
 ## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.47.1...server@v0.48.0) (2026-08-02)
 
 

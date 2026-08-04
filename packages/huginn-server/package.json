@@ -1,6 +1,6 @@
 {
    "name": "@huginn/server",
-   "version": "0.48.0",
+   "version": "0.48.1",
    "type": "module",
    "imports": {
       "#*": "./src/*.ts"

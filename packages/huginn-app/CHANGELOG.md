@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.86.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.85.0...app@v0.86.0) (2026-08-04)
+
+
+### Features
+
+* **app:** show audio file cover art + copy link for normal attachment files ([1a2c164](https://github.com/WerdoxDev/Huginn/commit/1a2c16490efdaa521be99d90798aa1f6f9f64d0a))
+
+
+### Bug Fixes
+
+* **app:** use events from VoiceState instead of from gateway for voicestate ([cf26abd](https://github.com/WerdoxDev/Huginn/commit/cf26abd40b9b4698bcddf81b3782d3b89258e49d))
+
 ## [0.85.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.84.0...app@v0.85.0) (2026-08-02)
 
 

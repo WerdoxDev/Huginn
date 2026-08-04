@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.0...api@v0.43.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* **api:** VoiceState should take control of the gateway voice state ([76a7539](https://github.com/WerdoxDev/Huginn/commit/76a75392a4171029f44252d8df7c86739a53a10a))
+
 ## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.42.4...api@v0.43.0) (2026-08-02)
 
 
