@@ -7,7 +7,7 @@ import { combine } from "zustand/middleware";
 
 import type { ApplicationInfo, AppPresence, CustomApplication } from "@/types";
 
-import { clientStore } from "./clientStore";
+import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
 import { windowStore } from "./windowStore";
 

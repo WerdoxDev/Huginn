@@ -2,7 +2,7 @@ import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
 import { HuginnClient, Voice, type VoiceOptions } from "@huginnjs/api";
 import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginnjs/shared";
-import { clientStore } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
 

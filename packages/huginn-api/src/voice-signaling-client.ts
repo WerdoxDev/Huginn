@@ -642,14 +642,15 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
 
    public async sendRestartIce(transportId: string): Promise<VoiceRestartIceResult> {
       return await analytics.startActiveSpan("apiVoiceSignaling.sendRestartIce", async (span) => {
+         span.setAttributes({
+            ...this.getDefaultAttributes(),
+            "params.transport_id": transportId,
+         });
+
          const nonce = this.client.generateNonce();
          try {
             this.checkStatus();
             const channelId = this.connectionData.channelId;
-            span.setAttributes({
-               ...this.getDefaultAttributes(),
-               "params.transport_id": transportId,
-            });
 
             this.send({
                op: VoiceOperations.DISPATCH,

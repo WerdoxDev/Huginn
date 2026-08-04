@@ -4,7 +4,6 @@ import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import { contextBridge, ipcRenderer } from "electron";
 
 import type { AudioSource, DisplaySource, StorageMap, FileType, KeybindType, LoadFileResult, SaveFileResult, ApplicationInfo, OsInfo } from "@/types";
-console.log("electron preload.ts loaded");
 
 export const electronAPI = {
    // Window

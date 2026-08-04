@@ -23,7 +23,7 @@ const maxHeightPercentage = 60;
 const isMainWindow = window.opener === null;
 
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
-   const { voiceConnection, voiceState, voiceStates, callStates, speakingStates } = useVoiceStore();
+   const { voiceState, voiceStates, callStates, speakingStates } = useVoiceStore();
 
    const client = useClient();
    const { user } = useThisUser();
@@ -78,7 +78,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }, [mediaSources]);
 
    useEffect(() => {
-      if (!voiceConnection.channelId) {
+      if (!voiceState.channelId) {
          setMaximizedSource(undefined);
       }
    }, [voiceState]);
@@ -325,7 +325,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            userId={x.userId}
                            channelId={props.channelId}
                            guildId={null}
-                           isConnected={voiceConnection.channelId === props.channelId}
+                           isConnected={voiceState.channelId === props.channelId}
                            isResizing={isResizing}
                            isGridView={isGridView}
                            isMaximized={!!maximizedSource}
@@ -333,7 +333,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            secondMediaSource={streamVideoSources[x.userId] && streamAudioSources[x.userId]}
                            voicePreference={voicePreferencesLookup[x.userId]}
                            voiceState={x}
-                           onClick={voiceConnection.channelId === props.channelId ? maximizeSource : undefined}
+                           onClick={voiceState.channelId === props.channelId ? maximizeSource : undefined}
                         />
                      ))}
                   {/* Normals user / cameras */}
@@ -360,7 +360,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            isGridView={isGridView}
                            isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
                            isMaximized={!!maximizedSource}
-                           isConnected={voiceConnection.channelId === props.channelId}
+                           isConnected={voiceState.channelId === props.channelId}
                            voiceState={x}
                         />
                      ))}
@@ -377,7 +377,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                            userId={x}
                            channelId={props.channelId}
                            guildId={null}
-                           isConnected={voiceConnection.channelId === props.channelId}
+                           isConnected={voiceState.channelId === props.channelId}
                            isResizing={isResizing}
                         />
                      ))}
@@ -388,7 +388,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             <VoiceControls
                show={showControls || !isGridView}
                isFullscreen={actualIsFullScreen}
-               isInVoice={voiceConnection.channelId === props.channelId}
+               isInVoice={voiceState.channelId === props.channelId}
                channelId={props.channelId}
                mediaSources={mediaSources}
                onToggleFullscreen={toggleFullscreen}

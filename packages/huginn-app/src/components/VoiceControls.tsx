@@ -71,8 +71,7 @@ export default function VoiceControls(props: {
    }
 
    function handleConnect() {
-      VoiceClient.sendMessage("connect_voice", { guildId: null, channelId: props.channelId }).catch((e) => {
-         error("app:general", "Connecting to voice failed:", e);
+      VoiceClient.sendMessage("connect_voice", { guildId: null, channelId: props.channelId }).catch(() => {
          updateModals({
             info: {
                isOpen: true,

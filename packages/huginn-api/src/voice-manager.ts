@@ -69,7 +69,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
       this.voice.signaling.on("reacquire_token", async (d) => {
          try {
-            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, d.channelId, d.guildId);
+            await this.voiceState.resendGatewayVoiceState();
             const token = await this.waitForVoiceToken();
             if (!token) throw new Error("Couldn't get a token for voice");
 
@@ -86,21 +86,17 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       this.gateway.on("status_changed", async (d) => {
          if (d !== "authenticated") return;
 
-         const connectionData = this.voice.signaling.connectionData;
-         if (this.voice.status === "ready" && connectionData) {
-            await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, connectionData.channelId, connectionData.guildId);
+         try {
+            await this.voiceState.resendGatewayVoiceState();
+         } catch (e) {
+            recordSpanError(e);
          }
       });
 
       this.gateway.on("voice_state_update", async (d) => {
-         if (d.userId !== this.client.currentUser?.id || d.channelId !== this.voice.signaling.connectionData?.channelId) return;
-         this.voiceState.confirmGatewayVoiceState({
-            isAudioDeafened: d.isAudioDeafened,
-            isAudioMuted: d.isAudioMuted,
-            isCameraOn: d.isCameraOn,
-            isScreenSharing: d.isScreenSharing,
-            isAudioStreaming: d.isAudioStreaming,
-         });
+         // if not current user, or not in the same channel, ignore
+         if (d.userId !== this.client.currentUser?.id || d.sessionId !== this.gateway.sessionId) return;
+         this.voiceState.confirmGatewayVoiceState(d);
       });
 
       this.gateway.on("voice_server_update", (d) => {
@@ -113,11 +109,11 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
    private listenVoiceStateEvents() {
       this.voiceState.on("update_gateway_voice_state", async (d) => {
          try {
-            // We are not connected to voice so just confirm it to show locally
-            this.voice.signaling.checkStatus();
-            const connectionData = this.voice.signaling.connectionData;
-
-            await this.gateway.updateVoiceState(d.voiceState, connectionData.channelId, connectionData.guildId);
+            if (d.voiceState.channelId) {
+               await this.gateway.updateVoiceState(d.voiceState, d.voiceState.channelId, d.voiceState.guildId);
+            } else if (this.gateway.isAuthenticated) {
+               await this.gateway.sendDefaultVoiceState();
+            }
             d.callback();
          } catch (e) {
             d.errback?.(e);
@@ -192,7 +188,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
                   this.voice.signaling.close();
                }
 
-               await this.gateway.updateVoiceState(this.voiceState.gatewayVoiceState, channelId, guildId);
+               await this.voiceState.updateGatewayVoiceState({ channelId, guildId }, false);
                const voiceToken = token ?? (await this.waitForVoiceToken());
 
                if (!voiceToken) throw new Error("Couldn't get a token for voice");
@@ -222,15 +218,11 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       return await analytics.startActiveSpan("apiVoiceManager.disconnectVoice", async (span): Promise<void> => {
          span.setAttributes(this.getDefaultAttributes());
 
-         try {
-            await this.gateway.sendDefaultVoiceState();
-            this.voice.signaling.close();
-            this.voiceToken = null;
-            this.isConnecting = false;
-         } catch (e) {
-            recordSpanError(e);
-            throw e;
-         }
+         this.voice.signaling.close();
+         this.voiceToken = null;
+         this.isConnecting = false;
+
+         await this.voiceState.updateGatewayVoiceState({ channelId: null, guildId: null });
       });
    }
 

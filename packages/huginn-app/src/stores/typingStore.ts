@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import { clientStore } from "./clientStore";
+import { clientStore } from "./clientStoreState";
 
 const initialStore = () => ({
    typings: [] as Array<GatewayTypingStartData & { timeout: number }>,

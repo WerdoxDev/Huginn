@@ -236,7 +236,6 @@ export type PreviewAppMessage = {
    error?: MessageErrorType;
    attachments?: AppAttachment[];
    flags?: MessageFlags;
-   abortController?: AbortController;
 };
 
 export type ProcessedAppMessage = {

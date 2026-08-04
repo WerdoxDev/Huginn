@@ -32,14 +32,13 @@ export class WebAnalytics extends Analytics {
          ui_host: "https://eu.posthog.com",
          defaults: "2026-01-30",
          capture_exceptions: true,
-         mask_all_element_attributes: true,
+         mask_all_element_attributes: false,
          mask_all_text: false,
          enable_recording_console_log: true,
          session_recording: {
             // Keep replay useful for layout and interaction debugging without
             // sending user-generated text, media, or input attributes.
             maskAllInputs: true,
-            maskTextSelector: "*",
             blockSelector: 'img, picture, video, audio, canvas, input, textarea, select, a[href], [contenteditable="true"]',
 
             // Explicit client-side false values take precedence over remote

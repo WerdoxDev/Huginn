@@ -1,10 +1,8 @@
-import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactNode } from "react";
 
 import { TransportError } from "@huginnjs/api";
 import {
    type APIMessage,
-   type APIPostMessageReferenceJSONBody,
    type APIRelationshipWithoutOwner,
    type APIUserProfile,
    ChannelType,
@@ -12,37 +10,23 @@ import {
    type GatewaySession,
    HuginnAPIError,
    type HuginnError,
-   MessageFlags,
    MessageType,
    type PresenceStatus,
    type PresenceUser,
-   type Snowflake,
    type UserPresence,
    VoiceSignallingError,
-   WorkerID,
    changeUrlBase,
    omit,
-   snowflake,
+   toDataUrl,
 } from "@huginnjs/shared";
-import { clientStore } from "@stores/clientStore";
-import { parseBlob } from "music-metadata-browser";
+import { clientStore } from "@stores/clientStoreState";
+import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 import { Children, isValidElement } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type {
-   AppAttachment,
-   AppDirectChannel,
-   AppMessage,
-   AppPresence,
-   AppRelationship,
-   AppUser,
-   AppUserProfile,
-   AttachmentInput,
-   InputMessage,
-} from "@/types";
+import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
-import { getMessage } from "./query-utils";
 
 export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
 
@@ -196,8 +180,17 @@ export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: 
    online: { text: "Online", color: "bg-positive-300" },
 } as const;
 
+type TransportErrorLike = {
+   name: "TransportError";
+   code?: number;
+};
+
+function isTransportError(e: unknown): e is TransportErrorLike {
+   return e instanceof TransportError || (typeof e === "object" && e !== null && "name" in e && e.name === "TransportError");
+}
+
 export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "audio") {
-   if (e instanceof TransportError) {
+   if (isTransportError(e)) {
       switch (e.code) {
          case VoiceSignallingError.WRONG_STATE:
             return "The voice connection is in the wrong state. Please try again.";
@@ -236,37 +229,6 @@ export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "a
       default:
          return defaultError;
    }
-}
-
-export function createPreviewMessage(
-   queryClient: QueryClient,
-   data: {
-      content: string;
-      channelId: Snowflake;
-      authorId: Snowflake;
-      nonce: Snowflake;
-      flags?: MessageFlags;
-      attachments?: AppAttachment[];
-      messageReference?: APIPostMessageReferenceJSONBody;
-   },
-) {
-   const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
-
-   const previewMessage: AppMessage = {
-      isPreview: true,
-      id: snowflake.generateString(WorkerID.APP),
-      timestamp: new Date().toISOString(),
-      content: data.content,
-      channelId: data.channelId,
-      authorId: data.authorId,
-      nonce: data.nonce,
-      flags: data.flags,
-      attachments: data.attachments,
-      referencedMessage: referencedMessage,
-      abortController: new AbortController(),
-   };
-
-   return previewMessage;
 }
 
 export function getDataURLFromSrc(src: string, circle: boolean = true): Promise<string> {
@@ -347,52 +309,29 @@ export function serializeSlate(nodes: Descendant[], options?: { emojiAsSlug?: bo
    return text;
 }
 
-export function getVideoThumbnail(blob: Blob, seekTo: number = 1) {
-   return new Promise<string>((resolve, reject) => {
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.muted = true;
-      video.playsInline = true;
+export async function getVideoThumbnail(blob: Blob, timestamp: number = 1) {
+   const input = new Input({ source: new BlobSource(blob), formats: ALL_FORMATS });
 
-      const url = URL.createObjectURL(blob);
-      video.src = url;
+   const videoTrack = (await input.getVideoTracks())[0];
+   if (!videoTrack) return undefined;
+   const decodable = await videoTrack?.canDecode();
+   if (!decodable) return undefined;
 
-      video.addEventListener("loadedmetadata", () => {
-         // don't seek past the end of short clips
-         const time = Math.min(seekTo, video.duration || seekTo);
-         video.currentTime = time;
-      });
-
-      video.addEventListener("seeked", () => {
-         const canvas = document.createElement("canvas");
-         canvas.width = video.videoWidth;
-         canvas.height = video.videoHeight;
-
-         const ctx = canvas.getContext("2d");
-         ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-         canvas.toBlob(
-            () => {
-               URL.revokeObjectURL(url);
-               resolve(canvas.toDataURL("image/jpeg", 0.8));
-            },
-            "image/jpeg",
-            0.8,
-         );
-      });
-
-      video.addEventListener("error", (e) => {
-         URL.revokeObjectURL(url);
-         reject(e);
-      });
-   });
+   const sink = new CanvasSink(videoTrack, { width: 320 });
+   const result = await sink.getCanvas(timestamp);
+   const canvas = result?.canvas as HTMLCanvasElement;
+   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
 export async function getAudioCovertArt(blob: Blob) {
-   // const metadata = await parseBlob(blob);
-   // const picture = metadata.common.picture?.[0];
+   const input = new Input({ source: new BlobSource(blob), formats: ALL_FORMATS });
+   const audioTrack = (await input.getAudioTracks())[0];
+   if (!audioTrack) return "";
+   const decodable = await audioTrack?.canDecode();
+   if (!decodable) return "";
+   const metadata = await input.getMetadataTags();
+   const coverImage = metadata.images?.find((x) => x.kind === "coverFront");
+   if (!coverImage) return undefined;
 
-   // console.log(URL.createObjectURL(blob));
-
-   return "";
+   return toDataUrl(coverImage?.data, "image/jpeg");
 }

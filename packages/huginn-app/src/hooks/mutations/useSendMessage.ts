@@ -6,6 +6,7 @@ import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 
 import { MessageErrorType, type PreviewAppMessage } from "@/types";
 
@@ -15,16 +16,20 @@ export function useSendMessage() {
    const queryClient = useQueryClient();
    const currentChannel = useCurrentChannel();
    const { updateMessageUploadProgress } = useChannelStore();
+   const abortControllers = useRef(new Map<PreviewAppMessage["id"], AbortController>());
 
    const mutation = useMutation({
       mutationKey: ["send-message"],
       onMutate: async (data: { previewMessage: PreviewAppMessage }) => {
+         const abortController = new AbortController();
+         abortControllers.current.set(data.previewMessage.id, abortController);
+
          if (!user) return;
 
          const filenames = data.previewMessage.attachments?.map((x) => x.filename);
 
          const onAbort = () => {
-            data.previewMessage.abortController?.abort();
+            abortController.abort();
             deleteAppMessage(queryClient, data.previewMessage.channelId, data.previewMessage.id);
          };
 
@@ -99,7 +104,7 @@ export function useSendMessage() {
                        total: event.total,
                     })
                : undefined,
-            previewMessage.abortController?.signal,
+            abortControllers.current.get(previewMessage.id)?.signal,
          );
 
          return { message };
@@ -113,6 +118,9 @@ export function useSendMessage() {
             targetChannel,
             currentChannel,
          });
+      },
+      onSettled(_result, _error, data) {
+         abortControllers.current.delete(data.previewMessage.id);
       },
       networkMode: "always",
    });

@@ -61,6 +61,17 @@ export default function AttachmentElement(props: {
       );
    }
 
+   function handleDefaultContextMenu(e: MouseEvent<HTMLDivElement>) {
+      e.stopPropagation();
+      open(
+         {
+            message: context.message,
+            url: basedUrl,
+         },
+         e,
+      );
+   }
+
    return (
       <div
          contentEditable={false}
@@ -90,9 +101,16 @@ export default function AttachmentElement(props: {
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
                />
             ) : isAudio ? (
-               <AudioPlayer url={basedUrl} filename={props.filename} />
+               <AudioPlayer
+                  url={basedUrl}
+                  filename={props.filename}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleDefaultContextMenu}
+               />
             ) : (
-               <div className="bg-surface-alt flex w-full max-w-[24rem] items-center gap-x-3 rounded-lg px-3 py-3">
+               <div
+                  className="bg-surface-alt flex w-full max-w-[24rem] items-center gap-x-3 rounded-lg px-3 py-3"
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleDefaultContextMenu}
+               >
                   <IconMingcuteFileFill className="size-10 shrink-0" />
                   <div className="flex min-w-0 flex-1 flex-col justify-center gap-y-0.5 overflow-hidden rounded-lg">
                      <button

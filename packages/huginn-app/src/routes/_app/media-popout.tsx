@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_app/media-popout")({
 function RouteComponent() {
    const { channelId, error, isReady } = useVoicePopoutBootstrap();
    const { mediaSources } = useVoiceSnapshot();
-   const { voiceConnection, voiceStates, speakingStates } = useVoiceStore();
+   const { voiceState: ourVoiceState, voiceStates, speakingStates } = useVoiceStore();
    const { voicePreferences } = useVoicePreferences();
    const containerRef = useRef<HTMLDivElement>(null);
    const [size, setSize] = useState({ width: 0, height: 0 });
@@ -68,8 +68,8 @@ function RouteComponent() {
             gridElementHeight={size.height}
             userId={target.userId}
             channelId={channelId}
-            guildId={voiceConnection.guildId ?? null}
-            isConnected={voiceConnection.channelId === channelId}
+            guildId={ourVoiceState.guildId ?? null}
+            isConnected={ourVoiceState.channelId === channelId}
             isGridView
             isMaximized
             isSpeaking={speakingState?.speaking ?? false}

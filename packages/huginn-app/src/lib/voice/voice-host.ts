@@ -1,7 +1,7 @@
 import type { HuginnClient, VoicePreference, VoiceStreamOptions } from "@huginnjs/api";
 import type { Snowflake } from "@huginnjs/shared";
 
-import { clientStore } from "@stores/clientStore";
+import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { produce } from "immer";
 

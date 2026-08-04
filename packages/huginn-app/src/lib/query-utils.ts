@@ -1,9 +1,9 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 
-import { MessageType, omit, type APIGetUserChannelsResult, type PresenceUser, type Snowflake } from "@huginnjs/shared";
+import { MessageFlags, MessageType, omit, snowflake, WorkerID, type APIPostMessageReferenceJSONBody, type PresenceUser, type Snowflake } from "@huginnjs/shared";
 import { produce } from "immer";
 
-import type { AppDirectChannel, AppMessage, AppUser } from "@/types";
+import type { AppAttachment, AppDirectChannel, AppMessage, AppUser } from "@/types";
 
 import { queryClient as client, persister } from "@/lib/queries";
 
@@ -278,4 +278,34 @@ export function deleteAppMessage(queryClient: QueryClient, channelId: Snowflake,
          draft.pages = draft.pages.map((page) => page.filter((message) => message.id !== messageId));
       }),
    );
+}
+
+export function createPreviewMessage(
+   queryClient: QueryClient,
+   data: {
+      content: string;
+      channelId: Snowflake;
+      authorId: Snowflake;
+      nonce: Snowflake;
+      flags?: MessageFlags;
+      attachments?: AppAttachment[];
+      messageReference?: APIPostMessageReferenceJSONBody;
+   },
+) {
+   const referencedMessage = getMessage(data.channelId, data.messageReference?.messageId, queryClient);
+
+   const previewMessage: AppMessage = {
+      isPreview: true,
+      id: snowflake.generateString(WorkerID.APP),
+      timestamp: new Date().toISOString(),
+      content: data.content,
+      channelId: data.channelId,
+      authorId: data.authorId,
+      nonce: data.nonce,
+      flags: data.flags,
+      attachments: data.attachments,
+      referencedMessage: referencedMessage,
+   };
+
+   return previewMessage;
 }

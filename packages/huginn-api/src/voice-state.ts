@@ -1,18 +1,22 @@
-import { analytics, EventEmitter, type GatewayVoiceStateFlags, type LocalVoiceState, type VoicePreference } from "@huginnjs/shared";
+import { analytics, EventEmitter, omit, type GatewayUpdateVoiceStateData, type GatewayVoiceState, type LocalVoiceState, type VoicePreference } from "@huginnjs/shared";
 
 type Events = {
    update_gateway_voice_state: {
-      voiceState: GatewayVoiceStateFlags;
+      voiceState: GatewayUpdateVoiceStateData;
       callback: () => void;
       errback?: (e: unknown) => void;
    };
-   gateway_voice_state_updated: GatewayVoiceStateFlags;
+   gateway_voice_state_updated: GatewayVoiceState;
    local_voice_state_updated: LocalVoiceState;
    voice_preferences_updated: VoicePreference[];
 };
 
 export class VoiceState extends EventEmitter<Events> {
-   public gatewayVoiceState: GatewayVoiceStateFlags = {
+   public gatewayVoiceState: GatewayVoiceState = {
+      userId: "",
+      guildId: null,
+      channelId: null,
+      sessionId: "",
       isAudioDeafened: false,
       isAudioMuted: false,
       isCameraOn: false,
@@ -23,7 +27,7 @@ export class VoiceState extends EventEmitter<Events> {
    public localVoiceState: LocalVoiceState = { isAudioPaused: false };
    public voicePreferences: VoicePreference[] = [];
 
-   public async updateGatewayVoiceState(update: Partial<GatewayVoiceStateFlags>, optimistic: boolean = true): Promise<void> {
+   public async updateGatewayVoiceState(update: Partial<GatewayUpdateVoiceStateData>, optimistic: boolean = true): Promise<void> {
       return await analytics.startActiveSpan("apiVoiceState.updateGatewayVoiceState", async (span) => {
          const newState = { ...this.gatewayVoiceState, ...update };
 
@@ -48,16 +52,37 @@ export class VoiceState extends EventEmitter<Events> {
 
          await new Promise<void>((res, rej) => {
             this.emit("update_gateway_voice_state", {
-               voiceState: newState,
+               voiceState: omit(newState, ["userId", "sessionId"]) as GatewayUpdateVoiceStateData,
                callback: res,
-               errback: () => (optimistic ? res() : rej()), // When optimistic is true, we don't want to reject the promise if the update fails, since we've already updated the state optimistically
+               errback: (e) => (optimistic ? res() : rej(e)), // When optimistic is true, we don't want to reject the promise if the update fails, since we've already updated the state optimistically
             });
          });
       });
    }
 
-   public confirmGatewayVoiceState(confirmed: GatewayVoiceStateFlags): void {
-      this.gatewayVoiceState = { ...confirmed };
+   public async resendGatewayVoiceState(): Promise<void> {
+      await new Promise<void>((res, rej) => {
+         this.emit("update_gateway_voice_state", {
+            voiceState: this.gatewayVoiceState,
+            callback: res,
+            errback: rej,
+         });
+      });
+   }
+
+   public confirmGatewayVoiceState(confirmed: GatewayVoiceState): void {
+      // A disconnected gateway state uses false for every flag. Keep the locally
+      // selected flags so they can be applied again on the next voice connection.
+      this.gatewayVoiceState = confirmed.channelId
+         ? { ...confirmed }
+         : {
+            ...confirmed,
+            isAudioDeafened: this.gatewayVoiceState.isAudioDeafened,
+            isAudioMuted: this.gatewayVoiceState.isAudioMuted,
+            isCameraOn: this.gatewayVoiceState.isCameraOn,
+            isScreenSharing: this.gatewayVoiceState.isScreenSharing,
+            isAudioStreaming: this.gatewayVoiceState.isAudioStreaming,
+         };
       this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
    }
 
