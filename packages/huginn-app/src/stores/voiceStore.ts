@@ -1,4 +1,4 @@
-import { type GatewayCallState, type GatewayVoiceState, type GatewayVoiceStateFlags, type Snowflake } from "@huginnjs/shared";
+import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { syncZustandStore } from "@lib/sync-zustand";
 import { clientStore } from "@stores/clientStoreState";
@@ -9,13 +9,7 @@ import { combine, devtools } from "zustand/middleware";
 import { storageStore } from "./storageStore";
 
 const initialStore = () => ({
-   voiceConnection: {} as {
-      userId: Snowflake;
-      guildId: Snowflake | null;
-      channelId: Snowflake | null;
-      sessionId: Snowflake;
-   },
-   voiceState: {} as GatewayVoiceStateFlags,
+   voiceState: {} as GatewayVoiceState,
    voiceStates: [] as Array<GatewayVoiceState>,
    callStates: [] as Array<GatewayCallState>,
    speakingStates: [] as Array<{ userId: Snowflake; speaking: boolean }>,
@@ -86,6 +80,7 @@ export async function initVoiceStore() {
    const settings = storageStore.getState().getCachedValue("settings");
    const isDeafened = settings?.isVoiceDeafened ?? false;
    const isMuted = settings?.isVoiceMuted ?? false;
+   store.setState({ voiceState: client.voiceManager.voiceState.gatewayVoiceState });
    store.setState((state) => ({
       voiceState: {
          ...state.voiceState,
@@ -97,6 +92,7 @@ export async function initVoiceStore() {
       isAudioMuted: isDeafened ? true : isMuted,
       isAudioDeafened: isDeafened,
    });
+   store.setState({ voiceState: client.voiceManager.voiceState.gatewayVoiceState });
 
    unlisteners.push(
       client.gateway.listen("ready", async (d) => {
@@ -126,23 +122,6 @@ export async function initVoiceStore() {
    unlisteners.push(
       client.gateway.listen("voice_state_update", (d) => {
          const thisStore = store.getState();
-
-         //TODO: A BETTER WAY IS TO NOT SET USER VC STATUS TI DISCONNECT DIRECTLY AFTER GATEWAY DISCONNECT
-         // if (d.userId === client.currentUser?.id && client.gateway.status !== "authenticated" && d.sessionId === client.gateway.sessionId) {
-         //    return;
-         // }
-
-         // our user's voice state update
-         if (d.userId === client?.currentUser?.id && d.sessionId === client.gateway.sessionId) {
-            store.setState({
-               voiceConnection: {
-                  channelId: d.channelId,
-                  guildId: d.guildId,
-                  sessionId: d.sessionId,
-                  userId: d.userId,
-               },
-            });
-         }
 
          // CAPTURE THE OLD STATE BEFORE UPDATING
          const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
@@ -192,7 +171,6 @@ export const voiceStore = store;
 syncZustandStore(store, {
    name: "voiceStore",
    partialize: (state) => ({
-      voiceConnection: state.voiceConnection,
       voiceState: state.voiceState,
       voiceStates: state.voiceStates,
       callStates: state.callStates,

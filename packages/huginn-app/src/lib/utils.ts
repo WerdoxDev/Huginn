@@ -17,24 +17,16 @@ import {
    VoiceSignallingError,
    changeUrlBase,
    omit,
-   toDataUrl
+   toDataUrl,
 } from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStoreState";
+import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 import { Children, isValidElement } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type {
-   AppDirectChannel,
-   AppMessage,
-   AppPresence,
-   AppRelationship,
-   AppUser,
-   AppUserProfile,
-   InputMessage
-} from "@/types";
+import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
-import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 
 export const requiredFieldError: InputMessage = { status: "error", text: "Required" } as const;
 
@@ -113,10 +105,10 @@ export function convertToAppDirectChannel(channel: DirectChannel): AppDirectChan
       channel.type === ChannelType.DM
          ? (channel.recipients[0].displayName ?? channel.recipients[0].username)
          : channel.type === ChannelType.GROUP_DM
-            ? channel.name === null
-               ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
-               : channel.name
-            : "unknown";
+           ? channel.name === null
+              ? channel.recipients.map((x) => x.displayName ?? x.username).join(", ")
+              : channel.name
+           : "unknown";
 
    const { recipients: _, ...rest } = channel;
    return {
@@ -137,8 +129,8 @@ export function convertToAppMessage(message: APIMessage, source: "websocket" | "
       ...(message.type === MessageType.REPLY ? omit(message, ["referencedMessage", "author", "mentions"]) : rest),
       ...(message.type === MessageType.REPLY
          ? {
-            referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
-         }
+              referencedMessage: message.referencedMessage ? convertToAppMessage(message.referencedMessage, source) : message.referencedMessage,
+           }
          : {}),
       authorId: message.author.id,
       mentions: message.mentions.map((x) => x.id),
@@ -188,8 +180,17 @@ export const PRESENCE_STATUS_MAP: Record<PresenceStatus, { text: string; color: 
    online: { text: "Online", color: "bg-positive-300" },
 } as const;
 
+type TransportErrorLike = {
+   name: "TransportError";
+   code?: number;
+};
+
+function isTransportError(e: unknown): e is TransportErrorLike {
+   return e instanceof TransportError || (typeof e === "object" && e !== null && "name" in e && e.name === "TransportError");
+}
+
 export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "audio") {
-   if (e instanceof TransportError) {
+   if (isTransportError(e)) {
       switch (e.code) {
          case VoiceSignallingError.WRONG_STATE:
             return "The voice connection is in the wrong state. Please try again.";
@@ -206,22 +207,22 @@ export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "a
          return type === "camera"
             ? "Huginn doesn't have access to your camera. Please allow it and try again."
             : type === "audio"
-               ? "Huginn doesn't have access to your audio. Please allow it and try again."
-               : "Huginn doesn't have access to your screen. Please allow it and try again.";
+              ? "Huginn doesn't have access to your audio. Please allow it and try again."
+              : "Huginn doesn't have access to your screen. Please allow it and try again.";
       case "NotFoundError":
          return type === "camera" ? "No camera was found" : type === "audio" ? "No audio was found" : "No screens or windows were found";
       case "AbortError":
          return type === "camera"
             ? "Camera access was canceled before it started."
             : type === "audio"
-               ? "Audio access was canceled before it started."
-               : "Screen sharing was canceled before it started.";
+              ? "Audio access was canceled before it started."
+              : "Screen sharing was canceled before it started.";
       case "NotReadableError":
          return type === "camera"
             ? "Your system prevented access to your camera. Try restarting your browser/client."
             : type === "audio"
-               ? "Your system prevented audio access. Try restarting your browser/client."
-               : "Your system prevented screen sharing. Try restarting your browser/client.";
+              ? "Your system prevented audio access. Try restarting your browser/client."
+              : "Your system prevented screen sharing. Try restarting your browser/client.";
       case "SecurityError":
          return "Your browser blocked this action for security reasons. Try restarting your browser/client.";
 
@@ -318,7 +319,7 @@ export async function getVideoThumbnail(blob: Blob, timestamp: number = 1) {
 
    const sink = new CanvasSink(videoTrack, { width: 320 });
    const result = await sink.getCanvas(timestamp);
-   const canvas = result?.canvas as HTMLCanvasElement;;
+   const canvas = result?.canvas as HTMLCanvasElement;
    return canvas.toDataURL("image/jpeg", 0.8);
 }
 
@@ -329,7 +330,7 @@ export async function getAudioCovertArt(blob: Blob) {
    const decodable = await audioTrack?.canDecode();
    if (!decodable) return "";
    const metadata = await input.getMetadataTags();
-   const coverImage = metadata.images?.find(x => x.kind === "coverFront");
+   const coverImage = metadata.images?.find((x) => x.kind === "coverFront");
    if (!coverImage) return undefined;
 
    return toDataUrl(coverImage?.data, "image/jpeg");

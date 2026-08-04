@@ -29,12 +29,12 @@ const statuses: Record<VoiceStatus, { text: string; color?: string }> = {
 };
 
 export default function VoiceStatus() {
-   const { voiceConnection, voiceState } = useVoiceStore();
+   const { voiceState } = useVoiceStore();
    const { voiceStatus } = useClientStore();
    const { changeStream, updateStream, openCamera, closeStream, openAudioStream, openScreenShare, closeCamera } = useVoiceUtils();
    const client = useClient();
    const { user } = useThisUser();
-   const channel = useChannel(voiceConnection.channelId ?? undefined);
+   const channel = useChannel(voiceState.channelId ?? undefined);
    const [rtt, setRtt] = useState(0);
    const posthog = usePostHog();
 
@@ -86,7 +86,7 @@ export default function VoiceStatus() {
       await client?.voice.debugger.openDebugger();
    }
 
-   if (!user || !voiceConnection.channelId) {
+   if (!user || !voiceState.channelId) {
       return;
    }
 
@@ -116,7 +116,7 @@ export default function VoiceStatus() {
                   <Link
                      preload="intent"
                      to="/channels/@me/$channelId"
-                     params={{ channelId: voiceConnection.channelId }}
+                     params={{ channelId: voiceState.channelId }}
                      className="text-text/70 ml-7 text-xs hover:underline"
                   >
                      {channel?.name}

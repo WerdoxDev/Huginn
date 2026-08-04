@@ -1,9 +1,11 @@
+import { TransportError } from "@huginnjs/api";
 import {
    ActivityType,
    ChannelType,
    MessageReferenceType,
    MessageType,
    RelationshipType,
+   VoiceSignallingError,
    type APIDMChannel,
    type APIMessage,
    type APIRelationshipWithoutOwner,
@@ -23,9 +25,22 @@ import {
    convertToAppRelationship,
    convertToAppUser,
    convertToAppUserProfile,
+   getMediaErrorMessage,
 } from "./utils";
 
 describe("utils", () => {
+   test("should recognize transport errors from the current and another window", () => {
+      const localError = new TransportError("Wrong voice state", VoiceSignallingError.WRONG_STATE);
+      const crossWindowError = {
+         name: "TransportError",
+         message: "Wrong voice state",
+         code: VoiceSignallingError.WRONG_STATE,
+      };
+
+      expect(getMediaErrorMessage(localError, "camera")).toBe("The voice connection is in the wrong state. Please try again.");
+      expect(getMediaErrorMessage(crossWindowError, "camera")).toBe("The voice connection is in the wrong state. Please try again.");
+   });
+
    test("should convert api message to app message", () => {
       const apiMessage1: APIMessage = createTestMessage({
          attachments: 1,
