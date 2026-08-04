@@ -21,6 +21,7 @@ import {
    type GatewayUpdatePresenceData,
    type GatewayUpdateVoiceStateData,
    merge,
+   pick,
    recordSpanError,
    type Snowflake,
    WorkerID,
@@ -296,12 +297,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const userId = session?.user?.id;
             if (!session || !userId) return;
 
+            const filteredData = pick(data, ["channelId", "guildId", "isAudioDeafened", "isAudioMuted", "isCameraOn", "isScreenSharing", "isAudioStreaming"]);
+
             const previousState = this.voiceManager.getVoiceState(userId);
-            this.voiceManager.updateVoiceState({ userId, ...data, sessionId: session.sessionId });
+            this.voiceManager.updateVoiceState({ userId, ...filteredData, sessionId: session.sessionId });
 
             const tokenExpired = (this.voiceTokenExpiresAt.get(session.sessionId) ?? 0) <= Date.now();
             const needsToken =
-               data.channelId && (previousState?.channelId !== data.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
+               filteredData.channelId && (previousState?.channelId !== filteredData.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
 
             // If the new place is a valid channel and is not the same as before
             if (needsToken) {
