@@ -182,15 +182,19 @@ export class Voice extends EventEmitter<Events> {
                "params.transport_id": d.transportId,
             });
 
-            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
-               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: true, callback: res }),
-            );
+            const stateResult = await this.updateVoiceState(d.kind, true);
             if (stateResult?.error) {
                d.callback({ error: stateResult.error });
                return;
             }
 
             const result = await this.signaling.sendCreateProducer(d.kind, d.transportId, d.rtpParameters);
+
+            if ("error" in result) {
+               const rollbackResult = await this.updateVoiceState(d.kind, false);
+               if (rollbackResult?.error) span.setAttribute("voice_state_rollback_failed", true);
+            }
+
             d.callback(result);
          });
       });
@@ -202,9 +206,7 @@ export class Voice extends EventEmitter<Events> {
                "params.producer_id": d.id,
             });
 
-            const stateResult = await new Promise<UpdateVoiceStateResult>((res) =>
-               this.emit("update_voice_state", { mediaKind: d.kind, isProducing: false, callback: res }),
-            );
+            const stateResult = await this.updateVoiceState(d.kind, false);
             if (stateResult?.error) {
                d.callback({ error: stateResult.error });
                return;
@@ -273,6 +275,16 @@ export class Voice extends EventEmitter<Events> {
 
             const result = await this.signaling.sendRestartIce(d.transportId);
             d.callback(result);
+         });
+      });
+   }
+
+   private updateVoiceState(mediaKind: HMediaKind, isProducing: boolean): Promise<UpdateVoiceStateResult> {
+      return new Promise((resolve) => {
+         this.emit("update_voice_state", {
+            mediaKind,
+            isProducing,
+            callback: resolve,
          });
       });
    }
