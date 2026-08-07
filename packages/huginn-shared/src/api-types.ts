@@ -405,12 +405,22 @@ export type VoicePreference = {
    isStreamMuted: boolean;
 };
 
+export type ChannelBackground = {
+   channelId: Snowflake;
+   color?: string;
+   image?: string;
+   imageDisplay?: "cover" | "contain";
+   blur?: number;
+   dimming?: number;
+};
+
 export type UserSettings = {
    theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
    favoriteGifs?: FavoriteGif[];
    voicePreferences?: VoicePreference[];
+   channelBackgrounds: ChannelBackground[];
 };
 
 export enum ActivityType {
