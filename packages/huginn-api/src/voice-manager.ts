@@ -19,6 +19,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
    private voiceToken: VoiceToken | null = null;
 
    private isConnecting = false;
+   private hasWorthyVoiceState = false;
 
    public constructor(client: HuginnClient, gateway: Gateway, voice: V) {
       super();
@@ -84,7 +85,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
    private listenGatewayEvents() {
       this.gateway.on("status_changed", async (d) => {
-         if (d !== "authenticated") return;
+         if (d !== "authenticated" || !this.hasWorthyVoiceState) return;
 
          try {
             await this.voiceState.resendGatewayVoiceState();
@@ -96,6 +97,8 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       this.gateway.on("voice_state_update", async (d) => {
          // if not current user, or not in the same channel, ignore
          if (d.userId !== this.client.currentUser?.id || d.sessionId !== this.gateway.sessionId) return;
+         if (!d.channelId) this.hasWorthyVoiceState = false;
+
          this.voiceState.confirmGatewayVoiceState(d);
       });
 
@@ -110,8 +113,9 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       this.voiceState.on("update_gateway_voice_state", async (d) => {
          try {
             if (d.voiceState.channelId) {
+               this.hasWorthyVoiceState = true;
                await this.gateway.updateVoiceState(d.voiceState, d.voiceState.channelId, d.voiceState.guildId);
-            } else if (this.gateway.isAuthenticated) {
+            } else if (this.gateway.isAuthenticated && this.hasWorthyVoiceState) {
                await this.gateway.sendDefaultVoiceState();
             }
             d.callback();

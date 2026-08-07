@@ -27,6 +27,10 @@ export class CDN {
       return this.makeURL(`/emoji/${id}`, { format: "svg" });
    }
 
+   public channelBackground(channelId: Snowflake, userId: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
+      return this.dynamicMakeURL(`/channel-backgrounds/${channelId}/${userId}/${hash}`, hash, options);
+   }
+
    /**
     * Constructs the URL for the resource, checking whether or not `hash` starts with `a_` if `dynamic` is set to `true`.
     *
