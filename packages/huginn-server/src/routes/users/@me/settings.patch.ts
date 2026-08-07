@@ -1,8 +1,10 @@
 import { invalidBody, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
+import { CDNRoutes, getFileHash, toArrayBuffer } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";
+import { cdnUpload } from "#utils/server-request";
 
 const schema = t.Object({
    theme: t.Optional(t.Union([t.Literal("plum"), t.Literal("cerulean"), t.Literal("pine-green"), t.Literal("coffee"), t.Literal("violet"), t.Literal("rose")])),
@@ -14,6 +16,18 @@ const schema = t.Object({
          t.Object({ userId: t.String(), microphoneVolume: t.Number(), isMicrophoneMuted: t.Boolean(), streamVolume: t.Number(), isStreamMuted: t.Boolean() }),
       ),
    ),
+   channelBackgrounds: t.Optional(
+      t.Array(
+         t.Object({
+            channelId: t.String(),
+            color: t.Optional(t.String()),
+            image: t.Optional(t.String()),
+            imageDisplay: t.Optional(t.Union([t.Literal("cover"), t.Literal("contain")])),
+            blur: t.Optional(t.Number()),
+            dimming: t.Optional(t.Number()),
+         }),
+      ),
+   ),
 });
 
 export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
@@ -23,7 +37,28 @@ export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
          return invalidBody(status);
       }
 
-      const updatedSettings = await prisma.settings.updateSettings(tokenPayload.id, body);
+      const finalSettings = { ...body };
+
+      if (finalSettings.channelBackgrounds) {
+         for (const background of finalSettings.channelBackgrounds) {
+            if (!background.color && !background.image) return invalidBody(status);
+
+            if (background.image && background.image.startsWith("data:")) {
+               let backgroundHash: string | undefined;
+               const data = toArrayBuffer(background.image);
+               backgroundHash = getFileHash(data);
+               backgroundHash = (
+                  await cdnUpload<string>(CDNRoutes.uploadChannelBackground(background.channelId, tokenPayload.id), {
+                     files: [{ data: data, name: backgroundHash }],
+                  })
+               ).split(".")[0];
+
+               background.image = backgroundHash;
+            }
+         }
+      }
+
+      const updatedSettings = await prisma.settings.updateSettings(tokenPayload.id, finalSettings);
 
       dispatchToTopic(tokenPayload.id, "settings_update", updatedSettings);
 
