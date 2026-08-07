@@ -12,7 +12,7 @@ import { usePopover } from "@stores/popoverStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import moment from "moment";
-import { useContext, useEffect, useMemo, useState, type RefObject } from "react";
+import { useContext, useMemo, useState, type RefObject } from "react";
 
 import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types";
 
@@ -83,15 +83,15 @@ export default function DefaultMessage() {
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
          data-context={hasContext === true ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors duration-150",
+            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors",
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing
                      ? "bg-positive-900/30"
                      : "bg-caution-900/30"
                   : isMentioned
-                    ? "bg-primary-900/30 hover:bg-primary-900/50 active:bg-primary-900/50 data-context:bg-primary-900/50"
-                    : "hover:bg-surface-alt active:bg-surface-alt data-context:bg-surface-alt"),
+                    ? "bg-primary-900/50 hover:bg-primary-900/70 active:bg-primary-900/70 data-context:bg-primary-900/70"
+                    : "hover:bg-surface-alt/70 active:bg-surface-alt/70 data-context:bg-surface-alt/70"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
@@ -157,7 +157,9 @@ export default function DefaultMessage() {
                </div>
             )}
          </div>
-         {!context.message.isPreview && <MessageReactions message={context.message} messageWidth={widths.width} ref={reactionsRef} />}
+         {!context.message.isPreview && (
+            <MessageReactions message={context.message} messageWidth={widths.width} ref={reactionsRef} disabled={context.options?.disableReactions} />
+         )}
       </div>
    );
 }

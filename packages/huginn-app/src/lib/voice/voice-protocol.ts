@@ -24,6 +24,10 @@ type VoiceProtocol = {
       data: undefined;
       result: VoiceHostSnapshot;
    };
+   get_current_round_trip_time: {
+      data: undefined;
+      result: number | undefined;
+   };
    toggle_mute: {
       data: undefined;
       result: undefined;
@@ -106,22 +110,22 @@ export type VoiceRequest = {
 
 export type VoiceResult = {
    [K in keyof VoiceProtocol]:
-      | {
-           kind: "result";
-           hostId: string;
-           requestId: string;
-           type: K;
-           result: VoiceProtocol[K]["result"];
-           error?: never;
-        }
-      | {
-           kind: "result";
-           hostId: string;
-           requestId: string;
-           type: K;
-           result?: never;
-           error: string;
-        };
+   | {
+      kind: "result";
+      hostId: string;
+      requestId: string;
+      type: K;
+      result: VoiceProtocol[K]["result"];
+      error?: never;
+   }
+   | {
+      kind: "result";
+      hostId: string;
+      requestId: string;
+      type: K;
+      result?: never;
+      error: string;
+   };
 }[keyof VoiceProtocol];
 
 export type VoiceEvents = {

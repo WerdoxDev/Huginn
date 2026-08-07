@@ -35,6 +35,9 @@ export default function ChannelsContextMenu() {
          <ContextMenu.Item label={isPinned(data.id) ? "Unpin" : "Pin"} onClick={() => togglePin(data.id)}>
             <IconMingcutePinFill />
          </ContextMenu.Item>
+         <ContextMenu.Item label="Change Background" onClick={() => updateModals({ changeBackground: { isOpen: true, channelId: data.id } })}>
+            <IconMingcutePaintFill />
+         </ContextMenu.Item>
          <ContextMenu.Divider />
          <ContextMenu.Item label={data.type === ChannelType.DM ? "Close DM" : "Leave Group"} onClick={tryMutate} color="negative" />
          {data.type === ChannelType.GROUP_DM && (

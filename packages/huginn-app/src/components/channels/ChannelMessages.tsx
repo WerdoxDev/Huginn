@@ -1,6 +1,7 @@
 import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
+import { useChannelBackgrounds } from "@hooks/useChannelBackgrounds";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
@@ -40,6 +41,8 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    const queryClient = useQueryClient();
    const isMobile = useIsMobile();
    const { user } = useThisUser();
+   const { background } = useChannelBackgrounds(props.channel.id);
+   const backgroundUrl = background?.image && user?.id ? client?.cdn.channelBackground(props.channel.id, user?.id, background.image) : undefined;
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
@@ -239,8 +242,26 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    }, [props.channel.id]);
 
    return (
-      <div className="relative h-full overflow-y-hidden">
-         <div className="h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
+      <div className="relative h-full overflow-x-hidden overflow-y-hidden" style={{ backgroundColor: background?.color }}>
+         {background?.image && (
+            <div
+               className="pointer-events-none absolute bg-center bg-no-repeat"
+               style={{
+                  backgroundImage: `url(${backgroundUrl})`,
+                  backgroundSize: background.imageDisplay ?? "cover",
+                  filter: background.blur ? `blur(${background.blur}px)` : undefined,
+                  inset: background.blur ? -background.blur * 2 : 0,
+               }}
+            />
+         )}
+         {background?.image && (
+            <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: background.dimming ? background.dimming / 100 : 0 }} />
+         )}
+         <div
+            className="relative h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]"
+            ref={scrollRef}
+            onScroll={onScroll}
+         >
             <div className="flex min-h-full flex-col justify-end">
                {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
                <ol className="min-h-0 pr-0 pb-7" ref={listRef}>

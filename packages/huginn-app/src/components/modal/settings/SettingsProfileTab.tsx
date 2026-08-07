@@ -367,7 +367,6 @@ export default function SettingsProfileTab() {
                </div>
             </div>
 
-            {/* ── Account ── */}
             <div className="bg-surface-alt rounded-lg p-4">
                <div className="flex flex-col">
                   <div className="flex w-full items-center justify-between gap-x-2">
@@ -440,19 +439,21 @@ function ColorSelector(props: {
    disabledReason?: string;
 }) {
    return (
-      <div className={clsx("flex w-full items-start gap-2", props.disabled && "opacity-50")}>
-         <div className="flex min-w-14 items-center gap-x-1 pt-1.5">
-            <HuginnLabel className="text-tiny mb-0!">{props.label}</HuginnLabel>
+      <div className="flex w-full items-start gap-2">
+         <div className="flex items-center gap-x-1 pt-2">
+            <HuginnLabel className={clsx("text-tiny mb-0!", props.disabled && "opacity-50!")}>
+               <span className="box-exact">{props.label}</span>
+            </HuginnLabel>
             {props.disabled && (
                <Tooltip>
-                  <Tooltip.Trigger>
+                  <Tooltip.Trigger className="flex size-3.5 items-center justify-center">
                      <IconMingcuteInformationFill className="text-caution-100 size-3.5" />
                   </Tooltip.Trigger>
                   <Tooltip.Content>{props.disabledReason}</Tooltip.Content>
                </Tooltip>
             )}
          </div>
-         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+         <div className={clsx("ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2", props.disabled && "opacity-50")}>
             <div className="flex flex-wrap justify-end gap-2">
                {COLOR_PRESETS.map((color) => {
                   const isSelected = color.toLowerCase() === props.color?.toLowerCase();
@@ -462,7 +463,7 @@ function ColorSelector(props: {
                         key={color}
                         type="button"
                         className={clsx(
-                           "size-5 shrink-0 cursor-pointer rounded-full transition-transform hover:scale-110",
+                           "size-5 shrink-0 rounded-full transition-transform enabled:cursor-pointer enabled:hover:scale-110",
                            isSelected && "ring-1 ring-white",
                         )}
                         style={{ backgroundColor: color }}
@@ -474,7 +475,13 @@ function ColorSelector(props: {
                   );
                })}
             </div>
-            <ColorPicker color={props.color} label={props.label} onChange={props.onChange} disabled={props.disabled} />
+            <ColorPicker
+               color={props.color}
+               label={props.label}
+               onChange={props.onChange}
+               disabled={props.disabled}
+               className={clsx(props.color && !props.disabled && !COLOR_PRESETS.includes(props.color) && "ring-1 ring-white")}
+            />
          </div>
       </div>
    );

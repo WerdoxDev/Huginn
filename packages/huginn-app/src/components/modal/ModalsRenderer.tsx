@@ -4,6 +4,7 @@ import { lazy } from "react";
 
 import AudioStreamModal from "./AudioStreamModal";
 import BaseModal from "./BaseModal";
+import ChangeBackgroundModal from "./ChangeBackgroundModal";
 
 const CreateDMModal = lazy(() => import("./CreateDMModal"));
 const SettingsModal = lazy(() => import("./SettingsModal"));
@@ -42,6 +43,7 @@ export default function ModalsRenderer() {
       verifyEmail,
       changePassword,
       userProfile,
+      changeBackground,
    } = useModals();
 
    return (
@@ -51,7 +53,6 @@ export default function ModalsRenderer() {
             modal={settings}
             onClose={() => (settings.isClosable || settings.isClosable === undefined) && updateModals({ settings: { isOpen: false } })}
          />
-         <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
             renderChildren={<MagnifiedImageModal />}
             modal={magnifiedMedia}
@@ -69,6 +70,11 @@ export default function ModalsRenderer() {
          />
          {user && (
             <>
+               <BaseModal
+                  renderChildren={<ChangeBackgroundModal />}
+                  modal={changeBackground}
+                  onClose={() => updateModals({ changeBackground: { isOpen: false } })}
+               />
                <BaseModal renderChildren={<CreateDMModal />} onClose={() => updateModals({ createDM: { isOpen: false } })} modal={createDM} />
                <BaseModal renderChildren={<EditGroupModal />} modal={editGroup} onClose={() => updateModals({ editGroup: { isOpen: false } })} />
                <BaseModal
@@ -103,6 +109,7 @@ export default function ModalsRenderer() {
                />
             </>
          )}
+         <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
             modal={info}
             onClose={() =>

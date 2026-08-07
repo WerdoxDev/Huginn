@@ -3,6 +3,7 @@ import type { Snowflake, Unpacked } from "@huginnjs/shared";
 import LoadingIcon from "@components/LoadingIcon";
 import VoiceElement from "@components/voice/VoiceElement";
 import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
+import VoicePopoutStatus from "@components/voice/VoicePopoutStatus";
 import VoiceControls from "@components/VoiceControls";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
@@ -287,6 +288,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 h-3 cursor-ns-resize" />
 
          <VoicePopoutIndicator />
+         {isChildWindow() && <VoicePopoutStatus />}
 
          <div
             className={clsx(

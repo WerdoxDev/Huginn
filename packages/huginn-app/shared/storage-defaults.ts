@@ -46,4 +46,5 @@ export const storageDefaults: StorageMap = {
    "known-applications": { lastUpdated: "", applications: [] },
    "custom-applications": [],
    "pinned-channels": [],
+   "chat-backgrounds": {},
 };
