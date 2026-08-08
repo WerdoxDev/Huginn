@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.48.1...server@v0.49.0) (2026-08-08)
+
+
+### Features
+
+* **server:** add chat backgrounds to settings ([e753630](https://github.com/WerdoxDev/Huginn/commit/e7536304b3a6676d6280e1da29511a3dfa9c7c95))
+
 ## [0.48.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.48.0...server@v0.48.1) (2026-08-04)
 
 

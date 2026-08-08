@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.42.0...shared@v0.43.0) (2026-08-08)
+
+
+### Features
+
+* **shared:** chat background types ([f0baf20](https://github.com/WerdoxDev/Huginn/commit/f0baf20ed10dc5e16c848666c27f27c0ff425a0f))
+
 ## [0.42.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.41.0...shared@v0.42.0) (2026-08-02)
 
 

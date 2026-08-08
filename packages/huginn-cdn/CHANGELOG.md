@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.21.0...cdn@v0.22.0) (2026-08-08)
+
+
+### Features
+
+* **cdn:** chat background routes ([1712210](https://github.com/WerdoxDev/Huginn/commit/1712210999d0ffaeaed705dc967270d2ccc15636))
+
 ## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.20.2...cdn@v0.21.0) (2026-08-02)
 
 

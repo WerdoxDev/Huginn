@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.87.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.86.0...app@v0.87.0) (2026-08-08)
+
+
+### Features
+
+* **app:** one shot implementation of chat backgrounds ([499b0dd](https://github.com/WerdoxDev/Huginn/commit/499b0dd2fff00f5baf278e4157aa1d510287b18f))
+
 ## [0.86.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.85.0...app@v0.86.0) (2026-08-04)
 
 
