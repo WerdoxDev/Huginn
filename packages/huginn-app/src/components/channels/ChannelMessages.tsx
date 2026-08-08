@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
+import ChannelBackground from "./ChannelBackground";
 import GhostMessages from "./GhostMessages";
 
 const ACTION_MESSAGE_TYPES: MessageType[] = [
@@ -41,8 +42,6 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    const queryClient = useQueryClient();
    const isMobile = useIsMobile();
    const { user } = useThisUser();
-   const { background } = useChannelBackgrounds(props.channel.id);
-   const backgroundUrl = background?.image && user?.id ? client?.cdn.channelBackground(props.channel.id, user?.id, background.image) : undefined;
 
    const { data, fetchNextPage, fetchPreviousPage, isFetchingPreviousPage, isFetchingNextPage, hasNextPage, hasPreviousPage } =
       useSuspenseInfiniteQuery(getMessagesOptions(queryClient, client!, props.channel.id));
@@ -242,21 +241,8 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    }, [props.channel.id]);
 
    return (
-      <div className="relative h-full overflow-x-hidden overflow-y-hidden" style={{ backgroundColor: background?.color }}>
-         {background?.image && (
-            <div
-               className="pointer-events-none absolute bg-center bg-no-repeat"
-               style={{
-                  backgroundImage: `url(${backgroundUrl})`,
-                  backgroundSize: background.imageDisplay ?? "cover",
-                  filter: background.blur ? `blur(${background.blur}px)` : undefined,
-                  inset: background.blur ? -background.blur * 2 : 0,
-               }}
-            />
-         )}
-         {background?.image && (
-            <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: background.dimming ? background.dimming / 100 : 0 }} />
-         )}
+      <div className="relative h-full overflow-x-hidden overflow-y-hidden">
+         <ChannelBackground channelId={props.channel.id} />
          <div
             className="relative h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]"
             ref={scrollRef}

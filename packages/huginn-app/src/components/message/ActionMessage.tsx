@@ -155,7 +155,7 @@ export default function ActionMessage() {
             ) : (
                type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> left the group</span>
             )}
-            <span className="text-text/70 ml-2 text-xs whitespace-nowrap">{formattedFullTime}</span>
+            <span className="text-text/50 ml-2 text-xs whitespace-nowrap">{formattedFullTime}</span>
          </div>
       </div>
    );
