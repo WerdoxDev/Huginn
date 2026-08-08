@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.1...api@v0.43.2) (2026-08-08)
+
+
+### Bug Fixes
+
+* **api:** small fixes to how voice state is sent after authentication ([4ca56ff](https://github.com/WerdoxDev/Huginn/commit/4ca56ff5d442138e0740d3e64bbd6c8e41d496e7))
+
 ## [0.43.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.0...api@v0.43.1) (2026-08-04)
 
 
