@@ -1,6 +1,7 @@
 import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
+import { useChannelBackgrounds } from "@hooks/useChannelBackgrounds";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
@@ -17,6 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
+import ChannelBackground from "./ChannelBackground";
 import GhostMessages from "./GhostMessages";
 
 const ACTION_MESSAGE_TYPES: MessageType[] = [
@@ -239,8 +241,13 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    }, [props.channel.id]);
 
    return (
-      <div className="relative h-full overflow-y-hidden">
-         <div className="h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]" ref={scrollRef} onScroll={onScroll}>
+      <div className="relative h-full overflow-x-hidden overflow-y-hidden">
+         <ChannelBackground channelId={props.channel.id} />
+         <div
+            className="relative h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]"
+            ref={scrollRef}
+            onScroll={onScroll}
+         >
             <div className="flex min-h-full flex-col justify-end">
                {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
                <ol className="min-h-0 pr-0 pb-7" ref={listRef}>

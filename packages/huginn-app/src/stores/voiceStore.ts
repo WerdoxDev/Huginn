@@ -40,7 +40,11 @@ const store = createStore(
                produce((draft: StoreType) => {
                   const existingIndex = draft.callStates.findIndex((x) => x.channelId === channelId);
                   if (existingIndex !== -1) {
-                     draft.callStates[existingIndex] = { channelId, messageId, ringing };
+                     draft.callStates[existingIndex] = {
+                        channelId,
+                        messageId,
+                        ringing,
+                     };
                   } else {
                      draft.callStates.push({ channelId, messageId, ringing });
                   }
@@ -80,7 +84,9 @@ export async function initVoiceStore() {
    const settings = storageStore.getState().getCachedValue("settings");
    const isDeafened = settings?.isVoiceDeafened ?? false;
    const isMuted = settings?.isVoiceMuted ?? false;
-   store.setState({ voiceState: client.voiceManager.voiceState.gatewayVoiceState });
+   store.setState({
+      voiceState: client.voiceManager.voiceState.gatewayVoiceState,
+   });
    store.setState((state) => ({
       voiceState: {
          ...state.voiceState,
@@ -92,7 +98,9 @@ export async function initVoiceStore() {
       isAudioMuted: isDeafened ? true : isMuted,
       isAudioDeafened: isDeafened,
    });
-   store.setState({ voiceState: client.voiceManager.voiceState.gatewayVoiceState });
+   store.setState({
+      voiceState: client.voiceManager.voiceState.gatewayVoiceState,
+   });
 
    unlisteners.push(
       client.gateway.listen("ready", async (d) => {
@@ -122,28 +130,30 @@ export async function initVoiceStore() {
    unlisteners.push(
       client.gateway.listen("voice_state_update", (d) => {
          const thisStore = store.getState();
-
-         // CAPTURE THE OLD STATE BEFORE UPDATING
          const lastState = thisStore.voiceStates.find((x) => x.userId === d.userId);
+         const currentUserId = client.currentUser?.id;
+         const isCurrentUser = d.userId === currentUserId;
+         const previousOurChannelId = thisStore.voiceStates.find((x) => x.userId === currentUserId)?.channelId;
 
-         // NOW UPDATE THE STORE
          if (d.channelId) {
             thisStore.updateVoiceState(d);
          } else {
             thisStore.removeVoiceState(d.userId);
          }
 
-         // GET THE NEW STATE AFTER UPDATING
          const currentStore = voiceStore.getState();
-         const ourChannelId = currentStore.voiceStates.find((x) => x.userId === client.currentUser?.id)?.channelId;
          const currentState = currentStore.voiceStates.find((x) => x.userId === d.userId);
+         const currentOurChannelId = currentStore.voiceStates.find((x) => x.userId === currentUserId)?.channelId;
+         const joinedChannel = !lastState?.channelId && !!currentState?.channelId;
+         const leftChannel = !!lastState?.channelId && !currentState?.channelId;
+         const changedChannel = lastState?.channelId !== currentState?.channelId;
 
-         // User just joined our voice channel
-         if (currentState?.channelId && lastState?.channelId !== currentState.channelId && currentState.channelId === ourChannelId) {
+         const joinedOurChannel = !isCurrentUser && changedChannel && !!currentOurChannelId && currentState?.channelId === currentOurChannelId;
+         const leftOurChannel = !isCurrentUser && changedChannel && !!previousOurChannelId && lastState?.channelId === previousOurChannelId;
+
+         if ((isCurrentUser && joinedChannel) || joinedOurChannel) {
             playAudio("voice-enter");
-         }
-         // User left our voice channel
-         else if (lastState?.channelId && lastState.channelId !== currentState?.channelId) {
+         } else if ((isCurrentUser && leftChannel) || leftOurChannel) {
             playAudio("voice-leave");
          }
       }),

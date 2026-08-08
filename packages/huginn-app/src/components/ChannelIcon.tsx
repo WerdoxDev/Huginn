@@ -3,11 +3,11 @@ import type { ImageSize, Snowflake } from "@huginnjs/shared";
 import { useAnimatedImage } from "@hooks/useAnimatedImage";
 import { useClient } from "@stores/clientStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { AnimatedMode } from "@/types";
 
-import LoadingIcon from "./LoadingIcon";
+import LoadingBackground from "./LoadingBackground";
 
 export default function ChannelIcon(props: {
    channelId: Snowflake;
@@ -61,26 +61,27 @@ export default function ChannelIcon(props: {
    const { size = 2.25, className } = props;
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
-         {!isLoaded && hasImage && (
+         <div className={clsx("relative h-full w-full overflow-hidden rounded-full", props.innerClassName)}>
+            <LoadingBackground hasError={hasError} isLoaded={isLoaded || !hasImage} />
+            {/*{!isLoaded && hasImage && (
             <div className="bg-primary-900 absolute inset-0 flex items-center justify-center rounded-full">
                <LoadingIcon className="size-5" />
             </div>
-         )}
-         {hasImage ? (
-            <img
-               alt="channel-icon"
-               src={src}
-               onError={onError}
-               onLoad={onLoad}
-               ref={imgRef}
-               loading="lazy"
-               className={clsx("h-full w-full rounded-full object-cover", props.innerClassName)}
-            />
-         ) : hasError ? (
-            <div className="bg-negative-500 text-text flex h-full w-full items-center justify-center rounded-full font-bold">!</div>
-         ) : (
-            <div className="bg-primary-700 h-full w-full rounded-full" />
-         )}
+         )}*/}
+            {hasImage ? (
+               <img
+                  alt="channel-icon"
+                  src={src}
+                  onError={onError}
+                  onLoad={onLoad}
+                  ref={imgRef}
+                  loading="lazy"
+                  className={clsx("h-full w-full rounded-full object-cover")}
+               />
+            ) : (
+               <div className="bg-primary-700 h-full w-full rounded-full" />
+            )}
+         </div>
       </div>
    );
 }

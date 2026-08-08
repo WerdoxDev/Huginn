@@ -12,7 +12,14 @@ type HsvColor = {
    value: number;
 };
 
-export default function ColorPicker(props: { color?: string | null; label: string; onChange?: (color: string) => void; disabled?: boolean }) {
+export default function ColorPicker(props: {
+   color?: string | null;
+   label: string;
+   onChange?: (color: string) => void;
+   disabled?: boolean;
+   className?: string;
+   isSelected?: boolean;
+}) {
    const id = useId();
    const { open, close, popover } = usePopover("color_picker");
    const isOpen = !!popover?.isOpen && popover.data?.id === id;
@@ -33,6 +40,8 @@ export default function ColorPicker(props: { color?: string | null; label: strin
          type="button"
          className={clsx(
             "bg-surface-alt relative flex size-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md p-1.5 transition-transform hover:scale-110 disabled:cursor-default",
+            props.className,
+
             // isOpen ? "border-white/50" : "border-white/20",
          )}
          disabled={props.disabled}

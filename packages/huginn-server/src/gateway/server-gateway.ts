@@ -304,7 +304,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
             const tokenExpired = (this.voiceTokenExpiresAt.get(session.sessionId) ?? 0) <= Date.now();
             const needsToken =
-               filteredData.channelId && (previousState?.channelId !== filteredData.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
+               filteredData.channelId &&
+               (previousState?.channelId !== filteredData.channelId || previousState?.sessionId !== session.sessionId || tokenExpired);
 
             // If the new place is a valid channel and is not the same as before
             if (needsToken) {

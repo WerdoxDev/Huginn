@@ -69,6 +69,7 @@ declare global {
   const IconMingcuteMore2Fill: typeof import('~icons/mingcute/more2-fill.jsx').default
   const IconMingcuteNotificationFill: typeof import('~icons/mingcute/notification-fill.jsx').default
   const IconMingcuteNotificationOffFill: typeof import('~icons/mingcute/notification-off-fill.jsx').default
+  const IconMingcutePaintFill: typeof import('~icons/mingcute/paint-fill.jsx').default
   const IconMingcutePauseFill: typeof import('~icons/mingcute/pause-fill.jsx').default
   const IconMingcutePhoneBlockFill: typeof import('~icons/mingcute/phone-block-fill.jsx').default
   const IconMingcutePhoneCallFill: typeof import('~icons/mingcute/phone-call-fill.jsx').default

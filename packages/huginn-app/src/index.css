@@ -255,16 +255,23 @@ input::-ms-clear {
    border-radius: 100%;
 }
 
-.banner-crop .cropper-view-box {
+.banner-crop .cropper-view-box,
+.background-crop .cropper-view-box {
    border-radius: 0;
 }
 
-.banner-crop .cropper-crop-box {
+.banner-crop .cropper-crop-box,
+.background-crop .cropper-crop-box {
    border-radius: 0;
 }
 
-.banner-crop .cropper-face {
+.banner-crop .cropper-face,
+.background-crop .cropper-face {
    border-radius: 0;
+}
+
+.background-crop .cropper-view-box {
+   border: 2px solid white;
 }
 
 .cropper-face {
@@ -275,12 +282,76 @@ input::-ms-clear {
    cursor: grab !important;
 }
 
+.cropper-move:active {
+   cursor: grabbing !important;
+}
+
 .cropper-line {
    visibility: hidden;
 }
 
 .cropper-point {
    z-index: 100;
+}
+
+.background-crop .cropper-point {
+   width: 12px;
+   height: 12px;
+   border: 2px solid var(--color-primary-500);
+   border-radius: 9999px;
+   background: white;
+   opacity: 1;
+   transition:
+      scale var(--default-transition-duration) var(--default-transition-timing-function),
+      background-color var(--default-transition-duration) var(--default-transition-timing-function);
+}
+
+.background-crop .cropper-point:hover {
+   background: var(--color-primary-300);
+   scale: 1.2;
+}
+
+.background-crop .cropper-point.point-e {
+   right: -6px;
+   margin-top: -6px;
+}
+
+.background-crop .cropper-point.point-n {
+   top: -6px;
+   margin-left: -6px;
+}
+
+.background-crop .cropper-point.point-w {
+   left: -6px;
+   margin-top: -6px;
+}
+
+.background-crop .cropper-point.point-s {
+   bottom: -6px;
+   margin-left: -6px;
+}
+
+.background-crop .cropper-point.point-ne {
+   top: -6px;
+   right: -6px;
+}
+
+.background-crop .cropper-point.point-nw {
+   top: -6px;
+   left: -6px;
+}
+
+.background-crop .cropper-point.point-sw {
+   bottom: -6px;
+   left: -6px;
+}
+
+.background-crop .cropper-point.point-se {
+   right: -6px;
+   bottom: -6px;
+   width: 12px;
+   height: 12px;
+   opacity: 1;
 }
 
 .cropper-wrap-box {

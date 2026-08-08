@@ -38,7 +38,7 @@ const initialStore = () => ({
    imageCrop: { isOpen: false, originalImageData: "", mimeType: "", cropType: "avatar", callback: undefined } as DefaultModal & {
       originalImageData: string;
       mimeType: string;
-      cropType?: "avatar" | "banner";
+      cropType?: "avatar" | "banner" | "chat-background";
       callback?: (data: string) => Promise<void> | void;
       profilePreview?: {
          userId: Snowflake;
@@ -83,6 +83,7 @@ const initialStore = () => ({
    },
    changePassword: { isOpen: false } as DefaultModal,
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
+   changeBackground: { isOpen: false, channelId: "" } as DefaultModal & { channelId: Snowflake },
 });
 
 type StoreType = ReturnType<typeof initialStore>;

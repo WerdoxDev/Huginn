@@ -7,4 +7,4 @@ export type FileInfo = {
    mimeType: FileContentTypes;
 };
 
-export type FileCategory = "avatars" | "banners" | "channel-icons" | "attachments" | "application-icons" | "emojis";
+export type FileCategory = "avatars" | "banners" | "channel-icons" | "attachments" | "application-icons" | "emojis" | "channel-backgrounds";

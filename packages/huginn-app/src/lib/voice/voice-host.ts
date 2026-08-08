@@ -75,9 +75,9 @@ export class VoiceHost {
          status: this.voice.status,
          connection: connectionData
             ? {
-                 channelId: connectionData.channelId,
-                 guildId: connectionData.guildId,
-              }
+               channelId: connectionData.channelId,
+               guildId: connectionData.guildId,
+            }
             : null,
          mediaSources: this.mediaSources,
          popoutState: this.popoutState,
@@ -133,6 +133,9 @@ export class VoiceHost {
             switch (request.type) {
                case "get_snapshot":
                   this.sendResult(request, this.getSnapshot());
+                  break;
+               case "get_current_round_trip_time":
+                  this.sendResult(request, await this.voice.getCurrentRoundTripTime());
                   break;
                case "toggle_mute":
                   await this.handleToggleMute();

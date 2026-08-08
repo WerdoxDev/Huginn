@@ -1,4 +1,12 @@
-import { analytics, EventEmitter, omit, type GatewayUpdateVoiceStateData, type GatewayVoiceState, type LocalVoiceState, type VoicePreference } from "@huginnjs/shared";
+import {
+   analytics,
+   EventEmitter,
+   omit,
+   type GatewayUpdateVoiceStateData,
+   type GatewayVoiceState,
+   type LocalVoiceState,
+   type VoicePreference,
+} from "@huginnjs/shared";
 
 type Events = {
    update_gateway_voice_state: {
@@ -76,13 +84,13 @@ export class VoiceState extends EventEmitter<Events> {
       this.gatewayVoiceState = confirmed.channelId
          ? { ...confirmed }
          : {
-            ...confirmed,
-            isAudioDeafened: this.gatewayVoiceState.isAudioDeafened,
-            isAudioMuted: this.gatewayVoiceState.isAudioMuted,
-            isCameraOn: this.gatewayVoiceState.isCameraOn,
-            isScreenSharing: this.gatewayVoiceState.isScreenSharing,
-            isAudioStreaming: this.gatewayVoiceState.isAudioStreaming,
-         };
+              ...confirmed,
+              isAudioDeafened: this.gatewayVoiceState.isAudioDeafened,
+              isAudioMuted: this.gatewayVoiceState.isAudioMuted,
+              isCameraOn: this.gatewayVoiceState.isCameraOn,
+              isScreenSharing: this.gatewayVoiceState.isScreenSharing,
+              isAudioStreaming: this.gatewayVoiceState.isAudioStreaming,
+           };
       this.emit("gateway_voice_state_updated", this.gatewayVoiceState);
    }
 

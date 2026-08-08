@@ -23,6 +23,7 @@ type MessageProviderProps = {
       hideBackground?: boolean;
       disableContextMenu?: boolean;
       hideActions?: boolean;
+      disableReactions?: boolean;
    };
    ref: RefObject<HTMLLIElement | null>;
 };
@@ -84,12 +85,14 @@ export function MessageProvider(props: MessageProviderProps) {
          {contextProps.message.hasNewDate && (
             <li
                className={clsx(
-                  "relative flex h-0 shrink-0 items-center justify-center border-t border-b text-center text-xs font-medium",
+                  "relative flex h-0 shrink-0 items-center justify-center text-center text-xs font-medium",
                   contextProps.lastMessage ? "my-5" : "mt-2 mb-5",
-                  contextProps.message.isUnread ? "border-negative-500 text-negative-500" : "border-text/25 text-text/70",
+                  contextProps.message.isUnread ? "text-negative-500" : "text-text/70",
                )}
             >
-               <span className="bg-surface-deep px-2">{moment(contextProps.message.timestamp).format("D MMMM YYYY")}</span>
+               <div className={clsx("h-px flex-1", contextProps.message.isUnread ? "bg-negative-500" : "bg-text/25")} />
+               <span className="bg-surface-alt/70 rounded-md px-2 py-0.5">{moment(contextProps.message.timestamp).format("D MMMM YYYY")}</span>
+               <div className={clsx("h-px flex-1", contextProps.message.isUnread ? "bg-negative-500" : "bg-text/25")} />
                {contextProps.message.isUnread && (
                   <div className="bg-negative-500 absolute right-0 flex w-10 items-center justify-center rounded-l-md py-1 text-xs font-bold text-white uppercase">
                      new

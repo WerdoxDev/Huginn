@@ -23,6 +23,13 @@ if (import.meta.env.DEV) {
       if (e.key === "\\") {
          // clientStore.getState().client?.gateway.close();
          clientStore.getState().client?.gateway.socket?.close();
+         setTimeout(() => {
+            clientStore.getState().client?.gateway["clearReconnectTimeout"]();
+         }, 500);
+
+         setTimeout(() => {
+            clientStore.getState().client?.gateway["scheduleReconnect"]();
+         }, 8000);
          // setTimeout(async () => {
          //    clientStore.getState().client?.gateway.connect();
          //    await clientStore.getState().client?.gateway.authenticate();

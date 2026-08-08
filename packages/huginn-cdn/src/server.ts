@@ -14,6 +14,8 @@ import { postUserAvatar } from "#routes/avatars/[userId].post";
 import { getUserAvatar } from "#routes/avatars/[userId]/[avatarHash].get";
 import { postUserBanner } from "#routes/banners/[userId].post";
 import { getUserBanner } from "#routes/banners/[userId]/[bannerHash].get";
+import { postChannelBackground } from "#routes/channel-backgrounds/[channelId]/[userId].post";
+import { getChannelBackground } from "#routes/channel-backgrounds/[channelId]/[userId]/[backgroundHash].get";
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[id].get";
@@ -92,4 +94,6 @@ export const app = new Elysia({ normalize: "typebox" })
    .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
-   .use(getEmoji);
+   .use(getEmoji)
+   .use(postChannelBackground)
+   .use(getChannelBackground);

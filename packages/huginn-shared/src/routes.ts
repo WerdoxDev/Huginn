@@ -312,4 +312,8 @@ export const CDNRoutes = {
    uploadApplicationIcon(applicationId?: number): `/application-icons/${string}` | `/application-icons` {
       return applicationId ? `/application-icons/${applicationId}` : "/application-icons";
    },
+
+   uploadChannelBackground(channelId: Snowflake, userId: Snowflake): `/channel-backgrounds/${string}/${string}` {
+      return `/channel-backgrounds/${channelId}/${userId}`;
+   },
 };

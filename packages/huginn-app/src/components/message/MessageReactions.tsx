@@ -7,11 +7,17 @@ import { type RefObject } from "react";
 
 import type { ProcessedAppMessage } from "@/types";
 
-export default function MessageReactions(props: { message: ProcessedAppMessage; messageWidth: number; ref: RefObject<HTMLDivElement | null> }) {
+export default function MessageReactions(props: {
+   message: ProcessedAppMessage;
+   messageWidth: number;
+   ref: RefObject<HTMLDivElement | null>;
+   disabled?: boolean;
+}) {
    const addMutation = useAddReaction();
    const removeMutation = useRemoveReaction();
 
    async function handleReactionClick(reaction: APIReaction) {
+      if (props.disabled) return;
       if (reaction.me)
          await removeMutation.mutateAsync({
             channelId: props.message.channelId,
@@ -44,7 +50,7 @@ export default function MessageReactions(props: { message: ProcessedAppMessage; 
                key={x.emoji.name}
                className={clsx(
                   "flex h-8 cursor-pointer items-center gap-x-2 py-1.5 pr-2.5 pl-2",
-                  x.me ? "bg-primary-800/50 hover:bg-primary-800!" : "bg-surface hover:bg-surface-deep",
+                  x.me ? "bg-primary-900 hover:bg-primary-800!" : "bg-surface hover:bg-surface-deep",
                )}
             >
                <EmojiImg unicode={x.emoji.name} className="size-5" />
