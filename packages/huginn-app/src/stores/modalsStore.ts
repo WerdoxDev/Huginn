@@ -83,7 +83,7 @@ const initialStore = () => ({
    },
    changePassword: { isOpen: false } as DefaultModal,
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
-   changeBackground: { isOpen: false, channelId: "" } as DefaultModal & { channelId: Snowflake },
+   changeBackground: { isOpen: false, channelId: null } as DefaultModal & { channelId: Snowflake | null },
 });
 
 type StoreType = ReturnType<typeof initialStore>;

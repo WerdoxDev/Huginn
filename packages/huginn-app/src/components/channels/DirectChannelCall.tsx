@@ -281,7 +281,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             "group/wrapper shadow-surface-void z-10 flex shrink-0 flex-col gap-y-3 shadow-2xl select-none",
             isFullscreen
                ? "bg-surface-deep fixed inset-0 z-997 rounded-none"
-               : "ring-primary-800 relative z-30 m-2 mb-0 rounded-xl bg-black/50 ring-2",
+               : "ring-primary-800 relative z-30 m-2 mb-0 rounded-xl bg-black/80 ring-2",
          )}
          ref={containerRef}
       >

@@ -1,3 +1,4 @@
+import ChannelBackground from "@components/channels/ChannelBackground";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
 import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
@@ -100,6 +101,7 @@ function ChannelWithIdComponent() {
                         )}
                         onClick={resetToCenter}
                      />
+                     <ChannelBackground channelId={channelId} />
                      <DirectChannelCall channelId={channelId} />
                      <ChannelMessages messages={sortedMessages} channel={channel} />
                      <MessageBox messages={sortedMessages} />

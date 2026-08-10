@@ -242,7 +242,6 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
 
    return (
       <div className="relative h-full overflow-x-hidden overflow-y-hidden">
-         <ChannelBackground channelId={props.channel.id} />
          <div
             className="relative h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]"
             ref={scrollRef}
