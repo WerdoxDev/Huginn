@@ -27,8 +27,8 @@ export class CDN {
       return this.makeURL(`/emoji/${id}`, { format: "svg" });
    }
 
-   public channelBackground(channelId: Snowflake, userId: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
-      return this.dynamicMakeURL(`/channel-backgrounds/${channelId}/${userId}/${hash}`, hash, options);
+   public channelBackground(scope: Snowflake | "global", userId: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
+      return this.dynamicMakeURL(`/channel-backgrounds/${scope}/${userId}/${hash}`, hash, options);
    }
 
    /**
