@@ -11,9 +11,6 @@ project(':capacitor-device').projectDir = new File('../../../node_modules/.pnpm/
 include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.pnpm/@capacitor+filesystem@8.1.2_@capacitor+core@8.4.1/node_modules/@capacitor/filesystem/android')
 
-include ':capacitor-push-notifications'
-project(':capacitor-push-notifications').projectDir = new File('../../../node_modules/.pnpm/@capacitor+push-notifications@8.1.1_@capacitor+core@8.4.1/node_modules/@capacitor/push-notifications/android')
-
 include ':capawesome-capacitor-live-update'
 project(':capawesome-capacitor-live-update').projectDir = new File('../../../node_modules/.pnpm/@capawesome+capacitor-live-_e9521023485847d62189ca1304f41db5/node_modules/@capawesome/capacitor-live-update/android')
 

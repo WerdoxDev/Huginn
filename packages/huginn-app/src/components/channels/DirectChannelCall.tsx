@@ -11,7 +11,6 @@ import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { isChildWindow } from "@lib/child-window";
-import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
@@ -26,7 +25,6 @@ const isMainWindow = window.opener === null;
 export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { voiceState, voiceStates, callStates, speakingStates } = useVoiceStore();
 
-   const client = useClient();
    const { user } = useThisUser();
    const { mediaSources, popoutState } = useVoiceSnapshot();
    const { voicePreferences } = useVoicePreferences();

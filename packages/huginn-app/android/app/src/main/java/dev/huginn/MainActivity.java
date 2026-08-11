@@ -1,5 +1,6 @@
 package dev.huginn;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -19,13 +20,16 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(InsetPlugin.class);
         registerPlugin(GalleryPlugin.class);
         registerPlugin(FilesPlugin.class);
+        registerPlugin(PushNotificationsPlugin.class);
 
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         splashScreen.setKeepOnScreenCondition(() -> !appIsReady);
 
-        registerPlugin(dev.huginn.SplashScreen.class);
+        registerPlugin(SplashScreenPlugin.class);
 
         super.onCreate(savedInstanceState);
+
+        clearNotificationHistory(getIntent());
 
         insetPlugin = (InsetPlugin) getBridge().getPlugin("Inset").getInstance();
 
@@ -53,6 +57,24 @@ public class MainActivity extends BridgeActivity {
                     .build();
             return ViewCompat.onApplyWindowInsets(view, filteredInsets);
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        clearNotificationHistory(intent);
+    }
+
+    private void clearNotificationHistory(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
+        String conversationId = intent.getStringExtra(MessageNotifier.EXTRA_CONVERSATION_ID);
+        if (conversationId != null) {
+            MessageNotifier.clearConversation(this, conversationId);
+            intent.removeExtra(MessageNotifier.EXTRA_CONVERSATION_ID);
+        }
     }
 
     public void hideSplash() {

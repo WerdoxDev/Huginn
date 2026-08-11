@@ -1,9 +1,11 @@
-import { PushNotifications } from "@capacitor/push-notifications";
 import { analytics } from "@huginnjs/shared";
 import { presenceStore } from "@stores/presenceStore";
+import { storageStore } from "@stores/storageStore";
 import { windowStore } from "@stores/windowStore";
 
 import { router } from "@/router";
+
+import { PushNotifications } from "./capacitor/push-notification-plugin";
 
 export async function initNotifications() {
    const store = windowStore.getState();
@@ -35,6 +37,7 @@ async function initMobileNotifications() {
    await PushNotifications.addListener("pushNotificationActionPerformed", async (notification) => {
       analytics.log({ body: "push notification action performed", attributes: { notification }, level: "info" });
 
+      console.log(notification, router.history.location.pathname);
       if (router.history.location.pathname === "/app/") {
          sessionStorage.setItem(
             "redirect",
@@ -85,8 +88,9 @@ let canSend = true;
 
 export function sendNotification(payload: string, title: string, text: string, icon?: string) {
    const thisPresence = presenceStore.getState().session;
+   const settings = storageStore.getState().getCachedValue("settings");
 
-   if (!canSend || thisPresence.status === "dnd") {
+   if (!canSend || thisPresence.status === "dnd" || !settings.isNotificationsEnabled) {
       return;
    }
 

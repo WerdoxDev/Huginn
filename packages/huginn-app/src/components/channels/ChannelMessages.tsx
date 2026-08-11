@@ -1,7 +1,6 @@
 import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
-import { useChannelBackgrounds } from "@hooks/useChannelBackgrounds";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
@@ -18,7 +17,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
-import ChannelBackground from "./ChannelBackground";
 import GhostMessages from "./GhostMessages";
 
 const ACTION_MESSAGE_TYPES: MessageType[] = [

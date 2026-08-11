@@ -19,6 +19,7 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
+import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
@@ -50,7 +51,7 @@ const tabs: SettingsTabType[] = [
             icon: <IconMingcuteColorPickerFill />,
             component: SettingsThemeTab,
          },
-         { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
+         { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill />, component: SettingsNotificationTab },
          {
             name: "voice",
             text: "Audio & Video",

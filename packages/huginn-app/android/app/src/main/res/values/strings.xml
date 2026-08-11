@@ -4,4 +4,6 @@
     <string name="title_activity_main">Huginn</string>
     <string name="package_name">dev.huginn</string>
     <string name="custom_url_scheme">dev.huginn</string>
+    <string name="notification_channel_messages">Messages</string>
+    <string name="notification_channel_messages_description">Instant messages</string>
 </resources>
