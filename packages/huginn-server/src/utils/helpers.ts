@@ -14,6 +14,7 @@ import {
    type APIMessageCall,
    type APIMessageReference,
    type APIReaction,
+   CDNRoutes,
    changeUrlBase,
    ChannelType,
    CONSTANTS,
@@ -26,6 +27,7 @@ import {
    omit,
    pick,
    recordSpanError,
+   Routes,
    type Snowflake,
 } from "@huginnjs/shared";
 
@@ -60,8 +62,7 @@ export async function dispatchMessage(options: {
 
    dispatchToTopic(options.channelId, "message_create", await filterMessage(message));
 
-   await sendMessagePushNotification(options.channelId, message);
-   // await sendPushNotification()
+   await sendAddMessagePushNotification(options.channelId, message);
 
    return message;
 }
@@ -184,7 +185,7 @@ export function signAttachment<A extends { url: string }>(attachment: A): A {
    return { ...attachment, url: `${attachment.url}?ex=${expiry}&hm=${signature}` };
 }
 
-export async function sendMessagePushNotification(channelId: Snowflake, message: MessagePayload<{ select: typeof selectAllMessage }>) {
+export async function sendAddMessagePushNotification(channelId: Snowflake, message: MessagePayload<{ select: typeof selectAllMessage }>) {
    if (process.env.TEST) return;
 
    analytics.startActiveSpan("sendMessagePushNotification", async (span) => {
@@ -196,23 +197,31 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
             "message.content_length": message.content.length,
          });
 
-         const channel = await prisma.channel.getById(channelId, { select: { name: true, type: true } });
-         const recipients = (await prisma.channel.getRecipients(channelId)).filter((r) => r.id !== message.author.id);
+         const channel = await prisma.channel.getById(channelId, { select: { name: true, type: true, icon: true, id: true } });
+         const recipients = await prisma.channel.getRecipients(channelId);
+         const authorName = message.author.displayName ?? message.author.username;
 
          span.setAttributes({
             "channel.type": channel.type,
             "recipients.count": recipients.length,
          });
 
-         const channelName = channel.name ?? recipients.map((r) => r.displayName ?? r.username).join(", ");
+         const channelName =
+            channel.type === ChannelType.GROUP_DM ? (channel.name ?? recipients.map((r) => r.displayName ?? r.username).join(", ")) : authorName;
 
          const username = message.author.displayName ?? message.author.username;
-         const title = username + (channel?.type === ChannelType.GROUP_DM ? ` - (${channelName})` : "");
+         const timestamp = message.timestamp.getTime();
          const firstAttachment = message.attachments[0] ? signAttachment(message.attachments[0]) : undefined;
          const imageUrl = env.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, env.CDN_PUBLIC_URL) : undefined;
+         const authorIconUrl =
+            env.CDN_PUBLIC_URL && message.author.avatar
+               ? changeUrlBase(`/avatars/${message.author.id}/${message.author.avatar}.webp`, env.CDN_PUBLIC_URL)
+               : undefined;
+
+         const channelIconUrl =
+            env.CDN_PUBLIC_URL && channel?.icon ? changeUrlBase(`/channel-icons/${channel.id}/${channel.icon}.webp`, env.CDN_PUBLIC_URL) : undefined;
 
          span.setAttributes({
-            "notification.title": title,
             "notification.body": message.content,
             "notification.image_url": imageUrl ?? "none",
          });
@@ -220,16 +229,51 @@ export async function sendMessagePushNotification(channelId: Snowflake, message:
          logger.debug(`sending push notification for message in channel ${channelId} for ${recipients.map((r) => r.id).join(", ")}`);
 
          await Promise.allSettled(
-            recipients.map((user) =>
-               sendPushNotification(user.id, {
-                  title: title,
-                  body: message.content,
-                  imageUrl: imageUrl,
-                  data: { channelId, messageId: message.id },
-                  notificationChannelId: "messages",
-               }),
-            ),
+            recipients
+               .filter((x) => x.id !== message.author.id)
+               .map((user) =>
+                  sendPushNotification(user.id, "add_message", {
+                     data: {
+                        content: message.content,
+                        channelId,
+                        messageId: message.id,
+                        authorId: message.author.id,
+                        timestamp,
+                        username,
+                        authorIconUrl,
+                        channelIconUrl,
+                        channelName,
+                        channelType: channel.type,
+                     },
+                     notificationChannelId: "messages",
+                  }),
+               ),
          );
+      } catch (e) {
+         recordSpanError(e);
+      } finally {
+         span.end();
+      }
+   });
+}
+
+export function sendAckedMessagePushNotification(userId: Snowflake, channelId: Snowflake, messageId: Snowflake) {
+   if (process.env.TEST) return;
+
+   analytics.startActiveSpan("senAckMessagePushNotification", async (span) => {
+      try {
+         span.setAttributes({
+            "params.channel.id": channelId,
+            "params.message.id": messageId,
+         });
+
+         sendPushNotification(userId, "ack_message", {
+            data: {
+               channelId,
+               messageId,
+            },
+            notificationChannelId: "messages",
+         });
       } catch (e) {
          recordSpanError(e);
       } finally {
