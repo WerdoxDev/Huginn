@@ -5,7 +5,8 @@
  * Pipeline:
  *   1. Recolor each base image to a solid color (using its alpha channel as a mask).
  *   2. Stack the recolored base images on top of each other.
- *   3. Produce that stacked result plus one variant per outline: the same stack
+ *   3. Produce that stacked result, any additional layer-stack variants, plus
+ *      one variant per outline: the selected stack
  *      with a scaled, recolored outline composited BEHIND it.
  *   4. Export every variant as PNGs (at whatever sizes you list) and as a
  *      multi-resolution .ico (via ImageMagick's `convert`).
@@ -36,6 +37,12 @@ type BaseLayer = {
    path: string; // path to base silhouette image
    color: string; // solid color to recolor it to
    maskFrom?: MaskFrom; // default "alpha" — see note below
+   opacity?: number; // layer opacity from 0 (transparent) to 1 (opaque); default 1
+};
+
+type StackVariant = {
+   name: string; // used in output filenames, e.g. "android-notification"
+   layers: BaseLayer[]; // the variant's layers, bottom to top
 };
 
 type OutlineVariant = {
@@ -43,12 +50,16 @@ type OutlineVariant = {
    path: string; // path to outline silhouette image
    color: string; // color to recolor the outline to
    growPixels: number; // grow the outline outward by this many px (uniform border width),
+   stack?: string; // stack variant to outline; defaults to "stacked"
+   opacity?: number; // outline opacity from 0 (transparent) to 1 (opaque); default 1
+   ringOnly?: boolean; // exclude the original mask so translucent stack layers retain their opacity
 };
 
 type Options = {
    outputDir: string; // where to write the PNGs and .ico
    canvasSize: number; // size of the working canvas (the base stack and outlines are all sized to this)
    baseLayers: BaseLayer[]; // the base stack layers, bottom to top
+   stackVariants?: StackVariant[]; // additional independently composited layer stacks
    outlineVariants: OutlineVariant[]; // the outline variants to composite behind the base stack
    pngSizes: number[]; // which PNG sizes to export (e.g. [16, 32, 64, 128])
    icoSizes: number[]; // which sizes to include in the .ico (subset of pngSizes)
@@ -96,7 +107,11 @@ async function prepareMask(imgPath: string, size: number, maskFrom: MaskFrom = "
 
 /** Paints a solid `color` onto a mask, using the mask as the alpha channel.
  *  Returns a PNG buffer. */
-async function colorizeMask(mask: Buffer, width: number, height: number, color: string): Promise<Buffer> {
+async function colorizeMask(mask: Buffer, width: number, height: number, color: string, opacity = 1): Promise<Buffer> {
+   if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) {
+      throw new Error(`Opacity must be between 0 and 1, received: ${opacity}`);
+   }
+
    const rgb = parseOklchToRgb(color);
    if (!rgb) throw new Error(`Invalid color: ${color}`);
 
@@ -107,7 +122,7 @@ async function colorizeMask(mask: Buffer, width: number, height: number, color: 
       out[i * 4] = r;
       out[i * 4 + 1] = g;
       out[i * 4 + 2] = b;
-      out[i * 4 + 3] = mask[i];
+      out[i * 4 + 3] = Math.round(mask[i] * opacity);
    }
 
    return sharp(out, { raw: { width, height, channels: 4 } })
@@ -117,9 +132,18 @@ async function colorizeMask(mask: Buffer, width: number, height: number, color: 
 
 /** Load an image, fit it into a `size x size` transparent canvas, and
  *  recolor it to `color` using the chosen mask strategy. Returns a PNG buffer. */
-async function prepareLayer(imgPath: string, color: string, size: number, maskFrom: MaskFrom = "alpha"): Promise<Buffer> {
+async function prepareLayer(imgPath: string, color: string, size: number, maskFrom: MaskFrom = "alpha", opacity = 1): Promise<Buffer> {
    const mask = await prepareMask(imgPath, size, maskFrom);
-   return colorizeMask(mask, size, size, color);
+   return colorizeMask(mask, size, size, color, opacity);
+}
+
+async function stackLayers(layers: BaseLayer[], size: number): Promise<Buffer> {
+   const preparedLayers = await Promise.all(layers.map((layer) => prepareLayer(layer.path, layer.color, size, layer.maskFrom ?? "alpha", layer.opacity ?? 1)));
+
+   return (await blankCanvas(size))
+      .composite(preparedLayers.map((input) => ({ input })))
+      .png()
+      .toBuffer();
 }
 
 /** Grow (dilate) or shrink (erode) a single-channel alpha mask by ~`growPixels`,
@@ -183,8 +207,9 @@ async function compositeOutlineNoClip(ov: OutlineVariant, baseStack: Buffer, siz
    const paddedSize = size + pad * 2;
 
    const paddedMask = pad === 0 ? mask : padMask(mask, size, size, paddedSize, pad);
-   const grownMask = await growAlphaMask(paddedMask, paddedSize, paddedSize, ov.growPixels);
-   const grownColoredOutline = await colorizeMask(grownMask, paddedSize, paddedSize, ov.color);
+   const fullGrownMask = await growAlphaMask(paddedMask, paddedSize, paddedSize, ov.growPixels);
+   const grownMask = ov.ringOnly ? subtractMask(fullGrownMask, paddedMask) : fullGrownMask;
+   const grownColoredOutline = await colorizeMask(grownMask, paddedSize, paddedSize, ov.color, ov.opacity ?? 1);
 
    const basePadded =
       pad === 0
@@ -206,6 +231,12 @@ async function compositeOutlineNoClip(ov: OutlineVariant, baseStack: Buffer, siz
    if (paddedSize === size) return composited;
 
    return sharp(composited).resize(size, size).png().toBuffer();
+}
+
+function subtractMask(mask: Buffer, subtract: Buffer): Buffer {
+   const out = Buffer.alloc(mask.length);
+   for (let i = 0; i < out.length; i++) out[i] = Math.max(0, mask[i] - subtract[i]);
+   return out;
 }
 
 async function blankCanvas(size: number): Promise<Sharp> {
@@ -256,18 +287,17 @@ export async function createIcon(options: Options) {
 
    const size = options.canvasSize;
 
-   // 1. Recolor each base layer.
-   const recoloredBases = await Promise.all(options.baseLayers.map((l) => prepareLayer(l.path, l.color, size, l.maskFrom ?? "alpha")));
-
-   // 2. Stack them (bottom to top, in config order).
-   const stacked = await (
-      await blankCanvas(size)
-   )
-      .composite(recoloredBases.map((input) => ({ input })))
-      .png()
-      .toBuffer();
+   // 1–2. Recolor and stack the base layers (bottom to top, in config order).
+   const stacked = await stackLayers(options.baseLayers, size);
+   const stacks = new Map<string, Buffer>([["stacked", stacked]]);
 
    await exportVariant("stacked", stacked, options);
+
+   for (const variant of options.stackVariants ?? []) {
+      const stack = await stackLayers(variant.layers, size);
+      stacks.set(variant.name, stack);
+      await exportVariant(variant.name, stack, options);
+   }
 
    // 3. One variant per outline: the outline is grown outward by a fixed
    //    pixel amount (not scaled), so the border between it and the base
@@ -277,7 +307,11 @@ export async function createIcon(options: Options) {
    //    together) is scaled back down to fit `size x size` as a single unit,
    //    which keeps the border uniform rather than clipping it off.
    for (const ov of options.outlineVariants) {
-      const withOutline = await compositeOutlineNoClip(ov, stacked, size);
+      const stackName = ov.stack ?? "stacked";
+      const sourceStack = stacks.get(stackName);
+      if (!sourceStack) throw new Error(`Unknown stack variant for outline "${ov.name}": "${stackName}"`);
+
+      const withOutline = await compositeOutlineNoClip(ov, sourceStack, size);
       await exportVariant(ov.name, withOutline, options);
    }
 
