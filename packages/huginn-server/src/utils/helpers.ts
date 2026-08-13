@@ -14,7 +14,6 @@ import {
    type APIMessageCall,
    type APIMessageReference,
    type APIReaction,
-   CDNRoutes,
    changeUrlBase,
    ChannelType,
    CONSTANTS,
@@ -27,7 +26,6 @@ import {
    omit,
    pick,
    recordSpanError,
-   Routes,
    type Snowflake,
 } from "@huginnjs/shared";
 
