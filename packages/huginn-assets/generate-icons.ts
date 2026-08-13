@@ -30,7 +30,6 @@ import sharp, { type Sharp } from "sharp";
    CONFIG — edit this section for your project
    ============================================================ */
 
-type HexColor = `#${string}`;
 type MaskFrom = "alpha" | "white-on-black" | "black-on-white";
 
 type BaseLayer = {
