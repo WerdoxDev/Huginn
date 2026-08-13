@@ -10,7 +10,7 @@ import type { CommonClientSession } from "./common-client-session";
 
 type ClientSessionConstructor<T> = new (peer: Peer, sessionId: Snowflake, sentMessagesLimit: number) => T;
 
-export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, unknown>, Payload extends CommonPayload> {
+export abstract class CommonWebsocket<ClientSession extends CommonClientSession<Payload, any>, Payload extends CommonPayload> {
    public readonly sessions = new Map<Snowflake, ClientSession>();
    private readonly sessionDeleteTimeouts = new Map<Snowflake, ReturnType<typeof setTimeout>>();
 
@@ -34,6 +34,7 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             const sessionId = snowflake.generateString(this.options.workerId);
 
             peer.context.sessionId = sessionId;
+            peer.context.connectionEpoch = 0;
             const session = this.createSession(peer, sessionId, this.options.sessionSentMessagesLimit);
             span.setAttributes(session.getDefaultAttributes());
 
@@ -51,25 +52,40 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          if (event.code) span.setAttribute("params.event.code", event.code);
          if (event.reason) span.setAttribute("params.event.reason", event.reason);
          try {
-            const session = this.sessions.get(peer.context.sessionId);
+            const sessionId = peer.context.sessionId;
+            const connectionEpoch = peer.context.connectionEpoch;
+            const session = this.sessions.get(sessionId);
             span.setAttribute("session.exists", !!session);
             if (!session) return;
             else span.setAttributes(session.getDefaultAttributes());
 
+            if (!session.isCurrentConnection(peer, connectionEpoch)) {
+               span.setAttribute("session.connection_is_current", false);
+               return;
+            }
+
+            span.setAttribute("session.connection_is_current", true);
             await session.enqueue(() => this.onClose(session, event));
 
+            // Ownership may have changed while onClose was queued or awaited.
+            if (this.sessions.get(sessionId) !== session || !session.isCurrentConnection(peer, connectionEpoch)) {
+               span.setAttribute("session.connection_is_current_after_on_close", false);
+               return;
+            }
+
+            span.setAttribute("session.connection_is_current_after_on_close", true);
             session.stopHeartbeatTimeout();
 
             if (
                session.authenticated &&
                (event.code === GatewayCode.INVALID_SESSION || event.code === GatewayCode.INTENTIONAL_CLOSE || event.code === GatewayCode.GOING_AWAY)
             ) {
-               this.deleteSession(session.sessionId);
+               await this.deleteSession(session.sessionId, connectionEpoch);
             } else if (session.authenticated) {
                session.isStale = true;
-               this.queueSessionDelete(session.sessionId);
+               this.queueSessionDelete(session.sessionId, connectionEpoch);
             } else {
-               this.deleteSession(session.sessionId);
+               await this.deleteSession(session.sessionId, connectionEpoch);
             }
          } catch (e) {
             recordSpanError(e);
@@ -89,13 +105,20 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             return;
          }
 
-         const session = this.sessions.get(peer.context.sessionId);
+         const sessionId = peer.context.sessionId;
+         const connectionEpoch = peer.context.connectionEpoch;
+         const session = this.sessions.get(sessionId);
          // span.setAttribute("session.exists", !!session);
-         if (!session) return;
+         if (!session || !session.isCurrentConnection(peer, connectionEpoch)) return;
          // else span.setAttributes(session.getDefaultAttributes());
 
-         await session.enqueue(async () => await this.onMessage(session, data));
-         // oxlint-disable-next-line no-unused-vars
+         await session.enqueue(async () => {
+            // A resume can transfer ownership while this message is waiting in
+            // the per-session queue.
+            if (this.sessions.get(sessionId) !== session || !session.isCurrentConnection(peer, connectionEpoch)) return;
+
+            await this.onMessage(session, data);
+         });
       } catch (e) {
          // recordSpanError(e);
          if (e instanceof SyntaxError) {
@@ -143,20 +166,25 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       }
    }
 
-   private queueSessionDelete(sessionId: Snowflake) {
+   private queueSessionDelete(sessionId: Snowflake, connectionEpoch: number) {
       return analytics.startActiveSpan("commonWebsocket.queueSessionDelete", (span) => {
          span.setAttribute("params.session.id", sessionId);
+         span.setAttribute("params.connection_epoch", connectionEpoch);
          try {
-            const timeout = setTimeout(async () => {
-               const session = this.sessions.get(sessionId);
-               if (!session || !session.isStale) return;
-
-               this.deleteSession(sessionId);
-            }, this.options.sessionDeleteTimeout);
-
             if (this.sessionDeleteTimeouts.has(sessionId)) {
                this.cancelSessionDelete(sessionId);
             }
+
+            const timeout = setTimeout(async () => {
+               const session = this.sessions.get(sessionId);
+               if (this.sessionDeleteTimeouts.get(sessionId) === timeout) {
+                  this.sessionDeleteTimeouts.delete(sessionId);
+               }
+
+               if (!session || session.connectionEpoch !== connectionEpoch || !session.isStale) return;
+
+               await this.deleteSession(sessionId, connectionEpoch);
+            }, this.options.sessionDeleteTimeout);
 
             this.sessionDeleteTimeouts.set(sessionId, timeout);
          } catch (e) {
@@ -194,11 +222,20 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
          });
          try {
             const oldSession = this.sessions.get(oldSessionId);
+            const oldConnectionEpoch = oldSession?.connectionEpoch;
+            const newSessionId = session.sessionId;
+            const newConnectionEpoch = session.connectionEpoch;
+            const newPeer = session.peer;
 
             span.setAttribute("old_session.exists", !!oldSession);
             if (oldSession) span.setAttributes(oldSession.getDefaultAttributes("old_session"));
 
             if (!oldSession || !oldSession.authenticated || !oldSession.properties) {
+               session.peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+               return;
+            }
+
+            if (oldSession.user?.id !== userId) {
                session.peer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
                return;
             }
@@ -216,39 +253,52 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
             const user = await prisma.user.getById(userId, { select: selectPrivateUser });
             span.setAttribute("user.id", user.id);
 
-            session.peer.context.sessionId = oldSession.sessionId;
-            oldSession.peer = session.peer;
-            oldSession.isStale = false;
-            // Reset the old session's timeout when resumed
-            oldSession.resetHeartbeatTimeout();
-            this.cancelSessionDelete(oldSession.sessionId);
-            await oldSession.initialize(user, { ...oldSession.properties });
+            return await oldSession.enqueue(async () => {
+               // Either session may have closed, expired, or been resumed while
+               // the user lookup or an earlier session operation was pending.
+               if (
+                  this.sessions.get(oldSessionId) !== oldSession ||
+                  oldSession.connectionEpoch !== oldConnectionEpoch ||
+                  this.sessions.get(newSessionId) !== session ||
+                  !session.isCurrentConnection(newPeer, newConnectionEpoch)
+               ) {
+                  newPeer.close(GatewayCode.INVALID_SESSION, "INVALID_SESSION");
+                  return;
+               }
 
-            // This session is initialized for the peer right at connection. We need to delete it.
-            session.stopHeartbeatTimeout();
-            this.deleteSession(session.sessionId);
+               session.stopHeartbeatTimeout();
+               oldSession.attachPeer(newPeer);
+               oldSession.isStale = false;
+               // Reset the old session's timeout when resumed
+               oldSession.resetHeartbeatTimeout();
+               this.cancelSessionDelete(oldSession.sessionId);
+               await oldSession.initialize(user, { ...oldSession.properties });
 
-            const messageQueue = oldSession.getMessages();
-            span.setAttribute("old_session.message_queue.size", messageQueue.size);
+               // This session is initialized for the peer right at connection. We need to delete it.
+               await this.deleteSession(newSessionId, newConnectionEpoch);
 
-            const missedMessageCount = oldSession.sequence - lastSequence;
-            span.setAttribute("old_session.message_queue.missed_message_count", missedMessageCount);
+               const messageQueue = oldSession.getMessages();
+               span.setAttribute("old_session.message_queue.size", messageQueue.size);
 
-            if (messageQueue.size < missedMessageCount) {
-               session.peer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
-               return;
-            }
+               const missedMessageCount = oldSession.sequence! - lastSequence;
+               span.setAttribute("old_session.message_queue.missed_message_count", missedMessageCount);
 
-            let resendCount = 0;
-            for (const [seq, _data] of messageQueue) {
-               if (seq <= lastSequence) continue;
+               if (messageQueue.size < missedMessageCount) {
+                  newPeer.close(GatewayCode.INVALID_SEQ, "INVALID_SEQ");
+                  return;
+               }
 
-               oldSession.send(_data, false, false);
-               resendCount++;
-            }
-            span.setAttribute("old_session.message_queue.resend_count", resendCount);
+               let resendCount = 0;
+               for (const [seq, _data] of messageQueue) {
+                  if (seq <= lastSequence) continue;
 
-            return { oldSession, user };
+                  oldSession.send(_data, false, false);
+                  resendCount++;
+               }
+               span.setAttribute("old_session.message_queue.resend_count", resendCount);
+
+               return { oldSession, user };
+            });
          } catch (e) {
             recordSpanError(e);
             throw e;
@@ -256,17 +306,30 @@ export abstract class CommonWebsocket<ClientSession extends CommonClientSession<
       });
    }
 
-   public async deleteSession(sessionId: Snowflake) {
+   public async deleteSession(sessionId: Snowflake, expectedConnectionEpoch?: number) {
       return await analytics.startActiveSpan("commonWebsocket.deleteSession", async (span) => {
          span.setAttribute("params.session.id", sessionId);
+         if (expectedConnectionEpoch !== undefined) span.setAttribute("params.connection_epoch", expectedConnectionEpoch);
          try {
             const session = this.sessions.get(sessionId);
             span.setAttribute("session.exists", !!session);
 
             if (session) {
+               if (expectedConnectionEpoch !== undefined && session.connectionEpoch !== expectedConnectionEpoch) {
+                  span.setAttribute("session.connection_epoch_matches", false);
+                  return;
+               }
+
+               span.setAttribute("session.connection_epoch_matches", true);
                span.setAttributes(session.getDefaultAttributes());
-               await this.onDeleteSession?.(session);
+
+               // Remove the session synchronously before asynchronous cleanup.
+               // A concurrent resume can now only observe an invalid session,
+               // rather than attaching to a session already being deleted.
                this.sessions.delete(sessionId);
+               this.cancelSessionDelete(sessionId);
+               session.stopHeartbeatTimeout();
+               await this.onDeleteSession?.(session);
             }
          } catch (e) {
             recordSpanError(e);
