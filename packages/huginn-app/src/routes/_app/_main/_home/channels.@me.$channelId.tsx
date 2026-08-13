@@ -108,7 +108,7 @@ function ChannelWithIdComponent() {
                   <div className="relative flex h-full w-full flex-col overflow-hidden">
                      <div
                         className={clsx(
-                           "absolute inset-0 z-20 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
+                           "absolute inset-0 z-40 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
                            isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
                         )}
                         onClick={resetToCenter}

@@ -72,7 +72,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
          ref={containerRef}
          onTransitionEnd={handleTransitionEnd}
          className={clsx(
-            "top-topbar-separator fixed inset-y-0 right-0 bottom-0 z-20 shrink-0 lg:relative lg:top-0 lg:bottom-0 lg:h-full",
+            "top-topbar-separator fixed inset-y-0 right-0 bottom-0 z-40 shrink-0 lg:relative lg:top-0 lg:bottom-0 lg:h-full",
             isMobile && !isDragging && "transition-transform",
             !isMobile && "transition-[width]",
             // isRightOpen ? "block" : "hidden",

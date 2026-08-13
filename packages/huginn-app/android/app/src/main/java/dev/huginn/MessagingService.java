@@ -134,8 +134,6 @@ public class MessagingService extends FirebaseMessagingService {
             IconCompat avatarIcon = IconCompat.createWithBitmap(circleAvatarBitmap);
             IconCompat channelIcon = IconCompat.createWithBitmap(circleChannelBitmap);
 
-            Log.d(TAG, "AVATAR NULL " + (avatarBitmap == null));
-
             Person author = new Person.Builder()
                     .setName(username)
                     .setKey(authorId)

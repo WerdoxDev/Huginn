@@ -2,7 +2,6 @@ import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
-import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { useThrottler } from "@hooks/useThrottler";
