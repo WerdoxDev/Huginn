@@ -100,11 +100,18 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             this.intentionalClose = false;
             this.connectionData = { token, channelId, guildId };
             this.setStatus("connecting");
-            this.socket = this.options.createSocket(this.options.url);
+            const socket = this.options.createSocket(this.options.url);
+            this.socket = socket;
 
-            this.socket.onopen = () => this.onOpen();
-            this.socket.onclose = (e) => this.onClose(e);
-            this.socket.onmessage = (e) => this.onMessage(e);
+            socket.onopen = () => {
+               if (this.socket === socket) this.onOpen();
+            };
+            socket.onclose = (e) => {
+               if (this.socket === socket) this.onClose(e);
+            };
+            socket.onmessage = (e) => {
+               if (this.socket === socket) void this.onMessage(e);
+            };
 
             const result = await this.waitForAnyEvents(["hello", "disconnected"]);
 
