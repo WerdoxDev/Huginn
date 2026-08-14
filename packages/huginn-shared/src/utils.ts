@@ -8,7 +8,7 @@ import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
 
 import { fileTypes } from "./cdn-types";
-import { parseOklchToRgb } from "./oklch";
+import { parseOklchToRgb } from "./color";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;
@@ -425,34 +425,4 @@ export function diff<T extends Record<string, any>>(a: T, b: T): Partial<T> {
       }
    }
    return result;
-}
-
-export function hexToRgb(hex: string): [number, number, number] {
-   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-   return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
-}
-
-export function rgbToHex(r: number, g: number, b: number): string {
-   return (
-      "#" +
-      [r, g, b]
-         .map((x) => {
-            const hex = Math.round(Math.max(0, Math.min(255, x))).toString(16);
-            return hex.length === 1 ? "0" + hex : hex;
-         })
-         .join("")
-   );
-}
-
-export function interpolateColor(color1: string, color2: string, progress: number): string {
-   const rgb1 = parseOklchToRgb(color1);
-   const rgb2 = parseOklchToRgb(color2);
-   if (!rgb1 || !rgb2) return "#000000"; // Fallback to black if parsing fails
-
-   const [r1, g1, b1] = rgb1;
-   const [r2, g2, b2] = rgb2;
-   const r = r1 + (r2 - r1) * progress;
-   const g = g1 + (g2 - g1) * progress;
-   const b = b1 + (b2 - b1) * progress;
-   return rgbToHex(r, g, b);
 }
