@@ -42,10 +42,14 @@ public class MessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-        Log.d(TAG, "onMessageReceived");
         super.onMessageReceived(remoteMessage);
 
         Map<String, String> data = remoteMessage.getData();
+
+        if ("add_message".equals(data.get("type")) && !PushNotificationsPlugin.areNotificationsEnabled(this)) {
+            Log.w(TAG, "Notifications disabled locally;");
+            return;
+        }
 
         boolean suppressNotification = isAppInForeground() && "add_message".equals(data.get("type")) && PushNotificationsPlugin.inActiveChannel(data.get("channelId"));
 
@@ -221,7 +225,8 @@ public class MessagingService extends FirebaseMessagingService {
         Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(getColor(R.color.notification_color));
+//        paint.setColor(getColor(R.color.notification_color));
+        paint.setColor(Color.parseColor(PushNotificationsPlugin.getDefaultNotificationColor(this)));
         canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint);
         return output;
     }

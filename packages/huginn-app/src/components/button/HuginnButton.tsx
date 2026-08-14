@@ -15,7 +15,7 @@ const colors = {
 };
 
 export default function HuginnButton(props: HuginnButtonProps) {
-   const { color, className, children, disabled, type, onClick, ...rest } = props;
+   const { color, className, children, disabled, type, onClick, style, ...rest } = props;
 
    return (
       <button
@@ -25,6 +25,7 @@ export default function HuginnButton(props: HuginnButtonProps) {
             colors[color ?? "none"],
          )}
          type={type}
+         style={style}
          disabled={disabled}
          onClick={onClick}
          {...rest}

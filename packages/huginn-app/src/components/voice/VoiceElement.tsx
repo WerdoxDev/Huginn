@@ -80,6 +80,13 @@ export default function VoiceElement(props: {
       [voiceStatus, props.mediaSource],
    );
 
+   function handleClick(e: MouseEvent) {
+      props.onClick?.(props.mediaSource?.producerId ?? "");
+      if (isCamera || isAudioStream || isScreenShare) {
+         e.stopPropagation();
+      }
+   }
+
    async function consume(e: MouseEvent) {
       e.stopPropagation();
 
@@ -131,7 +138,7 @@ export default function VoiceElement(props: {
    return (
       <div
          ref={props.ref}
-         onClick={() => props.onClick?.(props.mediaSource?.producerId ?? "")}
+         onClick={handleClick}
          style={{
             width: props.isGridView ? props.gridElementWidth : "auto",
             height: props.isGridView ? props.gridElementHeight : "auto",

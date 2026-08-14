@@ -1,20 +1,26 @@
 import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
+import HuginnButton from "@components/button/HuginnButton";
 import LoadingIcon from "@components/LoadingIcon";
 import VoiceElement from "@components/voice/VoiceElement";
 import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
 import VoicePopoutStatus from "@components/voice/VoicePopoutStatus";
 import VoiceControls from "@components/VoiceControls";
+import { Transition } from "@headlessui/react";
+import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { isChildWindow } from "@lib/child-window";
+import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { set } from "zod/v3";
 
 import type { MediaSource } from "@/types";
 
@@ -28,6 +34,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { user } = useThisUser();
    const { mediaSources, popoutState } = useVoiceSnapshot();
    const { voicePreferences } = useVoicePreferences();
+   const isMobile = useIsMobile();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
    const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
@@ -66,9 +73,12 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       cols: number;
    }>();
    const [gridHeight, setGridHeight] = useState(250);
+   const [isMobileCallHidden, setIsMobileCallHidden] = useState(true);
+   const [isMobileControlsHidden, setIsMobileControlHidden] = useState(true);
    const { isFullscreen: actualIsFullScreen, toggleFullscreen } = useFullscreen();
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
    const isFullscreen = actualIsFullScreen || !isMainWindow;
+   const isOverlay = isFullscreen || isMobile;
 
    useEffect(() => {
       if (maximizedSource && !mediaSources.some((x) => x.producerId === maximizedSource.producerId)) {
@@ -79,12 +89,29 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    useEffect(() => {
       if (!voiceState.channelId) {
          setMaximizedSource(undefined);
+         setIsMobileCallHidden(true);
+      } else if (voiceState.channelId === props.channelId) {
+         setIsMobileCallHidden(false);
       }
    }, [voiceState]);
 
    useEffect(() => {
       setMaximizedSource(undefined);
+      setIsMobileCallHidden(true);
    }, [props.channelId]);
+
+   useEffect(() => {
+      if (!isMobileCallHidden) {
+         setIsMobileControlHidden(false);
+      }
+   }, [isMobileCallHidden]);
+
+   useBackHandler(BackHandlerId.CallOverlay, () => {
+      if (!isMobileCallHidden) {
+         setIsMobileCallHidden(true);
+         return true;
+      }
+   });
 
    useLayoutEffect(() => {
       const controller = new AbortController();
@@ -131,7 +158,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       return () => {
          controller.abort();
       };
-   }, [isShown, maximizedSource]);
+   }, [isShown, maximizedSource, isMobileCallHidden]);
 
    useEffect(() => {
       if (maximizedSource && !mediaSources.some((source) => source.producerId === maximizedSource.producerId)) {
@@ -145,7 +172,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
    useLayoutEffect(() => {
       updateGridSize();
-   }, [mediaSources, gridHeight, thisCallState, maximizedSource, isFullscreen, thisVoiceStates, isGridView, popoutState]);
+   }, [mediaSources, gridHeight, thisCallState, maximizedSource, isOverlay, thisVoiceStates, isGridView, popoutState, isMobileCallHidden]);
 
    useEffect(() => {
       const controller = new AbortController();
@@ -163,7 +190,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       };
    }, [isResizing]);
 
-   function resize(e: MouseEvent) {
+   function resize(e: globalThis.MouseEvent) {
       if (!gridRef.current || !isResizing) {
          return;
       }
@@ -195,6 +222,17 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             setMaximizedSource(foundSource);
          }
       }
+   }
+
+   function handleClick() {
+      if (isMobile) {
+         setIsMobileControlHidden((prev) => !prev);
+      }
+   }
+
+   function handleHideCallClick(e: MouseEvent) {
+      setIsMobileCallHidden(true);
+      e.stopPropagation();
    }
 
    const updateGridSize = useEffectEvent(() => {
@@ -273,17 +311,52 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       return;
    }
 
-   return (
+   const indicatorMask = createRadialMaskStyle([
+      {
+         radius: `0.75rem`,
+         x: `calc(100% - 0.75rem + 2px)`,
+         y: `calc(100% - 0.75rem + 2px)`,
+      },
+   ]);
+
+   const mobileCallIndicator = (
+      <div className={clsx("fixed top-20 right-4 z-20 transition-opacity", isMobileCallHidden ? "opacity-100" : "pointer-events-none opacity-0")}>
+         <HuginnButton
+            style={indicatorMask}
+            color="primary"
+            className="flex size-16 items-center justify-center rounded-full! text-white shadow-lg"
+            onClick={() => setIsMobileCallHidden(false)}
+         >
+            <IconMingcutePhoneFill className="size-8" />
+         </HuginnButton>
+         <div className="bg-positive-500 absolute right-0 bottom-0 flex size-5 items-center justify-center rounded-full text-sm text-white">
+            {thisVoiceStates.length}
+         </div>
+      </div>
+   );
+
+   const call = (
       <div
          className={clsx(
             "group/wrapper shadow-surface-void z-10 flex shrink-0 flex-col gap-y-3 shadow-2xl select-none",
-            isFullscreen
-               ? "bg-surface-deep fixed inset-0 z-997 rounded-none"
-               : "ring-primary-800 relative z-30 m-2 mb-0 rounded-xl bg-black/80 ring-2",
+            isOverlay ? "bg-surface-deep fixed inset-0 z-997 rounded-none" : "ring-primary-800 relative z-30 m-2 mb-0 rounded-xl bg-black/80 ring-2",
+            isMobile && "transition-all duration-200 data-closed:translate-y-full data-closed:scale-90 data-closed:blur-xl",
          )}
          ref={containerRef}
+         onClick={handleClick}
       >
-         <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 h-3 cursor-ns-resize" />
+         <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 hidden h-3 cursor-ns-resize lg:block" />
+
+         {isMobile && (
+            <HuginnButton
+               type="button"
+               color="surface-alt"
+               className="absolute top-3 left-3 z-40 flex size-10 items-center justify-center rounded-full text-white/70 shadow-lg transition-colors active:text-white"
+               onClick={handleHideCallClick}
+            >
+               <IconMingcuteDownFill className="size-6" />
+            </HuginnButton>
+         )}
 
          <VoicePopoutIndicator />
          {isChildWindow() && <VoicePopoutStatus />}
@@ -295,7 +368,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
                !isLoading && !maximizedSource && "pb-20",
             )}
             ref={gridRef}
-            style={{ height: !isFullscreen ? gridHeight : "100%" }}
+            style={{ height: !isOverlay ? gridHeight : "100%" }}
          >
             {popoutState.isPopoutOpen && !isChildWindow() ? (
                <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
@@ -386,6 +459,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          </div>
          {!isLoading && (
             <VoiceControls
+               isMobile={isMobile}
+               isMobileControlsHidden={isMobileControlsHidden}
                show={showControls || !isGridView}
                isFullscreen={actualIsFullScreen}
                isInVoice={voiceState.channelId === props.channelId}
@@ -396,4 +471,17 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          )}
       </div>
    );
+
+   if (isMobile) {
+      return (
+         <>
+            {mobileCallIndicator}
+            <Transition show={!isMobileCallHidden} appear>
+               {call}
+            </Transition>
+         </>
+      );
+   }
+
+   return call;
 }

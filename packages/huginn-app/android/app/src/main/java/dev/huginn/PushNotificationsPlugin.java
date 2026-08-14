@@ -46,10 +46,13 @@ public class PushNotificationsPlugin extends Plugin {
     private static final String EVENT_TOKEN_CHANGE = "registration";
     private static final String EVENT_TOKEN_ERROR = "registrationError";
 
+    private static final String PREFERENCES_NAME = "notification_preferences";
+    private static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
+    private static final String DEFAULT_NOTIFICATION_COLOR= "default_notification_color";
+
     private static volatile String activeChannelId;
 
     public void load() {
-        Log.d(TAG, "load: ");
         notificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
         staticBridge = this.bridge;
@@ -130,6 +133,20 @@ public class PushNotificationsPlugin extends Plugin {
     @PluginMethod
     public void setActiveChannel(PluginCall call) {
         activeChannelId = call.getString("channelId");
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setNotificationsEnabled(PluginCall call) {
+        boolean enabled = call.getBoolean("enabled");
+        getContext().getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply();
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setDefaultNotificationColor(PluginCall call) {
+        String color = call.getString("color");
+        getContext().getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(DEFAULT_NOTIFICATION_COLOR, color).apply();
         call.resolve();
     }
 
@@ -295,6 +312,14 @@ public class PushNotificationsPlugin extends Plugin {
 
     public static boolean inActiveChannel(String channelId) {
         return channelId != null && channelId.equals(activeChannelId);
+    }
+
+    public static boolean areNotificationsEnabled(Context context) {
+        return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getBoolean(NOTIFICATIONS_ENABLED, true);
+    }
+
+    public static String getDefaultNotificationColor(Context context) {
+        return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(DEFAULT_NOTIFICATION_COLOR, null);
     }
 
     @PermissionCallback

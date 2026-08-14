@@ -40,6 +40,8 @@ export interface PushNotificationsPlugin {
    requestPermissions(): Promise<PermissionStatus>;
 
    setActiveChannel(options: { channelId: string | null }): Promise<void>;
+   setNotificationsEnabled(options: { enabled: boolean }): Promise<void>;
+   setDefaultNotificationColor(options: { color: string }): Promise<void>;
 
    addListener(eventName: "registration", listenerFunc: (token: Token) => void): Promise<PluginListenerHandle>;
 

@@ -2,7 +2,7 @@ import type { Descendant } from "slate";
 
 import { useInset } from "@contexts/InsetContext";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
-import { useBackHandler } from "@hooks/useBackHandler";
+import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
@@ -156,7 +156,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => controller.abort();
    }, [isKeyboardOpen]);
 
-   useBackHandler("message-box", 100, () => {
+   useBackHandler(BackHandlerId.MessageBox, () => {
       if (isKeyboardOpen || activeMobilePanel) {
          setActiveMobilePanel(null);
          return true;

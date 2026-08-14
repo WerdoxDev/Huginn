@@ -149,7 +149,7 @@ export default function ColorThemeSelector(props: Pick<SettingsTabProps, "onChan
                <div className="text-sm font-medium" style={{ color: activeTheme["primary-400"] }}>
                   {displayedLabel}
                </div>
-               <div className="ml-auto flex items-center gap-x-1.5">
+               <div className="mr-1 ml-auto flex items-center gap-x-1.5">
                   {themeOptions.map((themeOption) => (
                      <button
                         key={themeOption.type}

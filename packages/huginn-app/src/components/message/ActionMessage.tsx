@@ -73,7 +73,7 @@ export default function ActionMessage() {
             !isNextAction && !isUnread ? "mb-1.5" : "mb-0.5",
          )}
       >
-         <div className="bg-surface-alt/70 w-max rounded-md px-1 py-0.5 transition-colors">
+         <div className="bg-surface-alt/70 w-fit max-w-full rounded-md px-1 py-0.5 wrap-break-word transition-colors">
             {type === MessageType.RECIPIENT_REMOVE && (
                <IconMingcuteArrowLeftFill className="text-negative-300 mr-1.5 inline-block size-5 shrink-0 align-middle" />
             )}
@@ -93,7 +93,7 @@ export default function ActionMessage() {
             {type === MessageType.CHANNEL_PINNED_MESSAGE && (
                <IconMingcutePinFill className="text-primary-500 mr-1.5 inline-block size-5 shrink-0 align-middle" />
             )}
-            <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => openUserProfile(author.id)}>
+            <button type="button" className="cursor-pointer font-bold hover:underline active:underline" onClick={() => openUserProfile(author.id)}>
                {authorName}{" "}
             </button>
             {type === MessageType.CALL && (
@@ -122,7 +122,11 @@ export default function ActionMessage() {
             {type === MessageType.CHANNEL_PINNED_MESSAGE && (
                <>
                   <span className="text-text/50"> pinned a </span>
-                  <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => highlightMessage(reference?.messageId)}>
+                  <button
+                     type="button"
+                     className="cursor-pointer font-bold hover:underline active:underline"
+                     onClick={() => highlightMessage(reference?.messageId)}
+                  >
                      message
                   </button>
                </>
@@ -142,7 +146,11 @@ export default function ActionMessage() {
                   {type === MessageType.RECIPIENT_ADD && <span className="text-text/50"> added </span>}
                   {type === MessageType.RECIPIENT_REMOVE && <span className="text-text/50"> removed </span>}
                   {type === MessageType.CHANNEL_OWNER_CHANGED && <span className="text-text/50"> promoted </span>}
-                  <button type="button" className="cursor-pointer font-bold hover:underline" onClick={() => openUserProfile(mentionUsers[0].id)}>
+                  <button
+                     type="button"
+                     className="cursor-pointer font-bold hover:underline active:underline"
+                     onClick={() => openUserProfile(mentionUsers[0].id)}
+                  >
                      {mentionUsers[0].displayName}
                   </button>
                   {type === MessageType.CHANNEL_OWNER_CHANGED && (

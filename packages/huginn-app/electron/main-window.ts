@@ -17,7 +17,6 @@ const { autoUpdater } = electronUpdater;
 
 export class MainWindow extends BaseWindow {
    private selectedDisplaySource?: DisplaySource;
-   private previousProcessId: string | undefined;
    private notificationController: NotificationController = new NotificationController();
    private screenManager: ScreenManager = new ScreenManager();
    private loopbackCapture: LoopbackCapture | undefined;

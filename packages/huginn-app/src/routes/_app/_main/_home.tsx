@@ -2,7 +2,7 @@ import GuildsBar from "@components/GuildsBar";
 import HomeSidebar from "@components/HomeSidebar";
 import UserInfo from "@components/UserInfo";
 import { useInset } from "@contexts/InsetContext";
-import { useBackHandler } from "@hooks/useBackHandler";
+import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
@@ -114,14 +114,14 @@ function HomeLayoutComponent() {
       }
    }, [isMobile, settings?.isChannelSidebarOpen, openRight, closeRight]);
 
-   useBackHandler("left-sidebar", 20, () => {
+   useBackHandler(BackHandlerId.LeftSidebar, () => {
       if (!isLeftOpen) {
          openLeft();
          return true;
       }
    });
 
-   useBackHandler("right-sidebar", 30, () => {
+   useBackHandler(BackHandlerId.RightSidebar, () => {
       if (isRightOpen) {
          closeRight();
          return true;

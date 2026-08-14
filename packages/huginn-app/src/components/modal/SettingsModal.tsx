@@ -268,7 +268,7 @@ function SettingsPanels(props: { currentTabText: string | null; onChange: (value
             {flatTabs.map((tab) => (
                <SettingsTab.Panel
                   key={tab?.name}
-                  className="scroll-surface-deep mt-3 h-full overflow-x-visible overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
+                  className="scroll-surface-deep mt-3 h-full overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
                >
                   {/* <div className="ml-5"> */}
                   {tab?.component ? (
