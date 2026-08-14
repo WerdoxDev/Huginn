@@ -88,14 +88,12 @@ vi.mock("./voice-debugger", () => {
 
 vi.mock("./voice-input-device", () => {
    class VoiceInputDevice {
-      public getStream = vi.fn(async (_deviceId: string, _volume: number, _noiseSuppression: boolean) => {
+      public static getStream = vi.fn(async (_deviceId: string, _volume: number, _noiseSuppression: boolean) => {
          return { getAudioTracks: () => [{ id: "default-audio-track" }] };
       });
-      public initializeAudioLevel = vi.fn(async () => {});
-      public setGain = vi.fn((_volume: number) => {});
-      public close = vi.fn();
-
-      public constructor(public client: any) {}
+      public static initializeAudioLevel = vi.fn(async (_client: any) => {});
+      public static setGain = vi.fn((_volume: number) => {});
+      public static close = vi.fn();
    }
    return { VoiceInputDevice };
 });

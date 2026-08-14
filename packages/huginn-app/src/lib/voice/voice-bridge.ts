@@ -21,11 +21,13 @@ export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
    // Map<producerId, ALC>
    public readonly audioLevelCheckers = new Map<Snowflake, AudioLevelChecker>();
-   public readonly inputDevice: VoiceInputDevice;
+   public readonly inputDevice = VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
    public readonly popout?: VoicePopout;
    public readonly host?: VoiceHost;
+
+   private releaseInput?: () => void;
 
    /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
    public async getCurrentRoundTripTime(): Promise<number | undefined> {
@@ -65,7 +67,6 @@ export class VoiceBridge extends Voice {
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
 
-      this.inputDevice = new VoiceInputDevice(client);
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
       if (window.opener) return;
@@ -100,11 +101,14 @@ export class VoiceBridge extends Voice {
       const settings = storageStore.getState().getCachedValue("settings");
 
       // Initialize the actual audio sending stream
+      this.releaseInput ??= VoiceInputDevice.acquire();
       await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
    }
 
    private async handleReset() {
-      this.inputDevice.close();
+      this.releaseInput?.();
+      this.releaseInput = undefined;
+
       this.stopAudioLoopback();
 
       const voice = voiceStore.getState();
@@ -309,17 +313,18 @@ export class VoiceBridge extends Voice {
       const environment = windowStore.getState().environment;
 
       const otherStream = await this.inputDevice.getStream(environment === "android" ? "" : microphoneDeviceId, microphoneVolume, noiseSuppression);
-      const audioTrack = otherStream.getAudioTracks()[0];
+      const audioTrack = otherStream.getAudioTracks()[0].clone();
 
       try {
-         if (this.transport.getProducer("microphone")) {
+         const producer = this.transport.getProducer("microphone");
+         if (producer && producer.track !== audioTrack) {
             await this.device.replaceMicrophoneTrack(audioTrack);
-         } else {
+         } else if (!producer) {
             await this.device.openMicrophone(audioTrack);
          }
 
-         // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
-         await this.inputDevice.initializeAudioLevel();
+         // Level checking reads from the same stable output stream.
+         await this.inputDevice.initializeAudioLevel(this.client);
       } catch (e) {
          this.inputDevice.close();
          throw e;

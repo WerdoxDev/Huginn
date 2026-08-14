@@ -58,7 +58,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    const [inputDb, setInputDb] = useState(0);
 
    const audioLevel = useRef<AudioLevelChecker>(null);
-   const inputDevice = useRef<VoiceInputDevice>(null);
    const videoRef = useRef<HTMLVideoElement>(null);
    const videoStream = useRef<MediaStream>(null);
    const currentInputDb = useRef(0);
@@ -118,6 +117,7 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    useEffect(() => {
       let interval: ReturnType<typeof window.setTimeout> | undefined;
       let cancelled = false;
+      const releaseInput = VoiceInputDevice.acquire();
 
       async function startMicrophoneTest() {
          if (!client) return;
@@ -131,9 +131,8 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
 
          if (!selectedInput && !isMobileEnvironment) return;
 
-         inputDevice.current ??= new VoiceInputDevice(client);
          audioLevel.current = new AudioLevelChecker();
-         const stream = await inputDevice.current.getStream(
+         const stream = await VoiceInputDevice.getStream(
             isMobileEnvironment ? "" : (selectedInput?.deviceId ?? ""),
             settings.inputVolume,
             noiseSuppression,
@@ -151,17 +150,16 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       return () => {
          cancelled = true;
          clearInterval(interval);
-         inputDevice.current?.close();
          audioLevel.current?.stopChecking();
-         inputDevice.current = null;
          audioLevel.current = null;
+         releaseInput?.();
          currentInputDb.current = 0;
          setInputDb(0);
       };
    }, [isMobileEnvironment, selectedInput, noiseSuppression, permissionStatus, androidRoutes]);
 
    useEffect(() => {
-      inputDevice.current?.setGain(settings.inputVolume);
+      VoiceInputDevice.setGain(settings.inputVolume);
    }, [settings.inputVolume]);
 
    useEffect(() => {
@@ -232,32 +230,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    function onInputThresholdChange(value: number) {
       props.onChange?.({ inputThreshold: value - 100 });
    }
-
-   // async function startMicrophoneTest() {
-   //    let permission = permissionStatus?.microphone;
-   //    if (permission?.status !== "granted") permission = await requestAndroidPermission("microphone");
-   //    if (permission.status !== "granted" || !client) return;
-
-   //    stopMicrophoneTest();
-   //    const checkerInput = new VoiceInputDevice(client);
-   //    inputDevice.current = checkerInput;
-
-   //    try {
-   //       const stream = await checkerInput.getStream(
-   //          isMobileEnvironment ? "" : (selectedInput.deviceId ?? ""),
-   //          settings.inputVolume,
-   //          noiseSuppression,
-   //       );
-   //       audioLevel.current = new AudioLevelChecker();
-   //       audioLevel.current.startChecking(stream);
-   //       audioLevel.current.onAudioLevel = onAudioLevel;
-   //       microphoneInterval.current = setInterval(() => setInputDb(currentInputDb.current), 100);
-   //       await refreshDevices();
-   //    } catch (error) {
-   //       stopMicrophoneTest();
-   //       console.error(error);
-   //    }
-   // }
 
    function stopCameraTest() {
       if (videoRef.current) videoRef.current.srcObject = null;
