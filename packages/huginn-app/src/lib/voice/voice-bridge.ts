@@ -5,6 +5,7 @@ import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type Vo
 import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
+import { windowStore } from "@stores/windowStore";
 
 import type { AppSettings } from "@/types";
 
@@ -305,7 +306,9 @@ export class VoiceBridge extends Voice {
    }
 
    private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
-      const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
+      const environment = windowStore.getState().environment;
+
+      const otherStream = await this.inputDevice.getStream(environment === "android" ? "" : microphoneDeviceId, microphoneVolume, noiseSuppression);
       const audioTrack = otherStream.getAudioTracks()[0];
 
       try {

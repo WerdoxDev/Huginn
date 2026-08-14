@@ -9,6 +9,7 @@ import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
+import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
 import { Files, type FileItem } from "@lib/capacitor/files-plugin";
 import {
    Gallery,
@@ -19,9 +20,7 @@ import {
    type ThumbnailResult,
 } from "@lib/capacitor/gallery-plugin";
 import { getMobileFilesOptions } from "@lib/queries";
-import { useModals } from "@stores/modalsStore";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { AndroidSettings, IOSSettings, NativeSettings } from "capacitor-native-settings";
 import { clsx } from "clsx";
 import moment from "moment";
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
@@ -355,7 +354,7 @@ function MediaPickerPanel(props: {
    onScroll: (scrollTop: number) => void;
 }) {
    const [thumbnails, setThumbnails] = useState<Record<string, ThumbnailResult>>({});
-   const { updateModals } = useModals();
+   const { openAppSettings, showPermissionIssues } = useNativePermissionModal();
    const [permissionState, setPermissionState] = useState<MediaPermissionState | null>(null);
    const scrollRef = useRef<HTMLDivElement>(null);
    useClearQueryData(["mobile-files"], { keepFirstPage: true, clearOnUnmount: true });
@@ -417,31 +416,12 @@ function MediaPickerPanel(props: {
       const result = await Gallery.checkOrRequestPermission({ skipPartial });
       setPermissionState(result.status);
 
-      if (result.settingsRequired) {
-         updateModals({
-            info: {
-               isOpen: true,
-               title: "Settings needed",
-               text: "We couldn't ask you for permission again. Please allow permission from app settings.",
-               status: "error",
-               action: {
-                  confirm: {
-                     text: "Open settings",
-                     callback: async () => {
-                        await openAppSettings();
-                        updateModals({ info: { isOpen: false } });
-                     },
-                  },
-               },
-            },
-         });
-      } else {
+      const hasPermissionIssue = showPermissionIssues([
+         { name: "photos and videos", status: result.status, settingsRequired: result.settingsRequired },
+      ]);
+      if (!hasPermissionIssue) {
          refetch();
       }
-   }
-
-   async function openAppSettings() {
-      await NativeSettings.open({ optionAndroid: AndroidSettings.ApplicationDetails, optionIOS: IOSSettings.App });
    }
 
    const handleThumbnailReady = useCallback((id: string, result: ThumbnailResult) => {

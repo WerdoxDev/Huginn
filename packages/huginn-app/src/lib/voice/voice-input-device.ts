@@ -1,8 +1,8 @@
 import type { HuginnClient } from "@huginnjs/api";
 
-import { log } from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
+import { windowStore } from "@stores/windowStore";
 
 import { AudioLevelChecker } from "./audio-level-checker";
 
@@ -23,11 +23,12 @@ export class VoiceInputDevice {
 
    public async getStream(deviceId: string, volumePercentage: number, noiseSuppression: boolean) {
       this.options = { deviceId, volumePercentage, noiseSuppression };
+      const isMobileEnvironment = windowStore.getState().environment === "android";
 
       const audioConstraints: MediaTrackConstraints = {
-         deviceId: deviceId,
+         ...(!isMobileEnvironment && deviceId ? { deviceId } : {}),
          sampleRate: 48000,
-         channelCount: 2,
+         channelCount: isMobileEnvironment ? 1 : 2,
          echoCancellation: noiseSuppression,
          noiseSuppression: noiseSuppression,
          autoGainControl: false,
