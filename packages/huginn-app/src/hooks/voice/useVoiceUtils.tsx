@@ -173,6 +173,34 @@ export function useVoiceUtils() {
       }
    }
 
+   async function flipCamera(currentFacingMode?: string) {
+      const facingMode = currentFacingMode === "environment" ? "user" : "environment";
+      let track: MediaStreamTrack | undefined;
+
+      try {
+         const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: facingMode }, frameRate: 30 },
+         });
+         track = stream.getVideoTracks()[0];
+
+         if (!track) throw new Error("The selected camera did not provide a video track");
+
+         await getVoiceHost().openCamera(track);
+      } catch (e) {
+         track?.stop();
+         updateModals({
+            info: {
+               status: "error",
+               title: "Switching Camera Failed",
+               text: getMediaErrorMessage(e, "camera"),
+               isOpen: true,
+            },
+         });
+
+         analytics.log({ level: "error", body: "failed to switch camera", exception: e, attributes: { facingMode } });
+      }
+   }
+
    async function consumeStream(userId: Snowflake, guildId: Snowflake | null, channelId: Snowflake) {
       try {
          await VoiceClient.sendMessage("consume_stream", { userId, guildId, channelId });
@@ -289,6 +317,7 @@ export function useVoiceUtils() {
 
    return {
       openCamera,
+      flipCamera,
       openAudioStream,
       openScreenShare,
       changeStream,

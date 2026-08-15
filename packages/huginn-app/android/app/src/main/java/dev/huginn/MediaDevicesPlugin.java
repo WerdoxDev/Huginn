@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.webkit.WebChromeClient;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -138,7 +139,7 @@ public class MediaDevicesPlugin extends Plugin {
             return;
         }
 
-        startCommunicationInternal();
+//        startCommunicationInternal();
 
         boolean accepted;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -153,15 +154,6 @@ public class MediaDevicesPlugin extends Plugin {
         }
 
         selectedRouteId = routeId;
-        JSObject result = buildAudioRouteState();
-        result.put("accepted", true);
-        call.resolve(result);
-        notifyListeners(EVENT_AUDIO_ROUTE_CHANGED, result);
-    }
-
-    @PluginMethod
-    public void clearAudioRoute(PluginCall call) {
-        clearAudioRouteInternal();
         JSObject result = buildAudioRouteState();
         result.put("accepted", true);
         call.resolve(result);
@@ -246,13 +238,12 @@ public class MediaDevicesPlugin extends Plugin {
     private void stopCommunicationInternal() {
         if (audioManager == null || !communicationStarted) return;
 
-        clearAudioRouteInternal();
+        resetAudioRouteInternal();
         audioManager.setMode(previousAudioMode);
         communicationStarted = false;
     }
 
-//    @SuppressWarnings("deprecation")
-    private void clearAudioRouteInternal() {
+    private void resetAudioRouteInternal() {
         if (audioManager == null) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -265,7 +256,6 @@ public class MediaDevicesPlugin extends Plugin {
         selectedRouteId = null;
     }
 
-//    @SuppressWarnings("deprecation")
     private boolean setLegacyAudioRoute(AudioDeviceInfo route) {
         int type = route.getType();
 
@@ -306,6 +296,7 @@ public class MediaDevicesPlugin extends Plugin {
     private JSObject buildAudioRouteState() {
         List<AudioDeviceInfo> availableRoutes = getAvailableAudioRoutes();
         AudioDeviceInfo activeRoute = getActiveAudioRoute(availableRoutes);
+        ensureSelectedAudioRoute(availableRoutes);
         String activeRouteId = activeRoute == null ? null : getRouteId(activeRoute);
 
         JSArray routes = new JSArray();
@@ -320,6 +311,14 @@ public class MediaDevicesPlugin extends Plugin {
         result.put("communicationStarted", communicationStarted);
         result.put("supportsIndividualRoutes", Build.VERSION.SDK_INT >= Build.VERSION_CODES.S);
         return result;
+    }
+
+    private void ensureSelectedAudioRoute(List<AudioDeviceInfo> availableRoutes) {
+        if (selectedRouteId != null && findRouteInList(availableRoutes, selectedRouteId) != null) return;
+
+        AudioDeviceInfo defaultRoute = findFirstRouteOfType(availableRoutes, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
+        if (defaultRoute == null && !availableRoutes.isEmpty()) defaultRoute = availableRoutes.get(0);
+        selectedRouteId = defaultRoute == null ? null : getRouteId(defaultRoute);
     }
 
     private JSObject buildAudioRoute(AudioDeviceInfo route, boolean active) {
@@ -345,7 +344,8 @@ public class MediaDevicesPlugin extends Plugin {
 
         @SuppressWarnings("deprecation")
         boolean speakerphoneOn = audioManager.isSpeakerphoneOn();
-        if (speakerphoneOn) return findFirstRouteOfType(availableRoutes, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
+        if (speakerphoneOn)
+            return findFirstRouteOfType(availableRoutes, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
 
         @SuppressWarnings("deprecation")
         boolean bluetoothScoOn = audioManager.isBluetoothScoOn();
@@ -437,7 +437,8 @@ public class MediaDevicesPlugin extends Plugin {
     }
 
     private boolean isBluetoothRoute(int type) {
-        if (type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP) return true;
+        if (type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
+            return true;
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && (type == AudioDeviceInfo.TYPE_BLE_HEADSET || type == AudioDeviceInfo.TYPE_BLE_SPEAKER);
     }
@@ -502,7 +503,6 @@ public class MediaDevicesPlugin extends Plugin {
     }
 
     private void notifyAudioRoutesChanged() {
-        if (selectedRouteId != null && findRoute(selectedRouteId) == null) selectedRouteId = null;
         JSObject state = buildAudioRouteState();
         notifyListeners(EVENT_AUDIO_ROUTES_CHANGED, state);
         notifyListeners(EVENT_AUDIO_ROUTE_CHANGED, state);

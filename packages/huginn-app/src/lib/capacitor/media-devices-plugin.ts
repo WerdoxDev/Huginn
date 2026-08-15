@@ -33,7 +33,7 @@ export type AndroidAudioRoute = {
 export type AndroidAudioRouteState = {
    routes: AndroidAudioRoute[];
    activeRouteId: string | null;
-   /** Route explicitly requested through this plugin, if any. */
+   /** Selected route, defaulting to the built-in speaker when available. */
    selectedRouteId: string | null;
    communicationStarted: boolean;
    /** False on Android 10–11, where routing is limited to coarse route categories. */
@@ -52,33 +52,9 @@ export type MediaDevicesPlugin = {
    startCommunication(): Promise<AndroidAudioRouteState>;
    stopCommunication(): Promise<AndroidAudioRouteMutationResult>;
    setAudioRoute(options: { routeId: string }): Promise<AndroidAudioRouteMutationResult>;
-   clearAudioRoute(): Promise<AndroidAudioRouteMutationResult>;
 
    addListener(eventName: "audioRoutesChanged", listener: (state: AndroidAudioRouteState) => void): Promise<PluginListenerHandle>;
    addListener(eventName: "audioRouteChanged", listener: (state: AndroidAudioRouteState) => void): Promise<PluginListenerHandle>;
 };
 
-const unsupportedRouteState: AndroidAudioRouteState = {
-   routes: [],
-   activeRouteId: null,
-   selectedRouteId: null,
-   communicationStarted: false,
-   supportsIndividualRoutes: false,
-};
-
-const unsupportedPermissionStatus: MediaDevicePermissionStatus = {
-   microphone: { status: "prompt", settingsRequired: false },
-   camera: { status: "prompt", settingsRequired: false },
-};
-
-export const NativeMediaDevices = registerPlugin<MediaDevicesPlugin>("MediaDevices", {
-   web: () => ({
-      getPermissionStatus: async () => unsupportedPermissionStatus,
-      checkOrRequestPermissions: async () => unsupportedPermissionStatus,
-      getAudioRoutes: async () => unsupportedRouteState,
-      startCommunication: async () => unsupportedRouteState,
-      stopCommunication: async () => ({ ...unsupportedRouteState, accepted: false }),
-      setAudioRoute: async () => ({ ...unsupportedRouteState, accepted: false }),
-      clearAudioRoute: async () => ({ ...unsupportedRouteState, accepted: false }),
-   }),
-});
+export const NativeMediaDevices = registerPlugin<MediaDevicesPlugin>("MediaDevices", {});

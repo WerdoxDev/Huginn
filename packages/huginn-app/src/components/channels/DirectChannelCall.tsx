@@ -2,6 +2,7 @@ import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingIcon from "@components/LoadingIcon";
+import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import VoiceElement from "@components/voice/VoiceElement";
 import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
 import VoicePopoutStatus from "@components/voice/VoicePopoutStatus";
@@ -14,13 +15,13 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
+import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { isChildWindow } from "@lib/child-window";
 import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { set } from "zod/v3";
 
 import type { MediaSource } from "@/types";
 
@@ -34,6 +35,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { user } = useThisUser();
    const { mediaSources, popoutState } = useVoiceSnapshot();
    const { voicePreferences } = useVoicePreferences();
+   const { flipCamera } = useVoiceUtils();
    const isMobile = useIsMobile();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
@@ -75,6 +77,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const [gridHeight, setGridHeight] = useState(250);
    const [isMobileCallHidden, setIsMobileCallHidden] = useState(true);
    const [isMobileControlsHidden, setIsMobileControlHidden] = useState(true);
+   const [isFlippingCamera, setIsFlippingCamera] = useState(false);
    const { isFullscreen: actualIsFullScreen, toggleFullscreen } = useFullscreen();
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
    const isFullscreen = actualIsFullScreen || !isMainWindow;
@@ -235,6 +238,17 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       e.stopPropagation();
    }
 
+   async function handleFlipCamera() {
+      if (!user || !voiceState.isCameraOn || isFlippingCamera) return;
+
+      setIsFlippingCamera(true);
+      try {
+         await flipCamera(cameraSources[user.id]?.trackSettings?.facingMode);
+      } finally {
+         setIsFlippingCamera(false);
+      }
+   }
+
    const updateGridSize = useEffectEvent(() => {
       if (!gridRef.current) {
          return;
@@ -351,15 +365,33 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             <HuginnButton
                type="button"
                color="surface-alt"
-               className="absolute top-3 left-3 z-40 flex size-10 items-center justify-center rounded-full text-white/70 shadow-lg transition-colors active:text-white"
+               className="absolute top-3 left-3 z-40 flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white"
                onClick={handleHideCallClick}
             >
                <IconMingcuteDownFill className="size-6" />
             </HuginnButton>
          )}
 
+         {isMobile && voiceState.channelId === props.channelId && (
+            <div className="absolute top-3 right-3 z-40 flex gap-x-2" onClick={(event) => event.stopPropagation()}>
+               {voiceState.isCameraOn && (
+                  <HuginnButton
+                     type="button"
+                     color="surface-alt"
+                     aria-label="Flip camera"
+                     className="flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white disabled:opacity-50"
+                     disabled={isFlippingCamera}
+                     onClick={() => void handleFlipCamera()}
+                  >
+                     <IconMingcuteCameraRotateFill className="size-6" />
+                  </HuginnButton>
+               )}
+               <AndroidAudioRouteSelect compact />
+            </div>
+         )}
+
          <VoicePopoutIndicator />
-         {isChildWindow() && <VoicePopoutStatus />}
+         {(isChildWindow() || isMobile) && <VoicePopoutStatus />}
 
          <div
             className={clsx(

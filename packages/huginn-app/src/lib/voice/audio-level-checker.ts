@@ -1,4 +1,4 @@
-import { log, type HMediaKind } from "@huginnjs/shared";
+import { type HMediaKind } from "@huginnjs/shared";
 
 export class AudioLevelChecker {
    private volumeNode: AudioWorkletNode | undefined;
@@ -13,6 +13,7 @@ export class AudioLevelChecker {
    public onAudioLevel?: (db: number) => void;
 
    private messageHandler?: (event: MessageEvent<number>) => void;
+   private generation = 0;
 
    public constructor(producerId?: string, consumerId?: string, userId?: string, kind?: HMediaKind) {
       this.producerId = producerId;
@@ -22,24 +23,32 @@ export class AudioLevelChecker {
    }
 
    public async startChecking(stream: MediaStream) {
-      // this.stopChecking();
+      this.teardown(false);
+
+      const generation = ++this.generation;
       this.isStopped = false;
 
-      log("app:audio-level-checker", "default", "start checking");
-
       this.stream = stream;
-      this.audioContext = new AudioContext();
+      const audioContext = new AudioContext();
+      this.audioContext = audioContext;
 
-      await this.audioContext.audioWorklet.addModule(new URL("volume-processor.js", import.meta.url));
+      try {
+         await audioContext.audioWorklet.addModule(new URL("volume-processor.js", import.meta.url));
+      } catch (error) {
+         // Closing an AudioContext while its worklet is loading rejects addModule with
+         // AbortError. The stop/restart that invalidated this generation already owns
+         // cleanup, so there is nothing left for this start operation to report.
+         if (generation !== this.generation || this.isStopped) return;
 
-      if (this.isStopped) {
          this.stopChecking();
-         return;
+         throw error;
       }
 
-      const source = this.audioContext.createMediaStreamSource(stream);
-      this.volumeNode = new AudioWorkletNode(this.audioContext, "volume-processor");
-      source.connect(this.volumeNode).connect(this.audioContext.destination);
+      if (generation !== this.generation || this.isStopped) return;
+
+      const source = audioContext.createMediaStreamSource(stream);
+      this.volumeNode = new AudioWorkletNode(audioContext, "volume-processor");
+      source.connect(this.volumeNode).connect(audioContext.destination);
 
       this.messageHandler = (event: MessageEvent<number>) => {
          if (this.isStopped) return;
@@ -52,14 +61,18 @@ export class AudioLevelChecker {
    }
 
    public stopChecking() {
-      log("app:audio-level-checker", "default", "stop checking");
+      this.teardown(true);
+   }
+
+   private teardown(clearListener: boolean) {
+      this.generation += 1;
       this.isStopped = true;
 
       if (this.volumeNode?.port && this.messageHandler) {
          this.volumeNode.port.onmessage = null;
       }
 
-      this.onAudioLevel = undefined;
+      if (clearListener) this.onAudioLevel = undefined;
       this.messageHandler = undefined;
 
       this.volumeNode?.port.close();

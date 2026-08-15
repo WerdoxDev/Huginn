@@ -44,7 +44,7 @@ export default function VoiceElement(props: {
 }) {
    const { open: openContextMenu } = useContextMenu("voice_element");
    const { consumeStream } = useVoiceUtils();
-   const { client, voiceStatus } = useClientStore();
+   const { voiceStatus } = useClientStore();
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);

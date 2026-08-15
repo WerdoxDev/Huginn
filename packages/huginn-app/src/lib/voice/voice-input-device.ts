@@ -47,7 +47,10 @@ export class VoiceInputDevice {
          noiseSuppression,
       };
 
-      if (this.openingPromise) await this.openingPromise;
+      if (this.openingPromise) {
+         console.log("WAITING FOR OPENING PROMISE");
+         await this.openingPromise;
+      }
 
       this.ensureAudioGraph();
 
@@ -63,9 +66,14 @@ export class VoiceInputDevice {
          }
       }
 
-      if (!this.destination) throw new Error("The voice input was closed before it finished opening.");
+      if (!this.destination || !this.gainNode) throw new Error("The voice input was closed before it finished opening.");
 
+      this.source?.connect(this.gainNode);
       this.setGain(volumePercentage);
+
+      await this.audioContext?.resume();
+
+      console.log("GET STREAM");
       return this.destination.stream;
    }
 
@@ -107,8 +115,12 @@ export class VoiceInputDevice {
 
       this.stopAudioLevel();
 
+      const track = this.destination.stream.getAudioTracks()[0].clone();
+      track.enabled = true;
+      const stream = new MediaStream([track]);
+
       this.audioLevel = new AudioLevelChecker();
-      void this.audioLevel.startChecking(this.destination.stream);
+      void this.audioLevel.startChecking(stream);
       this.audioLevel.onAudioLevel = (db) => handleAudioLevel(client, db);
 
       let speaking = false;
@@ -171,7 +183,7 @@ export class VoiceInputDevice {
    private static ensureAudioGraph() {
       if (this.audioContext && this.gainNode && this.destination) return;
 
-      const audioContext = new AudioContext();
+      const audioContext = new AudioContext({ latencyHint: "interactive" });
       const gainNode = audioContext.createGain();
       const destination = audioContext.createMediaStreamDestination();
 
@@ -185,6 +197,7 @@ export class VoiceInputDevice {
    private static async replaceInputStream(options: VoiceInputOptions, isMobileEnvironment: boolean, generation: number) {
       this.source?.disconnect();
       this.stopStream(this.currentStream);
+
       this.source = undefined;
       this.currentStream = undefined;
       this.options = undefined;
@@ -193,20 +206,21 @@ export class VoiceInputDevice {
          ...(!isMobileEnvironment && options.deviceId ? { deviceId: options.deviceId } : {}),
          sampleRate: 48000,
          channelCount: isMobileEnvironment ? 1 : 2,
-         echoCancellation: options.noiseSuppression,
+         echoCancellation: true,
          noiseSuppression: options.noiseSuppression,
          autoGainControl: false,
       };
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       if (generation !== this.generation || !this.audioContext || !this.gainNode) {
+         console.log(generation, this.generation, this.audioContext, this.gainNode);
          this.stopStream(stream);
+         // return false;
          throw new Error("The voice input was closed before it finished opening.");
       }
 
       try {
          const source = this.audioContext.createMediaStreamSource(stream);
-         source.connect(this.gainNode);
 
          this.currentStream = stream;
          this.source = source;

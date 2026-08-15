@@ -3,15 +3,11 @@ import HuginnButton from "@components/button/HuginnButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";
+import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import { useCapacitorListener } from "@hooks/useCapacitorListener";
 import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
 import { clamp, remap } from "@huginnjs/shared";
-import {
-   NativeMediaDevices,
-   type AndroidAudioRouteState,
-   type MediaDevicePermission,
-   type MediaDevicePermissionStatus,
-} from "@lib/capacitor/media-devices-plugin";
+import { NativeMediaDevices, type MediaDevicePermission, type MediaDevicePermissionStatus } from "@lib/capacitor/media-devices-plugin";
 import { AudioLevelChecker } from "@lib/voice/audio-level-checker";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useClient } from "@stores/clientStore";
@@ -21,14 +17,6 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { SelectItem, SettingsTabProps } from "@/types";
-
-const defaultAndroidRouteState: AndroidAudioRouteState = {
-   routes: [],
-   activeRouteId: null,
-   selectedRouteId: null,
-   communicationStarted: false,
-   supportsIndividualRoutes: false,
-};
 
 export default function SettingsVoiceTab(props: SettingsTabProps) {
    const { environment } = useHuginnWindow();
@@ -52,7 +40,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    );
 
    const [permissionStatus, setPermissionStatus] = useState<MediaDevicePermissionStatus | null>(null);
-   const [androidRoutes, setAndroidRoutes] = useState(defaultAndroidRouteState);
    const [noiseSuppression, setNoiseSuppression] = useState(settings.noiseSuppression);
    const [isTestingCamera, setIsTestingCamera] = useState(false);
    const [inputDb, setInputDb] = useState(0);
@@ -74,25 +61,19 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       () => cameraDevices.find((device) => device.deviceId === settings.cameraDeviceId),
       [cameraDevices, settings.cameraDeviceId],
    );
-
-   const androidRouteOptions = useMemo<SelectItem[]>(
-      () => [{ text: "System default", value: "" }, ...androidRoutes.routes.map((route) => ({ text: route.name, value: route.id }))],
-      [androidRoutes.routes],
-   );
+   const microphoneDeviceId = isMobileEnvironment ? "" : selectedInput?.deviceId;
+   const microphonePermissionStatus = permissionStatus?.microphone.status;
 
    useEffect(() => {
       if (!isMobileEnvironment) return;
 
       let cancelled = false;
       async function initializeAndroidDevices() {
-         const [permissions, routes] = await Promise.all([
-            NativeMediaDevices.checkOrRequestPermissions({ microphone: true, camera: true }),
-            NativeMediaDevices.getAudioRoutes(),
-         ]);
+         const permissions = await NativeMediaDevices.checkOrRequestPermissions({ microphone: true, camera: true });
+
          if (cancelled) return;
 
          setPermissionStatus(permissions);
-         setAndroidRoutes(routes);
          showAndroidPermissionIssues(permissions);
          if (permissions.microphone.status === "granted" || permissions.camera.status === "granted") await refreshDevices();
       }
@@ -103,8 +84,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       };
    }, [isMobileEnvironment]);
 
-   useCapacitorListener(() => NativeMediaDevices.addListener("audioRoutesChanged", setAndroidRoutes), []);
-   useCapacitorListener(() => NativeMediaDevices.addListener("audioRouteChanged", setAndroidRoutes), []);
    useCapacitorListener(
       () =>
          App.addListener("appStateChange", ({ isActive }) => {
@@ -114,49 +93,49 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
       [],
    );
 
+   useEffect(() => VoiceInputDevice.acquire(), []);
+
    useEffect(() => {
       let interval: ReturnType<typeof window.setTimeout> | undefined;
       let cancelled = false;
-      const releaseInput = VoiceInputDevice.acquire();
 
       async function startMicrophoneTest() {
          if (!client) return;
-         if (isMobileEnvironment) {
-            let permission = permissionStatus?.microphone;
-            if (permission?.status !== "granted") permission = await requestAndroidPermission("microphone");
-            if (permission.status !== "granted") return;
+         if (isMobileEnvironment && microphonePermissionStatus !== "granted") return;
+
+         if (cancelled) return;
+
+         if (!microphoneDeviceId && !isMobileEnvironment) return;
+
+         const stream = await VoiceInputDevice.getStream(microphoneDeviceId ?? "", settings.inputVolume, noiseSuppression);
+         if (cancelled) return;
+
+         const checker = new AudioLevelChecker();
+         checker.onAudioLevel = onAudioLevel;
+         audioLevel.current = checker;
+         await checker.startChecking(stream);
+
+         if (cancelled || audioLevel.current !== checker) {
+            checker.stopChecking();
+            return;
          }
-
-         if (cancelled) return;
-
-         if (!selectedInput && !isMobileEnvironment) return;
-
-         audioLevel.current = new AudioLevelChecker();
-         const stream = await VoiceInputDevice.getStream(
-            isMobileEnvironment ? "" : (selectedInput?.deviceId ?? ""),
-            settings.inputVolume,
-            noiseSuppression,
-         );
-         if (cancelled) return;
-
-         audioLevel.current.startChecking(stream);
-         audioLevel.current.onAudioLevel = onAudioLevel;
 
          interval = setInterval(() => setInputDb(currentInputDb.current), 100);
       }
 
-      void startMicrophoneTest().catch(console.error);
+      void startMicrophoneTest().catch((error: unknown) => {
+         if (!cancelled) console.error(error);
+      });
 
       return () => {
          cancelled = true;
          clearInterval(interval);
          audioLevel.current?.stopChecking();
          audioLevel.current = null;
-         releaseInput?.();
          currentInputDb.current = 0;
          setInputDb(0);
       };
-   }, [isMobileEnvironment, selectedInput, noiseSuppression, permissionStatus, androidRoutes]);
+   }, [client, isMobileEnvironment, microphoneDeviceId, microphonePermissionStatus, noiseSuppression]);
 
    useEffect(() => {
       VoiceInputDevice.setGain(settings.inputVolume);
@@ -212,11 +191,6 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    function onCameraChange(item: SelectItem) {
       stopCameraTest();
       props.onChange?.({ cameraDeviceId: item.value });
-   }
-
-   async function onAndroidRouteChange(item: SelectItem) {
-      const state = item.value ? await NativeMediaDevices.setAudioRoute({ routeId: item.value }) : await NativeMediaDevices.clearAudioRoute();
-      setAndroidRoutes(state);
    }
 
    function onInputVolumeChange(value: number) {
@@ -304,23 +278,13 @@ export default function SettingsVoiceTab(props: SettingsTabProps) {
    );
 
    if (isMobileEnvironment) {
-      const selectedRoute = androidRouteOptions.find((route) => route.value === (androidRoutes.selectedRouteId ?? ""));
       const microphonePermission = permissionStatus?.microphone;
       const cameraPermission = permissionStatus?.camera;
 
       return (
          <div className="flex flex-col items-center">
             <div className="flex w-full max-w-xl flex-col gap-y-5">
-               <HuginnSelect className="w-full" onChange={onAndroidRouteChange} selected={selectedRoute}>
-                  <HuginnSelect.Label>Audio Route</HuginnSelect.Label>
-                  <HuginnSelect.List className="w-full!" placeholder="Loading audio routes...">
-                     <HuginnSelect.ItemsWrapper>
-                        {androidRouteOptions.map((route) => (
-                           <HuginnSelect.Item key={route.value || "system-default"} item={route} />
-                        ))}
-                     </HuginnSelect.ItemsWrapper>
-                  </HuginnSelect.List>
-               </HuginnSelect>
+               <AndroidAudioRouteSelect />
 
                {microphonePermission?.status === "granted" ? (
                   <>
@@ -471,10 +435,10 @@ function PermissionNotice(props: {
    const checking = !props.permission;
 
    return (
-      <div className="bg-surface-alt/60 flex flex-col gap-y-3 rounded-lg p-4">
+      <div className="bg-surface-alt flex flex-col gap-y-3 rounded-lg p-4">
          <div>
             <div className="text-text font-medium">{props.name} permission</div>
-            <div className="text-text/60 mt-1 text-sm">
+            <div className="text-text/70 mt-1 text-sm">
                {checking
                   ? "Checking permission…"
                   : permanentlyDenied

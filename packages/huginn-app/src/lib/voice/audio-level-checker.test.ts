@@ -172,6 +172,38 @@ describe("AudioLevelChecker", () => {
          // Source/node creation happens after the isStopped check, so it should never run.
          expect(lastWorkletNode).toBeUndefined();
       });
+
+      it("handles an addModule rejection caused by stopping while the module is loading", async () => {
+         const checker = new AudioLevelChecker();
+         let rejectAddModule!: (error: unknown) => void;
+         addModuleImpl = () =>
+            new Promise((_, reject) => {
+               rejectAddModule = reject;
+            });
+
+         const startPromise = checker.startChecking(stream);
+         await Promise.resolve();
+
+         checker.stopChecking();
+         rejectAddModule(new DOMException("Unable to load a worklet's module.", "AbortError"));
+
+         await expect(startPromise).resolves.toBeUndefined();
+         expect(checker.isStopped).toBe(true);
+         expect(checker.audioContext).toBeUndefined();
+         expect(lastWorkletNode).toBeUndefined();
+      });
+
+      it("still rejects when addModule fails while checking is active", async () => {
+         const error = new Error("worklet failed to load");
+         addModuleImpl = () => Promise.reject(error);
+         const checker = new AudioLevelChecker();
+
+         await expect(checker.startChecking(stream)).rejects.toBe(error);
+
+         expect(checker.isStopped).toBe(true);
+         expect(checker.audioContext).toBeUndefined();
+         expect(lastWorkletNode).toBeUndefined();
+      });
    });
 
    describe("message handling", () => {

@@ -436,14 +436,14 @@ function MediaPickerPanel(props: {
                {error.message === GalleryErrorCode.DENIED_ONCE ? (
                   <>
                      <div>Permission is required to access files</div>
-                     <HuginnButton color="primary" onClick={() => requestPermission(false)} className="px-2 py-1">
+                     <HuginnButton color="primary" onClick={() => requestPermission(false)} className="px-4 py-2">
                         Ask for permission
                      </HuginnButton>
                   </>
                ) : (
                   <>
                      <div>Permission was permanently denied. Please allow permission from app settings.</div>
-                     <HuginnButton color="primary" onClick={() => openAppSettings()} className="px-2 py-1">
+                     <HuginnButton color="primary" onClick={() => openAppSettings()} className="px-4 py-2">
                         Open settings
                      </HuginnButton>
                   </>
@@ -477,7 +477,7 @@ function MediaPickerPanel(props: {
                   {permissionState === "partial" && (
                      <div className="flex shrink-0 flex-col items-center justify-center gap-y-2 px-10 py-5 text-center">
                         <div className="text-text/70">Limited access was given. If you want more photos, change the app permission.</div>
-                        <HuginnButton color="primary" onClick={() => requestPermission(true)} className="px-2 py-1">
+                        <HuginnButton color="primary" onClick={() => requestPermission(true)} className="px-4 py-2">
                            Change permission
                         </HuginnButton>
                      </div>

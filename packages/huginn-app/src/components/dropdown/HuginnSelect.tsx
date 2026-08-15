@@ -54,11 +54,14 @@ export default function HuginnSelect<T = string>(props: {
 }
 
 function List(props: {
+   ariaLabel?: string;
    className?: string;
    children?: ReactNode;
+   hideValue?: boolean;
    onClick?: () => void;
    placeholder?: string;
    hideArrow?: boolean;
+   startIcon?: ReactNode;
    triggerClassName?: string;
 }) {
    const context = useContext(SelectContext);
@@ -66,24 +69,28 @@ function List(props: {
    return (
       <div className={clsx("bg-surface-alt w-full overflow-hidden rounded-lg lg:w-52", props.className)}>
          <Select.Trigger
+            aria-label={props.ariaLabel}
             onClick={context.isMobile ? () => context.setIsDrawerOpen(true) : props.onClick}
             className={clsx(
                "relative flex w-full cursor-pointer items-center gap-x-1.5 p-2 text-white outline-hidden select-none",
                props.triggerClassName,
             )}
          >
-            <Select.Value className="flex shrink items-center gap-x-2 overflow-hidden" placeholder={props.placeholder} render={<div></div>}>
-               {(value?: SelectItem) =>
-                  value ? (
-                     <>
-                        {value.icon}
-                        {value.text && <span className="truncate">{value.text}</span>}
-                     </>
-                  ) : (
-                     <span className="text-text/80">{props.placeholder}</span>
-                  )
-               }
-            </Select.Value>
+            {props.startIcon}
+            {!props.hideValue && (
+               <Select.Value className="flex shrink items-center gap-x-2 overflow-hidden" placeholder={props.placeholder} render={<div></div>}>
+                  {(value?: SelectItem) =>
+                     value ? (
+                        <>
+                           {value.icon}
+                           {value.text && <span className="truncate">{value.text}</span>}
+                        </>
+                     ) : (
+                        <span className="text-text/80">{props.placeholder}</span>
+                     )
+                  }
+               </Select.Value>
+            )}
             {!props.hideArrow && (
                <Select.Icon
                   className={(state) =>

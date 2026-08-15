@@ -22,7 +22,7 @@ export const drawerPopupClass = clsx(
    // "data-nested-drawer-open:h-[calc(var(--height)+var(--bleed))] data-nested-drawer-open:overflow-hidden",
    // "data-nested-drawer-swiping:duration-0 data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*2000ms)]",
    // "data-starting-style:[transform:translateY(calc(100%-var(--bleed)+2px))] data-swiping:duration-0",
-   // "data-swiping:select-none data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*2000ms)]",
+   // "data-swiping:select-none data-ending-style:data-swiping:durati<on-[calc(var(--drawer-swipe-strength)*2000ms)]",
 
    "bg-surface-void pointer-events-auto flex w-full max-w-screen flex-col overflow-hidden rounded-t-xl p-2 shadow-lg outline-hidden select-none",
    "duration-200 [transition:transform_200ms,height_200ms,opacity_200ms]",

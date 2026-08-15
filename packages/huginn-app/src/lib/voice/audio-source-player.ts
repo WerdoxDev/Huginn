@@ -73,8 +73,6 @@ export class AudioSourcePlayer {
    }
 
    public setSinkId(deviceId: string) {
-      if (windowStore.getState().environment === "android") return;
-
       this.audioContext.setSinkId(deviceId);
       if (this.audioContext.state === "suspended") {
          this.audioContext.resume();
