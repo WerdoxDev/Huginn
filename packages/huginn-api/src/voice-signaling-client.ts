@@ -360,7 +360,6 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    }
 
    private async handleResumed() {
-      console.log("RESUMED");
       this.setStatus("authenticated");
    }
 
