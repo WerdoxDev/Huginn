@@ -1,14 +1,11 @@
 import type { MediaKind } from "mediasoup/types";
 
-import emojiData from "emojibase-data/en/compact.json" with { type: "json" };
-import emojiShortcodes from "emojibase-data/en/shortcodes/emojibase.json" with { type: "json" };
 import { hash } from "ohash";
 
 import type { GatewayOperationTypes } from "./gateway-types";
 import type { HMediaKind } from "./voice-types";
 
 import { fileTypes } from "./cdn-types";
-import { parseOklchToRgb } from "./color";
 
 export function pick<Data extends object, Keys extends keyof Data>(data: Data, keys: Keys[]): Pick<Data, Keys> {
    const result = {} as Pick<Data, Keys>;
