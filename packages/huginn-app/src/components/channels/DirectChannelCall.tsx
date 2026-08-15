@@ -3,6 +3,7 @@ import type { Snowflake, Unpacked } from "@huginnjs/shared";
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingIcon from "@components/LoadingIcon";
 import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
+import AndroidCameraFlipButton from "@components/voice/AndroidCameraFlipButton";
 import VoiceElement from "@components/voice/VoiceElement";
 import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
 import VoicePopoutStatus from "@components/voice/VoicePopoutStatus";
@@ -35,7 +36,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const { user } = useThisUser();
    const { mediaSources, popoutState } = useVoiceSnapshot();
    const { voicePreferences } = useVoicePreferences();
-   const { flipCamera } = useVoiceUtils();
    const isMobile = useIsMobile();
 
    const thisVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channelId), [voiceStates, props.channelId]);
@@ -77,7 +77,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const [gridHeight, setGridHeight] = useState(250);
    const [isMobileCallHidden, setIsMobileCallHidden] = useState(true);
    const [isMobileControlsHidden, setIsMobileControlHidden] = useState(true);
-   const [isFlippingCamera, setIsFlippingCamera] = useState(false);
    const { isFullscreen: actualIsFullScreen, toggleFullscreen } = useFullscreen();
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
    const isFullscreen = actualIsFullScreen || !isMainWindow;
@@ -238,17 +237,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       e.stopPropagation();
    }
 
-   async function handleFlipCamera() {
-      if (!user || !voiceState.isCameraOn || isFlippingCamera) return;
-
-      setIsFlippingCamera(true);
-      try {
-         await flipCamera(cameraSources[user.id]?.trackSettings?.facingMode);
-      } finally {
-         setIsFlippingCamera(false);
-      }
-   }
-
    const updateGridSize = useEffectEvent(() => {
       if (!gridRef.current) {
          return;
@@ -374,18 +362,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
          {isMobile && voiceState.channelId === props.channelId && (
             <div className="absolute top-3 right-3 z-40 flex gap-x-2" onClick={(event) => event.stopPropagation()}>
-               {voiceState.isCameraOn && (
-                  <HuginnButton
-                     type="button"
-                     color="surface-alt"
-                     aria-label="Flip camera"
-                     className="flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white disabled:opacity-50"
-                     disabled={isFlippingCamera}
-                     onClick={() => void handleFlipCamera()}
-                  >
-                     <IconMingcuteCameraRotateFill className="size-6" />
-                  </HuginnButton>
-               )}
+               {voiceState.isCameraOn && <AndroidCameraFlipButton cameraSource={cameraSources[user.id]} />}
                <AndroidAudioRouteSelect compact />
             </div>
          )}

@@ -25,7 +25,6 @@ function RouteComponent() {
       [mediaSources, target],
    );
 
-   console.log(mediaSources, target);
    const secondMediaSource = useMemo(
       () =>
          mediaSource?.kind === "stream_video"

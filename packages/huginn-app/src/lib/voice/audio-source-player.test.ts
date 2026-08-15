@@ -1,6 +1,5 @@
 import type { HMediaKind, Snowflake } from "@huginnjs/shared";
 
-import { log } from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

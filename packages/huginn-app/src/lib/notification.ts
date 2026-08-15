@@ -37,7 +37,6 @@ async function initMobileNotifications() {
    await PushNotifications.addListener("pushNotificationActionPerformed", async (notification) => {
       analytics.log({ body: "push notification action performed", attributes: { notification }, level: "info" });
 
-      console.log(notification, router.history.location.pathname);
       if (router.history.location.pathname === "/app/") {
          sessionStorage.setItem(
             "redirect",

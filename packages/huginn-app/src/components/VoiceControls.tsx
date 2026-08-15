@@ -94,7 +94,6 @@ export default function VoiceControls(props: {
    }
 
    function handleToggleCamera() {
-      console.log(props.isMobileControlsHidden);
       if (props.isMobile && props.isMobileControlsHidden) return;
 
       if (voiceState.isCameraOn) closeCamera();

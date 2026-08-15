@@ -53,7 +53,7 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    useEffect(() => {
       if (huginnWindow.environment !== "android") return;
 
-      void PushNotifications.setDefaultNotificationColor({ color: oklchToHex(palette["primary"][settings.theme]["primary-500"]) });
+      void PushNotifications.setDefaultNotificationColor({ color: oklchToHex(palette["primary"][settings.theme]["primary-700"]) });
    }, [huginnWindow.environment, settings.theme]);
 
    return props.children;

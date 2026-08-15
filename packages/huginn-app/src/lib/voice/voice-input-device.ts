@@ -48,7 +48,6 @@ export class VoiceInputDevice {
       };
 
       if (this.openingPromise) {
-         console.log("WAITING FOR OPENING PROMISE");
          await this.openingPromise;
       }
 
@@ -73,7 +72,6 @@ export class VoiceInputDevice {
 
       await this.audioContext?.resume();
 
-      console.log("GET STREAM");
       return this.destination.stream;
    }
 
@@ -213,9 +211,7 @@ export class VoiceInputDevice {
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       if (generation !== this.generation || !this.audioContext || !this.gainNode) {
-         console.log(generation, this.generation, this.audioContext, this.gainNode);
          this.stopStream(stream);
-         // return false;
          throw new Error("The voice input was closed before it finished opening.");
       }
 

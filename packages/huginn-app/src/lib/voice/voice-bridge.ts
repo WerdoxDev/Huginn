@@ -254,7 +254,6 @@ export class VoiceBridge extends Voice {
 
       // Start streaming with new input device
       if (difference.inputDeviceId !== undefined || difference.noiseSuppression !== undefined) {
-         console.log("ELIGIBLE");
          void this.openOrReplaceMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression, environment);
 
          // Android needs to replay the audio sources to put them in the communications channel.

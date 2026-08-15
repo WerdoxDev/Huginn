@@ -28,7 +28,7 @@ import java.util.List;
 public class MessageNotifier {
     private static final String TAG = MessageNotifier.class.getSimpleName();
     private static final String PREFERENCES_NAME = "message_notification_history";
-    private static final int MAX_MESSAGES_PER_CONVERSATION = 2;
+    private static final int MAX_MESSAGES_PER_CONVERSATION = 10;
     private static final Object STORE_LOCK = new Object();
 
     public static final String EXTRA_CONVERSATION_ID = "dev.huginn.notification.CONVERSATION_ID";

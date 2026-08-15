@@ -347,8 +347,6 @@ export function usePreviewMessageRenderer(options?: {
             deletePath = editor.after(path, { unit: "offset" })!.path;
          }
 
-         console.log(voidToken);
-
          editor.delete({ at: { anchor: { path: deletePath, offset: voidToken.start }, focus: { path: deletePath, offset: voidToken.end } } });
 
          const voidElement = buildVoidElement(voidToken);

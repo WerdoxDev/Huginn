@@ -32,7 +32,6 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
          }
       },
       onError(error) {
-         console.log(error);
          isChecking.current = false;
          options.onError?.(error.message);
       },
