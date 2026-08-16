@@ -1,8 +1,11 @@
+import type { PluginListenerHandle } from "@capacitor/core";
 import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
+import { ForegroundService, ServiceType } from "@capawesome-team/capacitor-android-foreground-service";
 import { HuginnClient, Voice, type VoiceOptions } from "@huginnjs/api";
 import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginnjs/shared";
 import { NativeMediaDevices } from "@lib/capacitor/media-devices-plugin";
+import { getChannelComputedName, getChannels, getGroupChannelName } from "@lib/query-utils";
 import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
@@ -13,6 +16,7 @@ import type { AppSettings, Environment } from "@/types";
 import { getHostId } from "../child-window";
 import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
+import { VoiceClient } from "./voice-client";
 import { VoiceDebugger } from "./voice-debugger";
 import { VoiceHost } from "./voice-host";
 import { VoiceInputDevice } from "./voice-input-device";
@@ -31,6 +35,7 @@ export class VoiceBridge extends Voice {
    private microphoneReady?: Promise<void>;
 
    private releaseInput?: () => void;
+   private forgroundServiceListener?: PluginListenerHandle;
 
    /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
    public async getCurrentRoundTripTime(): Promise<number | undefined> {
@@ -105,6 +110,27 @@ export class VoiceBridge extends Voice {
 
       const environment = windowStore.getState().environment;
       if (environment === "android") {
+         const channelId = this.client.voiceManager.voiceState.gatewayVoiceState.channelId;
+         const channel = getChannels()?.find((x) => x.id === channelId);
+         const channelName = channel ? getChannelComputedName(channel, channel?.recipientIds) : "Unkown Channel";
+
+         await ForegroundService.startForegroundService({
+            id: 1,
+            title: "Connected to call",
+            body: channelName,
+            smallIcon: "ic_notification",
+            buttons: [
+               { title: "Mute", id: 1 },
+               { title: "Deafen", id: 2 },
+               { title: "Leave", id: 3 },
+            ],
+            silent: false,
+            serviceType: ServiceType.Microphone,
+            notificationChannelId: "background",
+         });
+
+         await this.registerForegroundServiceListeners();
+
          const routes = await NativeMediaDevices.startCommunication();
          if (routes.selectedRouteId && routes.activeRouteId !== routes.selectedRouteId) {
             await NativeMediaDevices.setAudioRoute({ routeId: routes.selectedRouteId });
@@ -138,7 +164,11 @@ export class VoiceBridge extends Voice {
       this.audioSourcePlayers.splice(0, this.audioSourcePlayers.length);
       this.audioLevelCheckers.clear();
 
-      if (environment === "android") await NativeMediaDevices.stopCommunication();
+      if (environment === "android") {
+         await this.forgroundServiceListener?.remove();
+         await ForegroundService.stopForegroundService();
+         await NativeMediaDevices.stopCommunication();
+      }
    }
 
    private async handleConsumerCreated(consumer: Consumer<MediasoupAppData>) {
@@ -399,5 +429,19 @@ export class VoiceBridge extends Voice {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
       }
+   }
+
+   private async registerForegroundServiceListeners() {
+      const listener = await ForegroundService.addListener("buttonClicked", (e) => {
+         if (e.buttonId === 1) {
+            VoiceClient.sendMessage("toggle_mute");
+         } else if (e.buttonId === 2) {
+            VoiceClient.sendMessage("toggle_deafen");
+         } else if (e.buttonId === 3) {
+            VoiceClient.sendMessage("disconnect_voice");
+         }
+      });
+
+      this.forgroundServiceListener = listener;
    }
 }

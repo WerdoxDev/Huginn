@@ -1,3 +1,4 @@
+import { ForegroundService, Importance } from "@capawesome-team/capacitor-android-foreground-service";
 import { analytics } from "@huginnjs/shared";
 import { presenceStore } from "@stores/presenceStore";
 import { storageStore } from "@stores/storageStore";
@@ -52,6 +53,8 @@ async function initMobileNotifications() {
       status = await PushNotifications.requestPermissions();
    }
 
+   await ForegroundService.requestPermissions();
+
    if (status.receive !== "granted") {
       analytics.log({ body: "push notification permission not granted", level: "warn" });
       return;
@@ -62,9 +65,16 @@ async function initMobileNotifications() {
       name: "Messages",
       visibility: 1,
       lights: true,
-      importance: 4,
+      importance: Importance.High,
       description: "Instant messages",
       vibration: true,
+   });
+
+   await ForegroundService.createNotificationChannel({
+      id: "background",
+      name: "Background",
+      description: "Background Service",
+      importance: Importance.High,
    });
 
    await PushNotifications.register();

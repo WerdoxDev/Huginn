@@ -14,6 +14,13 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- Required to keep the app running in the background without any resource limitations -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Required to request the manage overlay permission -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
@@ -34,6 +41,9 @@
             </intent-filter>
 
         </service>
+
+        <receiver android:name="io.capawesome.capacitorjs.plugins.foregroundservice.NotificationActionBroadcastReceiver" />
+        <service android:name="io.capawesome.capacitorjs.plugins.foregroundservice.AndroidForegroundService" android:foregroundServiceType="microphone" />
 
         <receiver
             android:name=".NotificationDismissedReceiver"
