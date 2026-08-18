@@ -4,13 +4,11 @@ import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useNavigate } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
 import { useRef } from "react";
 
 export function useOAuth() {
    const client = useClient();
-   const navigate = useNavigate();
    const huginnWindow = useHuginnWindow();
    const { updateModals } = useModals();
    const posthog = usePostHog();
@@ -23,7 +21,8 @@ export function useOAuth() {
       posthog.capture("oauth:oauth_flow_start", { type: type });
 
       const redirectUrl = import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
-      const url = client.oauth.getOAuthURL(type, huginnWindow.environment === "desktop" ? "desktop" : "browser", `${redirectUrl}`);
+      const flow: OAuthFlow = huginnWindow.environment === "browser" ? "browser" : "desktop";
+      const url = client.oauth.getOAuthURL(type, flow, `${redirectUrl}`);
 
       updateModals({
          info: {
@@ -64,7 +63,7 @@ export function useOAuth() {
       const unlisten = listenEvent("deep_link", async (url) => {
          const actualUrl = new URL(url);
          console.log("Received deep link:", actualUrl);
-         if (actualUrl.host !== "oauth-confirm" && actualUrl.pathname !== "/redirect") return;
+         if (actualUrl.protocol !== "huginn:" || actualUrl.host !== "oauth-confirm") return;
          const flow = actualUrl.searchParams.get("flow")! as OAuthFlow;
          const oauth_token = actualUrl.searchParams.get("oauth_token") ?? undefined;
          const access_token = actualUrl.searchParams.get("access_token") ?? undefined;
