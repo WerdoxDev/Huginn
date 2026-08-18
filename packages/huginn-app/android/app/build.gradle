@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 plugins {
     id 'com.android.application'
 
@@ -6,6 +8,8 @@ plugins {
 
 //apply plugin: 'com.android.application'
 
+def packageJson = new JsonSlurper().parseText(file("../../package.json").text)
+
 android {
     namespace = "dev.huginn"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -13,8 +17,8 @@ android {
         applicationId "dev.huginn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode "git rev-list --count HEAD".execute().text.trim().toInteger()
+        versionName packageJson.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

@@ -1,14 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { HuginnClient } from "@huginnjs/api";
-import {
-   analytics,
-   type APIPublicUser,
-   error,
-   type GatewayReadyData,
-   recordSpanError,
-   type Snowflake,
-} from "@huginnjs/shared";
+import { analytics, type APIPublicUser, error, type GatewayReadyData, recordSpanError, type Snowflake } from "@huginnjs/shared";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
@@ -173,6 +166,7 @@ export async function initializeClient() {
 
    if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
       const url = `${thisStore.hostnames.api}/api/update/android`;
+      console.log(url, import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL);
       if (import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) {
          store.setState({ androidUpdateUrl: import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL });
       } else {
