@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.43.0...shared@v0.44.0) (2026-08-19)
+
+
+### Features
+
+* **shared:** new types for global channel background ([9d92cb6](https://github.com/WerdoxDev/Huginn/commit/9d92cb67aec686ff746fea071a00355231a0d1d6))
+
 ## [0.43.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.42.0...shared@v0.43.0) (2026-08-08)
 
 

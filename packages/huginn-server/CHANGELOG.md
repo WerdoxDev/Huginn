@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.50.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.49.0...server@v0.50.0) (2026-08-19)
+
+
+### Features
+
+* **server:** add global channel background to settings ([867f447](https://github.com/WerdoxDev/Huginn/commit/867f447809b386e1d7cf09af39cdc137058e4802))
+* **server:** handle android native version cuts by sending 204 ([f8f18db](https://github.com/WerdoxDev/Huginn/commit/f8f18db89075e568342f19fd0a46456e558509af))
+* **server:** refactor add message push notification + add ack message push notification ([72af946](https://github.com/WerdoxDev/Huginn/commit/72af946a3edf0f3325b4a3042c5627c40f5510f3))
+
 ## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.48.1...server@v0.49.0) (2026-08-08)
 
 
