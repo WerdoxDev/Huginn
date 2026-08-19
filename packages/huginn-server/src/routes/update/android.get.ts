@@ -1,26 +1,24 @@
 import Elysia, { t } from "elysia";
-import * as semver from "semver";
 
-import { getAllTags, getReleaseByTag } from "#utils/route-utils";
+import { getAllAppReleases } from "#utils/route-utils";
+
+import { getLatestCompatibleAndroidRelease } from "./android-update";
 
 export const getAndroidUpdate = new Elysia().get(
    "/api/update/android/:file",
-   async ({ params: { file }, request, status }) => {
+   async ({ params: { file }, query: { nativeVersion }, request, status }) => {
       if (file !== "manifest.json" && !file.endsWith(".zip")) {
          return status("Not Found");
       }
 
-      const tags = await getAllTags();
-      const [latestTag] = tags
-         .filter((tag) => tag.name.startsWith("app@v"))
-         .toSorted((a, b) => semver.rcompare(a.name.replace("app@", ""), b.name.replace("app@", "")));
+      const releases = await getAllAppReleases();
+      const latestCompatibleRelease = getLatestCompatibleAndroidRelease(releases, nativeVersion);
 
-      if (!latestTag) {
+      if (!latestCompatibleRelease) {
          return status("No Content");
       }
 
-      const latestRelease = await getReleaseByTag(latestTag.name);
-      const asset = latestRelease.assets.find((asset) => asset.name === file);
+      const asset = latestCompatibleRelease.assets.find((asset) => asset.name === file);
 
       if (!asset) {
          return status("Not Found");
@@ -52,5 +50,6 @@ export const getAndroidUpdate = new Elysia().get(
    },
    {
       params: t.Object({ file: t.String() }),
+      query: t.Object({ nativeVersion: t.Optional(t.String()) }),
    },
 );
