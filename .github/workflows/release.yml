@@ -169,6 +169,8 @@ jobs:
          ANDROID_REQUIRES_NATIVE_UPDATE: ${{needs.release-please.outputs.android_requires_native_update}}
       steps:
          - uses: actions/checkout@v4
+           with:
+              fetch-depth: 0
 
          - name: Install PNPM
            uses: pnpm/action-setup@v4
@@ -209,7 +211,7 @@ jobs:
            with:
               serviceAccountJsonPlainText: ${{secrets.PLAY_SERVICE_ACCOUNT_JSON}}
               packageName: dev.huginn
-              releaseFile: packages/huginn-app/android/app/build/outputs/bundle/release/app-release.aab
+              releaseFiles: packages/huginn-app/android/app/build/outputs/bundle/release/app-release.aab
               tracks: internal
 
    publish-api:
