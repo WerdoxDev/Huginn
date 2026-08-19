@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/WerdoxDev/Huginn/compare/assets@v0.5.0...assets@v0.5.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **assets:** fix icon generation ([#326](https://github.com/WerdoxDev/Huginn/issues/326)) ([e5462e7](https://github.com/WerdoxDev/Huginn/commit/e5462e7feaac80ffdd8368c750ace7024429026b))
+
 ## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.4.0...assets@v0.5.0) (2026-08-19)
 
 
