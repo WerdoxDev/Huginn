@@ -70,6 +70,7 @@ export function useInitializeClient() {
                const token = await initNotifications();
                if (token && huginnWindow.deviceId) {
                   await client?.auth.sendNotificationToken({ token, deviceId: huginnWindow.deviceId });
+                  span.addEvent("notification_token_sent", { token_length: token.length, device_id: huginnWindow.deviceId });
                   analytics.log({
                      body: "notification token sent",
                      attributes: { tokenLength: token.length, deviceId: huginnWindow.deviceId },
@@ -94,8 +95,6 @@ export function useInitializeClient() {
                   exception: e,
                });
                return { status: "authentication_failed", retryable: false, success: false };
-            } finally {
-               span.end();
             }
          });
       },

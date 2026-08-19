@@ -10,7 +10,6 @@ import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
-import { listenEvent } from "@lib/event-handler";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";

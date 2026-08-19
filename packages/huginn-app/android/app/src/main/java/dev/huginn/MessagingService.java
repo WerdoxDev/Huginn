@@ -128,6 +128,11 @@ public class MessagingService extends FirebaseMessagingService {
             Bitmap avatarBitmap = loadBitmap(authorIconUrl);
             Bitmap channelBitmap = loadBitmap(channelIconUrl);
 
+            Log.d(TAG, "Loaded avatar bitmap: " + (avatarBitmap != null ? "success" : "null"));
+            Log.d(TAG, "Loaded channel bitmap: " + (channelBitmap != null ? "success" : "null"));
+            Log.d(TAG, "Author icon URL: " + authorIconUrl);
+            Log.d(TAG, "Channel icon URL: " + channelIconUrl);
+
             Bitmap circleAvatarBitmap = avatarBitmap != null
                     ? getCircleBitmap(avatarBitmap)
                     : createFallbackIconBitmap();

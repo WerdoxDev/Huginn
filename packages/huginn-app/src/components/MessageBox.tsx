@@ -156,6 +156,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       return () => controller.abort();
    }, [isKeyboardOpen]);
 
+   useEffect(() => {
+      if (isKeyboardOpen && isKeyboardOpenOnEditor) setActiveMobilePanel(null);
+   }, [isKeyboardOpen]);
+
    useBackHandler(BackHandlerId.MessageBox, () => {
       if (isKeyboardOpen || activeMobilePanel) {
          setActiveMobilePanel(null);
