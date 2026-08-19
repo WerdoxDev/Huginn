@@ -44,7 +44,7 @@ export default function VoiceElement(props: {
 }) {
    const { open: openContextMenu } = useContextMenu("voice_element");
    const { consumeStream } = useVoiceUtils();
-   const { client, voiceStatus } = useClientStore();
+   const { voiceStatus } = useClientStore();
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
@@ -79,6 +79,13 @@ export default function VoiceElement(props: {
       () => voiceStatus === "ready" && props.userId !== thisUser?.id && !props.mediaSource && !props.isRinging,
       [voiceStatus, props.mediaSource],
    );
+
+   function handleClick(e: MouseEvent) {
+      props.onClick?.(props.mediaSource?.producerId ?? "");
+      if (isCamera || isAudioStream || isScreenShare) {
+         e.stopPropagation();
+      }
+   }
 
    async function consume(e: MouseEvent) {
       e.stopPropagation();
@@ -131,7 +138,7 @@ export default function VoiceElement(props: {
    return (
       <div
          ref={props.ref}
-         onClick={() => props.onClick?.(props.mediaSource?.producerId ?? "")}
+         onClick={handleClick}
          style={{
             width: props.isGridView ? props.gridElementWidth : "auto",
             height: props.isGridView ? props.gridElementHeight : "auto",

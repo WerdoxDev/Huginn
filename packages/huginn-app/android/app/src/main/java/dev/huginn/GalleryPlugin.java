@@ -58,6 +58,7 @@ import java.io.IOException;
 
 
 public class GalleryPlugin extends Plugin {
+    private static final String PERMISSION_PREFERENCES = "media_permission_prefs";
     private final String TAG = GalleryPlugin.class.getSimpleName();
 
     public enum MediaPermissionState {
@@ -442,13 +443,13 @@ public class GalleryPlugin extends Plugin {
 
     private boolean hasAskedBefore(String permission) {
         SharedPreferences prefs = getContext()
-                .getSharedPreferences("media_permission_prefs", Context.MODE_PRIVATE);
+                .getSharedPreferences(PERMISSION_PREFERENCES, Context.MODE_PRIVATE);
         return prefs.getBoolean("asked_" + permission, false);
     }
 
     private void markAskedBefore(String... permissions) {
         SharedPreferences.Editor editor = getContext()
-                .getSharedPreferences("media_permission_prefs", Context.MODE_PRIVATE)
+                .getSharedPreferences(PERMISSION_PREFERENCES, Context.MODE_PRIVATE)
                 .edit();
         for (String p : permissions) {
             editor.putBoolean("asked_" + p, true);

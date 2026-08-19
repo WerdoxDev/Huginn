@@ -48,9 +48,9 @@ export class VoiceStreamManager extends EventEmitter<Events> {
             // ENCODING ORDERING MATTERS FOR SIMULCAST
             const encodings: RtpEncodingParameters[] = useSimulcast
                ? [
-                  { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
-                  { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
-               ]
+                    { scaleResolutionDownBy: 3, maxBitrate: maxVideoBitrate / 3, scalabilityMode },
+                    { scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode },
+                 ]
                : [{ scaleResolutionDownBy: 1, maxBitrate: maxVideoBitrate, scalabilityMode }];
             await this.transport.createProducer("stream_video", videoTrack, {
                encodings,
@@ -271,8 +271,6 @@ export class VoiceStreamManager extends EventEmitter<Events> {
       return await analytics.startActiveSpan("api.voiceStream.closeStream", async (span) => {
          const hasAudio = !!this.transport.getProducer("stream_audio");
          const hasVideo = !!this.transport.getProducer("stream_video");
-
-         console.log(hasAudio, hasVideo);
 
          span.setAttributes({
             ...this.getDefaultAttributes(),

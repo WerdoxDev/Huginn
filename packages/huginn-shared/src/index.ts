@@ -18,6 +18,6 @@ export * from "./cache-storage";
 export * from "./event-emitter";
 export * from "./analytics";
 export * from "./emoji";
-export * from "./oklch";
+export * from "./color";
 export * from "./marked";
 export * from "./marked-utils";

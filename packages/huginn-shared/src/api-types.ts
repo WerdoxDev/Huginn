@@ -405,14 +405,15 @@ export type VoicePreference = {
    isStreamMuted: boolean;
 };
 
-export type ChannelBackground = {
-   channelId: Snowflake;
+export type BackgroundStyle = {
    color?: string;
    image?: string;
    imageDisplay?: "cover" | "contain";
    blur?: number;
    dimming?: number;
 };
+
+export type ChannelBackground = BackgroundStyle & { channelId: Snowflake };
 
 export type UserSettings = {
    theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
@@ -421,6 +422,7 @@ export type UserSettings = {
    favoriteGifs?: FavoriteGif[];
    voicePreferences?: VoicePreference[];
    channelBackgrounds: ChannelBackground[];
+   globalChannelBackground?: BackgroundStyle | null;
 };
 
 export enum ActivityType {

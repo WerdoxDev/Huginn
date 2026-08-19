@@ -50,6 +50,9 @@ export const DEFAULT_SERVER_SETTINGS: UserSettings = {
    theme: undefined,
    pinnedChannels: [],
    favoriteGifs: [],
+   channelBackgrounds: [],
+   globalChannelBackground: undefined,
+   voicePreferences: undefined,
 };
 
 export const FLAG_BADGE_MAP: { [key in UserFlags]?: BadgeType } = {

@@ -39,7 +39,7 @@ export default function ColorPicker(props: {
       <button
          type="button"
          className={clsx(
-            "bg-surface-alt relative flex size-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md p-1.5 transition-transform hover:scale-110 disabled:cursor-default",
+            "bg-surface-alt relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md p-1.5 transition-transform enabled:cursor-pointer enabled:hover:scale-110",
             props.className,
 
             // isOpen ? "border-white/50" : "border-white/20",

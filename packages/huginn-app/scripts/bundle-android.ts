@@ -9,6 +9,7 @@ import { version } from "../package.json";
 const WEB_BUILD_DIR = "dist";
 const OUT_ZIP = `android-releases/Huginn-android-${version}.zip`;
 const OUT_MANIFEST = `android-releases/manifest.json`;
+const OUT_NATIVE_CUT = `android-releases/android-native-cut.json`;
 
 const PRIVATE_KEY = process.env.CAPAWESOME_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
@@ -67,6 +68,10 @@ async function main() {
    };
 
    await Bun.write(OUT_MANIFEST, JSON.stringify(manifest, null, 2));
+
+   if (process.env.ANDROID_REQUIRES_NATIVE_UPDATE === "true") {
+      await Bun.write(OUT_NATIVE_CUT, JSON.stringify({ minimumNativeVersion: version }, null, 2));
+   }
 }
 
 await main();

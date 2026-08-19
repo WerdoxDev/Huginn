@@ -9,7 +9,7 @@ export default function ParagraphElement(props: { children?: ReactNode; noWrappi
       <div
          className={clsx(
             "leading-5.5 [text-box-edge:text_text]!",
-            props.noWrapping ? "w-full overflow-hidden text-ellipsis whitespace-nowrap" : "w-fit",
+            props.noWrapping ? "w-full overflow-hidden p-px text-ellipsis whitespace-nowrap" : "w-fit",
             isRtl && "[unicode-bidi:plaintext]",
          )}
       >

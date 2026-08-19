@@ -28,6 +28,11 @@ describe("PATCH /users/@me/settings", () => {
          theme: "invalid",
       });
       expect(result4).rejects.toThrow("Invalid Form Body");
+
+      const result5 = testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         globalChannelBackground: {},
+      });
+      expect(result5).rejects.toThrow("Invalid Form Body");
    });
 
    test("should return 'Unauthorized' when no token is passed", async () => {
@@ -59,5 +64,20 @@ describe("PATCH /users/@me/settings", () => {
       });
       expectUserSettingsExactSchema(result, { status: "offline", theme: "pine-green", pinnedChannels: [], favoriteGifs: [] });
       tryDone();
+   });
+
+   test("should set and reset the global channel background", async () => {
+      const [user] = await createTestUsers(1);
+      const background = { color: "#123456", imageDisplay: "contain" } as const;
+
+      const updatedSettings = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         globalChannelBackground: background,
+      });
+      expect(updatedSettings).toEqual(expect.objectContaining({ globalChannelBackground: background }));
+
+      const resetSettings = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
+         globalChannelBackground: null,
+      });
+      expect(resetSettings).toEqual(expect.objectContaining({ globalChannelBackground: null }));
    });
 });

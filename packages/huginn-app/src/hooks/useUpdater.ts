@@ -1,3 +1,4 @@
+import { App } from "@capacitor/app";
 import { LiveUpdate } from "@capawesome/capacitor-live-update";
 import { useClientStore } from "@stores/clientStore";
 // import { CapacitorUpdater } from "@capgo/capacitor-updater";
@@ -32,7 +33,6 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
          }
       },
       onError(error) {
-         console.log(error);
          isChecking.current = false;
          options.onError?.(error.message);
       },
@@ -75,7 +75,13 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
       console.log("Checking for updates...", clientStore.androidUpdateUrl);
 
       try {
-         const result = await fetch(`${clientStore.androidUpdateUrl}/manifest.json`);
+         const { version: nativeVersion } = await App.getInfo();
+         const query = new URLSearchParams({ nativeVersion });
+         const result = await fetch(`${clientStore.androidUpdateUrl}/manifest.json?${query}`);
+         if (result.status === 204) {
+            await options.onNotAvailable?.();
+            return;
+         }
          if (!result.ok) {
             options.onError?.(`Failed to check for updates: ${result.status} ${result.statusText}`);
             return;
@@ -91,7 +97,7 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
             setUpdateInfo({ version });
             options.onUpdating?.();
             await LiveUpdate.downloadBundle({
-               url: `${clientStore.androidUpdateUrl}/${filename}`,
+               url: `${clientStore.androidUpdateUrl}/${filename}?${query}`,
                checksum,
                signature,
                bundleId: version,

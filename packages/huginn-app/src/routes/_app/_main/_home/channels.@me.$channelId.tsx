@@ -1,3 +1,4 @@
+import ChannelBackground from "@components/channels/ChannelBackground";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
 import ChannelWithIdTopBar from "@components/channels/ChannelWithIdTopBar";
@@ -6,11 +7,12 @@ import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { ChannelType } from "@huginnjs/shared";
+import { PushNotifications } from "@lib/capacitor/push-notification-plugin";
 import { getMessagesOptions, queryClient } from "@lib/queries";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
@@ -38,6 +40,7 @@ function ChannelWithIdComponent() {
    const isMobile = useIsMobile();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
+   const huginnWindow = useHuginnWindow();
 
    const { resetToCenter } = useMobileMenuStore();
    const { toggleRight, closeLeft, isRightOpen } = useMobileMenuStore();
@@ -62,6 +65,16 @@ function ChannelWithIdComponent() {
          resetToCenter();
       }
    }, [channelId, isMobile, resetToCenter]);
+
+   useEffect(() => {
+      if (huginnWindow.environment !== "android") return;
+
+      void PushNotifications.setActiveChannel({ channelId: channelId ?? null });
+
+      return () => {
+         void PushNotifications.setActiveChannel({ channelId: null });
+      };
+   }, [channelId, huginnWindow.environment]);
 
    function onRecipientsClick(e: MouseEvent) {
       e.stopPropagation();
@@ -95,11 +108,12 @@ function ChannelWithIdComponent() {
                   <div className="relative flex h-full w-full flex-col overflow-hidden">
                      <div
                         className={clsx(
-                           "absolute inset-0 z-20 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
+                           "absolute inset-0 z-40 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
                            isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
                         )}
                         onClick={resetToCenter}
                      />
+                     <ChannelBackground channelId={channelId} />
                      <DirectChannelCall channelId={channelId} />
                      <ChannelMessages messages={sortedMessages} channel={channel} />
                      <MessageBox messages={sortedMessages} />

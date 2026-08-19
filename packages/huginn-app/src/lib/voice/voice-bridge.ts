@@ -1,16 +1,22 @@
+import type { PluginListenerHandle } from "@capacitor/core";
 import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
+import { ForegroundService, ServiceType } from "@capawesome-team/capacitor-android-foreground-service";
 import { HuginnClient, Voice, type VoiceOptions } from "@huginnjs/api";
 import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginnjs/shared";
+import { NativeMediaDevices } from "@lib/capacitor/media-devices-plugin";
+import { getChannelComputedName, getChannels, getGroupChannelName } from "@lib/query-utils";
 import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
+import { windowStore } from "@stores/windowStore";
 
-import type { AppSettings } from "@/types";
+import type { AppSettings, Environment } from "@/types";
 
 import { getHostId } from "../child-window";
 import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
+import { VoiceClient } from "./voice-client";
 import { VoiceDebugger } from "./voice-debugger";
 import { VoiceHost } from "./voice-host";
 import { VoiceInputDevice } from "./voice-input-device";
@@ -20,11 +26,16 @@ export class VoiceBridge extends Voice {
    public readonly audioSourcePlayers: AudioSourcePlayer[] = [];
    // Map<producerId, ALC>
    public readonly audioLevelCheckers = new Map<Snowflake, AudioLevelChecker>();
-   public readonly inputDevice: VoiceInputDevice;
+   public readonly inputDevice = VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    public readonly debugger: VoiceDebugger;
    public readonly popout?: VoicePopout;
    public readonly host?: VoiceHost;
+
+   private microphoneReady?: Promise<void>;
+
+   private releaseInput?: () => void;
+   private forgroundServiceListener?: PluginListenerHandle;
 
    /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
    public async getCurrentRoundTripTime(): Promise<number | undefined> {
@@ -64,7 +75,6 @@ export class VoiceBridge extends Voice {
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
 
-      this.inputDevice = new VoiceInputDevice(client);
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
       if (window.opener) return;
@@ -98,12 +108,46 @@ export class VoiceBridge extends Voice {
    private async handleReady() {
       const settings = storageStore.getState().getCachedValue("settings");
 
+      const environment = windowStore.getState().environment;
+      if (environment === "android") {
+         const channelId = this.client.voiceManager.voiceState.gatewayVoiceState.channelId;
+         const channel = getChannels()?.find((x) => x.id === channelId);
+         const channelName = channel ? getChannelComputedName(channel, channel?.recipientIds) : "Unkown Channel";
+
+         await ForegroundService.startForegroundService({
+            id: 1,
+            title: "Connected to call",
+            body: channelName,
+            smallIcon: "ic_notification",
+            buttons: [
+               { title: "Mute", id: 1 },
+               { title: "Deafen", id: 2 },
+               { title: "Leave", id: 3 },
+            ],
+            silent: false,
+            serviceType: ServiceType.Microphone,
+            notificationChannelId: "background",
+         });
+
+         await this.registerForegroundServiceListeners();
+
+         const routes = await NativeMediaDevices.startCommunication();
+         if (routes.selectedRouteId && routes.activeRouteId !== routes.selectedRouteId) {
+            await NativeMediaDevices.setAudioRoute({ routeId: routes.selectedRouteId });
+         }
+      }
+
+      this.releaseInput ??= VoiceInputDevice.acquire();
       // Initialize the actual audio sending stream
-      await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression);
+      await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression, environment);
    }
 
    private async handleReset() {
-      this.inputDevice.close();
+      const environment = windowStore.getState().environment;
+
+      this.releaseInput?.();
+      this.releaseInput = undefined;
+
       this.stopAudioLoopback();
 
       const voice = voiceStore.getState();
@@ -119,6 +163,12 @@ export class VoiceBridge extends Voice {
 
       this.audioSourcePlayers.splice(0, this.audioSourcePlayers.length);
       this.audioLevelCheckers.clear();
+
+      if (environment === "android") {
+         await this.forgroundServiceListener?.remove();
+         await ForegroundService.stopForegroundService();
+         await NativeMediaDevices.stopCommunication();
+      }
    }
 
    private async handleConsumerCreated(consumer: Consumer<MediasoupAppData>) {
@@ -149,7 +199,7 @@ export class VoiceBridge extends Voice {
          consumer.pause();
       }
 
-      this.refreshConsumerAudioPlayers();
+      await this.refreshConsumerAudioPlayers();
    }
 
    private async handleRemoteProducerCreated(data: ProducerData): Promise<void> {
@@ -219,6 +269,7 @@ export class VoiceBridge extends Voice {
          return;
       }
 
+      const environment = windowStore.getState().environment;
       const difference = diff(current, previous);
 
       if (difference.outputVolume) {
@@ -232,12 +283,15 @@ export class VoiceBridge extends Voice {
       }
 
       // Start streaming with new input device
-      if (difference.inputDeviceId || difference.noiseSuppression) {
-         this.openOrReplaceMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression);
+      if (difference.inputDeviceId !== undefined || difference.noiseSuppression !== undefined) {
+         void this.openOrReplaceMicrophone(current.inputDeviceId, current.inputVolume, current.noiseSuppression, environment);
+
+         // Android needs to replay the audio sources to put them in the communications channel.
+         if (environment === "android") void this.refreshConsumerAudioPlayers();
       }
 
       // Change sink id of audio players
-      if (difference.outputDeviceId) {
+      if (difference.outputDeviceId && environment !== "android") {
          for (const player of this.audioSourcePlayers) {
             player.setSinkId(difference.outputDeviceId);
          }
@@ -267,7 +321,9 @@ export class VoiceBridge extends Voice {
       this.client.voiceManager.voiceState.updateVoicePreferences(current ?? []);
    }
 
-   private refreshConsumerAudioPlayers() {
+   private async refreshConsumerAudioPlayers() {
+      await this.microphoneReady;
+
       const consumers = this.transport.getConsumers();
       const storage = storageStore.getState();
       const voicePreferences = clientStore.getState().userSettings?.voicePreferences;
@@ -304,19 +360,24 @@ export class VoiceBridge extends Voice {
       }
    }
 
-   private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean) {
-      const otherStream = await this.inputDevice.getStream(microphoneDeviceId, microphoneVolume, noiseSuppression);
-      const audioTrack = otherStream.getAudioTracks()[0];
+   private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean, environment: Environment) {
+      const streamPromise = this.inputDevice.getStream(environment === "android" ? "" : microphoneDeviceId, microphoneVolume, noiseSuppression);
+      this.microphoneReady = streamPromise.then(() => undefined);
+
+      const otherStream = await streamPromise;
+      // const otherStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioTrack = otherStream.getAudioTracks()[0].clone();
 
       try {
-         if (this.transport.getProducer("microphone")) {
+         const producer = this.transport.getProducer("microphone");
+         if (producer && producer.track !== audioTrack) {
             await this.device.replaceMicrophoneTrack(audioTrack);
-         } else {
+         } else if (!producer) {
             await this.device.openMicrophone(audioTrack);
          }
 
-         // Initialize audio level checking with a dummy stream to avoid causing an infinite mute on the actual "send" mic stream
-         await this.inputDevice.initializeAudioLevel();
+         // Level checking reads from the same stable output stream.
+         await this.inputDevice.initializeAudioLevel(this.client);
       } catch (e) {
          this.inputDevice.close();
          throw e;
@@ -368,5 +429,19 @@ export class VoiceBridge extends Voice {
          await window.electronAPI.stopAudioLoopback();
          this.loopbackDataUnlisten?.();
       }
+   }
+
+   private async registerForegroundServiceListeners() {
+      const listener = await ForegroundService.addListener("buttonClicked", (e) => {
+         if (e.buttonId === 1) {
+            VoiceClient.sendMessage("toggle_mute");
+         } else if (e.buttonId === 2) {
+            VoiceClient.sendMessage("toggle_deafen");
+         } else if (e.buttonId === 3) {
+            VoiceClient.sendMessage("disconnect_voice");
+         }
+      });
+
+      this.forgroundServiceListener = listener;
    }
 }

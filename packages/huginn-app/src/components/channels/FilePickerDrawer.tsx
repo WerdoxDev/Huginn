@@ -9,6 +9,7 @@ import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
+import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
 import { Files, type FileItem } from "@lib/capacitor/files-plugin";
 import {
    Gallery,
@@ -19,9 +20,7 @@ import {
    type ThumbnailResult,
 } from "@lib/capacitor/gallery-plugin";
 import { getMobileFilesOptions } from "@lib/queries";
-import { useModals } from "@stores/modalsStore";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { AndroidSettings, IOSSettings, NativeSettings } from "capacitor-native-settings";
 import { clsx } from "clsx";
 import moment from "moment";
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
@@ -355,7 +354,7 @@ function MediaPickerPanel(props: {
    onScroll: (scrollTop: number) => void;
 }) {
    const [thumbnails, setThumbnails] = useState<Record<string, ThumbnailResult>>({});
-   const { updateModals } = useModals();
+   const { openAppSettings, showPermissionIssues } = useNativePermissionModal();
    const [permissionState, setPermissionState] = useState<MediaPermissionState | null>(null);
    const scrollRef = useRef<HTMLDivElement>(null);
    useClearQueryData(["mobile-files"], { keepFirstPage: true, clearOnUnmount: true });
@@ -417,31 +416,12 @@ function MediaPickerPanel(props: {
       const result = await Gallery.checkOrRequestPermission({ skipPartial });
       setPermissionState(result.status);
 
-      if (result.settingsRequired) {
-         updateModals({
-            info: {
-               isOpen: true,
-               title: "Settings needed",
-               text: "We couldn't ask you for permission again. Please allow permission from app settings.",
-               status: "error",
-               action: {
-                  confirm: {
-                     text: "Open settings",
-                     callback: async () => {
-                        await openAppSettings();
-                        updateModals({ info: { isOpen: false } });
-                     },
-                  },
-               },
-            },
-         });
-      } else {
+      const hasPermissionIssue = showPermissionIssues([
+         { name: "photos and videos", status: result.status, settingsRequired: result.settingsRequired },
+      ]);
+      if (!hasPermissionIssue) {
          refetch();
       }
-   }
-
-   async function openAppSettings() {
-      await NativeSettings.open({ optionAndroid: AndroidSettings.ApplicationDetails, optionIOS: IOSSettings.App });
    }
 
    const handleThumbnailReady = useCallback((id: string, result: ThumbnailResult) => {
@@ -456,14 +436,14 @@ function MediaPickerPanel(props: {
                {error.message === GalleryErrorCode.DENIED_ONCE ? (
                   <>
                      <div>Permission is required to access files</div>
-                     <HuginnButton color="primary" onClick={() => requestPermission(false)} className="px-2 py-1">
+                     <HuginnButton color="primary" onClick={() => requestPermission(false)} className="px-4 py-2">
                         Ask for permission
                      </HuginnButton>
                   </>
                ) : (
                   <>
                      <div>Permission was permanently denied. Please allow permission from app settings.</div>
-                     <HuginnButton color="primary" onClick={() => openAppSettings()} className="px-2 py-1">
+                     <HuginnButton color="primary" onClick={() => openAppSettings()} className="px-4 py-2">
                         Open settings
                      </HuginnButton>
                   </>
@@ -497,7 +477,7 @@ function MediaPickerPanel(props: {
                   {permissionState === "partial" && (
                      <div className="flex shrink-0 flex-col items-center justify-center gap-y-2 px-10 py-5 text-center">
                         <div className="text-text/70">Limited access was given. If you want more photos, change the app permission.</div>
-                        <HuginnButton color="primary" onClick={() => requestPermission(true)} className="px-2 py-1">
+                        <HuginnButton color="primary" onClick={() => requestPermission(true)} className="px-4 py-2">
                            Change permission
                         </HuginnButton>
                      </div>

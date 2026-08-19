@@ -55,7 +55,6 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
 
             span.setAttribute("heartbeat.interval", helloData.d.heartbeatInterval);
             session.send(helloData, false, false);
-            // oxlint-disable-next-line no-unused-vars
          } catch (e) {
             recordSpanError(e);
             session.peer.close(GatewayCode.UNKNOWN, "UNKNOWN");

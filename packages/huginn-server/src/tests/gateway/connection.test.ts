@@ -260,6 +260,49 @@ describe("Connection", () => {
       };
    });
 
+   test("should ignore a delayed close from the connection displaced by resume", async () => {
+      const { ws, readyData, user } = await getReadyWebSocket();
+      const originalSession = gateway.getSession(readyData.sessionId);
+      expect(originalSession?.connectionEpoch).toBe(0);
+
+      const ws2 = await getWebSocket();
+      const resumeData: GatewayResume = {
+         op: GatewayOperations.RESUME,
+         d: { seq: 0, sessionId: readyData.sessionId, token: user.accessToken },
+      };
+
+      await new Promise<void>((resolve, reject) => {
+         ws2.onerror = (error) => reject(error);
+         ws2.onmessage = (event) => {
+            if (testIsOpcode(event.data, GatewayOperations.HELLO)) {
+               wsSend(ws2, resumeData);
+            } else if (testIsDispatch(event.data, "resumed")) {
+               resolve();
+            }
+         };
+      });
+
+      const resumedSession = gateway.getSession(readyData.sessionId);
+      expect(resumedSession).toBe(originalSession);
+      expect(resumedSession?.connectionEpoch).toBe(1);
+      expect(resumedSession?.isStale).toBe(false);
+
+      await new Promise<void>((resolve, reject) => {
+         ws.onerror = (error) => reject(error);
+         ws.onclose = () => resolve();
+         ws.close();
+      });
+
+      // Allow the server-side close callback to run after the client event.
+      await Bun.sleep(25);
+
+      expect(gateway.getSession(readyData.sessionId)).toBe(resumedSession);
+      expect(resumedSession?.connectionEpoch).toBe(1);
+      expect(resumedSession?.isStale).toBe(false);
+
+      ws2.close();
+   });
+
    test("should send ready to client when identifying is successful", async (done) => {
       const [user, user2] = await createTestUsers(2);
       await createTestRelationships(user.id, user2.id, true);
@@ -275,7 +318,7 @@ describe("Connection", () => {
             expectChannelExactRecipients(data.d.privateChannels[0], [user2]);
             expectRelationshipExactSchema(data.d.relationships[0], { type: RelationshipType.FRIEND, user: user2 });
             expectUserExactSchema(data.d.user, user);
-            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [], favoriteGifs: [] });
+            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [], favoriteGifs: [], channelBackgrounds: [] });
             done();
          }
       };

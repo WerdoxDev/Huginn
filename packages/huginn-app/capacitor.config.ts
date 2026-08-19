@@ -1,7 +1,6 @@
 import "dotenv/config";
 import type { CapacitorConfig } from "@capacitor/cli";
 
-console.log("VITE_DEV_SERVER_URL", process.env.VITE_DEV_SERVER_URL);
 const config: CapacitorConfig = {
    appId: "dev.huginn",
    appName: "Huginn",

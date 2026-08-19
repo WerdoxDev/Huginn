@@ -2,7 +2,6 @@ import { Dialog } from "@base-ui/react";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
-import { useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { useThrottler } from "@hooks/useThrottler";
@@ -19,6 +18,7 @@ import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
+import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
@@ -50,7 +50,7 @@ const tabs: SettingsTabType[] = [
             icon: <IconMingcuteColorPickerFill />,
             component: SettingsThemeTab,
          },
-         { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill /> },
+         { name: "notification", text: "Notification", icon: <IconMingcuteNotificationFill />, component: SettingsNotificationTab },
          {
             name: "voice",
             text: "Audio & Video",
@@ -268,7 +268,7 @@ function SettingsPanels(props: { currentTabText: string | null; onChange: (value
             {flatTabs.map((tab) => (
                <SettingsTab.Panel
                   key={tab?.name}
-                  className="scroll-surface-deep mt-3 h-full overflow-x-visible overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
+                  className="scroll-surface-deep mt-3 h-full overflow-y-scroll pb-3 pl-3 lg:mt-5 lg:pr-1.5 lg:pb-5 lg:pl-5"
                >
                   {/* <div className="ml-5"> */}
                   {tab?.component ? (

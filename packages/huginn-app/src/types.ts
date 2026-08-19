@@ -3,7 +3,6 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
-import type { Gateway } from "@huginnjs/api";
 import type {
    APICallMessage,
    APIDefaultMessage,
@@ -23,11 +22,10 @@ import type {
    ThemeType,
    ChannelType,
    FavoriteGif,
-   GatewaySession,
 } from "@huginnjs/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
-import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback, RefObject } from "react";
+import type { ChangeEvent, CSSProperties, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
 export type StatusType = "none" | "default" | "error" | "success";
@@ -61,6 +59,7 @@ export type HuginnInputProps = {
 export type HuginnButtonProps = {
    children?: ReactNode;
    type?: "submit" | "reset" | "button" | undefined;
+   style?: CSSProperties;
    className?: string;
    disabled?: boolean;
    color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
@@ -345,6 +344,7 @@ export type AppSettings = {
    useProxy: boolean;
    isVoiceMuted: boolean;
    isVoiceDeafened: boolean;
+   isNotificationsEnabled: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };

@@ -1,5 +1,6 @@
 import { type HMediaKind, type Snowflake } from "@huginnjs/shared";
 import { storageStore } from "@stores/storageStore";
+import { windowStore } from "@stores/windowStore";
 
 export class AudioSourcePlayer {
    public readonly gainNode: GainNode;
@@ -25,9 +26,8 @@ export class AudioSourcePlayer {
       this.audioElement.autoplay = false;
       this.audioElement.srcObject = stream;
 
-      this.audioContext = new AudioContext({
-         sinkId: storageStore.getState().getCachedValue("settings").outputDeviceId,
-      });
+      const outputDeviceId = storageStore.getState().getCachedValue("settings").outputDeviceId;
+      this.audioContext = new AudioContext(windowStore.getState().environment === "android" ? {} : { sinkId: outputDeviceId });
       this.gainNode = this.audioContext.createGain();
 
       this.audioElement.addEventListener(

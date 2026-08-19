@@ -149,14 +149,12 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
    private async waitForVoiceToken(): Promise<string> {
       if (this.voiceToken && Date.now() - this.voiceToken.updatedAt < CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS) {
-         console.log("Using cached voice token", this.voiceToken.token);
          return this.voiceToken.token;
       }
 
       return await new Promise<string>((r) => {
          const unlisten = this.listen("voice_token_updated", (d) => {
             unlisten();
-            console.log("Using new voice token", d.token);
             r(d.token);
          });
       });

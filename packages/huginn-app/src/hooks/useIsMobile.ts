@@ -1,3 +1,4 @@
+import { isChildWindow } from "@lib/child-window";
 import { useState, useEffect } from "react";
 
 export function useIsMobile() {
@@ -13,7 +14,7 @@ export function useIsMobile() {
    }, []);
 
    function checkMobile() {
-      return window.innerWidth < 1024 && window.opener === null;
+      return window.innerWidth < 1024 && !isChildWindow();
    }
 
    return isMobile;

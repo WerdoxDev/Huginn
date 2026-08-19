@@ -10,6 +10,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
    public properties?: Properties;
    public user?: APIUser;
 
+   public connectionEpoch = 0;
    public isStale = false;
    public sequence?: number;
    private workerId: WorkerID;
@@ -62,6 +63,27 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       });
    }
 
+   /**
+    * Transfers ownership of this logical session to a new physical connection.
+    * Events from previously attached peers retain the earlier epoch and can
+    * therefore be ignored safely.
+    */
+   public attachPeer(peer: Peer) {
+      this.connectionEpoch++;
+      this.peer = peer;
+      peer.context.sessionId = this.sessionId;
+      peer.context.connectionEpoch = this.connectionEpoch;
+   }
+
+   public isCurrentConnection(peer: Peer, connectionEpoch: number) {
+      return (
+         this.peer === peer &&
+         this.connectionEpoch === connectionEpoch &&
+         peer.context.sessionId === this.sessionId &&
+         peer.context.connectionEpoch === connectionEpoch
+      );
+   }
+
    public subscribe(topic: string) {
       this.peer.subscribe(topic);
    }
@@ -91,15 +113,21 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       if (this.heartbeatTimeout) {
          clearTimeout(this.heartbeatTimeout);
       }
+      this.heartbeatTimeout = undefined;
    }
 
    public resetHeartbeatTimeout() {
       this.stopHeartbeatTimeout();
 
-      this.heartbeatTimeout = setTimeout(() => {
-         this.peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
+      const peer = this.peer;
+      const connectionEpoch = this.connectionEpoch;
+      const timeout = setTimeout(() => {
+         if (this.heartbeatTimeout !== timeout || !this.isCurrentConnection(peer, connectionEpoch)) return;
+
+         peer.close(GatewayCode.SESSION_TIMEOUT, "SESSION_TIMEOUT");
          this.stopHeartbeatTimeout();
       }, CONSTANTS.HEARTBEAT_INTERVAL + CONSTANTS.HEARTBEAT_TOLERANCE);
+      this.heartbeatTimeout = timeout;
    }
 
    public async subscribeToTopics() {
@@ -113,11 +141,14 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       this.subscribe(userId);
    }
 
-   public enqueue(fn: () => Promise<void> | void, onError?: (e: any) => void) {
+   public enqueue<Result>(fn: () => Promise<Result> | Result, onError?: (e: any) => void): Promise<Result> {
       const result = this.queue.then(() => fn());
-      this.queue = result.catch((e) => {
-         onError?.(e);
-      });
+      this.queue = result.then(
+         () => undefined,
+         (e) => {
+            onError?.(e);
+         },
+      );
 
       return result;
    }
@@ -126,6 +157,7 @@ export abstract class CommonClientSession<Payload extends CommonPayload, Propert
       return {
          [`${prefix}.id`]: this.sessionId,
          [`${prefix}.peer.id`]: this.peer.id,
+         [`${prefix}.connection_epoch`]: this.connectionEpoch,
          [`${prefix}.user.id`]: this.user?.id ?? "null",
          [`${prefix}.worker_id`]: this.workerId,
          [`${prefix}.sequence`]: this.sequence !== undefined ? this.sequence : "null",

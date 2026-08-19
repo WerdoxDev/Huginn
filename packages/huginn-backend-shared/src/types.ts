@@ -57,6 +57,7 @@ export type CommonPayload = {
 declare module "crossws" {
    interface PeerContext {
       sessionId: Snowflake;
+      connectionEpoch: number;
    }
 }
 

@@ -86,16 +86,24 @@ vi.mock("./voice-debugger", () => {
    return { VoiceDebugger };
 });
 
+vi.mock("./voice-host", () => ({
+   VoiceHost: class {},
+}));
+
+vi.mock("./voice-popout", () => ({
+   VoicePopout: class {},
+}));
+
 vi.mock("./voice-input-device", () => {
    class VoiceInputDevice {
-      public getStream = vi.fn(async (_deviceId: string, _volume: number, _noiseSuppression: boolean) => {
-         return { getAudioTracks: () => [{ id: "default-audio-track" }] };
+      public static acquire = vi.fn(() => () => VoiceInputDevice.close());
+      public static getStream = vi.fn(async (_deviceId: string, _volume: number, _noiseSuppression: boolean) => {
+         const track = { id: "default-audio-track", clone: () => track };
+         return { getAudioTracks: () => [track] };
       });
-      public initializeAudioLevel = vi.fn(async () => {});
-      public setGain = vi.fn((_volume: number) => {});
-      public close = vi.fn();
-
-      public constructor(public client: any) {}
+      public static initializeAudioLevel = vi.fn(async (_client: any) => {});
+      public static setGain = vi.fn((_volume: number) => {});
+      public static close = vi.fn();
    }
    return { VoiceInputDevice };
 });

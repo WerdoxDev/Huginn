@@ -5,7 +5,7 @@ import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@hugi
 import Elysia, { t } from "elysia";
 
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { filterMessage, sendMessagePushNotification } from "#utils/helpers";
+import { filterMessage, sendAddMessagePushNotification } from "#utils/helpers";
 import { getMessageTokens, generateEmbedsFromContent, processAttachments, processEmbeds, processMentions } from "#utils/route-utils";
 import { validateEmbeds } from "#utils/validation";
 
@@ -98,7 +98,7 @@ export const postChannelMessage = new Elysia()
          dispatchToTopic(channelId, "message_create", message);
 
          global.waitUntil(async () => {
-            await sendMessagePushNotification(channelId, dbMessage);
+            await sendAddMessagePushNotification(channelId, dbMessage);
 
             await tryCatch(() => prisma.readState.updateLastRead(tokenPayload.id, channelId, message.id));
             // dispatchToTopic(tokenPayload.id, "message_ack", { channelId, messageId: message.id });

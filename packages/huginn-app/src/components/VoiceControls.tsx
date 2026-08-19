@@ -1,12 +1,12 @@
 import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { error, type Snowflake } from "@huginnjs/shared";
+import { type Snowflake } from "@huginnjs/shared";
 import { VoiceClient } from "@lib/voice/voice-client";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 
 import type { MediaSource } from "@/types";
 
@@ -18,6 +18,8 @@ export default function VoiceControls(props: {
    show: boolean;
    isInVoice: boolean;
    isFullscreen: boolean;
+   isMobile: boolean;
+   isMobileControlsHidden: boolean;
    channelId: Snowflake;
    mediaSources: MediaSource[];
    onToggleFullscreen: () => Promise<void>;
@@ -45,6 +47,8 @@ export default function VoiceControls(props: {
    const audioSource = props.mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
 
    useEffect(() => {
+      if (props.isMobile) return;
+
       const controller = new AbortController();
 
       let timeout: number | undefined;
@@ -64,7 +68,7 @@ export default function VoiceControls(props: {
          controller.abort();
          clearTimeout(timeout);
       };
-   }, []);
+   }, [props.isMobile]);
 
    function handleStreamButtonOpenChanged(isOpen: boolean) {
       setForceShow(isOpen);
@@ -84,18 +88,49 @@ export default function VoiceControls(props: {
    }
 
    async function handleDisconnect() {
+      if (props.isMobile && props.isMobileControlsHidden) return;
+
       await VoiceClient.sendMessage("disconnect_voice");
+   }
+
+   function handleToggleCamera() {
+      if (props.isMobile && props.isMobileControlsHidden) return;
+
+      if (voiceState.isCameraOn) closeCamera();
+      else openCamera();
+   }
+
+   function handleToggleMute() {
+      if (props.isMobile && props.isMobileControlsHidden) return;
+
+      toggleMute();
+   }
+
+   function handleToggleDeafen() {
+      if (props.isMobile && props.isMobileControlsHidden) return;
+
+      toggleDeafen();
+   }
+   function handleClick(e: MouseEvent) {
+      if (props.isMobile && props.isMobileControlsHidden) return;
+      e.stopPropagation();
    }
 
    return (
       <div
          className={clsx(
             "absolute inset-x-0 bottom-0 z-10 flex shrink-0 justify-center transition-opacity",
-            (props.show && isMoving) || forceShow || isHovering ? "opacity-100" : "opacity-0",
+            (props.show && isMoving) ||
+               (props.isMobile && !props.isMobileControlsHidden) ||
+               !props.isInVoice ||
+               forceShow ||
+               (!props.isMobile && isHovering)
+               ? "opacity-100"
+               : "opacity-0",
          )}
          ref={ref}
       >
-         <div className="z-10 mb-2.5 flex items-center justify-center gap-x-2.5">
+         <div className="z-10 mb-2.5 flex items-center justify-center gap-x-2.5" onClick={handleClick}>
             {props.isInVoice ? (
                <>
                   <div className="border-surface bg-surface-deep flex gap-x-1 rounded-xl border p-1">
@@ -103,7 +138,7 @@ export default function VoiceControls(props: {
                         activeColor="negative"
                         activeHoverColor="negative"
                         isActive={voiceState.isAudioMuted}
-                        onClick={toggleMute}
+                        onClick={handleToggleMute}
                         tooltip="Mute"
                         className={clsx(voiceState.isAudioDeafened && voiceState.isAudioMuted && "rounded-r-none")}
                      >
@@ -113,7 +148,7 @@ export default function VoiceControls(props: {
                         activeColor="negative"
                         activeHoverColor="negative"
                         isActive={voiceState.isAudioDeafened}
-                        onClick={toggleDeafen}
+                        onClick={handleToggleDeafen}
                         tooltip="Deafen"
                         className={clsx(voiceState.isAudioDeafened && voiceState.isAudioMuted && "rounded-l-none")}
                      >
@@ -125,44 +160,46 @@ export default function VoiceControls(props: {
                      </VoiceControlButton>
                      <div className="bg-surface mx-0.5 my-1 w-0.5 shrink-0" />
                      <div className="flex gap-x-1">
-                        <StreamButton
-                           voiceState={voiceState}
-                           mediaSource={videoSource ?? audioSource}
-                           onOpenScreenShare={openScreenShare}
-                           onOpenAudioStream={openAudioStream}
-                           onCloseStream={closeStream}
-                           onChangeStream={changeStream}
-                           onUpdateStream={updateStream}
-                           onOpenChanged={handleStreamButtonOpenChanged}
-                           // menu={{ side: "top", align: "center", sideOffset: 12 }}
-                        >
-                           <VoiceControlButton
-                              className={clsx(
-                                 "flex h-full items-center justify-center",
-                                 voiceState.isAudioStreaming || voiceState.isScreenSharing ? "w-9.5 rounded-r-none p-0!" : "w-16",
-                              )}
-                              activeHoverColor="negative"
-                              activeColor="primary"
-                              isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
-                              tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "End Stream" : "Start Stream"}
-                              onClick={voiceState.isAudioStreaming || voiceState.isScreenSharing ? closeStream : undefined}
+                        {!props.isMobile && (
+                           <StreamButton
+                              voiceState={voiceState}
+                              mediaSource={videoSource ?? audioSource}
+                              onOpenScreenShare={openScreenShare}
+                              onOpenAudioStream={openAudioStream}
+                              onCloseStream={closeStream}
+                              onChangeStream={changeStream}
+                              onUpdateStream={updateStream}
+                              onOpenChanged={handleStreamButtonOpenChanged}
+                              // menu={{ side: "top", align: "center", sideOffset: 12 }}
                            >
-                              {voiceState.isAudioStreaming || voiceState.isScreenSharing ? (
-                                 <IconMingcuteCloseFill className="size-6" />
-                              ) : (
-                                 <div className="flex items-center gap-x-0.5">
-                                    <IconMingcuteMonitorFill className="size-5 shrink-0" />
-                                    <div className="text-sm text-white/50">/</div>
-                                    <IconMingcuteVolumeFill className="size-5 shrink-0" />
-                                 </div>
-                              )}
-                           </VoiceControlButton>
-                        </StreamButton>
+                              <VoiceControlButton
+                                 className={clsx(
+                                    "flex h-full items-center justify-center",
+                                    voiceState.isAudioStreaming || voiceState.isScreenSharing ? "w-9.5 rounded-r-none p-0!" : "w-16",
+                                 )}
+                                 activeHoverColor="negative"
+                                 activeColor="primary"
+                                 isActive={voiceState.isAudioStreaming || voiceState.isScreenSharing}
+                                 tooltip={voiceState.isAudioStreaming || voiceState.isScreenSharing ? "End Stream" : "Start Stream"}
+                                 onClick={voiceState.isAudioStreaming || voiceState.isScreenSharing ? closeStream : undefined}
+                              >
+                                 {voiceState.isAudioStreaming || voiceState.isScreenSharing ? (
+                                    <IconMingcuteCloseFill className="size-6" />
+                                 ) : (
+                                    <div className="flex items-center gap-x-0.5">
+                                       <IconMingcuteMonitorFill className="size-5 shrink-0" />
+                                       <div className="text-sm text-white/50">/</div>
+                                       <IconMingcuteVolumeFill className="size-5 shrink-0" />
+                                    </div>
+                                 )}
+                              </VoiceControlButton>
+                           </StreamButton>
+                        )}
                         <VoiceControlButton
                            activeColor="primary"
                            activeHoverColor="negative"
                            isActive={voiceState.isCameraOn}
-                           onClick={() => (voiceState.isCameraOn ? closeCamera() : openCamera())}
+                           onClick={handleToggleCamera}
                            tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
                         >
                            <IconMingcuteCamera2Fill className="size-6" />
@@ -191,22 +228,24 @@ export default function VoiceControls(props: {
                !props.isFullscreen && "rounded-xl",
             )}
          ></div>
-         <div className="absolute right-2.5 bottom-2.5 flex gap-x-2">
-            {client?.voice.popout && props.isInVoice && (
+         {!props.isMobile && (
+            <div className="absolute right-2.5 bottom-2.5 flex gap-x-2">
+               {client?.voice.popout && props.isInVoice && (
+                  <Tooltip>
+                     <Tooltip.Trigger onClick={openPopout} className="text-text/60 hover:text-text size-7">
+                        <IconMingcuteLayoutBottomOpenFill className="size-7" />
+                     </Tooltip.Trigger>
+                     <Tooltip.Content>Popout</Tooltip.Content>
+                  </Tooltip>
+               )}
                <Tooltip>
-                  <Tooltip.Trigger onClick={openPopout} className="text-text/60 hover:text-text size-7">
-                     <IconMingcuteLayoutBottomOpenFill className="size-7" />
+                  <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text size-7">
+                     {!props.isFullscreen ? <IconMingcuteFullscreenFill className="size-7" /> : <IconMingcuteFullscreenExitFill className="size-7" />}
                   </Tooltip.Trigger>
-                  <Tooltip.Content>Popout</Tooltip.Content>
+                  <Tooltip.Content>{props.isFullscreen ? "Exit fullscreen" : "Fullscreen"}</Tooltip.Content>
                </Tooltip>
-            )}
-            <Tooltip>
-               <Tooltip.Trigger onClick={props.onToggleFullscreen} className="text-text/60 hover:text-text size-7">
-                  {!props.isFullscreen ? <IconMingcuteFullscreenFill className="size-7" /> : <IconMingcuteFullscreenExitFill className="size-7" />}
-               </Tooltip.Trigger>
-               <Tooltip.Content>{props.isFullscreen ? "Exit fullscreen" : "Fullscreen"}</Tooltip.Content>
-            </Tooltip>
-         </div>
+            </div>
+         )}
       </div>
    );
 }

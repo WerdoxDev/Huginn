@@ -20,9 +20,35 @@ async function main() {
             { path: "./icon-input/body.png", color: palette["primary-500"] },
             { path: "./icon-input/shadow.png", color: palette["primary-700"] },
          ],
+         stackVariants: [
+            {
+               name: "android-notification",
+               layers: [
+                  { path: "./icon-input/body.png", color: "oklch(1 0 0)", opacity: 1 },
+                  { path: "./icon-input/shadow.png", color: "oklch(1 0 0)", opacity: 0.4 },
+                  { path: "./icon-input/outline.png", color: "oklch(1 0 0)", opacity: 0 },
+               ],
+            },
+         ],
          outlineVariants: [
             { name: "outline", path: "./icon-input/outline.png", color: palette["primary-500"], growPixels: 64 },
             { name: "outline-thick", path: "./icon-input/outline.png", color: palette["primary-500"], growPixels: 128 },
+            {
+               name: "android-notification-outline",
+               path: "./icon-input/outline.png",
+               color: "oklch(1 0 0)",
+               growPixels: 64,
+               stack: "android-notification",
+               ringOnly: true,
+            },
+            {
+               name: "android-notification-outline-thick",
+               path: "./icon-input/outline.png",
+               color: "oklch(1 0 0)",
+               growPixels: 128,
+               stack: "android-notification",
+               ringOnly: true,
+            },
          ],
       });
    }

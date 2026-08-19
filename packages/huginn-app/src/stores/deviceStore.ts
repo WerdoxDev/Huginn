@@ -24,15 +24,13 @@ const store = createStore(
 export async function initDeviceStore() {
    if (!window.isSecureContext) return;
 
-   await setDevices();
-   checkDevices();
+   await refreshDevices();
 
    const controller = new AbortController();
    navigator.mediaDevices.addEventListener(
       "devicechange",
       async () => {
-         await setDevices();
-         checkDevices();
+         await refreshDevices();
       },
       { signal: controller.signal },
    );
@@ -40,6 +38,11 @@ export async function initDeviceStore() {
    return () => {
       controller.abort();
    };
+}
+
+export async function refreshDevices() {
+   await setDevices();
+   checkDevices();
 }
 
 async function setDevices() {

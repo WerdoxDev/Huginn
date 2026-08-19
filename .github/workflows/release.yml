@@ -20,6 +20,11 @@ on:
             required: false
             type: string
 
+         android_requires_native_update:
+            description: "Require Google Play update before this and later Android OTA updates"
+            required: false
+            type: boolean
+
    push:
       branches:
          - master
@@ -127,6 +132,7 @@ jobs:
          CI: ${{github.env.CI}}
          CAPAWESOME_PRIVATE_KEY: ${{secrets.CAPAWESOME_PRIVATE_KEY}}
          CAPAWESOME_PUBLIC_KEY: ${{secrets.CAPAWESOME_PUBLIC_KEY}}
+         ANDROID_REQUIRES_NATIVE_UPDATE: ${{inputs.android_requires_native_update || false}}
       steps:
          - uses: actions/checkout@v4
 
@@ -151,7 +157,10 @@ jobs:
            run: mkdir -p packages/huginn-app/android/app/certs && echo $RELEASE_STORE_BASE64 | base64 -d -i > $RELEASE_STORE_FILE
 
          - name: Build App
-           run: cd packages/huginn-app && pnpm run cap:release-build
+           run: |
+              cd packages/huginn-app
+              pnpm run cap:release-build
+              pnpm run cap:release-bundle
 
          - name: Bundle App
            run: cd packages/huginn-app && bun run scripts/bundle-android.ts
@@ -160,6 +169,14 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            run: cd packages/huginn-app && bun run scripts/upload.ts --mode android
+
+         - name: Publish to Google Play
+           uses: r0adkll/upload-google-play@v1
+           with:
+              serviceAccountJsonPlainText: ${{secrets.PLAY_SERVICE_ACCOUNT_JSON}}
+              packageName: dev.huginn
+              releaseFile: packages/huginn-app/android/app/build/outputs/bundle/release/app-release.aab
+              tracks: qa
 
    publish-api:
       runs-on: ubuntu-latest

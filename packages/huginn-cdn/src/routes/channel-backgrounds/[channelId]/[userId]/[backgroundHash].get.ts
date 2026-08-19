@@ -7,13 +7,13 @@ import { tryResolveImage } from "#utils/route-utils";
 
 export const getChannelBackground = new Elysia()
    .use(globalPlugin)
-   .get("/cdn/channel-backgrounds/:channelId/:userId/:backgroundHash", async ({ params: { channelId, userId, backgroundHash }, global }) => {
-      const { file, transformation } = await tryResolveImage("channel-backgrounds", `${channelId}/${userId}`, backgroundHash);
+   .get("/cdn/channel-backgrounds/:scope/:userId/:backgroundHash", async ({ params: { scope, userId, backgroundHash }, global }) => {
+      const { file, transformation } = await tryResolveImage("channel-backgrounds", `${scope}/${userId}`, backgroundHash);
 
       // Cache the file if it was transformed
       if (transformation) {
          global.waitUntil(async () => {
-            await storage.writeFile("channel-backgrounds", `${channelId}/${userId}`, transformation.key, file);
+            await storage.writeFile("channel-backgrounds", `${scope}/${userId}`, transformation.key, file);
          });
       }
 

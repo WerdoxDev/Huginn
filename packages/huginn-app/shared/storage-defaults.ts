@@ -37,6 +37,7 @@ export const storageDefaults: StorageMap = {
       useProxy: true,
       isVoiceDeafened: false,
       isVoiceMuted: false,
+      isNotificationsEnabled: true,
    },
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },
@@ -46,5 +47,4 @@ export const storageDefaults: StorageMap = {
    "known-applications": { lastUpdated: "", applications: [] },
    "custom-applications": [],
    "pinned-channels": [],
-   "chat-backgrounds": {},
 };

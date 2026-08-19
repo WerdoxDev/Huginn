@@ -418,15 +418,13 @@ export async function getUserBadges(userId: Snowflake): Promise<APIBadge[]> {
 
 export async function sendPushNotification(
    userId: Snowflake,
-   options: { title: string; body: string; imageUrl?: string; data?: Record<string, unknown>; notificationChannelId?: string },
+   type: "add_message" | "ack_message",
+   options: { data?: Record<string, unknown>; notificationChannelId?: string },
 ) {
    analytics.startActiveSpan("sendPushNotification", async (span) => {
       try {
          span.setAttributes({
             "params.user.id": userId,
-            "params.title": options.title,
-            "params.body": options.body,
-            "params.image_url": options.imageUrl ?? "none",
          });
 
          const tokens = (await prisma.notificationToken.getByUserId(userId)).map((x) => x.token);
@@ -440,13 +438,26 @@ export async function sendPushNotification(
             return;
          }
 
+         const data: Record<string, string> = {};
+         for (const [key, value] of Object.entries({
+            ...options.data,
+            type,
+            userId,
+            // iconUrl: options.iconUrl,
+            // imageUrl: options.imageUrl,
+            notificationChannelId: options.notificationChannelId,
+         })) {
+            if (value != null) {
+               data[key] = typeof value === "string" ? value : JSON.stringify(value);
+            }
+         }
+
+         // Data-only Android messages are handled by MessagingService even when
+         // the app is backgrounded, allowing the app to render the notification.
          const response = await getMessaging().sendEachForMulticast({
             tokens,
-            notification: { title: options.title, body: options.body, imageUrl: options.imageUrl },
-            android: {
-               notification: { channelId: options.notificationChannelId, body: options.body, title: options.title, imageUrl: options.imageUrl },
-            },
-            data: { ...options.data, userId },
+            android: { priority: "high" },
+            data,
          });
 
          span.setAttribute("success_count", response.successCount);

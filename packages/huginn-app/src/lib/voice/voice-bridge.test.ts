@@ -2,8 +2,10 @@ import type { HuginnClient } from "@huginnjs/api";
 import type { Consumer, Producer, Transport } from "mediasoup-client/types";
 
 import * as shared from "@huginnjs/shared";
+import { NativeMediaDevices } from "@lib/capacitor/media-devices-plugin";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";
+import { windowStore } from "@stores/windowStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppSettings, StorageMap } from "@/types";
@@ -12,6 +14,14 @@ import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceBridge } from "./voice-bridge";
 import { makeStream } from "./voice-bridge-test-utils";
+
+vi.mock("@lib/capacitor/media-devices-plugin", () => ({
+   NativeMediaDevices: {
+      startCommunication: vi.fn(),
+      stopCommunication: vi.fn(),
+      setAudioRoute: vi.fn(),
+   },
+}));
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -67,6 +77,7 @@ beforeEach(() => {
    vi.clearAllMocks();
    vi.stubGlobal("MediaStream", FakeMediaStream);
    vi.stubGlobal("window", { electronAPI: undefined });
+   windowStore.setState({ environment: "browser" });
 
    storageStore.getState().setCachedValue("settings", {
       ...storageStore.getState().getCachedValue("settings"),
@@ -159,6 +170,49 @@ describe("getCurrentRoundTripTime", () => {
 // ---------------------------------------------------------------------------
 
 describe("ready event", () => {
+   it("starts Android communication and applies the selected route before opening the microphone", async () => {
+      windowStore.setState({ environment: "android" });
+      vi.mocked(NativeMediaDevices.startCommunication).mockResolvedValue({
+         routes: [],
+         activeRouteId: "earpiece",
+         selectedRouteId: "speaker",
+         communicationStarted: true,
+         supportsIndividualRoutes: true,
+      });
+      vi.mocked(NativeMediaDevices.setAudioRoute).mockResolvedValue({
+         routes: [],
+         activeRouteId: "speaker",
+         selectedRouteId: "speaker",
+         communicationStarted: true,
+         supportsIndividualRoutes: true,
+         accepted: true,
+      });
+
+      await bridge["handleReady"]();
+
+      expect(NativeMediaDevices.startCommunication).toHaveBeenCalledTimes(1);
+      expect(NativeMediaDevices.setAudioRoute).toHaveBeenCalledWith({ routeId: "speaker" });
+      expect(bridge.inputDevice.getStream).toHaveBeenCalledWith("", 80, true);
+      expect(vi.mocked(NativeMediaDevices.setAudioRoute).mock.invocationCallOrder[0]).toBeLessThan(
+         vi.mocked(bridge.inputDevice.getStream).mock.invocationCallOrder[0],
+      );
+   });
+
+   it("does not reapply an Android route that is already active", async () => {
+      windowStore.setState({ environment: "android" });
+      vi.mocked(NativeMediaDevices.startCommunication).mockResolvedValue({
+         routes: [],
+         activeRouteId: "speaker",
+         selectedRouteId: "speaker",
+         communicationStarted: true,
+         supportsIndividualRoutes: true,
+      });
+
+      await bridge["handleReady"]();
+
+      expect(NativeMediaDevices.setAudioRoute).not.toHaveBeenCalled();
+   });
+
    it("opens the microphone using cached settings when no producer exists yet", async () => {
       vi.mocked(bridge.transport.getProducer).mockReturnValue(undefined);
 
@@ -206,6 +260,22 @@ describe("ready event", () => {
 // ---------------------------------------------------------------------------
 
 describe("reset event", () => {
+   it("stops Android communication", async () => {
+      windowStore.setState({ environment: "android" });
+      vi.mocked(NativeMediaDevices.stopCommunication).mockResolvedValue({
+         routes: [],
+         activeRouteId: null,
+         selectedRouteId: null,
+         communicationStarted: false,
+         supportsIndividualRoutes: true,
+         accepted: true,
+      });
+
+      await bridge["handleReset"]();
+
+      expect(NativeMediaDevices.stopCommunication).toHaveBeenCalledTimes(1);
+   });
+
    it("tears down input device, speaking state, level checkers and audio players", async () => {
       const checker = new AudioLevelChecker("producer-1", "consumer-1", "user-1", "microphone");
       bridge.audioLevelCheckers.set("user-1", checker);
