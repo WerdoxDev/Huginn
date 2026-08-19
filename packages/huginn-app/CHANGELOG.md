@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.88.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.0...app@v0.88.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **assets:** fix icon generation ([#326](https://github.com/WerdoxDev/Huginn/issues/326)) ([e5462e7](https://github.com/WerdoxDev/Huginn/commit/e5462e7feaac80ffdd8368c750ace7024429026b))
+
 ## [0.88.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.87.0...app@v0.88.0) (2026-08-19)
 
 
