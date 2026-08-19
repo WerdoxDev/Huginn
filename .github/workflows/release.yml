@@ -1,6 +1,7 @@
 name: release
 permissions:
    contents: write
+   issues: write
    pull-requests: write
 on:
    workflow_dispatch:
@@ -36,6 +37,7 @@ jobs:
          app_release_created: ${{ steps.outputs.outputs.app_release_created }}
          api_release_created: ${{ steps.outputs.outputs.api_release_created }}
          app_version: ${{ steps.outputs.outputs.app_version }}
+         android_requires_native_update: ${{ steps.outputs.outputs.android_requires_native_update }}
 
       steps:
          - uses: actions/checkout@v4
@@ -49,8 +51,29 @@ jobs:
               github.event_name == 'workflow_dispatch' ||
               contains(github.event.head_commit.message, ': release')
 
+         - name: Store Android native update choice on release PR
+           if: github.event_name == 'workflow_dispatch' && steps.release.outputs.prs_created == 'true'
+           env:
+              GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+              RELEASE_PRS: ${{steps.release.outputs.prs}}
+              ANDROID_REQUIRES_NATIVE_UPDATE: ${{inputs.android_requires_native_update || false}}
+           run: |
+              if [[ "$ANDROID_REQUIRES_NATIVE_UPDATE" == "true" ]]; then
+                 gh label create android-native-cut --description "Android release requires a native app update" --color D93F0B --force
+              fi
+
+              jq -r '.[].number' <<< "$RELEASE_PRS" | while read -r pr_number; do
+                 if [[ "$ANDROID_REQUIRES_NATIVE_UPDATE" == "true" ]]; then
+                    gh pr edit "$pr_number" --add-label android-native-cut
+                 else
+                    gh pr edit "$pr_number" --remove-label android-native-cut 2>/dev/null || true
+                 fi
+              done
+
          - name: Compute outputs
            id: outputs
+           env:
+              GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
            run: |
               if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_api_publish }}" == "true" ]]; then
                  echo "api_release_created=true" >> "$GITHUB_OUTPUT"
@@ -65,6 +88,17 @@ jobs:
                  echo "app_release_created=${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" >> "$GITHUB_OUTPUT"
                  echo "app_version=${{ steps.release.outputs['packages/huginn-app--version'] || 'unknown' }}" >> "$GITHUB_OUTPUT"
               fi
+
+              android_requires_native_update=false
+              if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                 android_requires_native_update="${{ inputs.android_requires_native_update || false }}"
+              elif [[ "${{ steps.release.outputs['packages/huginn-app--release_created'] || 'false' }}" == "true" ]]; then
+                 release_pr_labels=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[].labels[].name')
+                 if grep -Fxq android-native-cut <<< "$release_pr_labels"; then
+                    android_requires_native_update=true
+                 fi
+              fi
+              echo "android_requires_native_update=$android_requires_native_update" >> "$GITHUB_OUTPUT"
    publish-desktop:
       needs: release-please
       strategy:
@@ -132,7 +166,7 @@ jobs:
          CI: ${{github.env.CI}}
          CAPAWESOME_PRIVATE_KEY: ${{secrets.CAPAWESOME_PRIVATE_KEY}}
          CAPAWESOME_PUBLIC_KEY: ${{secrets.CAPAWESOME_PUBLIC_KEY}}
-         ANDROID_REQUIRES_NATIVE_UPDATE: ${{inputs.android_requires_native_update || false}}
+         ANDROID_REQUIRES_NATIVE_UPDATE: ${{needs.release-please.outputs.android_requires_native_update}}
       steps:
          - uses: actions/checkout@v4
 
