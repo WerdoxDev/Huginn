@@ -14,6 +14,32 @@ if (!mode || !["windows", "android"].includes(mode)) {
    process.exit(1);
 }
 
+const androidFiles = [
+   {
+      path: `./android/app/build/outputs/apk/release/app-release.apk`,
+      name: `Huginn_${version}.apk`,
+      type: "application/octet-stream",
+   },
+   {
+      path: `./android-releases/Huginn-android-${version}.zip`,
+      name: `Huginn-android-${version}.zip`,
+      type: "application/zip",
+   },
+   {
+      path: "./android-releases/manifest.json",
+      name: "manifest.json",
+      type: "application/json",
+   },
+];
+
+if (process.env.ANDROID_REQUIRES_NATIVE_UPDATE === "true") {
+   androidFiles.push({
+      path: "./android-releases/android-native-cut.json",
+      name: "android-native-cut.json",
+      type: "application/json",
+   });
+}
+
 const FILES: Record<string, { path: string; name: string; type: string }[]> = {
    windows: [
       {
@@ -32,23 +58,7 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
          type: "text/yaml",
       },
    ],
-   android: [
-      {
-         path: `./android/app/build/outputs/apk/release/app-release.apk`,
-         name: `Huginn_${version}.apk`,
-         type: "application/octet-stream",
-      },
-      {
-         path: `./android-releases/Huginn-android-${version}.zip`,
-         name: `Huginn-android-${version}.zip`,
-         type: "application/zip",
-      },
-      {
-         path: "./android-releases/manifest.json",
-         name: "manifest.json",
-         type: "application/json",
-      },
-   ],
+   android: androidFiles,
 };
 
 async function getReleaseByTag() {
