@@ -92,15 +92,23 @@ export class WebAnalytics extends Analytics {
       this.logger = logs.getLogger(options.serviceName, options.serviceVersion);
    }
 
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void {
+   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void {
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
+      const activeContext = context.active();
+      const spanContext = trace.getSpanContext(activeContext);
+
       this.logger.emit({
+         context: activeContext,
          body: options.body,
          severityNumber: logLevelToSeverityNumber(options.level),
          severityText: options.level.toUpperCase(),
          attributes: {
             ...mergedAttributes,
             distinct_id: posthog.get_distinct_id(),
+            ...(spanContext && {
+               trace_id: spanContext.traceId,
+               span_id: spanContext.spanId,
+            }),
          },
          exception: options.exception,
       });

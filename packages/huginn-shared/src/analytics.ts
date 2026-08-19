@@ -10,7 +10,7 @@ export abstract class Analytics {
       this.defaultAttributes = attributes;
    }
 
-   abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void;
+   abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void;
    abstract identify(id: string, properties?: Record<string, any>): void;
    abstract reset(): void;
    // abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> | Promise<ReturnType<F>>;
