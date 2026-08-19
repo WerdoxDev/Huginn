@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.22.0...cdn@v0.23.0) (2026-08-19)
+
+
+### Features
+
+* **cdn:** rename channel id to scope ([1be5676](https://github.com/WerdoxDev/Huginn/commit/1be56764859af65fa90f8dfa204108d2dde165a5))
+
 ## [0.22.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.21.0...cdn@v0.22.0) (2026-08-08)
 
 

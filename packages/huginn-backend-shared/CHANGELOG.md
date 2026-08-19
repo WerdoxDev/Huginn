@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.0...backend-shared@v0.31.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **backend-shared:** a new epoch mechanic to prevent delayed physical disconnects to mutate new state ([6c7b633](https://github.com/WerdoxDev/Huginn/commit/6c7b633fa8ee10b8975a8946c58769e17d8c253d))
+
 ## [0.31.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.30.2...backend-shared@v0.31.0) (2026-08-02)
 
 

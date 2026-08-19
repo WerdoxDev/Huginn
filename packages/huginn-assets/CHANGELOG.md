@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.4.0...assets@v0.5.0) (2026-08-19)
+
+
+### Features
+
+* **assets:** add android notification specific transparent layering ([4e9255b](https://github.com/WerdoxDev/Huginn/commit/4e9255b611323d8201569ce55f631b92934e149a))
+
 ## [0.4.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.3.0...assets@v0.4.0) (2026-08-02)
 
 

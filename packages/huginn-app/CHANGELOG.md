@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.88.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.87.0...app@v0.88.0) (2026-08-19)
+
+
+### Features
+
+* **app:** add custom android notifications with much better grouping and removing functionality ([6e2e013](https://github.com/WerdoxDev/Huginn/commit/6e2e0138243a3573dbdc6174bc36ea6aca5bc66e))
+* **app:** add global channel background in theme tab ([0ed09c2](https://github.com/WerdoxDev/Huginn/commit/0ed09c2078db2700fdf7ba249de7c49a95cb086c))
+* **app:** android default notification color should be based on theme + android notification toggle ([87b905b](https://github.com/WerdoxDev/Huginn/commit/87b905b02d4300e2947ab4cab7bd6bb329146e0a))
+* **app:** android specific settings voice tab (wip) ([66c96f2](https://github.com/WerdoxDev/Huginn/commit/66c96f23992243d114939a9db086882aedfd5d1e))
+* **app:** better voice input implementation with single stream instance ([707248d](https://github.com/WerdoxDev/Huginn/commit/707248d5a1d58236bdc26fec9210d18098d57a1a))
+* **app:** complete voice implementation in android with audio routing and camera flipping ([c2ffbcc](https://github.com/WerdoxDev/Huginn/commit/c2ffbcc3d34bf6904a0150e189343863799a7d20))
+* **app:** foreground service for voice with button handlers. ([ef94276](https://github.com/WerdoxDev/Huginn/commit/ef942767ec78d199f949d699ad04a8f12a224e4b))
+* **app:** handle new native cut version ([162d315](https://github.com/WerdoxDev/Huginn/commit/162d315f28b250907514b42950fc2b723c975b38))
+
+
+### Bug Fixes
+
+* **app:** add automtatic versionCode and name incrementation ([8c0d7a9](https://github.com/WerdoxDev/Huginn/commit/8c0d7a9f1a01a818bc4c0cbc79f8d02eb52c2e31))
+* **app:** fix mobile first time launch having window.opener ([9371236](https://github.com/WerdoxDev/Huginn/commit/9371236c4954f34e90eb4fc61ed64734f13299ad))
+
 ## [0.87.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.86.0...app@v0.87.0) (2026-08-08)
 
 

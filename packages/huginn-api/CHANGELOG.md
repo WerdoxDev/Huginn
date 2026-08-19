@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.2...api@v0.44.0) (2026-08-19)
+
+
+### Features
+
+* **api:** make channel background work without channel id ([1112fcb](https://github.com/WerdoxDev/Huginn/commit/1112fcb2a3c71f50d3ca9977d5cabcee859c7660))
+
+
+### Bug Fixes
+
+* **api:** extra guards to prevent old sockets mutating state ([73a88f5](https://github.com/WerdoxDev/Huginn/commit/73a88f56c1ca40fa07a452ff74f3c2def93ea9b5))
+
 ## [0.43.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.1...api@v0.43.2) (2026-08-08)
 
 
