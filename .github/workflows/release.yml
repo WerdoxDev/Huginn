@@ -176,7 +176,7 @@ jobs:
               serviceAccountJsonPlainText: ${{secrets.PLAY_SERVICE_ACCOUNT_JSON}}
               packageName: dev.huginn
               releaseFile: packages/huginn-app/android/app/build/outputs/bundle/release/app-release.aab
-              tracks: qa
+              tracks: internal
 
    publish-api:
       runs-on: ubuntu-latest
