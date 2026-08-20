@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.88.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.1...app@v0.88.2) (2026-08-20)
+
+
+### Bug Fixes
+
+* **app:** fixed 3 small bugs from notion ([e68986e](https://github.com/WerdoxDev/Huginn/commit/e68986e5458f71a07c6270c99aab1af86ec219e5))
+
 ## [0.88.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.0...app@v0.88.1) (2026-08-19)
 
 
