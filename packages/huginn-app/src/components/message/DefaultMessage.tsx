@@ -83,7 +83,7 @@ export default function DefaultMessage() {
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
          data-context={hasContext === true ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors",
+            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors select-none lg:select-auto",
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing

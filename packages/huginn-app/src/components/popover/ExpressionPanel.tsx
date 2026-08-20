@@ -23,7 +23,10 @@ export default function ExpressionPanel() {
    }
 
    return (
-      <HuginnPopover.Panel className="bg-surface flex flex-col overflow-hidden rounded-lg" style={{ width: isMobile ? "100%" : 340 }}>
+      <HuginnPopover.Panel
+         className="bg-surface flex h-120 max-h-full min-h-0 flex-col overflow-hidden rounded-lg"
+         style={{ width: isMobile ? "100%" : 340 }}
+      >
          <ExpressionRawPanel
             onEmojiSelect={handleEmojiSelect}
             onGifSelect={handleGifSelect}

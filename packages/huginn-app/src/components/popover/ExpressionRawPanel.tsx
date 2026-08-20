@@ -19,13 +19,13 @@ export function ExpressionRawPanel(props: {
    }
 
    return props.type === "full" ? (
-      <HuginnTab value={activePanel} onChange={handleTabChange} className="flex h-full flex-col overflow-hidden">
-         <HuginnTab.TabList className="bg-surface-void! gap-x-2 p-0! px-2! pt-2!" tabClassName="py-1 w-full">
+      <HuginnTab value={activePanel} onChange={handleTabChange} className="flex h-full min-h-0 flex-col overflow-hidden">
+         <HuginnTab.TabList className="bg-surface-void! shrink-0 gap-x-2 p-0! px-2! pt-2!" tabClassName="py-1 w-full">
             <HuginnTab.Tab value="emoji">Emojis</HuginnTab.Tab>
             <HuginnTab.Tab value="gif">GIFs</HuginnTab.Tab>
             <HuginnTab.Tab value="sticker">Stickers</HuginnTab.Tab>
          </HuginnTab.TabList>
-         <HuginnTab.TabPanels className="flex h-full w-full overflow-hidden lg:h-120" panelClassName="w-full">
+         <HuginnTab.TabPanels className="flex min-h-0 w-full flex-1 overflow-hidden" panelClassName="h-full min-h-0 w-full overflow-hidden">
             <HuginnTab.TabPanel value="emoji">
                <EmojiPickerPanel onEmojiSelect={props.onEmojiSelect} />
             </HuginnTab.TabPanel>
@@ -39,7 +39,7 @@ export function ExpressionRawPanel(props: {
          </HuginnTab.TabPanels>
       </HuginnTab>
    ) : (
-      <div className="flex h-full w-full overflow-hidden lg:h-120">
+      <div className="flex h-full min-h-0 w-full overflow-hidden lg:h-120">
          <EmojiPickerPanel onEmojiSelect={props.onEmojiSelect} />
       </div>
    );

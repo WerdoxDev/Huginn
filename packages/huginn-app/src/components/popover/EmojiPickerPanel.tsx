@@ -222,8 +222,8 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
    }, [activeGroupId]);
 
    return (
-      <div className={clsx("flex h-full w-full flex-col overflow-hidden", isMobile && "bg-surface-void rounded-t-xl")} data-ignore-swipe>
-         <div className={clsx("flex w-full items-center gap-x-2 p-2")}>
+      <div className={clsx("flex h-full min-h-0 w-full flex-col overflow-hidden", isMobile && "bg-surface-void rounded-t-xl")} data-ignore-swipe>
+         <div className={clsx("flex w-full shrink-0 items-center gap-x-2 p-2")}>
             <HuginnInput {...register("search")} placeholder={lastHoveredEmoji?.slugs.join(" ")} className="w-full">
                <HuginnInput.Wrapper className="bg-surface-deep!">
                   <IconMingcuteSearch2Fill className="text-text ml-2 size-6" />
@@ -245,7 +245,7 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
             </HuginnSelect>
          </div>
          <div className="bg-surface-alt h-px shrink-0" />
-         <div className="flex h-full flex-col overflow-hidden">
+         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div
                className="scroll-hidden flex h-13 w-full shrink-0 touch-auto gap-x-1 overflow-x-auto overflow-y-hidden px-2 py-2"
                onTouchStart={(e) => e.stopPropagation()}
@@ -277,8 +277,11 @@ export default function EmojiPickerPanel(props: { isOpen?: boolean; onEmojiSelec
             </div>
             <div className="bg-surface-alt h-px w-full shrink-0" />
             {rows.length > 0 ? (
-               <div className="flex h-full flex-col overflow-hidden">
-                  <div ref={parentRef} className="scroll-super-thin relative h-full overflow-x-hidden overflow-y-scroll pb-2 pl-2 select-none">
+               <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <div
+                     ref={parentRef}
+                     className="scroll-super-thin relative min-h-0 flex-1 overflow-x-hidden overflow-y-scroll pb-2 pl-2 select-none"
+                  >
                      <div style={{ height: virtualizer.getTotalSize() }} className={clsx("relative w-full", values.search && "first:mt-2")}>
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                            if (!virtualItem) return null;

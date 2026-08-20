@@ -5,7 +5,7 @@ import { ForegroundService, ServiceType } from "@capawesome-team/capacitor-andro
 import { HuginnClient, Voice, type VoiceOptions } from "@huginnjs/api";
 import { diff, type MediasoupAppData, type ProducerData, type Snowflake, type VoicePreference } from "@huginnjs/shared";
 import { NativeMediaDevices } from "@lib/capacitor/media-devices-plugin";
-import { getChannelComputedName, getChannels, getGroupChannelName } from "@lib/query-utils";
+import { getChannelComputedName, getChannels } from "@lib/query-utils";
 import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
 import { voiceStore } from "@stores/voiceStore";

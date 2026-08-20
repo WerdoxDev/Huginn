@@ -107,7 +107,7 @@ export class RuntimeAnalytics extends Analytics {
       this.client.identify({ distinctId: id, properties });
    }
 
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; traceId?: string; exception?: unknown }): void {
+   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void {
       const logger = logs.getLogger(this.options.serviceName);
 
       const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
