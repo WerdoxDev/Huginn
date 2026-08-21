@@ -42,6 +42,31 @@ export const CONSTANTS = {
    BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
    BIO_MAX_LENGTH: 190,
    MAX_BIG_EMOJI_COUNT: 20,
+   CDN_EXTERNAL_ALLOWED_CONTENT_TYPES: [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif",
+      "image/avif",
+      "image/svg+xml",
+      "video/mp4",
+      "video/webm",
+      "audio/mpeg",
+      "audio/ogg",
+      "audio/wav",
+   ] as const,
+   CDN_EXTERNAL_MAX_FILE_SIZE: (100 * 1024 * 1024) as number, // 100MB
+   CDN_EXTERNAL_PRIVATE_HOST_PATTERNS: [
+      /^localhost$/i,
+      /^127\./,
+      /^0\.0\.0\.0$/,
+      /^10\./,
+      /^172\.(1[6-9]|2\d|3[0-1])\./,
+      /^192\.168\./,
+      /^169\.254\./,
+      /^::1$/,
+      /^\[::1\]$/,
+   ] as RegExp[],
    // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
 };
 

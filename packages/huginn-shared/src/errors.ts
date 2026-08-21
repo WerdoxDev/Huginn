@@ -72,6 +72,9 @@ export enum JsonCode {
    INVALID_ID = 2006,
    REAUTHENTICATION_REQUIRED = 2007,
    FILE_TOO_LARGE = 2008,
+   INVALID_URL_PROTOCOL = 2009,
+   HOST_NOT_ALLOWED = 2010,
+   UNSUPPORTED_CONTENT_TYPE = 2011,
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
@@ -79,6 +82,7 @@ export enum JsonCode {
    EMAIL_VERIFICATION_EXPIRED = 3005,
    EMAIL_VERIFICATION_INVALID = 3006,
    EMAIL_VERIFICATION_NOT_FOUND = 3007,
+   UPSTREAM_FETCH_FAILED = 3008,
 }
 
 export enum GatewayCode {
@@ -247,5 +251,17 @@ export const Errors = {
       const uploadedMB = (uploadedSize / (1024 * 1024)).toFixed(2);
       const maxMB = (maxSize / (1024 * 1024)).toFixed(2);
       return [`File size (${uploadedMB}MB) exceeds the maximum allowed size of ${maxMB}MB`, JsonCode.FILE_TOO_LARGE];
+   },
+   invalidUrlProtocol(): [string, JsonCode] {
+      return ["Invalid URL protocol", JsonCode.INVALID_URL_PROTOCOL];
+   },
+   hostNotAllowed(): [string, JsonCode] {
+      return ["Host is not allowed", JsonCode.HOST_NOT_ALLOWED];
+   },
+   upstreamFetchFailed(): [string, JsonCode] {
+      return ["Upstream fetch failed", JsonCode.UPSTREAM_FETCH_FAILED];
+   },
+   unsupportedContentType(): [string, JsonCode] {
+      return ["Unsupported content type", JsonCode.UNSUPPORTED_CONTENT_TYPE];
    },
 };
