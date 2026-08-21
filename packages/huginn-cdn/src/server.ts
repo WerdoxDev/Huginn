@@ -19,6 +19,7 @@ import { getChannelBackground } from "#routes/channel-backgrounds/[channelId]/[u
 import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[id].get";
+import { getAllExternal } from "#routes/external/all.get";
 import { env } from "#setup";
 import { FileStorage } from "#storage/file-storage";
 import { S3Storage } from "#storage/s3-storage";
@@ -79,14 +80,14 @@ export const app = new Elysia({ normalize: "typebox" })
    // Cached routes
    .onAfterHandle(({ request, set }) => {
       const url = new URL(request.url);
+      if (request.method !== "GET") return;
 
-      if (/(avatars|channel-icons|banners)/i.test(url.pathname)) {
-         set.headers["Vary"] = "Accept-Encoding";
-         set.headers["Cache-Control"] = "private, max-age=31536000";
-      } else if (/(emoji)/i.test(url.pathname)) {
-         set.headers["Vary"] = "Accept-Encoding";
-         set.headers["Cache-Control"] = "private, max-age=31536000, immutable";
-      }
+      const isExternal = /^\/cdn\/external(?:\/|$)/i.test(url.pathname);
+      const isImmutable = /^\/cdn\/(?:avatars|channel-icons|banners|channel-backgrounds|emoji)(?:\/|$)/i.test(url.pathname);
+      if (!isExternal && !isImmutable) return;
+
+      set.headers["Vary"] = "Accept-Encoding";
+      set.headers["Cache-Control"] = `private, max-age=31536000${isImmutable ? ", immutable" : ""}`;
    })
    .use(getUserAvatar)
    .use(postUserAvatar)
@@ -96,4 +97,5 @@ export const app = new Elysia({ normalize: "typebox" })
    .use(postChannelIcon)
    .use(getEmoji)
    .use(postChannelBackground)
-   .use(getChannelBackground);
+   .use(getChannelBackground)
+   .use(getAllExternal);
