@@ -42,6 +42,7 @@ export interface PushNotificationsPlugin {
    setActiveChannel(options: { channelId: string | null }): Promise<void>;
    setNotificationsEnabled(options: { enabled: boolean }): Promise<void>;
    setDefaultNotificationColor(options: { color: string }): Promise<void>;
+   setCdnHostname(options: { hostname: string }): Promise<void>;
 
    addListener(eventName: "registration", listenerFunc: (token: Token) => void): Promise<PluginListenerHandle>;
 

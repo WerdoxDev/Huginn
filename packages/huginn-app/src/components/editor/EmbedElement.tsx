@@ -3,7 +3,8 @@ import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { CONSTANTS, constrainImageSize } from "@huginnjs/shared";
+import { CDNRoutes, changeUrlBase, CONSTANTS, constrainImageSize } from "@huginnjs/shared";
+import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
 import { useContext, useMemo, type MouseEvent } from "react";
@@ -23,6 +24,8 @@ export default function EmbedElement(props: {
       () => props.embedType === "gifv" || (props.description === undefined && props.title === undefined && (props.thumbnail || props.video)),
       [props.embedType, props.description, props.title, props.thumbnail, props.video],
    );
+   const { hostnames } = useClientStore();
+
    const dimensions = useMemo(
       () =>
          constrainImageSize(
@@ -32,6 +35,16 @@ export default function EmbedElement(props: {
             CONSTANTS.EMBED_MEDIA_MAX_HEIGHT,
          ),
       [props.thumbnail, props.video],
+   );
+
+   const thumbnailUrl = useMemo(
+      () => (props.thumbnail?.url ? changeUrlBase(CDNRoutes.getExternal(props.thumbnail.url), `${hostnames.cdn}/cdn`) : undefined),
+      [props.thumbnail, hostnames.cdn],
+   );
+
+   const videoUrl = useMemo(
+      () => (props.video?.url ? changeUrlBase(CDNRoutes.getExternal(props.video.url), `${hostnames.cdn}/cdn`) : undefined),
+      [props.video, hostnames.cdn],
    );
 
    function handleGifContextMenu(e: MouseEvent<HTMLVideoElement>) {
@@ -95,30 +108,31 @@ export default function EmbedElement(props: {
                <span className={clsx("text-sm", props.thumbnail && "mb-2")}>{props.description}</span>
             )}
 
-            {props.embedType === "gifv" && props.video ? (
+            {props.embedType === "gifv" && props.video && videoUrl ? (
                <GifPlayer
                   originalWidth={props.video.width ?? 0}
                   originalHeight={props.video.height ?? 0}
                   height={dimensions.height}
                   width={dimensions.width}
-                  src={props.video.url ?? ""}
-                  url={props.url ?? props.video.url ?? ""}
+                  src={videoUrl}
+                  url={props.url ?? props.video.url}
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleGifContextMenu}
                />
-            ) : props.thumbnail ? (
+            ) : props.thumbnail && thumbnailUrl ? (
                <ImagePreview
                   width={dimensions.width}
                   height={dimensions.height}
                   originalWidth={props.thumbnail.width ?? 0}
                   originalHeight={props.thumbnail.height ?? 0}
-                  url={props.thumbnail.url}
+                  url={thumbnailUrl}
                   disableQuery
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
                />
             ) : (
-               props.video && (
+               props.video &&
+               videoUrl && (
                   <VideoPlayer
-                     url={props.video.url}
+                     url={videoUrl}
                      width={dimensions.width}
                      height={dimensions.height}
                      onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}

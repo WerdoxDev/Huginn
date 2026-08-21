@@ -279,7 +279,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
       if (message.isPreview) return nodes;
 
       // Only render the embeds if the message content is exactly the embed url
-      if (message.embeds.length === 1 && message.content.startsWith(message.embeds[0].url ?? "")) {
+      const firstEmbed = message.embeds[0];
+      if (message.embeds.length === 1 && message.content.startsWith(firstEmbed.url ?? "") && firstEmbed.type !== "rich") {
          nodes = [];
       }
 

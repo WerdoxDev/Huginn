@@ -49,6 +49,7 @@ public class PushNotificationsPlugin extends Plugin {
     private static final String PREFERENCES_NAME = "notification_preferences";
     private static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
     private static final String DEFAULT_NOTIFICATION_COLOR= "default_notification_color";
+    private static final String CDN_HOSTNAME = "cdn_hostname";
 
     private static volatile String activeChannelId;
 
@@ -147,6 +148,13 @@ public class PushNotificationsPlugin extends Plugin {
     public void setDefaultNotificationColor(PluginCall call) {
         String color = call.getString("color");
         getContext().getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(DEFAULT_NOTIFICATION_COLOR, color).apply();
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setCdnHostname(PluginCall call) {
+        String hostname = call.getString("hostname");
+        getContext().getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(CDN_HOSTNAME, hostname).apply();
         call.resolve();
     }
 
@@ -320,6 +328,10 @@ public class PushNotificationsPlugin extends Plugin {
 
     public static String getDefaultNotificationColor(Context context) {
         return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(DEFAULT_NOTIFICATION_COLOR, null);
+    }
+
+    public static String getCdnHostname(Context context) {
+        return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(CDN_HOSTNAME, null);
     }
 
     @PermissionCallback

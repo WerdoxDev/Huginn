@@ -1,6 +1,11 @@
 import { CONSTANTS } from "@huginnjs/shared";
 
-import type { StorageMap } from "../src/types";
+import type { HostnamePreset, StorageMap } from "../src/types";
+
+const isDev = import.meta.env.VITE_DEV_SERVER_URL;
+const localApiHostname = import.meta.env.VITE_PUBLIC_LOCAL_API_HOSTNAME;
+const localCdnHostname = import.meta.env.VITE_PUBLIC_LOCAL_CDN_HOSTNAME;
+const localVoiceHostname = import.meta.env.VITE_PUBLIC_LOCAL_VOICE_HOSTNAME;
 
 export const storageDefaults: StorageMap = {
    settings: {
@@ -15,6 +20,20 @@ export const storageDefaults: StorageMap = {
             otelHostname: "https://otlp.huginn.dev",
             externalHostnamesUrl: "",
          },
+         ...(isDev
+            ? [
+                 {
+                    name: "Local",
+                    hostnameSource: "manual",
+                    apiHostname: localApiHostname ?? "https://midgard.huginn.dev",
+                    cdnHostname: localCdnHostname ?? "https://midgard.huginn.dev",
+                    voiceHostname: localVoiceHostname ?? "https://midgard.huginn.dev",
+                    posthogHostname: "https://e.huginn.dev",
+                    otelHostname: "https://otlp.huginn.dev",
+                    externalHostnamesUrl: "",
+                 } as HostnamePreset,
+              ]
+            : []),
       ],
       activePresetName: "Default",
       theme: "pine-green",

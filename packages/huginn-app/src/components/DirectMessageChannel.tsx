@@ -3,6 +3,7 @@ import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
+import { useVoiceStore } from "@stores/voiceStore";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useMemo, useState, type MouseEvent, type Ref } from "react";
@@ -20,7 +21,11 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const recipients = useUsers(props.channel.recipientIds);
    const presence = usePresence(recipients[0]?.id);
    const { channelId } = useParams({ strict: false }) as { channelId?: string };
+   const { callStates, voiceState, voiceStates } = useVoiceStore();
    const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
+   // const hasActiveCall = useMemo(() => !!callStates.find((x) => x.channelId === props.channel.id), [callStates, props.channel]);
+   const isInCall = useMemo(() => voiceState.channelId === props.channel.id, [voiceState, props.channel]);
+   const activeVoiceStates = useMemo(() => voiceStates.filter((x) => x.channelId === props.channel.id), [voiceStates, props.channel]);
 
    const { tryMutate } = useSafeDeleteDMChannel(props.channel.id, props.channel.type, props.channel.name);
    const state = useRouterState();
@@ -66,17 +71,17 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                >
                   {props.channel.name}
                </div>
-               {props.channel.type === ChannelType.GROUP_DM && (
-                  <div
-                     className={clsx(
-                        "text-text text-xs group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
-                        selected ? "opacity-100" : "opacity-50",
-                     )}
-                  >
-                     {recipients.length + 1} Members
+               {isInCall ? (
+                  <div className="flex items-center gap-x-1 text-xs text-white">
+                     <IconMingcutePhoneCallFill className="text-positive-300 size-4" />
+                     <div>connected to call</div>
                   </div>
-               )}
-               {props.channel.type === ChannelType.DM && (
+               ) : activeVoiceStates.length !== 0 ? (
+                  <div className="text-text/70 flex items-center gap-x-1 text-xs">
+                     <IconMingcutePhoneCallFill className="text-positive-500 size-4" />
+                     <div>{props.channel.type === ChannelType.DM ? recipients[0].username : activeVoiceStates.length} in call</div>
+                  </div>
+               ) : props.channel.type === ChannelType.DM ? (
                   <ActivityPreview
                      presence={presence}
                      className={clsx(
@@ -84,6 +89,17 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                         selected ? "opacity-100" : "opacity-50",
                      )}
                   />
+               ) : (
+                  props.channel.type === ChannelType.GROUP_DM && (
+                     <div
+                        className={clsx(
+                           "text-text text-xs group-hover:opacity-100 group-active:opacity-100 group-data-context:opacity-100",
+                           selected ? "opacity-100" : "opacity-50",
+                        )}
+                     >
+                        {recipients.length + 1} Members
+                     </div>
+                  )
                )}
             </div>
             {!isLoading ? (
