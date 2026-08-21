@@ -14,7 +14,6 @@ import {
    type APIMessageCall,
    type APIMessageReference,
    type APIReaction,
-   changeUrlBase,
    ChannelType,
    CONSTANTS,
    decodeEmojiKey,
@@ -209,19 +208,14 @@ export async function sendAddMessagePushNotification(channelId: Snowflake, messa
 
          const username = message.author.displayName ?? message.author.username;
          const timestamp = message.timestamp.getTime();
-         const firstAttachment = message.attachments[0] ? signAttachment(message.attachments[0]) : undefined;
-         const imageUrl = env.CDN_PUBLIC_URL && firstAttachment ? changeUrlBase(firstAttachment.url, env.CDN_PUBLIC_URL) : undefined;
-         const authorIconUrl =
-            env.CDN_PUBLIC_URL && message.author.avatar
-               ? changeUrlBase(`/avatars/${message.author.id}/${message.author.avatar}.webp`, env.CDN_PUBLIC_URL)
-               : undefined;
-
-         const channelIconUrl =
-            env.CDN_PUBLIC_URL && channel?.icon ? changeUrlBase(`/channel-icons/${channel.id}/${channel.icon}.webp`, env.CDN_PUBLIC_URL) : undefined;
+         const authorIconUrl = message.author.avatar ? `/avatars/${message.author.id}/${message.author.avatar}.webp` : undefined;
+         const channelIconUrl = channel.icon ? `/channel-icons/${channel.id}/${channel.icon}.webp` : undefined;
 
          span.setAttributes({
             "notification.body": message.content,
-            "notification.image_url": imageUrl ?? "none",
+            "notification.author_icon_url": authorIconUrl ?? "null",
+            "notification.channel_icon_url": channelIconUrl ?? "null",
+            "notification.channel_name": channelName,
          });
 
          logger.debug(`sending push notification for message in channel ${channelId} for ${recipients.map((r) => r.id).join(", ")}`);
