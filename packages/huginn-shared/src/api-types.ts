@@ -411,6 +411,10 @@ export type BackgroundStyle = {
    imageDisplay?: "cover" | "contain";
    blur?: number;
    dimming?: number;
+   portraitImage?: string;
+   portraitImageDisplay?: "cover" | "contain";
+   portraitBlur?: number;
+   portraitDimming?: number;
 };
 
 export type ChannelBackground = BackgroundStyle & { channelId: Snowflake };
