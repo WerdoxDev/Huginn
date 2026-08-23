@@ -5,10 +5,12 @@ import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { MessageFlags, MessageReferenceType, MessageType } from "@huginnjs/shared";
+import Inset from "@lib/capacitor/inset-plugin";
 import { serializeSlate } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
@@ -45,6 +47,7 @@ export function useMessageBoxActions(options: {
    const { setEditingMessageId, currentEditingMessageId, setReplyingMessageId, currentReplyingMessageId } = useChannelStore();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
+   const huginnWindow = useHuginnWindow();
 
    const sendMessageMutation = useSendMessage();
    const editMessageMutation = useEditMessage();
@@ -484,7 +487,11 @@ export function useMessageBoxActions(options: {
    useEffect(() => {
       if (!currentReplyingMessageId) return;
       ReactEditor.focus(options.editor);
-   }, [currentReplyingMessageId]);
+
+      if (huginnWindow.environment === "android") {
+         Inset.show();
+      }
+   }, [currentReplyingMessageId, huginnWindow.environment]);
 
    return {
       sendGif,
