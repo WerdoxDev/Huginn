@@ -1,6 +1,6 @@
-import { Accordion } from "@base-ui/react";
 import DisplaySourcePreview from "@components/DisplaySourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
+import HuginnAccordion from "@components/HuginnAccordion";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
@@ -269,15 +269,15 @@ export default function ScreenShareModal() {
                </HuginnSelect>
             )}
             <div className="bg-surface h-px w-full px-0" />
-            <Accordion.Root>
-               <Accordion.Item className="flex flex-col gap-y-2.5">
-                  <Accordion.Header>
-                     <Accordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center text-white transition-colors">
+            <HuginnAccordion>
+               <HuginnAccordion.Item className="flex flex-col gap-y-2.5">
+                  <HuginnAccordion.Header>
+                     <HuginnAccordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center text-white transition-colors">
                         <span>Advanced</span>
                         <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-panel-open:rotate-180" />
-                     </Accordion.Trigger>
-                  </Accordion.Header>
-                  <Accordion.Panel className="flex origin-top flex-col gap-y-5 transition duration-200 data-ending-style:-translate-y-5 data-ending-style:opacity-0 data-starting-style:-translate-y-5 data-starting-style:opacity-0">
+                     </HuginnAccordion.Trigger>
+                  </HuginnAccordion.Header>
+                  <HuginnAccordion.Panel className="flex flex-col gap-y-5">
                      {modal.type === "create" && (
                         <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
                            <HuginnCheckbox.Input innerClassName="bg-surface!">Use Simulcast</HuginnCheckbox.Input>
@@ -306,9 +306,9 @@ export default function ScreenShareModal() {
                         <HuginnSlider.Label>Audio Bitrate: {maxAudioBitrate / 1000} kbps</HuginnSlider.Label>
                         <HuginnSlider.Input backgroundClassName="bg-surface-deep" />
                      </HuginnSlider>
-                  </Accordion.Panel>
-               </Accordion.Item>
-            </Accordion.Root>
+                  </HuginnAccordion.Panel>
+               </HuginnAccordion.Item>
+            </HuginnAccordion>
          </div>
       </HuginnDialogPanel>
    );

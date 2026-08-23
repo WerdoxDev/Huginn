@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_app/_start")({
          throw redirect({ to: "/channels/@me" });
       }
 
+      // Set a temporary redirect in session if client is not initialized and pathname is not /. Then redirect to / so client can initialize and then it handles the redirect to the original pathname.
       if (!client && location.pathname !== "/") {
          sessionStorage.setItem("redirect", JSON.stringify({ pathname: location.pathname, requiresAuth: false }));
          throw redirect({ to: "/" });

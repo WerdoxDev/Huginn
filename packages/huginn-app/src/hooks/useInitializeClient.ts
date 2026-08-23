@@ -30,7 +30,7 @@ export function useInitializeClient() {
                has_token: !!options.token,
                has_refresh_token: !!options.refreshToken,
                navigate_path: options.navigatePath ?? "none",
-               client_null: !client,
+               is_client_null: !client,
             });
 
             try {
