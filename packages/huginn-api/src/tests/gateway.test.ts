@@ -98,7 +98,27 @@ describe("connection lifecycle", () => {
       await vi.waitFor(() => expect(gateway.status).toBe("helloed"));
    });
 
-   it("throws if connect() is called while already connecting or connected", async () => {
+   it("shares an in-progress connection instead of opening another socket", async () => {
+      let connectionCount = 0;
+
+      server.use(
+         link.addEventListener("connection", ({ client }) => {
+            connectionCount += 1;
+            client.send(helloPayload("session-123", 30_000));
+         }),
+      );
+
+      const firstConnection = gateway.connect();
+      expect(gateway.status).toBe("connecting");
+
+      const secondConnection = gateway.connect();
+
+      await expect(Promise.all([firstConnection, secondConnection])).resolves.toEqual([true, true]);
+      expect(connectionCount).toBe(1);
+      expect(gateway.status).toBe("helloed");
+   });
+
+   it("throws if connect() is called while already fully connected", async () => {
       server.use(
          link.addEventListener("connection", ({ client }) => {
             client.send(helloPayload("session-123", 30_000));
