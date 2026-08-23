@@ -68,7 +68,14 @@ describe("PATCH /users/@me/settings", () => {
 
    test("should set and reset the global channel background", async () => {
       const [user] = await createTestUsers(1);
-      const background = { color: "#123456", imageDisplay: "contain" } as const;
+      const background = {
+         color: "#123456",
+         imageDisplay: "contain",
+         portraitImage: "portrait-image-hash",
+         portraitImageDisplay: "cover",
+         portraitBlur: 4,
+         portraitDimming: 25,
+      } as const;
 
       const updatedSettings = await testHandler("/api/users/@me/settings", authHeader(user.accessToken), "PATCH", {
          globalChannelBackground: background,

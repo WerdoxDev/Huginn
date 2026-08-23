@@ -12,6 +12,10 @@ const backgroundStyleSchema = t.Object({
    imageDisplay: t.Optional(t.Union([t.Literal("cover"), t.Literal("contain")])),
    blur: t.Optional(t.Number()),
    dimming: t.Optional(t.Number()),
+   portraitImage: t.Optional(t.String()),
+   portraitImageDisplay: t.Optional(t.Union([t.Literal("cover"), t.Literal("contain")])),
+   portraitBlur: t.Optional(t.Number()),
+   portraitDimming: t.Optional(t.Number()),
 });
 
 const schema = t.Object({
@@ -35,17 +39,18 @@ const schema = t.Object({
    globalChannelBackground: t.Optional(t.Union([backgroundStyleSchema, t.Null()])),
 });
 
-async function uploadBackgroundImage(background: BackgroundStyle, scope: Snowflake | "global", userId: Snowflake) {
-   if (!background.image?.startsWith("data:")) return;
+async function uploadBackgroundImage(background: BackgroundStyle, imageKey: "image" | "portraitImage", scope: Snowflake | "global", userId: Snowflake) {
+   const image = background[imageKey];
+   if (!image?.startsWith("data:")) return;
 
-   const data = toArrayBuffer(background.image);
+   const data = toArrayBuffer(image);
    const backgroundHash = (
       await cdnUpload<string>(CDNRoutes.uploadChannelBackground(scope, userId), {
          files: [{ data, name: getFileHash(data) }],
       })
    ).split(".")[0];
 
-   background.image = backgroundHash;
+   background[imageKey] = backgroundHash;
 }
 
 export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
@@ -59,14 +64,21 @@ export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
 
       if (finalSettings.channelBackgrounds) {
          for (const background of finalSettings.channelBackgrounds) {
-            if (!background.color && !background.image) return invalidBody(status);
-            await uploadBackgroundImage(background, background.channelId, tokenPayload.id);
+            if (!background.color && !background.image && !background.portraitImage) return invalidBody(status);
+            await uploadBackgroundImage(background, "image", background.channelId, tokenPayload.id);
+            await uploadBackgroundImage(background, "portraitImage", background.channelId, tokenPayload.id);
          }
       }
 
       if (finalSettings.globalChannelBackground) {
-         if (!finalSettings.globalChannelBackground.color && !finalSettings.globalChannelBackground.image) return invalidBody(status);
-         await uploadBackgroundImage(finalSettings.globalChannelBackground, "global", tokenPayload.id);
+         if (
+            !finalSettings.globalChannelBackground.color &&
+            !finalSettings.globalChannelBackground.image &&
+            !finalSettings.globalChannelBackground.portraitImage
+         )
+            return invalidBody(status);
+         await uploadBackgroundImage(finalSettings.globalChannelBackground, "image", "global", tokenPayload.id);
+         await uploadBackgroundImage(finalSettings.globalChannelBackground, "portraitImage", "global", tokenPayload.id);
       }
 
       const updatedSettings = await prisma.settings.updateSettings(tokenPayload.id, finalSettings);
