@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.44.0...shared@v0.45.0) (2026-08-24)
+
+
+### Features
+
+* **shared:** new constants, errors and route for cdn external proxy ([3d92754](https://github.com/WerdoxDev/Huginn/commit/3d9275489e2017658e2211ac296a1c942319d25f))
+
 ## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.43.0...shared@v0.44.0) (2026-08-19)
 
 

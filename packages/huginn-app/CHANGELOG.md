@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.89.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.2...app@v0.89.0) (2026-08-24)
+
+
+### Features
+
+* **app:** add actual cdn url for android notification + channel in call indicator + use cdn external url for embeds and gifs ([4637001](https://github.com/WerdoxDev/Huginn/commit/4637001523bc02b7012a3f8af2e8bdd9239a7a05))
+* **app:** add separate portrait background image for channels ([3c785c7](https://github.com/WerdoxDev/Huginn/commit/3c785c7bc20028de8e3b2afbe61759273b7523d5))
+* **app:** add swipe to reply in mobile ([322d91d](https://github.com/WerdoxDev/Huginn/commit/322d91d0ce281be78d49f7c5cfdc4d980fb93965))
+
 ## [0.88.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.1...app@v0.88.2) (2026-08-20)
 
 
