@@ -316,4 +316,12 @@ export const CDNRoutes = {
    uploadChannelBackground(scope: Snowflake | "global", userId: Snowflake): `/channel-backgrounds/${string}/${string}` {
       return `/channel-backgrounds/${scope}/${userId}`;
    },
+
+   /**
+    * Route for:
+    * - GET '/external/{url}'
+    */
+   getExternal(url: string): `/external/${string}` {
+      return `/external/${encodeURIComponent(url)}`;
+   },
 };

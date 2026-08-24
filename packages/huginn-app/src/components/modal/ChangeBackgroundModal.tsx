@@ -4,8 +4,10 @@ import ColorPicker from "@components/ColorPicker";
 import DialogActions from "@components/DialogActions";
 import DialogBody from "@components/DialogBody";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
+import HuginnAccordion from "@components/HuginnAccordion";
 import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnLabel from "@components/HuginnLabel";
+import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import Tooltip from "@components/tooltip/Tooltip";
 import { MessageProvider } from "@contexts/MessageProvider";
@@ -17,7 +19,7 @@ import { MessageType, type BackgroundStyle, type Snowflake } from "@huginnjs/sha
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import type { ProcessedMessage, SelectItem } from "@/types";
 
@@ -34,16 +36,23 @@ const imageDisplayOptions: SelectItem<NonNullable<BackgroundStyle["imageDisplay"
    { text: "Fit", value: "contain" },
 ];
 
+type PreviewOrientation = "landscape" | "portrait";
+
 function createBackgroundDraft(background?: BackgroundStyle | null): BackgroundStyle {
-   const image = background?.image;
-   const imageDisplay = image ? (background.imageDisplay ?? "cover") : undefined;
+   const imageDisplay = background?.image ? (background.imageDisplay ?? "cover") : undefined;
+   const portraitImageDisplay = background?.portraitImage ? (background.portraitImageDisplay ?? "cover") : undefined;
+   const needsColor = !background?.image || imageDisplay === "contain" || portraitImageDisplay === "contain";
 
    return {
-      color: !image || imageDisplay === "contain" ? (background?.color ?? DEFAULT_COLOR) : undefined,
-      image,
+      color: needsColor ? (background?.color ?? DEFAULT_COLOR) : undefined,
+      image: background?.image,
       imageDisplay,
-      blur: image ? (background?.blur ?? 0) : undefined,
-      dimming: image ? (background?.dimming ?? 0) : undefined,
+      blur: background?.image ? (background.blur ?? 0) : undefined,
+      dimming: background?.image ? (background.dimming ?? 0) : undefined,
+      portraitImage: background?.portraitImage,
+      portraitImageDisplay,
+      portraitBlur: background?.portraitImage ? (background.portraitBlur ?? 0) : undefined,
+      portraitDimming: background?.portraitImage ? (background.portraitDimming ?? 0) : undefined,
    };
 }
 
@@ -105,10 +114,19 @@ export default function ChangeBackgroundModal() {
    const savedBackground = isGlobal ? globalChannelBackground : channelBackground;
    const isLoading = isGlobal ? isGlobalBackgroundLoading : isChannelBackgroundLoading;
    const [background, setBackground] = useState<BackgroundStyle>(() => createBackgroundDraft());
-   const previewBackgroundUrl = useBackgroundImageUrl(background.image, isGlobal ? "global" : (channelId ?? "global"));
-   const selectedImageDisplay = imageDisplayOptions.find((option) => option.value === background.imageDisplay) ?? imageDisplayOptions[0];
-   const hasImage = !!background.image;
-   const isColorEnabled = selectedImageDisplay.value === "contain" || !hasImage;
+   const [previewOrientation, setPreviewOrientation] = useState<PreviewOrientation>("landscape");
+   const backgroundScope = isGlobal ? "global" : (channelId ?? "global");
+   const landscapeBackgroundUrl = useBackgroundImageUrl(background.image, backgroundScope);
+   const portraitBackgroundUrl = useBackgroundImageUrl(background.portraitImage, backgroundScope);
+   const hasLandscapeImage = !!background.image;
+   const hasPortraitImage = !!background.portraitImage;
+   const isUsingPortraitImage = previewOrientation === "portrait" && hasPortraitImage;
+   const previewBackgroundUrl = previewOrientation === "portrait" ? (portraitBackgroundUrl ?? landscapeBackgroundUrl) : landscapeBackgroundUrl;
+   const previewImageDisplay = isUsingPortraitImage ? background.portraitImageDisplay : background.imageDisplay;
+   const previewBlur = isUsingPortraitImage ? background.portraitBlur : background.blur;
+   const previewDimming = isUsingPortraitImage ? background.portraitDimming : background.dimming;
+   const isColorEnabled =
+      !hasLandscapeImage || background.imageDisplay === "contain" || (hasPortraitImage && background.portraitImageDisplay === "contain");
    const recipientId = channel?.recipientIds.find((id) => id !== user?.id);
    const previewChannelId = channelId ?? "0";
    const mockMessages = useMemo(() => createMockMessages(previewChannelId, user?.id, recipientId), [previewChannelId, recipientId, user?.id]);
@@ -121,7 +139,7 @@ export default function ChangeBackgroundModal() {
       setBackground((current) => createBackgroundDraft({ ...current, ...patch }));
    }
 
-   async function chooseImage() {
+   async function chooseImage(orientation: PreviewOrientation) {
       const result = await openFileDialog();
       if (!result) return;
 
@@ -131,7 +149,10 @@ export default function ChangeBackgroundModal() {
             originalImageData: result.dataUrl,
             mimeType: result.mimeType,
             cropType: "chat-background",
-            callback: (image) => updateBackground({ image }),
+            callback: (image) => {
+               updateBackground(orientation === "landscape" ? { image } : { portraitImage: image });
+               setPreviewOrientation(orientation);
+            },
          },
       });
    }
@@ -151,6 +172,7 @@ export default function ChangeBackgroundModal() {
    useEffect(() => {
       if (!modal.isOpen) return;
       setBackground(createBackgroundDraft(savedBackground));
+      setPreviewOrientation("landscape");
    }, [modal.isOpen, savedBackground]);
 
    return (
@@ -166,40 +188,59 @@ export default function ChangeBackgroundModal() {
             />
             <div className="flex flex-col gap-5 lg:flex-row">
                <div className="flex min-w-0 flex-1 flex-col">
-                  <HuginnLabel>Preview</HuginnLabel>
-                  <div
-                     className="bg-surface-deep relative h-96 min-h-64 w-full overflow-hidden rounded-lg"
-                     style={{ backgroundColor: background.color }}
-                  >
-                     {previewBackgroundUrl && (
-                        <div
-                           className="pointer-events-none absolute bg-center bg-no-repeat"
-                           style={{
-                              backgroundImage: `url(${previewBackgroundUrl})`,
-                              backgroundSize: background.imageDisplay ?? "cover",
-                              filter: background.blur ? `blur(${background.blur}px)` : undefined,
-                              inset: background.blur ? -background.blur * 2 : 0,
-                           }}
-                        />
-                     )}
-                     {previewBackgroundUrl && (
-                        <div
-                           className="pointer-events-none absolute inset-0 bg-black"
-                           style={{ opacity: background.dimming ? background.dimming / 100 : 0 }}
-                        />
-                     )}
-                     <div className="relative flex h-full w-full flex-col overflow-y-scroll py-5">
-                        {mockMessages.map((message, index) => (
-                           <MessageProvider
-                              key={message.id}
-                              channelId={previewChannelId}
-                              message={message}
-                              lastMessage={mockMessages[index - 1]}
-                              nextMessage={mockMessages[index + 1]}
-                              ref={setRef(message.id)}
-                              options={{ disableContextMenu: true, hideActions: true, disableReactions: true }}
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                     <HuginnLabel className="mb-0!">Preview</HuginnLabel>
+                     <HuginnTab value={previewOrientation} onChange={(value) => setPreviewOrientation(value as PreviewOrientation)}>
+                        <HuginnTab.TabList tabClassName="w-full py-1 px-2">
+                           <HuginnTab.Tab value="landscape">
+                              <IconMingcuteMonitorFill className="size-5" />
+                              Landscape
+                           </HuginnTab.Tab>
+                           <HuginnTab.Tab value="portrait">
+                              <IconMingcuteCellphoneFill className="size-5" />
+                              Portrait
+                           </HuginnTab.Tab>
+                        </HuginnTab.TabList>
+                     </HuginnTab>
+                  </div>
+                  <div className="flex h-96 min-h-64 w-full justify-center">
+                     <div
+                        className={clsx(
+                           "bg-surface-deep relative h-full max-w-full overflow-hidden rounded-lg transition-[width]",
+                           previewOrientation === "landscape" ? "w-full" : "aspect-9/16 w-auto",
+                        )}
+                        style={{ backgroundColor: background.color }}
+                     >
+                        {previewBackgroundUrl && (
+                           <div
+                              className="pointer-events-none absolute bg-center bg-no-repeat"
+                              style={{
+                                 backgroundImage: `url(${previewBackgroundUrl})`,
+                                 backgroundSize: previewImageDisplay ?? "cover",
+                                 filter: previewBlur ? `blur(${previewBlur}px)` : undefined,
+                                 inset: previewBlur ? -previewBlur * 2 : 0,
+                              }}
                            />
-                        ))}
+                        )}
+                        {previewBackgroundUrl && (
+                           <div
+                              className="pointer-events-none absolute inset-0 bg-black"
+                              style={{ opacity: previewDimming ? previewDimming / 100 : 0 }}
+                           />
+                        )}
+                        <div className="relative flex h-full w-full flex-col overflow-y-scroll py-5">
+                           {mockMessages.map((message, index) => (
+                              <MessageProvider
+                                 key={message.id}
+                                 channelId={previewChannelId}
+                                 message={message}
+                                 lastMessage={mockMessages[index - 1]}
+                                 nextMessage={mockMessages[index + 1]}
+                                 ref={setRef(message.id)}
+                                 options={{ disableContextMenu: true, hideActions: true, disableReactions: true }}
+                              />
+                           ))}
+                        </div>
                      </div>
                   </div>
                </div>
@@ -223,8 +264,6 @@ export default function ChangeBackgroundModal() {
                               key={color}
                               type="button"
                               disabled={!isColorEnabled}
-                              aria-label={`Use ${color} as the background color`}
-                              aria-pressed={background.color === color}
                               className={clsx(
                                  "size-8 rounded-full transition-transform enabled:cursor-pointer enabled:hover:scale-110",
                                  background.color === color && "ring-2 ring-white",
@@ -246,67 +285,51 @@ export default function ChangeBackgroundModal() {
                      </div>
                   </div>
 
-                  <div className="flex flex-col">
-                     <HuginnLabel>Custom Image</HuginnLabel>
-                     <div className="flex gap-2">
-                        <HuginnButton
-                           color="primary"
-                           className="flex h-10 flex-1 items-center justify-center gap-2 px-3"
-                           onClick={chooseImage}
-                           type="button"
-                        >
-                           <IconMingcuteFolderOpenFill className="size-5" />
-                           {hasImage ? "Replace" : "Choose Image"}
-                        </HuginnButton>
-                        {hasImage && (
-                           <HuginnButton
-                              color="surface-alt"
-                              className="h-10 p-2.5"
-                              onClick={() => updateBackground({ image: undefined })}
-                              type="button"
-                           >
-                              <IconMingcuteDelete3Fill className="text-negative-500 size-5" />
-                           </HuginnButton>
-                        )}
+                  <div className="flex flex-col gap-2">
+                     <div>
+                        <HuginnLabel className="mb-0.5!">Custom Images</HuginnLabel>
+                        <p className="text-text/60 text-xs">Add an optional portrait image for phones. Each image has its own display settings.</p>
                      </div>
+                     <HuginnAccordion multiple className="flex flex-col gap-2">
+                        <BackgroundImageSlot
+                           value="landscape"
+                           icon={<IconMingcuteMonitorFill className="size-5" />}
+                           title="Landscape"
+                           description="16:9 recommended"
+                           hasImage={hasLandscapeImage}
+                           onChoose={() => chooseImage("landscape")}
+                           onRemove={() => updateBackground({ image: undefined })}
+                        >
+                           <BackgroundImageOptions
+                              imageDisplay={background.imageDisplay}
+                              blur={background.blur}
+                              dimming={background.dimming}
+                              onImageDisplayChange={(imageDisplay) => updateBackground({ imageDisplay })}
+                              onBlurChange={(blur) => updateBackground({ blur })}
+                              onDimmingChange={(dimming) => updateBackground({ dimming })}
+                           />
+                        </BackgroundImageSlot>
+                        <BackgroundImageSlot
+                           optional
+                           value="portrait"
+                           icon={<IconMingcuteCellphoneFill className="size-5" />}
+                           title="Portrait"
+                           description="9:16 recommended"
+                           hasImage={hasPortraitImage}
+                           onChoose={() => chooseImage("portrait")}
+                           onRemove={() => updateBackground({ portraitImage: undefined })}
+                        >
+                           <BackgroundImageOptions
+                              imageDisplay={background.portraitImageDisplay}
+                              blur={background.portraitBlur}
+                              dimming={background.portraitDimming}
+                              onImageDisplayChange={(portraitImageDisplay) => updateBackground({ portraitImageDisplay })}
+                              onBlurChange={(portraitBlur) => updateBackground({ portraitBlur })}
+                              onDimmingChange={(portraitDimming) => updateBackground({ portraitDimming })}
+                           />
+                        </BackgroundImageSlot>
+                     </HuginnAccordion>
                   </div>
-
-                  {hasImage && (
-                     <>
-                        <HuginnSelect onChange={(option) => updateBackground({ imageDisplay: option.value })} selected={selectedImageDisplay}>
-                           <HuginnLabel>Image Display</HuginnLabel>
-                           <HuginnSelect.List className="w-full!">
-                              <HuginnSelect.ItemsWrapper>
-                                 {imageDisplayOptions.map((option) => (
-                                    <HuginnSelect.Item key={option.value} item={option} />
-                                 ))}
-                              </HuginnSelect.ItemsWrapper>
-                           </HuginnSelect.List>
-                        </HuginnSelect>
-                        <HuginnSlider
-                           minValue={0}
-                           maxValue={20}
-                           step={1}
-                           value={background.blur ?? 0}
-                           onChange={(blur) => updateBackground({ blur })}
-                           getTooltipText={(value) => `${value}px`}
-                        >
-                           <HuginnSlider.Label>Blur: {background.blur ?? 0}px</HuginnSlider.Label>
-                           <HuginnSlider.Input />
-                        </HuginnSlider>
-                        <HuginnSlider
-                           minValue={0}
-                           maxValue={100}
-                           step={1}
-                           value={background.dimming ?? 0}
-                           onChange={(dimming) => updateBackground({ dimming })}
-                           getTooltipText={(value) => `${value}%`}
-                        >
-                           <HuginnSlider.Label>Dimming: {background.dimming ?? 0}%</HuginnSlider.Label>
-                           <HuginnSlider.Input />
-                        </HuginnSlider>
-                     </>
-                  )}
                </div>
             </div>
          </DialogBody>
@@ -324,5 +347,112 @@ export default function ChangeBackgroundModal() {
             </LoadingButton>
          </DialogActions>
       </HuginnDialogPanel>
+   );
+}
+
+function BackgroundImageSlot(props: {
+   value: PreviewOrientation;
+   icon: ReactNode;
+   title: string;
+   description: string;
+   hasImage: boolean;
+   onChoose: () => void;
+   onRemove: () => void;
+   optional?: boolean;
+   children: ReactNode;
+}) {
+   return (
+      <HuginnAccordion.Item value={props.value} className="bg-surface-alt rounded-lg p-2.5">
+         <HuginnAccordion.Header className="mb-2">
+            <HuginnAccordion.Trigger
+               disabled={!props.hasImage}
+               className="group flex w-full min-w-0 cursor-pointer items-center gap-2.5 text-left disabled:cursor-default"
+            >
+               <div className="bg-surface text-text/70 flex size-9 shrink-0 items-center justify-center rounded-md">{props.icon}</div>
+               <div className="w-full min-w-0">
+                  <div className="flex w-full items-center gap-2">
+                     <div className="text-sm font-medium text-white">{props.title}</div>
+                     <div className="ml-auto flex items-center gap-1.5">
+                        {props.optional && <div className="text-text/80 text-xs">Optional</div>}
+                        {props.hasImage && (
+                           <IconMingcuteDownFill className="text-text/70 size-4 transition-transform group-data-panel-open:rotate-180" />
+                        )}
+                     </div>
+                  </div>
+                  <div className="text-text/60 truncate text-xs">{props.description}</div>
+               </div>
+            </HuginnAccordion.Trigger>
+         </HuginnAccordion.Header>
+         <div className="flex gap-2">
+            <HuginnButton
+               color="primary"
+               className="flex h-8 flex-1 items-center justify-center gap-1.5 px-2 text-sm"
+               onClick={props.onChoose}
+               type="button"
+            >
+               <IconMingcuteFolderOpenFill className="size-4" />
+               {props.hasImage ? "Replace" : "Choose"}
+            </HuginnButton>
+            {props.hasImage && (
+               <HuginnButton color="surface" className="h-8 p-2" onClick={props.onRemove} type="button">
+                  <IconMingcuteDelete3Fill className="text-negative-500 size-4" />
+                  <span className="sr-only">Remove {props.title.toLowerCase()} image</span>
+               </HuginnButton>
+            )}
+         </div>
+         {props.hasImage && (
+            <HuginnAccordion.Panel>
+               <div className="border-surface mt-3 flex flex-col gap-4 border-t pt-3">{props.children}</div>
+            </HuginnAccordion.Panel>
+         )}
+      </HuginnAccordion.Item>
+   );
+}
+
+function BackgroundImageOptions(props: {
+   imageDisplay?: BackgroundStyle["imageDisplay"];
+   blur?: number;
+   dimming?: number;
+   onImageDisplayChange: (imageDisplay: NonNullable<BackgroundStyle["imageDisplay"]>) => void;
+   onBlurChange: (blur: number) => void;
+   onDimmingChange: (dimming: number) => void;
+}) {
+   const selectedImageDisplay = imageDisplayOptions.find((option) => option.value === props.imageDisplay) ?? imageDisplayOptions[0];
+
+   return (
+      <>
+         <HuginnSelect onChange={(option) => props.onImageDisplayChange(option.value)} selected={selectedImageDisplay}>
+            <HuginnLabel>Image Display</HuginnLabel>
+            <HuginnSelect.List className="bg-surface! w-full!">
+               <HuginnSelect.ItemsWrapper>
+                  {imageDisplayOptions.map((option) => (
+                     <HuginnSelect.Item key={option.value} item={option} />
+                  ))}
+               </HuginnSelect.ItemsWrapper>
+            </HuginnSelect.List>
+         </HuginnSelect>
+         <HuginnSlider
+            minValue={0}
+            maxValue={20}
+            step={1}
+            value={props.blur ?? 0}
+            onChange={props.onBlurChange}
+            getTooltipText={(value) => `${value}px`}
+         >
+            <HuginnSlider.Label>Blur: {props.blur ?? 0}px</HuginnSlider.Label>
+            <HuginnSlider.Input backgroundClassName="bg-surface!" />
+         </HuginnSlider>
+         <HuginnSlider
+            minValue={0}
+            maxValue={100}
+            step={1}
+            value={props.dimming ?? 0}
+            onChange={props.onDimmingChange}
+            getTooltipText={(value) => `${value}%`}
+         >
+            <HuginnSlider.Label>Dimming: {props.dimming ?? 0}%</HuginnSlider.Label>
+            <HuginnSlider.Input backgroundClassName="bg-surface!" />
+         </HuginnSlider>
+      </>
    );
 }

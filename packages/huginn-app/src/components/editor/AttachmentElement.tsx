@@ -6,8 +6,8 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
 import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { getSizeText } from "@lib/utils";
+import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
-import { useStorage } from "@stores/storageStore";
 import clsx from "clsx";
 import { useContext, useMemo, type MouseEvent } from "react";
 
@@ -26,10 +26,9 @@ export default function AttachmentElement(props: {
       [props.width, props.height],
    );
    const context = useContext(MessageContext);
-   const settings = useStorage("settings");
    const { open } = useContextMenu("message");
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-   const basedUrl = useMemo(() => changeUrlBase(props.url, `${activePreset?.cdnHostname ?? ""}/cdn`), [props.url, activePreset?.cdnHostname]);
+   const { hostnames } = useClientStore();
+   const basedUrl = useMemo(() => changeUrlBase(props.url, `${hostnames.cdn ?? ""}/cdn`), [props.url, hostnames.cdn]);
 
    const isImage = isImageMediaType(props.contentType);
    const isVideo = isVideoMediaType(props.contentType);

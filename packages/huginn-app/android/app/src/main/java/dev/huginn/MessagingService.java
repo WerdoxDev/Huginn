@@ -95,8 +95,8 @@ public class MessagingService extends FirebaseMessagingService {
 
             long timestamp = Long.parseLong(getValue(data, "timestamp"));
             String username = getValue(data, "username");
-            String authorIconUrl = getValue(data, "authorIconUrl");
-            String channelIconUrl = getValue(data, "channelIconUrl");
+            String authorIconUrl = getCdnUrl(getValue(data, "authorIconUrl"));
+            String channelIconUrl = getCdnUrl(getValue(data, "channelIconUrl"));
             String channelName = getValue(data, "channelName");
             int channelType = Integer.parseInt(getValue(data, "channelType"));
 
@@ -174,6 +174,19 @@ public class MessagingService extends FirebaseMessagingService {
 
     private String getValue(Map<String, String> data, String key) {
         return data.get(key);
+    }
+
+    private String getCdnUrl(String pathname) {
+        if (pathname == null || pathname.isEmpty()) {
+            return null;
+        }
+
+        String cdnHostname = PushNotificationsPlugin.getCdnHostname(this);
+        if (cdnHostname == null || cdnHostname.isEmpty()) {
+            return null;
+        }
+
+        return cdnHostname.replaceAll("/+$", "") + "/cdn/" + pathname.replaceFirst("^/+", "");
     }
 
     private Bitmap loadBitmap(String imageUrl) {

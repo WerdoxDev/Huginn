@@ -65,7 +65,13 @@ export default function InfoModal() {
             scale: [0.8, 1],
             duration: 500,
             ease: "outCubic",
-            ...(modal.status === "error" ? { translateX: [0, -5, 5, -3, 3, 0] } : modal.status === "success" ? { rotate: [0, 8, -5, 0] } : {}),
+            ...(modal.status === "error"
+               ? { translateX: [0, -5, 5, -3, 3, 0] }
+               : modal.status === "success"
+                 ? { rotate: [0, 8, -5, 0] }
+                 : modal.status === "info"
+                   ? { translateY: [0, -5, 5, 0] }
+                   : {}),
          });
 
          animate(titleRef.current!, {
@@ -73,7 +79,7 @@ export default function InfoModal() {
             translateY: [5, 0],
             duration: 500,
             ease: "outCubic",
-            delay: 80,
+            delay: 100,
          });
 
          animate(descRef.current!, {
@@ -81,7 +87,7 @@ export default function InfoModal() {
             translateY: [5, 0],
             duration: 500,
             ease: "outCubic",
-            delay: 160,
+            delay: 200,
          });
       });
 
@@ -108,7 +114,7 @@ export default function InfoModal() {
    }
 
    return (
-      <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)} style={{ boxShadow: glowShadow }}>
+      <HuginnDialogPanel className={clsx("lg:max-w-sm", borderColor)}>
          <DialogBody className="gap-y-0!">
             <Dialog.Title className="flex w-full flex-col items-center justify-center gap-y-3" render={<div></div>}>
                <div ref={iconRef} style={{ opacity: 0 }} className={clsx("rounded-full p-2.5", backgroundColor)}>

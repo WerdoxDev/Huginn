@@ -50,7 +50,7 @@ export default function MessageReactions(props: {
                key={x.emoji.name}
                className={clsx(
                   "flex h-8 cursor-pointer items-center gap-x-2 py-1.5 pr-2.5 pl-2",
-                  x.me ? "bg-primary-900 hover:bg-primary-800!" : "bg-surface hover:bg-surface-deep",
+                  x.me ? "bg-primary-800 hover:bg-primary-900!" : "bg-surface hover:bg-surface-deep",
                )}
             >
                <EmojiImg unicode={x.emoji.name} className="size-5" />

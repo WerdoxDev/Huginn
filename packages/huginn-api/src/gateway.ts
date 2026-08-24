@@ -52,6 +52,7 @@ export class Gateway extends SharedWebsocket<Events> {
    public sessionId?: Snowflake;
    private heartbeatInterval?: ReturnType<typeof setInterval>;
    private reconnectTimeout?: ReturnType<typeof setTimeout>;
+   private connectionPromise?: Promise<boolean>;
    private sequence?: number;
    private intentionalClose = false;
 
@@ -101,6 +102,23 @@ export class Gateway extends SharedWebsocket<Events> {
    // ============================================================
 
    public async connect(): Promise<boolean> {
+      if (this.connectionPromise) {
+         return await this.connectionPromise;
+      }
+
+      const connectionPromise = this.openConnection();
+      this.connectionPromise = connectionPromise;
+
+      try {
+         return await connectionPromise;
+      } finally {
+         if (this.connectionPromise === connectionPromise) {
+            this.connectionPromise = undefined;
+         }
+      }
+   }
+
+   private async openConnection(): Promise<boolean> {
       return await analytics.startActiveSpan("apiGateway.connect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
          try {

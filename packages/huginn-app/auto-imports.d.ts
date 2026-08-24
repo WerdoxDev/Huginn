@@ -21,12 +21,14 @@ declare global {
   const IconMingcuteCamera2Fill: typeof import('~icons/mingcute/camera2-fill.jsx').default
   const IconMingcuteCameraRotateFill: typeof import('~icons/mingcute/camera-rotate-fill.jsx').default
   const IconMingcuteCatFill: typeof import('~icons/mingcute/cat-fill.jsx').default
+  const IconMingcuteCellphoneFill: typeof import('~icons/mingcute/cellphone-fill.jsx').default
   const IconMingcuteCheckFill: typeof import('~icons/mingcute/check-fill.jsx').default
   const IconMingcuteChecksFill: typeof import('~icons/mingcute/checks-fill.jsx').default
   const IconMingcuteCloseFill: typeof import('~icons/mingcute/close-fill.jsx').default
   const IconMingcuteColorPickerFill: typeof import('~icons/mingcute/color-picker-fill.jsx').default
   const IconMingcuteCopy2Fill: typeof import('~icons/mingcute/copy2-fill.jsx').default
   const IconMingcuteCornerUpLeftFill: typeof import('~icons/mingcute/corner-up-left-fill.jsx').default
+  const IconMingcuteCornerUpLeftLine: typeof import('~icons/mingcute/corner-up-left-line.jsx').default
   const IconMingcuteCornerUpRightLine: typeof import('~icons/mingcute/corner-up-right-line.jsx').default
   const IconMingcuteDelete3Fill: typeof import('~icons/mingcute/delete3-fill.jsx').default
   const IconMingcuteDiamondSquareFill: typeof import('~icons/mingcute/diamond-square-fill.jsx').default

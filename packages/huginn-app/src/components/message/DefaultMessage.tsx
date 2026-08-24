@@ -4,6 +4,7 @@ import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { useMessageWidths } from "@hooks/useMessageWidths";
+import { useSwipeToReply } from "@hooks/useSwipeToReply";
 import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -75,23 +76,29 @@ export default function DefaultMessage() {
       (contextMenu?.isOpen && contextMenu.contextData?.message.id === context.message.id) ||
       (popover?.isOpen && popover.data?.messageId === context.message.id);
 
+   const { setReplyingMessageId } = useChannelStore();
+   const { swipeX, isReplyReady, touchHandlers } = useSwipeToReply(() => setReplyingMessageId(context.message.id));
+
    return (
       <div
          ref={rootRef}
          onMouseEnter={() => setIsHovering(true)}
          onMouseLeave={() => setIsHovering(false)}
+         {...touchHandlers}
          onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
          data-context={hasContext === true ? true : undefined}
+         data-swipe={swipeX !== 0 ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start p-2 pr-0 pl-4 transition-colors select-none lg:select-auto",
+            "group relative flex flex-col items-start p-2 pr-0 pl-4 select-none lg:select-auto",
+            swipeX === 0 ? "transition-[transform_150ms,color_150ms]" : "transition-colors",
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
                   ? isEditing
                      ? "bg-positive-900/30"
                      : "bg-caution-900/30"
                   : isMentioned
-                    ? "bg-primary-900/50 hover:bg-primary-900/70 active:bg-primary-900/70 data-context:bg-primary-900/70"
-                    : "hover:bg-surface-alt/70 active:bg-surface-alt/70 data-context:bg-surface-alt/70"),
+                    ? "bg-primary-900/50 hover:bg-primary-900/70 active:bg-primary-900/70 data-context:bg-primary-900/70 data-swipe:bg-primary-900/70"
+                    : "hover:bg-surface-alt/70 active:bg-surface-alt/70 data-context:bg-surface-alt/70 data-swipe:bg-surface-alt/70"),
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
@@ -100,7 +107,18 @@ export default function DefaultMessage() {
             !isNextSeparate && "pb-0",
             isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
+         style={{ transform: `translateX(${swipeX}px)` }}
       >
+         <div
+            className={clsx(
+               "absolute inset-y-0 -right-16 flex items-center justify-center transition-all",
+               isReplyReady ? "scale-100 opacity-100" : "scale-0 opacity-0",
+            )}
+         >
+            <div className="bg-surface-alt rounded-full p-1">
+               <IconMingcuteCornerUpLeftLine className="text-caution-300 size-5" />
+            </div>
+         </div>
          {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
          <div
             className={clsx(

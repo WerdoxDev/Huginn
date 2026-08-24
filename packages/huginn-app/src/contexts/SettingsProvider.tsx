@@ -14,7 +14,7 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    const { user } = useThisUser();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
-   const { userSettings } = useClientStore();
+   const { hostnames, userSettings } = useClientStore();
    const previousSettings = usePrevious(settings);
    const editSettingsMutation = useEditSettings();
    const isUpdatingFromServer = useRef(false);
@@ -55,6 +55,12 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
 
       void PushNotifications.setDefaultNotificationColor({ color: oklchToHex(palette["primary"][settings.theme]["primary-700"]) });
    }, [huginnWindow.environment, settings.theme]);
+
+   useEffect(() => {
+      if (huginnWindow.environment !== "android") return;
+
+      void PushNotifications.setCdnHostname({ hostname: hostnames.cdn });
+   }, [hostnames.cdn, huginnWindow.environment]);
 
    return props.children;
 }
