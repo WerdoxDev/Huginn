@@ -4,7 +4,7 @@ import { analytics, type APIUser, CONSTANTS, GatewayCode, recordSpanError, type 
 
 import type { CommonPayload } from "#types";
 
-export abstract class CommonClientSession<Payload extends CommonPayload, Properties extends Record<string, string | number | boolean> | undefined = undefined> {
+export abstract class CommonClientSession<Payload extends CommonPayload, Properties extends Record<string, any> | undefined = undefined> {
    public sessionId: Snowflake;
    public peer: Peer;
    public properties?: Properties;
