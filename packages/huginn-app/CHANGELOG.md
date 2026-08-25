@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.89.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.89.0...app@v0.89.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* **app:** read env correctly on both electron and vite ([ba25efc](https://github.com/WerdoxDev/Huginn/commit/ba25efc92da5382e5c5f7418ea1aaf97642bdb85))
+
 ## [0.89.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.88.2...app@v0.89.0) (2026-08-24)
 
 

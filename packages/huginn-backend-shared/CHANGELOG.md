@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.1...backend-shared@v0.31.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* **backend-shared:** incorrect type on common client session properties ([9018e72](https://github.com/WerdoxDev/Huginn/commit/9018e72407b1c211191930da507b5113b8dfad9d))
+
 ## [0.31.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.0...backend-shared@v0.31.1) (2026-08-19)
 
 
