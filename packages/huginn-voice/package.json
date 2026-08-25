@@ -6,9 +6,8 @@
       "#*": "./src/*.ts"
    },
    "scripts": {
-      "start": "DEBUG=mediasoup* node --import=tsx --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
-      "dev": "node --import=tsx --watch --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./src/setup.ts",
-      "bun-dev": "bun ./src/index.ts"
+      "start": "DEBUG=mediasoup* bun run --preload ./src/setup.ts ./src/index.ts",
+      "dev": "bun run --hot --preload ./src/setup.ts ./src/index.ts"
    },
    "dependencies": {
       "@huginn/backend-shared": "workspace:*",
