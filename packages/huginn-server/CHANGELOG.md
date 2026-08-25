@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.51.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.50.0...server@v0.51.0) (2026-08-24)
+
+
+### Features
+
+* **server:** support new portrait background style ([431ddb9](https://github.com/WerdoxDev/Huginn/commit/431ddb93cc650145f24416d5911d3a5c4f3520fe))
+
+
+### Bug Fixes
+
+* **server:** remove the need for CDN_PUBLIC_URL for notification icons ([0c2620d](https://github.com/WerdoxDev/Huginn/commit/0c2620d5dc9fe9d71d17df3a3bb24312eb0f26ff))
+
 ## [0.50.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.49.0...server@v0.50.0) (2026-08-19)
 
 

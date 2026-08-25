@@ -1,6 +1,6 @@
 {
    "name": "@huginnjs/shared",
-   "version": "0.44.0",
+   "version": "0.45.0",
    "type": "module",
    "main": "./src/index.ts",
    "imports": {

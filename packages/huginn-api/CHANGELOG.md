@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.44.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.0...api@v0.44.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* **api:** calling connect while connecting should await the same promise ([9520688](https://github.com/WerdoxDev/Huginn/commit/95206888d49d8f5d013d9087f32dcef072128b93))
+
 ## [0.44.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.43.2...api@v0.44.0) (2026-08-19)
 
 

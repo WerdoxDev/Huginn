@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.23.0...cdn@v0.24.0) (2026-08-24)
+
+
+### Features
+
+* **cdn:** add new external route for proxying embeds and gifs ([be0923c](https://github.com/WerdoxDev/Huginn/commit/be0923c527d38b508c9dd9bf2a45cd620516d101))
+
 ## [0.23.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.22.0...cdn@v0.23.0) (2026-08-19)
 
 
