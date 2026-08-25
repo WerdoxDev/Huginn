@@ -20,7 +20,7 @@ COPY packages/huginn-voice/package.json /temp/deps/packages/huginn-voice/package
 
 RUN cd /temp/deps && pnpm install --frozen-lockfile
 
-FROM node:24-alpine AS prerelease
+FROM oven/bun:1.4.0-alpine AS prerelease
 LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
 WORKDIR /src
 
@@ -30,13 +30,12 @@ COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packa
 COPY --from=install /temp/deps/packages/huginn-runtime-shared/node_modules packages/huginn-runtime-shared/node_modules
 COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules
 COPY --from=install /temp/deps/packages/huginn-voice/node_modules packages/huginn-voice/node_modules
-COPY --from=install /temp/deps/node_modules node_modules
 
-RUN cd packages/huginn-backend-shared && npx prisma generate
+RUN cd packages/huginn-backend-shared && bunx prisma generate
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 3003/tcp
 EXPOSE 44444/tcp
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["packages/huginn-voice", "voice", "npm"]
+CMD ["packages/huginn-voice", "voice"]

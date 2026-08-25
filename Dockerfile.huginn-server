@@ -16,7 +16,7 @@ COPY packages/huginn-server/package.json /temp/deps/packages/huginn-server/packa
 
 RUN cd /temp/deps && pnpm install --frozen-lockfile --ignore-scripts
 
-FROM oven/bun:1.3.14-alpine AS prerelease
+FROM oven/bun:1.4.0-alpine AS prerelease
 LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
 WORKDIR /src
 

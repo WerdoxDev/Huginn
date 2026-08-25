@@ -6,7 +6,7 @@
       "bifrost": "cd packages/huginn-bifrost && bun start",
       "server": "cd packages/huginn-server && bun start",
       "cdn": "cd packages/huginn-cdn && bun start",
-      "voice": "cd packages/huginn-voice && npm run start"
+      "voice": "cd packages/huginn-voice && bun start"
    },
    "devDependencies": {
       "@types/bun": "latest",
