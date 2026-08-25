@@ -11,5 +11,3 @@ initAnalytics(
       posthogHost: env.POSTHOG_HOST,
    }),
 );
-
-await import("./index.ts");
