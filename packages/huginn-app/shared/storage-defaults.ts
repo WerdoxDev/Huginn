@@ -2,10 +2,12 @@ import { CONSTANTS } from "@huginnjs/shared";
 
 import type { HostnamePreset, StorageMap } from "../src/types";
 
-const isDev = import.meta.env.VITE_DEV_SERVER_URL;
-const localApiHostname = import.meta.env.VITE_PUBLIC_LOCAL_API_HOSTNAME;
-const localCdnHostname = import.meta.env.VITE_PUBLIC_LOCAL_CDN_HOSTNAME;
-const localVoiceHostname = import.meta.env.VITE_PUBLIC_LOCAL_VOICE_HOSTNAME;
+const env = typeof window === "undefined" ? process.env : import.meta.env;
+
+const isDev = env.VITE_DEV_SERVER_URL;
+const localApiHostname = env.VITE_PUBLIC_LOCAL_API_HOSTNAME;
+const localCdnHostname = env.VITE_PUBLIC_LOCAL_CDN_HOSTNAME;
+const localVoiceHostname = env.VITE_PUBLIC_LOCAL_VOICE_HOSTNAME;
 
 export const storageDefaults: StorageMap = {
    settings: {
