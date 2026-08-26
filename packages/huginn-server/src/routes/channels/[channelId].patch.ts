@@ -14,9 +14,9 @@ const schema = t.Object({
    owner: t.Optional(t.String()),
 });
 
-export const patchChannel = new Elysia().use(verifyJwt()).patch(
-   "/api/channels/:channelId",
-   async ({ params: { channelId }, status, body, tokenPayload }) => {
+export const patchChannel = new Elysia()
+   .use(verifyJwt())
+   .patch("/api/channels/:channelId", { body: schema }, async ({ params: { channelId }, status, body, tokenPayload }) => {
       const formError = createErrorFactory(Errors.invalidFormBody());
 
       validateChannelName(body.name, formError);
@@ -85,6 +85,4 @@ export const patchChannel = new Elysia().use(verifyJwt()).patch(
       }
 
       return status("OK", channelWithoutRecipient(filterChannel(updatedChannel), tokenPayload.id));
-   },
-   { body: schema },
-);
+   });

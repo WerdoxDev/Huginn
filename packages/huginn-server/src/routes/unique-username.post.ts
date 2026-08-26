@@ -5,13 +5,9 @@ import { validateUsernameUnique } from "#utils/validation";
 
 const schema = t.Object({ username: t.String() });
 
-export const postUniqueUsername = new Elysia().post(
-   "/api/unique-username",
-   async ({ status, body }) => {
-      const isUnique = await validateUsernameUnique(body.username.toLowerCase());
-      const json: APIPostUniqueUsernameResult = { taken: !isUnique };
+export const postUniqueUsername = new Elysia().post("/api/unique-username", { body: schema }, async ({ status, body }) => {
+   const isUnique = await validateUsernameUnique(body.username.toLowerCase());
+   const json: APIPostUniqueUsernameResult = { taken: !isUnique };
 
-      return status("OK", json);
-   },
-   { body: schema },
-);
+   return status("OK", json);
+});

@@ -10,6 +10,13 @@ const schema = t.Object({ recipients: t.Nullable(t.Array(t.String())) });
 
 export const postCallRing = new Elysia().use(verifyJwt()).post(
    "/api/channels/:channelId/call/ring",
+   {
+      body: schema,
+      async afterResponse({ params: { channelId } }) {
+         await new Promise((r) => setTimeout(r, CONSTANTS.CALL_RINGING_TIMEOUT));
+         gateway.voiceManager.updateCall(channelId, []);
+      },
+   },
    async ({ body, params: { channelId }, status, tokenPayload }) => {
       const channel = await prisma.channel.getById(channelId, {
          select: {
@@ -41,12 +48,5 @@ export const postCallRing = new Elysia().use(verifyJwt()).post(
       );
 
       return status("No Content");
-   },
-   {
-      body: schema,
-      async afterResponse({ params: { channelId } }) {
-         await new Promise((r) => setTimeout(r, CONSTANTS.CALL_RINGING_TIMEOUT));
-         gateway.voiceManager.updateCall(channelId, []);
-      },
    },
 );

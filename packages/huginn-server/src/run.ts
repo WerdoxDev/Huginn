@@ -1,4 +1,6 @@
 import { logger } from "@huginn/backend-shared/logger";
+import { setFileTypeDetector } from "elysia";
+import { fileTypeFromBlob } from "file-type";
 
 import { startCronJobs } from "#cron-jobs";
 import { ws } from "#routes/gateway";
@@ -6,6 +8,8 @@ import { app } from "#server";
 import { env } from "#setup";
 
 await startCronJobs();
+
+setFileTypeDetector(fileTypeFromBlob);
 
 app.listen(
    {

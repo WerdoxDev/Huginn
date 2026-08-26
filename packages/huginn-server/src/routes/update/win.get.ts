@@ -7,6 +7,9 @@ import { getAllTags, getReleaseByTag } from "#utils/route-utils";
 
 export const getWinUpdate = new Elysia().get(
    "/api/update/win/:file",
+   {
+      params: t.Object({ file: t.String() }),
+   },
    async ({ status, params: { file }, request }) => {
       const tags = await getAllTags();
 
@@ -73,8 +76,5 @@ export const getWinUpdate = new Elysia().get(
       return new Response(latestInfo, {
          headers: { "content-type": "text/yaml" },
       });
-   },
-   {
-      params: t.Object({ file: t.String() }),
    },
 );

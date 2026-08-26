@@ -1,12 +1,13 @@
-import { cors } from "@elysiajs/cors";
-import { opentelemetry } from "@elysiajs/opentelemetry";
-import { staticPlugin } from "@elysiajs/static";
-import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
+import { cors } from "@elysia/cors";
+import { opentelemetry } from "@elysia/opentelemetry";
+import { staticPlugin } from "@elysia/static";
+import { serverOnError, globalPlugin, notFound, invalidBody, serverError, DBError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
 import { Client, LogLevel } from "@notionhq/client";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import Elysia from "elysia";
+import Elysia, { InternalServerError, NotFound, ParseError, ValidationError } from "elysia";
+import { websocket } from "elysia/websocket";
 import * as firebase from "firebase-admin/app";
 import { NotionConverter } from "notion-to-md";
 import { Octokit } from "octokit";
@@ -106,40 +107,49 @@ export const app = new Elysia({
    },
    normalize: "typebox",
 })
-   .use(cors())
-   .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
+   // @elysia/cors 1.x leaks an undeclared undici Response type and is typed against Elysia 1.x.
+   // .use(cors() as unknown as Elysia)
+   // .use(staticPlugin({ prefix: "", assets: "public", alwaysStatic: true }))
+   .use(websocket())
    .use(globalPlugin)
-   .use(
-      opentelemetry({
-         serviceName: env.OTEL_SERVICE_NAME,
-         spanProcessors: [
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: env.OTLP_TRACE_URL,
-               }),
-            ),
-         ],
-      }),
-   )
-   .onError(function onError({ error, code, status, path, request }) {
-      if (code === "UNKNOWN") {
-         const returnedError = serverOnError(error, status);
-         if (returnedError) {
-            return returnedError;
-         }
-      } else if (code === "VALIDATION" || code === "PARSE") {
-         return invalidBody(status);
-      } else if (code === "INTERNAL_SERVER_ERROR") {
-         return serverError(status);
-      } else if (code === "NOT_FOUND") {
-         return notFound(status);
+   // .use(
+   //    opentelemetry({
+   //       serviceName: env.OTEL_SERVICE_NAME,
+   //       spanProcessors: [
+   //          new BatchSpanProcessor(
+   //             new OTLPTraceExporter({
+   //                url: env.OTLP_TRACE_URL,
+   //             }),
+   //          ),
+   //       ],
+   //    }),
+   // )
+   .error(DBError, function onError({ status, error }) {
+      const returnedError = serverOnError(error, status);
+      if (returnedError) {
+         return returnedError;
       }
 
-      logger.error(error, "Request error");
-      logger.debug({ error, code, path, method: request.method }, "Request error");
       return serverError(status);
    })
-   .onAfterResponse(async function onAfterResponse({ global }) {
+   .error(NotFound, function onError({ status }) {
+      return notFound(status);
+   })
+   .error(ValidationError, function onError({ status }) {
+      return invalidBody(status);
+   })
+   .error(ParseError, function onError({ status }) {
+      return invalidBody(status);
+   })
+   .error(InternalServerError, function onError({ status }) {
+      return serverError(status);
+   })
+   .error(function onError({ error, status, path, request }) {
+      logger.error(error, "Request error");
+      logger.debug({ error, path, method: request.method }, "Request error");
+      return serverError(status);
+   })
+   .afterResponse(async function onAfterResponse({ global }) {
       if (global?.waitUntilPromises) {
          await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
       }
@@ -189,7 +199,7 @@ export const app = new Elysia({
    // call
    .use(postCallRing)
 
-   // auth
+   // // auth
    .use(postLogin)
    .use(postRegister)
    .use(postLogout)
@@ -204,7 +214,7 @@ export const app = new Elysia({
    .use(postKnownApplication)
    .use(getKnownApplications)
 
-   // misc
+   // // misc
    .use(getAllReleases)
    .use(getLatestRelease)
    .use(getOnlineUsers)
@@ -215,7 +225,7 @@ export const app = new Elysia({
    .use(getIndex)
    .use(getChangelog)
 
-   // gifs
+   // // gifs
    .use(getGifCategories)
    .use(getTrendingGifs)
    .use(getSearchGifs);

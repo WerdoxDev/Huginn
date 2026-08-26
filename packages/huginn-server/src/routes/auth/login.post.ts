@@ -10,6 +10,13 @@ import { generateVerificationCode, sendVerificationEmail } from "#utils/route-ut
 
 export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
+   {
+      body: t.Object({
+         username: t.Optional(t.String()),
+         email: t.Optional(t.String()),
+         password: t.String(),
+      }),
+   },
    async ({ body, status, global }) => {
       if (!body.email && !body.username) {
          return invalidBody(status);
@@ -54,12 +61,5 @@ export const postLogin = new Elysia().use(globalPlugin).post(
 
       const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
       return status(200, json);
-   },
-   {
-      body: t.Object({
-         username: t.Optional(t.String()),
-         email: t.Optional(t.String()),
-         password: t.String(),
-      }),
    },
 );

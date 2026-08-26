@@ -10,15 +10,13 @@ const schema = t.Object({
    page: t.Optional(t.Number()),
 });
 
-export const getTrendingGifs = new Elysia().use(verifyJwt()).get(
-   "/api/gifs/trending",
-   async ({ status, tokenPayload: { id }, query: { limit, page } }) => {
+export const getTrendingGifs = new Elysia()
+   .use(verifyJwt())
+   .get("/api/gifs/trending", { query: schema }, async ({ status, tokenPayload: { id }, query: { limit, page } }) => {
       const gifs = await fetchTrendingGifs(id, limit, page);
 
       const trending = filterGifs(gifs.data, { quality: "sm", format: "webm" });
 
       const json: APIGetTrendingGifsResult = trending;
       return status("OK", json);
-   },
-   { query: schema },
-);
+   });

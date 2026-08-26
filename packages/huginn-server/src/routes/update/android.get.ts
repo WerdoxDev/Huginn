@@ -6,6 +6,10 @@ import { getLatestCompatibleAndroidRelease } from "./android-update";
 
 export const getAndroidUpdate = new Elysia().get(
    "/api/update/android/:file",
+   {
+      params: t.Object({ file: t.String() }),
+      query: t.Object({ nativeVersion: t.Optional(t.String()) }),
+   },
    async ({ params: { file }, query: { nativeVersion }, request, status }) => {
       if (file !== "manifest.json" && !file.endsWith(".zip")) {
          return status("Not Found");
@@ -47,9 +51,5 @@ export const getAndroidUpdate = new Elysia().get(
          status: upstream.status,
          headers,
       });
-   },
-   {
-      params: t.Object({ file: t.String() }),
-      query: t.Object({ nativeVersion: t.Optional(t.String()) }),
    },
 );

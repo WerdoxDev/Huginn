@@ -8,9 +8,9 @@ import { filterKnownApplication } from "#utils/helpers";
 
 const querySchema = t.Object({ since: t.Optional(t.Number()) });
 
-export const getKnownApplications = new Elysia().use(verifyJwt()).get(
-   "/api/applications/known",
-   async ({ status, query: { since } }) => {
+export const getKnownApplications = new Elysia()
+   .use(verifyJwt())
+   .get("/api/applications/known", { query: querySchema }, async ({ status, query: { since } }) => {
       const sinceDate = since ? new Date(since) : undefined;
       const knownApplications = await prisma.knownApplication.getAll(sinceDate, {
          select: selectKnownApplication,
@@ -22,6 +22,4 @@ export const getKnownApplications = new Elysia().use(verifyJwt()).get(
       };
 
       return status("OK", json);
-   },
-   { query: querySchema },
-);
+   });

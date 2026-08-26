@@ -10,9 +10,9 @@ import { dispatchToTopic } from "#utils/gateway-utils";
 
 const schema = t.Object({ username: t.String({ minLength: 1 }) });
 
-export const postUserRelationship = new Elysia().use(verifyJwt()).post(
-   "/api/users/@me/relationships",
-   async ({ body, tokenPayload, status }) => {
+export const postUserRelationship = new Elysia()
+   .use(verifyJwt())
+   .post("/api/users/@me/relationships", { body: schema }, async ({ body, tokenPayload, status }) => {
       const [error, userId] = await tryCatch(async () => (await prisma.user.getByUsername(body.username)).id);
 
       if (assertError(error, DBErrorType.NULL_USER)) {
@@ -37,9 +37,7 @@ export const postUserRelationship = new Elysia().use(verifyJwt()).post(
       await createRelationship(tokenPayload.id, userId);
 
       return status("No Content");
-   },
-   { body: schema },
-);
+   });
 
 export async function createRelationship(payloadId: Snowflake, userId: Snowflake) {
    if (

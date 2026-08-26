@@ -1,15 +1,12 @@
 import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
    CONSTANTS,
    type APIPostOAuthConfirmResult,
    CDNRoutes,
    Errors,
-   UserFlags,
    WorkerID,
    getFileHash,
-   idFix,
    snowflake,
    toArrayBuffer,
    type OAuthType,
@@ -26,9 +23,9 @@ const schema = t.Object({
    avatar: t.Nullable(t.String()),
 });
 
-export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
-   "/api/auth/oauth-confirm",
-   async ({ body, status, tokenPayload }) => {
+export const postOauthConfirm = new Elysia()
+   .use(verifyJwt("oauth"))
+   .post("/api/auth/oauth-confirm", { body: schema }, async ({ body, status, tokenPayload }) => {
       const identityProvider = await prisma.identityProvider.findUnique({
          where: { id: BigInt(tokenPayload.providerId) },
       });
@@ -97,6 +94,4 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          refreshToken: refreshToken,
       };
       return status("Created", json);
-   },
-   { body: schema },
-);
+   });

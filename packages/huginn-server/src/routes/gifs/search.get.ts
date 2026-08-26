@@ -11,14 +11,12 @@ const schema = t.Object({
    page: t.Optional(t.Number()),
 });
 
-export const getSearchGifs = new Elysia().use(verifyJwt()).get(
-   "/api/gifs/search",
-   async ({ status, tokenPayload: { id }, query: { query, limit, page } }) => {
+export const getSearchGifs = new Elysia()
+   .use(verifyJwt())
+   .get("/api/gifs/search", { query: schema }, async ({ status, tokenPayload: { id }, query: { query, limit, page } }) => {
       const gifs = await fetchSearchGifs(id, query, limit, page);
       const filteredGifs = filterGifs(gifs.data, { quality: "sm", format: "webm" });
 
       const json: APIGetSearchGifsResult = filteredGifs;
       return status("OK", json);
-   },
-   { query: schema },
-);
+   });

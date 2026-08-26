@@ -13,6 +13,9 @@ const querySchema = t.Object({
 
 export const getChannelMessagePins = new Elysia().use(verifyJwt()).get(
    "/api/channels/:channelId/messages/pins",
+   {
+      query: querySchema,
+   },
    async ({ params: { channelId }, query: { before, limit }, tokenPayload, status }) => {
       const channel = await prisma.channel.getById(channelId, { select: { id: true } });
 
@@ -35,8 +38,5 @@ export const getChannelMessagePins = new Elysia().use(verifyJwt()).get(
       );
 
       return status("OK", json);
-   },
-   {
-      query: querySchema,
    },
 );

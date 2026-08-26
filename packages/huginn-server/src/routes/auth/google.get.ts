@@ -1,5 +1,5 @@
 import { forbidden, tryCatch } from "@huginn/backend-shared";
-import { decodeBase64 } from "@std/encoding";
+import { base64 } from "@scure/base";
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
@@ -12,12 +12,13 @@ const querySchema = t.Object({
 
 export const getGoogle = new Elysia().get(
    "/api/auth/google",
+   { query: querySchema },
    async ({ query: { flow, state, redirect_url }, status, redirect, cookie: { oauth }, request }) => {
       if (!env.GOOGLE_CLIENT_ID || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
 
-      const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
+      const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(base64.decode(state)).split(":"));
       if (error) {
          return forbidden(status);
       }
@@ -59,5 +60,4 @@ export const getGoogle = new Elysia().get(
 
       return redirect(authEndpoint.toString(), 302);
    },
-   { query: querySchema },
 );

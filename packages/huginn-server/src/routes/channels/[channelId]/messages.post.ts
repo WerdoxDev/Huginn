@@ -42,6 +42,17 @@ export const postChannelMessage = new Elysia()
    .use(verifyJwt())
    .post(
       "/api/channels/:channelId/messages",
+      {
+         body: schema,
+         transform(ctx) {
+            const contentType = ctx.headers["content-type"];
+            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
+               const { payload_json, files } = ctx.body;
+               const json = typeof payload_json === "string" ? JSON.parse(payload_json) : payload_json;
+               ctx.body = { ...json, files };
+            }
+         },
+      },
       async ({ params: { channelId }, body, tokenPayload, status, global }) => {
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
@@ -116,16 +127,5 @@ export const postChannelMessage = new Elysia()
          });
 
          return status("Created", message);
-      },
-      {
-         body: schema,
-         transform(ctx) {
-            const contentType = ctx.headers["content-type"];
-            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
-               const { payload_json, files } = ctx.body;
-               const json = typeof payload_json === "string" ? JSON.parse(payload_json) : payload_json;
-               ctx.body = { ...json, files };
-            }
-         },
       },
    );

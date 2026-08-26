@@ -1,7 +1,6 @@
 import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginnjs/shared";
-import { toSnakeCase } from "@std/text";
+import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, toSnakeCase, WorkerID } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
@@ -44,6 +43,13 @@ type GoogleUserResponse = {
 
 export const getGoogleCallback = new Elysia().get(
    "/api/auth/callback/google",
+   {
+      query: querySchema,
+      cookie: cookieSchema,
+      async afterHandle({ cookie: { oauth } }) {
+         oauth.remove();
+      },
+   },
    async ({ cookie: { oauth }, status, query: { code, error, state }, redirect }) => {
       if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
@@ -168,12 +174,5 @@ export const getGoogleCallback = new Elysia().get(
          // consola.info("Error or no state");
          return forbidden(status);
       }
-   },
-   {
-      query: querySchema,
-      cookie: cookieSchema,
-      async afterHandle({ cookie: { oauth } }) {
-         oauth.remove();
-      },
    },
 );

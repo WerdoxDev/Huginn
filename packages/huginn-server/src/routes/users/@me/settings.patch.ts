@@ -53,39 +53,31 @@ async function uploadBackgroundImage(background: BackgroundStyle, imageKey: "ima
    background[imageKey] = backgroundHash;
 }
 
-export const patchUserSettings = new Elysia().use(verifyJwt()).patch(
-   "/api/users/@me/settings",
-   async ({ body, tokenPayload, status }) => {
-      if (Object.keys(body).length === 0) {
+export const patchUserSettings = new Elysia().use(verifyJwt()).patch("/api/users/@me/settings", { body: schema }, async ({ body, tokenPayload, status }) => {
+   if (Object.keys(body).length === 0) {
+      return invalidBody(status);
+   }
+
+   const finalSettings = { ...body };
+
+   if (finalSettings.channelBackgrounds) {
+      for (const background of finalSettings.channelBackgrounds) {
+         if (!background.color && !background.image && !background.portraitImage) return invalidBody(status);
+         await uploadBackgroundImage(background, "image", background.channelId, tokenPayload.id);
+         await uploadBackgroundImage(background, "portraitImage", background.channelId, tokenPayload.id);
+      }
+   }
+
+   if (finalSettings.globalChannelBackground) {
+      if (!finalSettings.globalChannelBackground.color && !finalSettings.globalChannelBackground.image && !finalSettings.globalChannelBackground.portraitImage)
          return invalidBody(status);
-      }
+      await uploadBackgroundImage(finalSettings.globalChannelBackground, "image", "global", tokenPayload.id);
+      await uploadBackgroundImage(finalSettings.globalChannelBackground, "portraitImage", "global", tokenPayload.id);
+   }
 
-      const finalSettings = { ...body };
+   const updatedSettings = await prisma.settings.updateSettings(tokenPayload.id, finalSettings);
 
-      if (finalSettings.channelBackgrounds) {
-         for (const background of finalSettings.channelBackgrounds) {
-            if (!background.color && !background.image && !background.portraitImage) return invalidBody(status);
-            await uploadBackgroundImage(background, "image", background.channelId, tokenPayload.id);
-            await uploadBackgroundImage(background, "portraitImage", background.channelId, tokenPayload.id);
-         }
-      }
+   dispatchToTopic(tokenPayload.id, "settings_update", updatedSettings);
 
-      if (finalSettings.globalChannelBackground) {
-         if (
-            !finalSettings.globalChannelBackground.color &&
-            !finalSettings.globalChannelBackground.image &&
-            !finalSettings.globalChannelBackground.portraitImage
-         )
-            return invalidBody(status);
-         await uploadBackgroundImage(finalSettings.globalChannelBackground, "image", "global", tokenPayload.id);
-         await uploadBackgroundImage(finalSettings.globalChannelBackground, "portraitImage", "global", tokenPayload.id);
-      }
-
-      const updatedSettings = await prisma.settings.updateSettings(tokenPayload.id, finalSettings);
-
-      dispatchToTopic(tokenPayload.id, "settings_update", updatedSettings);
-
-      return status("OK", updatedSettings);
-   },
-   { body: schema },
-);
+   return status("OK", updatedSettings);
+});

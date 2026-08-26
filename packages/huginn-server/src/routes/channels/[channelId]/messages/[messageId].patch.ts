@@ -39,6 +39,18 @@ export const patchMessage = new Elysia()
    .use(globalPlugin)
    .patch(
       "/api/channels/:channelId/messages/:messageId",
+      {
+         body: schema,
+         transform(ctx) {
+            const contentType = ctx.headers["content-type"];
+            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
+               const { payload_json, ...rest } = ctx.body;
+               const json = JSON.parse(payload_json);
+               const files = Object.keys(rest).length !== 0 ? { files: rest } : {};
+               ctx.body = { ...json, ...files };
+            }
+         },
+      },
       async ({ tokenPayload, params: { channelId, messageId }, status, body, global }) => {
          // Check permission
          const channel = await prisma.channel.getById(channelId, { select: { id: true } });
@@ -90,17 +102,5 @@ export const patchMessage = new Elysia()
          });
 
          return status("OK", message);
-      },
-      {
-         body: schema,
-         transform(ctx) {
-            const contentType = ctx.headers["content-type"];
-            if (contentType?.includes("multipart/form-data") && ctx.body.payload_json) {
-               const { payload_json, ...rest } = ctx.body;
-               const json = JSON.parse(payload_json);
-               const files = Object.keys(rest).length !== 0 ? { files: rest } : {};
-               ctx.body = { ...json, ...files };
-            }
-         },
       },
    );

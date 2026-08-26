@@ -13,50 +13,46 @@ const schema = t.Object({
    password: t.String(),
 });
 
-export const postRegister = new Elysia().use(globalPlugin).post(
-   "/api/auth/register",
-   async ({ status, body, global }) => {
-      body.username = body.username.toLowerCase();
+export const postRegister = new Elysia().use(globalPlugin).post("/api/auth/register", { body: schema }, async ({ status, body, global }) => {
+   body.username = body.username.toLowerCase();
 
-      const formError = createErrorFactory(Errors.invalidFormBody());
+   const formError = createErrorFactory(Errors.invalidFormBody());
 
-      validateUsername(body.username, formError);
-      validateDisplayName(body.displayName, formError);
-      validatePassword(body.password, formError);
-      validateEmail(body.email, formError);
+   validateUsername(body.username, formError);
+   validateDisplayName(body.displayName, formError);
+   validatePassword(body.password, formError);
+   validateEmail(body.email, formError);
 
-      if (formError.hasErrors()) {
-         return createHuginnError(formError, status);
-      }
+   if (formError.hasErrors()) {
+      return createHuginnError(formError, status);
+   }
 
-      const databaseError = createErrorFactory(Errors.invalidFormBody());
+   const databaseError = createErrorFactory(Errors.invalidFormBody());
 
-      await validateUsernameUnique(body.username, databaseError);
-      await validateEmailUnique(body.email, databaseError);
+   await validateUsernameUnique(body.username, databaseError);
+   await validateEmailUnique(body.email, databaseError);
 
-      if (databaseError.hasErrors()) {
-         return createHuginnError(databaseError, status);
-      }
+   if (databaseError.hasErrors()) {
+      return createHuginnError(databaseError, status);
+   }
 
-      const user = await prisma.user.createOne(body);
+   const user = await prisma.user.createOne(body);
 
-      const code = generateVerificationCode();
-      await prisma.emailVerification.createOrUpdate({
-         userId: user.id,
-         email: user.email,
-         expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
-         code,
-         purpose: "registration",
-      });
+   const code = generateVerificationCode();
+   await prisma.emailVerification.createOrUpdate({
+      userId: user.id,
+      email: user.email,
+      expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
+      code,
+      purpose: "registration",
+   });
 
-      global.waitUntil(async () => await sendVerificationEmail(user.email, code));
+   global.waitUntil(async () => await sendVerificationEmail(user.email, code));
 
-      const json: APIPostRegisterResult = {
-         ...user,
-         pendingEmail: user.email,
-      };
+   const json: APIPostRegisterResult = {
+      ...user,
+      pendingEmail: user.email,
+   };
 
-      return status("Accepted", json);
-   },
-   { body: schema },
-);
+   return status("Accepted", json);
+});
