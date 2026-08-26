@@ -37,7 +37,7 @@ if (import.meta.env.DEV) {
       }
       if (e.key === "]") {
          // clientStore.getState().client?.voice.signaling.socket?.close();
-         const conn = { ...clientStore.getState().client?.voice.signaling.connectionData! };
+         const conn = { ...clientStore.getState().client!.voice.signaling.connectionData! };
          clientStore.getState().client?.voice.signaling.close();
          setTimeout(async () => {
             await clientStore.getState().client?.voice.signaling.connect(conn.token, conn.channelId, conn.guildId);

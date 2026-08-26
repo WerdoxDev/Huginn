@@ -207,7 +207,7 @@ export function nullToUndefined<T>(obj: T): NullToUndefined<T> {
    if (obj && typeof obj === "object") {
       return Object.fromEntries(
          Object.entries(obj)
-            .filter(([_, value]) => value !== null) // Exclude `null` fields
+            .filter(([, value]) => value !== null) // Exclude `null` fields
             .map(([key, value]) => [key, nullToUndefined(value)]), // Recursively process nested objects
       ) as NullToUndefined<T>;
    }
@@ -422,4 +422,12 @@ export function diff<T extends Record<string, any>>(a: T, b: T): Partial<T> {
       }
    }
    return result;
+}
+
+export function toSnakeCase(str: string): string {
+   return str
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
+      .replace(/[\s-]+/g, "_")
+      .toLowerCase();
 }

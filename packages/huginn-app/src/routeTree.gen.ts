@@ -9,33 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VoiceDebugRouteImport } from './routes/voice-debug'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppPopoutRouteImport } from './routes/_app/popout'
-import { Route as AppMediaPopoutRouteImport } from './routes/_app/media-popout'
-import { Route as AppStartRouteImport } from './routes/_app/_start'
+import { Route as VoiceDebugRouteImport } from './routes/voice-debug'
 import { Route as AppMainRouteImport } from './routes/_app/_main'
-import { Route as AppStartIndexRouteImport } from './routes/_app/_start/index'
-import { Route as AppStartRegisterRouteImport } from './routes/_app/_start/register'
-import { Route as AppStartOauthRedirectRouteImport } from './routes/_app/_start/oauth-redirect'
-import { Route as AppStartLoginRouteImport } from './routes/_app/_start/login'
+import { Route as AppStartRouteImport } from './routes/_app/_start'
+import { Route as AppMediaPopoutRouteImport } from './routes/_app/media-popout'
+import { Route as AppPopoutRouteImport } from './routes/_app/popout'
 import { Route as AppMainHomeRouteImport } from './routes/_app/_main/_home'
+import { Route as AppStartIndexRouteImport } from './routes/_app/_start/index'
+import { Route as AppStartLoginRouteImport } from './routes/_app/_start/login'
+import { Route as AppStartOauthRedirectRouteImport } from './routes/_app/_start/oauth-redirect'
+import { Route as AppStartRegisterRouteImport } from './routes/_app/_start/register'
 import { Route as AppMainHomeFriendsRouteImport } from './routes/_app/_main/_home/friends'
 import { Route as AppMainHomeChannelsAtmeIndexRouteImport } from './routes/_app/_main/_home/channels.@me.index'
 import { Route as AppMainHomeChannelsAtmeChannelIdRouteImport } from './routes/_app/_main/_home/channels.@me.$channelId'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VoiceDebugRoute = VoiceDebugRouteImport.update({
   id: '/voice-debug',
   path: '/voice-debug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
+const AppMainRoute = AppMainRouteImport.update({
+  id: '/_main',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppPopoutRoute = AppPopoutRouteImport.update({
-  id: '/popout',
-  path: '/popout',
+const AppStartRoute = AppStartRouteImport.update({
+  id: '/_start',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMediaPopoutRoute = AppMediaPopoutRouteImport.update({
@@ -43,27 +46,18 @@ const AppMediaPopoutRoute = AppMediaPopoutRouteImport.update({
   path: '/media-popout',
   getParentRoute: () => AppRoute,
 } as any)
-const AppStartRoute = AppStartRouteImport.update({
-  id: '/_start',
+const AppPopoutRoute = AppPopoutRouteImport.update({
+  id: '/popout',
+  path: '/popout',
   getParentRoute: () => AppRoute,
 } as any)
-const AppMainRoute = AppMainRouteImport.update({
-  id: '/_main',
-  getParentRoute: () => AppRoute,
+const AppMainHomeRoute = AppMainHomeRouteImport.update({
+  id: '/_home',
+  getParentRoute: () => AppMainRoute,
 } as any)
 const AppStartIndexRoute = AppStartIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppStartRoute,
-} as any)
-const AppStartRegisterRoute = AppStartRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AppStartRoute,
-} as any)
-const AppStartOauthRedirectRoute = AppStartOauthRedirectRouteImport.update({
-  id: '/oauth-redirect',
-  path: '/oauth-redirect',
   getParentRoute: () => AppStartRoute,
 } as any)
 const AppStartLoginRoute = AppStartLoginRouteImport.update({
@@ -71,9 +65,15 @@ const AppStartLoginRoute = AppStartLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AppStartRoute,
 } as any)
-const AppMainHomeRoute = AppMainHomeRouteImport.update({
-  id: '/_home',
-  getParentRoute: () => AppMainRoute,
+const AppStartOauthRedirectRoute = AppStartOauthRedirectRouteImport.update({
+  id: '/oauth-redirect',
+  path: '/oauth-redirect',
+  getParentRoute: () => AppStartRoute,
+} as any)
+const AppStartRegisterRoute = AppStartRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AppStartRoute,
 } as any)
 const AppMainHomeFriendsRoute = AppMainHomeFriendsRouteImport.update({
   id: '/friends',
@@ -184,13 +184,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/voice-debug': {
-      id: '/voice-debug'
-      path: '/voice-debug'
-      fullPath: '/voice-debug'
-      preLoaderRoute: typeof VoiceDebugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -198,18 +191,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/popout': {
-      id: '/_app/popout'
-      path: '/popout'
-      fullPath: '/popout'
-      preLoaderRoute: typeof AppPopoutRouteImport
-      parentRoute: typeof AppRoute
+    '/voice-debug': {
+      id: '/voice-debug'
+      path: '/voice-debug'
+      fullPath: '/voice-debug'
+      preLoaderRoute: typeof VoiceDebugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/media-popout': {
-      id: '/_app/media-popout'
-      path: '/media-popout'
-      fullPath: '/media-popout'
-      preLoaderRoute: typeof AppMediaPopoutRouteImport
+    '/_app/_main': {
+      id: '/_app/_main'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppMainRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_start': {
@@ -219,32 +212,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStartRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/_main': {
-      id: '/_app/_main'
+    '/_app/media-popout': {
+      id: '/_app/media-popout'
+      path: '/media-popout'
+      fullPath: '/media-popout'
+      preLoaderRoute: typeof AppMediaPopoutRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/popout': {
+      id: '/_app/popout'
+      path: '/popout'
+      fullPath: '/popout'
+      preLoaderRoute: typeof AppPopoutRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/_main/_home': {
+      id: '/_app/_main/_home'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AppMainRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AppMainHomeRouteImport
+      parentRoute: typeof AppMainRoute
     }
     '/_app/_start/': {
       id: '/_app/_start/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppStartIndexRouteImport
-      parentRoute: typeof AppStartRoute
-    }
-    '/_app/_start/register': {
-      id: '/_app/_start/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AppStartRegisterRouteImport
-      parentRoute: typeof AppStartRoute
-    }
-    '/_app/_start/oauth-redirect': {
-      id: '/_app/_start/oauth-redirect'
-      path: '/oauth-redirect'
-      fullPath: '/oauth-redirect'
-      preLoaderRoute: typeof AppStartOauthRedirectRouteImport
       parentRoute: typeof AppStartRoute
     }
     '/_app/_start/login': {
@@ -254,12 +247,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStartLoginRouteImport
       parentRoute: typeof AppStartRoute
     }
-    '/_app/_main/_home': {
-      id: '/_app/_main/_home'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppMainHomeRouteImport
-      parentRoute: typeof AppMainRoute
+    '/_app/_start/oauth-redirect': {
+      id: '/_app/_start/oauth-redirect'
+      path: '/oauth-redirect'
+      fullPath: '/oauth-redirect'
+      preLoaderRoute: typeof AppStartOauthRedirectRouteImport
+      parentRoute: typeof AppStartRoute
+    }
+    '/_app/_start/register': {
+      id: '/_app/_start/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AppStartRegisterRouteImport
+      parentRoute: typeof AppStartRoute
     }
     '/_app/_main/_home/friends': {
       id: '/_app/_main/_home/friends'

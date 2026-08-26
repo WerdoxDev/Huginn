@@ -10,10 +10,10 @@
    },
    "devDependencies": {
       "@types/bun": "latest",
-      "oxfmt": "^0.56.0",
-      "oxlint": "^1.71.0",
+      "oxfmt": "^0.65.0",
+      "oxlint": "^1.80.0",
       "release-please": "^16.18.0",
-      "typescript": "7.0.1-rc"
+      "typescript": "7.0.2"
    },
    "packageManager": "pnpm@11.9.0",
    "trustedDependencies": [
