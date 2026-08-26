@@ -48,7 +48,7 @@ export async function getVideoData(source: ArrayBuffer): Promise<VideoData | und
 }
 
 export function verifyJwt<Type extends TokenType = "user-access">(type?: Type) {
-   return new Elysia({ name: "verify-jwt" }).derive({ as: "scoped" }, async function verifyJwt({ headers, status }) {
+   return new Elysia({ name: "verify-jwt" }).derive("plugin", async function verifyJwt({ headers, status }) {
       const tokenType = type ?? "user-access";
       const authorization = headers["authorization"];
 
@@ -108,7 +108,7 @@ class GlobalElysia {
    }
 }
 
-export const globalPlugin = new Elysia({ name: "global-plugin" }).derive({ as: "scoped" }, function globalPlugin() {
+export const globalPlugin = new Elysia({ name: "global-plugin" }).derive("plugin", function globalPlugin() {
    return { global: new GlobalElysia() };
 });
 
@@ -124,6 +124,6 @@ export function hRateLimit(options: { duration?: number; max?: number }) {
          status: 429,
          headers: { "Content-Type": "application/json" },
       }),
-      scoping: "scoped",
+      scoping: "plugin",
    });
 }

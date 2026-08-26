@@ -1,6 +1,6 @@
-import type { Context, ElysiaCustomStatusResponse, InvertedStatusMap, StatusMap } from "elysia";
+import type { Context, StatusMap } from "elysia";
 
-import { Errors, JsonCode, type HuginnErrorData } from "@huginnjs/shared";
+import { Errors, JsonCode } from "@huginnjs/shared";
 
 import { createErrorFactory, type ErrorFactory } from "#error-factory";
 import { CDNErrorType, DBErrorType } from "#types";
@@ -53,12 +53,8 @@ export function isCDNError(object: unknown): object is CDNError {
    return false;
 }
 
-export function createHuginnError<Code extends keyof InvertedStatusMap | keyof StatusMap = "Bad Request">(
-   errorFactory: ErrorFactory,
-   status: Context["status"],
-   code?: Code,
-) {
-   return status(code ?? "Bad Request", errorFactory.toObject()) as ElysiaCustomStatusResponse<Code, HuginnErrorData>;
+export function createHuginnError<Code extends keyof StatusMap = "Bad Request">(errorFactory: ErrorFactory, status: Context["status"], code?: Code) {
+   return status(code ?? "Bad Request", errorFactory.toObject());
 }
 
 export function serverError(status: Context["status"]) {
@@ -93,8 +89,8 @@ export function fileNotFound(status: Context["status"]) {
    return createHuginnError(createErrorFactory(Errors.fileNotFound()), status, "Not Found");
 }
 
-export function singleError<Code extends keyof InvertedStatusMap | keyof StatusMap = "OK">(error: [string, JsonCode], status: Context["status"], code?: Code) {
-   return createHuginnError(createErrorFactory(error), status, code ?? "Bad Request") as ElysiaCustomStatusResponse<Code, HuginnErrorData>;
+export function singleError<Code extends keyof StatusMap = "OK">(error: [string, JsonCode], status: Context["status"], code?: Code) {
+   return createHuginnError(createErrorFactory(error), status, code ?? "Bad Request");
 }
 
 export function serverOnError(error: Readonly<Error>, status: Context["status"]) {
