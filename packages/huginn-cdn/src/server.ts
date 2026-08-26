@@ -1,10 +1,10 @@
-import cors from "@elysiajs/cors";
-import { opentelemetry } from "@elysiajs/opentelemetry";
-import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
+import cors from "@elysia/cors";
+import { opentelemetry } from "@elysia/opentelemetry";
+import { cdnOnError, DBError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import Elysia from "elysia";
+import Elysia, { InternalServerError, NotFound, ParseError, ValidationError } from "elysia";
 
 import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
 import { getApplicationIcon } from "#routes/application-icons/[applicationId!]/[iconHash].get";
@@ -32,39 +32,65 @@ export const storage: Storage = AWS_AVAILABLE ? new S3Storage() : new FileStorag
 export const cacheStorage: Storage = new FileStorage(env.CACHE_DIR);
 
 export const app = new Elysia({ normalize: "typebox" })
-   .use(cors())
+
+   // .use(cors() as unknown as Elysia)
    .use(globalPlugin)
-   .use(
-      opentelemetry({
-         serviceName: env.OTEL_SERVICE_NAME,
-         spanProcessors: [
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: env.OTLP_TRACE_URL,
-               }),
-            ),
-         ],
-      }),
-   )
-   .onError(({ error, code, status, path, request }) => {
-      if (code === "UNKNOWN") {
-         const returnedError = cdnOnError(error, status);
-         if (returnedError) {
-            return returnedError;
-         }
-      } else if (code === "VALIDATION" || code === "PARSE") {
-         return invalidBody(status);
-      } else if (code === "INTERNAL_SERVER_ERROR") {
-         return serverError(status);
-      } else if (code === "NOT_FOUND") {
-         return notFound(status);
+   // .use(
+   //    opentelemetry({
+   //       serviceName: env.OTEL_SERVICE_NAME,
+   //       spanProcessors: [
+   //          new BatchSpanProcessor(
+   //             new OTLPTraceExporter({
+   //                url: env.OTLP_TRACE_URL,
+   //             }),
+   //          ),
+   //       ],
+   //    }),
+   // )
+   .error(DBError, function onError({ status, error }) {
+      const returnedError = cdnOnError(error, status);
+      if (returnedError) {
+         return returnedError;
       }
 
-      logger.error(error, "Request error");
-      logger.debug({ error, code, path, method: request.method }, "Request error");
       return serverError(status);
    })
-   .onAfterResponse(async ({ global }) => {
+   .error(NotFound, function onError({ status }) {
+      return notFound(status);
+   })
+   .error(ValidationError, function onError({ status }) {
+      return invalidBody(status);
+   })
+   .error(ParseError, function onError({ status }) {
+      return invalidBody(status);
+   })
+   .error(InternalServerError, function onError({ status }) {
+      return serverError(status);
+   })
+   .error(function onError({ error, status, path, request }) {
+      logger.error(error, "Request error");
+      logger.debug({ error, path, method: request.method }, "Request error");
+      return serverError(status);
+   })
+   // .error(({ error, code, status, path, request }) => {
+   //    if (code === "UNKNOWN") {
+   //       const returnedError = cdnOnError(error, status);
+   //       if (returnedError) {
+   //          return returnedError;
+   //       }
+   //    } else if (code === "VALIDATION" || code === "PARSE") {
+   //       return invalidBody(status);
+   //    } else if (code === "INTERNAL_SERVER_ERROR") {
+   //       return serverError(status);
+   //    } else if (code === "NOT_FOUND") {
+   //       return notFound(status);
+   //    }
+
+   //    logger.error(error, "Request error");
+   //    logger.debug({ error, code, path, method: request.method }, "Request error");
+   //    return serverError(status);
+   // })
+   .afterResponse(async ({ global }) => {
       if (global?.waitUntilPromises) {
          await Promise.allSettled(global.waitUntilPromises.map((x) => x()) ?? []);
       }
@@ -78,7 +104,7 @@ export const app = new Elysia({ normalize: "typebox" })
    .use(getIndex)
 
    // Cached routes
-   .onAfterHandle(({ request, set }) => {
+   .afterHandle(({ request, set }) => {
       const url = new URL(request.url);
       if (request.method !== "GET") return;
 

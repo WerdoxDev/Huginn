@@ -10,13 +10,13 @@
       "dev": "bun run --hot --preload ./src/setup.ts ./src/run.ts"
    },
    "dependencies": {
-      "@elysiajs/cors": "^1.4.0",
-      "@elysiajs/opentelemetry": "^1.4.11",
+      "@elysia/cors": "^1.4.0",
+      "@elysia/opentelemetry": "^1.4.11",
       "@huginn/backend-shared": "workspace:*",
       "@huginn/runtime-shared": "workspace:*",
       "@huginnjs/shared": "workspace:*",
       "consola": "^3.4.2",
-      "elysia": "^1.4.29",
+      "elysia": "2.0.0-beta.6",
       "envalid": "^8.2.0",
       "octokit": "^5.0.5",
       "p-queue": "^9.3.0",
