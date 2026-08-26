@@ -25,7 +25,17 @@ import type {
 } from "@huginnjs/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
-import type { ChangeEvent, CSSProperties, FocusEvent, HTMLInputTypeAttribute, MouseEvent, ReactNode, RefCallback } from "react";
+import type {
+   ChangeEvent,
+   CSSProperties,
+   FocusEvent,
+   HTMLInputTypeAttribute,
+   MouseEvent,
+   PointerEvent,
+   ReactNode,
+   RefCallback,
+   TouchEvent,
+} from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
 export type StatusType = "none" | "default" | "error" | "success";
@@ -64,6 +74,10 @@ export type HuginnButtonProps = {
    disabled?: boolean;
    color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+   onPointerDown?: (e: PointerEvent<HTMLButtonElement>) => void;
+   onPointerUp?: (e: PointerEvent<HTMLButtonElement>) => void;
+   onPointerMove?: (e: PointerEvent<HTMLButtonElement>) => void;
+   onPointerCancel?: (e: PointerEvent<HTMLButtonElement>) => void;
 };
 
 export type HuginnLoadingButtonProps = HuginnButtonProps & {
