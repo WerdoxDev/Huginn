@@ -5,9 +5,9 @@ import { storage } from "#server";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 
-export const postUserAvatar = new Elysia().use(verifyJwt("cdn")).post(
-   "/cdn/avatars/:userId",
-   async ({ body, status, params: { userId } }) => {
+export const postUserAvatar = new Elysia()
+   .use(verifyJwt("cdn"))
+   .post("/cdn/avatars/:userId", { body: schema }, async ({ body, status, params: { userId } }) => {
       const file = body.files[0];
 
       if (!file) {
@@ -17,6 +17,4 @@ export const postUserAvatar = new Elysia().use(verifyJwt("cdn")).post(
       await storage.writeFile("avatars", userId, file.name, file);
 
       return status("Created", file.name);
-   },
-   { body: schema },
-);
+   });

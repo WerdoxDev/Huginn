@@ -9,9 +9,9 @@ const querySchema = t.Object({
    size: t.Optional(t.Number()),
 });
 
-export const getUserAvatar = new Elysia().use(globalPlugin).get(
-   "/cdn/avatars/:userId/:avatarHash",
-   async ({ params: { avatarHash, userId }, query: { size }, global }) => {
+export const getUserAvatar = new Elysia()
+   .use(globalPlugin)
+   .get("/cdn/avatars/:userId/:avatarHash", { query: querySchema }, async ({ params: { avatarHash, userId }, query: { size }, global }) => {
       const { file, transformation } = await tryResolveImage("avatars", userId, avatarHash, { width: size, height: size });
 
       // Cache the file if it was transformed
@@ -22,6 +22,4 @@ export const getUserAvatar = new Elysia().use(globalPlugin).get(
       }
 
       return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": extractFileInfo(avatarHash).mimeType } });
-   },
-   { query: querySchema },
-);
+   });

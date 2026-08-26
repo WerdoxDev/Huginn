@@ -9,9 +9,9 @@ const querySchema = t.Object({
    size: t.Optional(t.Number()),
 });
 
-export const getChannelIcon = new Elysia().use(globalPlugin).get(
-   "/cdn/channel-icons/:channelId/:iconHash",
-   async ({ params: { channelId, iconHash }, query: { size }, global }) => {
+export const getChannelIcon = new Elysia()
+   .use(globalPlugin)
+   .get("/cdn/channel-icons/:channelId/:iconHash", { query: querySchema }, async ({ params: { channelId, iconHash }, query: { size }, global }) => {
       const { file, transformation } = await tryResolveImage("channel-icons", channelId, iconHash, { width: size, height: size });
 
       // Cache the file if it was transformed
@@ -22,6 +22,4 @@ export const getChannelIcon = new Elysia().use(globalPlugin).get(
       }
 
       return new Response(file.stream(), { status: StatusMap["OK"], headers: { "content-type": extractFileInfo(iconHash).mimeType } });
-   },
-   { query: querySchema },
-);
+   });

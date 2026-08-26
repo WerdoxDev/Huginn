@@ -6,9 +6,9 @@ import { extractFileInfo, transformImage } from "#utils/file-utils";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 
-export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
-   "/cdn/application-icons/:applicationId?",
-   async ({ body, status, params: { applicationId } }) => {
+export const postApplicationIcon = new Elysia()
+   .use(verifyJwt("cdn"))
+   .post("/cdn/application-icons/:applicationId?", { body: schema }, async ({ body, status, params: { applicationId } }) => {
       const file = body.files[0];
 
       if (!file) {
@@ -22,8 +22,4 @@ export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
       await storage.writeFile("application-icons", applicationId ?? "", `${name}.webp`, transformedFile);
 
       return status("Created", name);
-   },
-   {
-      body: schema,
-   },
-);
+   });

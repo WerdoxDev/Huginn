@@ -6,9 +6,9 @@ import { extractFileInfo } from "#utils/file-utils";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 
-export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
-   "/cdn/attachments/:channelId/:messageId",
-   async ({ body, params: { channelId, messageId }, status }) => {
+export const postMessageAttachment = new Elysia()
+   .use(verifyJwt("cdn"))
+   .post("/cdn/attachments/:channelId/:messageId", { body: schema }, async ({ body, params: { channelId, messageId }, status }) => {
       const file = body.files[0];
 
       if (!file) {
@@ -19,8 +19,4 @@ export const postMessageAttachment = new Elysia().use(verifyJwt("cdn")).post(
       await storage.writeFile("attachments", `${channelId}/${messageId}`, `${name}.${extension}`, file);
 
       return status("Created", file.name);
-   },
-   {
-      body: schema,
-   },
-);
+   });

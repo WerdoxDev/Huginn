@@ -5,9 +5,9 @@ import { storage } from "#server";
 
 const schema = t.Object({ files: t.Array(t.File()) });
 
-export const postChannelIcon = new Elysia().use(verifyJwt("cdn")).post(
-   "/cdn/channel-icons/:channelId",
-   async ({ body, status, params: { channelId } }) => {
+export const postChannelIcon = new Elysia()
+   .use(verifyJwt("cdn"))
+   .post("/cdn/channel-icons/:channelId", { body: schema }, async ({ body, status, params: { channelId } }) => {
       const file = body.files[0];
 
       if (!file) {
@@ -17,6 +17,4 @@ export const postChannelIcon = new Elysia().use(verifyJwt("cdn")).post(
       await storage.writeFile("channel-icons", channelId, file.name, file);
 
       return status("Created", file.name);
-   },
-   { body: schema },
-);
+   });
