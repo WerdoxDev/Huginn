@@ -1,7 +1,6 @@
 import { createToken, forbidden } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID } from "@huginnjs/shared";
-import { toSnakeCase } from "@std/text";
+import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID, toSnakeCase } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";

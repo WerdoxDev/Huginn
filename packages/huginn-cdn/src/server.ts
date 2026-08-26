@@ -1,5 +1,5 @@
-import cors from "@elysiajs/cors";
-import { opentelemetry } from "@elysiajs/opentelemetry";
+import cors from "@elysia/cors";
+import { opentelemetry } from "@elysia/opentelemetry";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";

@@ -1,6 +1,5 @@
 import crossws from "crossws/adapters/bun";
 import Elysia from "elysia";
-import { websocket } from "elysia/websocket";
 
 import { env } from "./env";
 import { runMediasoupWorker } from "./mediasoup";
@@ -18,7 +17,7 @@ const ws = crossws({
    },
 });
 
-export const app = new Elysia().use(websocket()).ws("/", {
+export const app = new Elysia().ws("/", {
    upgrade({ request, server }) {
       return ws.handleUpgrade(request, server!);
    },

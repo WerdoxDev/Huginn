@@ -1,6 +1,6 @@
-import { cors } from "@elysiajs/cors";
-import { opentelemetry } from "@elysiajs/opentelemetry";
-import { staticPlugin } from "@elysiajs/static";
+import { cors } from "@elysia/cors";
+import { opentelemetry } from "@elysia/opentelemetry";
+import { staticPlugin } from "@elysia/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
 import { Client, LogLevel } from "@notionhq/client";

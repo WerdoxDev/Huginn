@@ -1,15 +1,12 @@
 import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import {
    CONSTANTS,
    type APIPostOAuthConfirmResult,
    CDNRoutes,
    Errors,
-   UserFlags,
    WorkerID,
    getFileHash,
-   idFix,
    snowflake,
    toArrayBuffer,
    type OAuthType,
