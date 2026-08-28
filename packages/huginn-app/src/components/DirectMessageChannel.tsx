@@ -21,7 +21,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
    const recipients = useUsers(props.channel.recipientIds);
    const presence = usePresence(recipients[0]?.id);
    const { channelId } = useParams({ strict: false }) as { channelId?: string };
-   const { callStates, voiceState, voiceStates } = useVoiceStore();
+   const { voiceState, voiceStates } = useVoiceStore();
    const selected = useMemo(() => channelId === props.channel?.id, [channelId, props.channel]);
    // const hasActiveCall = useMemo(() => !!callStates.find((x) => x.channelId === props.channel.id), [callStates, props.channel]);
    const isInCall = useMemo(() => voiceState.channelId === props.channel.id, [voiceState, props.channel]);

@@ -1,13 +1,12 @@
+import type { Control, FieldValues } from "react-hook-form";
+
 import { CONSTANTS, Fields } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
-import { useFormState, type Control, type FieldValues } from "react-hook-form";
+import { useAsyncDebouncer } from "@tanstack/react-pacer";
 
 import type { InputMessage } from "@/types";
 
-import { useDebouncer } from "./useDebouncer";
-
 export function useUniqueUsernameMessage<I extends FieldValues>(control: Control<I>, defaultUsername?: string) {
-   // const fs = useFormState({ control });
    const client = useClient();
 
    async function checkForUniqueUsername(value: string): Promise<InputMessage | null> {
@@ -40,12 +39,12 @@ export function useUniqueUsernameMessage<I extends FieldValues>(control: Control
       return value.match(CONSTANTS.USERNAME_REGEX);
    }
 
-   const { debouncedFunction, cancel } = useDebouncer(checkForUniqueUsername, 1000);
+   const usernameDebouncer = useAsyncDebouncer(checkForUniqueUsername, { wait: 1000 });
 
    async function validate(value: string) {
-      cancel();
+      usernameDebouncer.cancel();
       if (value === defaultUsername) return;
-      const result = await debouncedFunction(value);
+      const result = await usernameDebouncer.maybeExecute(value);
       if (result?.status === "error") {
          return result.text;
       }

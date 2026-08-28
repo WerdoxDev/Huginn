@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
    const isCapacitor = mode === "capacitor";
    const isGithub = !!process.env.GITHUB_ACTIONS || process.env.CI === "true";
    const isVercel = process.env.VERCEL === "1" || process.env.CI === "1";
+
    const shouldUploadSourcemaps = isGithub || isVercel;
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
    // const isVercelPreview = process.env.VERCEL === "1";
@@ -35,6 +36,7 @@ export default defineConfig(({ mode }) => {
    return {
       base,
       experimental: {
+         bundledDev: false,
          // bundledDev: true,
       },
       publicDir: "public",
@@ -106,20 +108,20 @@ export default defineConfig(({ mode }) => {
       server: {
          https: isHttps
             ? {
-               key: keyFile,
-               cert: certFile,
-            }
+                 key: keyFile,
+                 cert: certFile,
+              }
             : undefined,
          hmr: isCapacitor
             ? {
-               host: "localhost",
-               port: 5174,
-            }
+                 host: "localhost",
+                 port: 5174,
+              }
             : undefined,
          watch: isCapacitor
             ? {
-               usePolling: false,
-            }
+                 usePolling: false,
+              }
             : undefined,
       },
 

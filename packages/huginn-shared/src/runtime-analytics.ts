@@ -26,19 +26,19 @@ export class RuntimeAnalytics extends Analytics {
          resource: resourceFromAttributes({ "service.name": options.serviceName, "client.id": options.clientId }),
 
          logRecordProcessors: [
-            new BatchLogRecordProcessor(
-               new OTLPLogExporter({
+            new BatchLogRecordProcessor({
+               exporter: new OTLPLogExporter({
                   url: options.otlpLogUrl,
                }),
-            ),
-            new BatchLogRecordProcessor(
-               new OTLPLogExporter({
+            }),
+            new BatchLogRecordProcessor({
+               exporter: new OTLPLogExporter({
                   url: `${options.posthogHost}/i/v1/logs`,
                   headers: {
                      Authorization: `Bearer ${posthogApiKey}`,
                   },
                }),
-            ),
+            }),
             // new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
          ],
          spanProcessors: [

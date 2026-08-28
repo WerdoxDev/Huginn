@@ -1,5 +1,4 @@
-import { defineHooks } from "crossws";
-import { serve } from "crossws/server";
+import crossws from "crossws/adapters/bun";
 import Elysia from "elysia";
 
 import { env } from "./env";
@@ -10,11 +9,22 @@ await runMediasoupWorker();
 
 export const voiceWebSocket = new VoiceWebsocket();
 
-const hooks = defineHooks({
-   open: voiceWebSocket._internalOnOpen.bind(voiceWebSocket),
-   close: voiceWebSocket._internalOnClose.bind(voiceWebSocket),
-   message: voiceWebSocket._internalOnMessage.bind(voiceWebSocket),
+const ws = crossws({
+   hooks: {
+      open: voiceWebSocket._internalOnOpen.bind(voiceWebSocket),
+      close: voiceWebSocket._internalOnClose.bind(voiceWebSocket),
+      message: voiceWebSocket._internalOnMessage.bind(voiceWebSocket),
+   },
 });
 
-const main = new Elysia();
-serve({ websocket: hooks, fetch: main.fetch, port: env.VOICE_PORT, hostname: env.VOICE_HOST });
+export const app = new Elysia().ws("/", {
+   upgrade({ request, server }) {
+      return ws.handleUpgrade(request, server!);
+   },
+});
+
+app.listen({
+   websocket: ws.websocket,
+   hostname: env.VOICE_HOST,
+   port: env.VOICE_PORT,
+});

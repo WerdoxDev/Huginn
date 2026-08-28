@@ -6,13 +6,13 @@ import LoadingIcon from "@components/LoadingIcon";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useContainerWidth } from "@hooks/useContainerWidth";
-import { useDebouncer } from "@hooks/useDebouncer";
 import { useFavoriteGifs } from "@hooks/useFavoriteGifs";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getGifCategoriesOptions, getSearchGifsOptions, getTrendingGifsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactNode, type UIEvent } from "react";
@@ -74,14 +74,17 @@ export default function GifPickerPanel(props: { isOpen?: boolean; onGifSelect?: 
    const { gifs, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGifs(category ?? null, search);
    const isMobile = useIsMobile();
 
-   const { debouncedFunction } = useDebouncer((search: string) => {
-      cleanSearchQuery();
-      setSearch(search);
-   }, 300);
+   const updateSearch = useDebouncedCallback(
+      (search: string) => {
+         cleanSearchQuery();
+         setSearch(search);
+      },
+      { wait: 300 },
+   );
 
    useEffect(() => {
       if (values.search) {
-         debouncedFunction(values.search);
+         updateSearch(values.search);
          setSelectedTab("all");
       }
    }, [values.search]);

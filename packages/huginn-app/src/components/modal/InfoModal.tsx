@@ -29,13 +29,6 @@ const borderColorMap: Record<string, string> = {
    success: "border-positive-300!",
 };
 
-const glowShadowMap: Record<string, string> = {
-   info: "0 0 16px 2px color-mix(in srgb, var(--color-caution-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-caution-500) 8%, transparent)",
-   error: "0 0 16px 2px color-mix(in srgb, var(--color-negative-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-negative-500) 8%, transparent)",
-   success:
-      "0 0 16px 2px color-mix(in srgb, var(--color-positive-300) 15%, transparent), 0 0 40px 6px color-mix(in srgb, var(--color-positive-700) 8%, transparent)",
-};
-
 export default function InfoModal() {
    const { info: modal, updateModals } = useModals();
    // const posthog = usePostHog();
@@ -50,7 +43,6 @@ export default function InfoModal() {
    const innerColor = innerColorMap[modal.status] ?? "";
    const backgroundColor = backgroundColorMap[modal.status] ?? "";
    const borderColor = borderColorMap[modal.status] ?? "border-primary-800!";
-   const glowShadow = glowShadowMap[modal.status] ?? "";
 
    const errorCode = modal.errorCode ?? "";
    const isPlainBodyText = typeof modal.text === "string" || typeof modal.text === "number";

@@ -20,7 +20,7 @@ import type { AppMessage, AutocompleteItem } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import ExpressionButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
-import HuginnButton from "./button/HuginnButton";
+import MessageSendButton from "./button/MessageSendButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
 import DraggingIndicator from "./DraggingIndicator";
@@ -85,10 +85,12 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
 
    const {
+      content,
       submitMessage,
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
+      onEditorChange,
       currentEditingMessageId,
       currentReplyingMessageId,
       channelId,
@@ -248,7 +250,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      )}
                   </div>
                   <div className="h-full w-full overflow-hidden">
-                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange}>
+                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange} onValueChange={onEditorChange}>
                         <Editable
                            ref={editorRef}
                            onPaste={onPaste}
@@ -294,15 +296,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </ExpressionButton>
                         </>
                      )}
-                     <HuginnButton
-                        color="primary"
-                        className="flex size-10 cursor-pointer items-center justify-center rounded-full! p-1"
-                        type="button"
-                        onClick={() => submitMessage()}
-                        data-keyboard-no-close
-                     >
-                        <IconLetsIconsSendHorFill className="text-text size-full" />
-                     </HuginnButton>
+                     <MessageSendButton onSubmit={submitMessage} content={content} />
                   </div>
                </div>
             </div>

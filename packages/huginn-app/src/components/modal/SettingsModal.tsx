@@ -4,10 +4,10 @@ import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
-import { useThrottler } from "@hooks/useThrottler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useThrottledCallback } from "@tanstack/react-pacer";
 import clsx from "clsx";
 // import { usePostHog } from "posthog-js/react";
 import { Fragment, memo, useEffect, useMemo, useState } from "react";
@@ -135,9 +135,12 @@ export default function SettingsModal() {
       setShowContent(true);
    }
 
-   const { throttledFunction } = useThrottler(async (value: Partial<AppSettings>) => {
-      await setStorageValue("settings", { ...settings, ...value });
-   }, 1000);
+   const updateSettings = useThrottledCallback(
+      async (value: Partial<AppSettings>) => {
+         await setStorageValue("settings", { ...settings, ...value });
+      },
+      { wait: 1000 },
+   );
 
    useStackBackHandler(
       "settings-modal",
@@ -151,7 +154,7 @@ export default function SettingsModal() {
 
    function handleSettingsChanged(value: Partial<AppSettings>) {
       setCachedValue("settings", { ...settings, ...value });
-      throttledFunction(value);
+      updateSettings(value);
    }
 
    function handleBackClick() {

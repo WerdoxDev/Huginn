@@ -1,6 +1,6 @@
 import { testHandler } from "@huginn/backend-shared";
 import { generateRandomString } from "@huginnjs/shared";
-import { encodeBase64 } from "@std/encoding";
+import { base64 } from "@scure/base";
 import { describe, expect, test } from "bun:test";
 
 describe("GET /auth/google", () => {
@@ -17,7 +17,7 @@ describe("GET /auth/google", () => {
       );
       expect(result).rejects.toThrow("Forbidden");
 
-      const state = encodeBase64(`${Date.now() - 6 * 60 * 1000}:${generateRandomString(16)}`);
+      const state = base64.encode(new TextEncoder().encode(`${Date.now() - 6 * 60 * 1000}:${generateRandomString(16)}`));
       const result2 = testHandler(
          `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,
          {},
@@ -25,7 +25,7 @@ describe("GET /auth/google", () => {
       );
       expect(result2).rejects.toThrow("Forbidden");
 
-      const state2 = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
+      const state2 = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
       const result3 = testHandler(
          `/api/auth/google?${new URLSearchParams({ redirect_url: "https://invalid.com", state: state2, flow: "browser" }).toString()}`,
          {},
@@ -35,7 +35,7 @@ describe("GET /auth/google", () => {
    });
 
    test("should return a valid google oauth2 url when the request is successful", async () => {
-      const state = encodeBase64(`${Date.now()}:${generateRandomString(16)}`);
+      const state = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
 
       const result = (await testHandler(
          `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,

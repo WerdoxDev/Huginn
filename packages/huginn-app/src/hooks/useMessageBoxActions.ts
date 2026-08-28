@@ -1,11 +1,12 @@
 import type { KeyboardEvent } from "react";
-import type { TextUnitAdjustment } from "slate";
+import type { Descendant, TextUnitAdjustment } from "slate";
 
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
 import { MessageFlags, MessageReferenceType, MessageType } from "@huginnjs/shared";
 import Inset from "@lib/capacitor/inset-plugin";
+import { createPreviewMessage } from "@lib/query-utils";
 import { serializeSlate } from "@lib/utils";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
@@ -14,14 +15,13 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { Editor, type NodeEntry, Range, Element, Transforms, Point, type BaseSelection, Text } from "slate";
 import { ReactEditor } from "slate-react";
 
 import type { AppMessage, AppAttachment } from "@/types";
 
 import { useIsMobile } from "./useIsMobile";
-import { createPreviewMessage } from "@lib/query-utils";
 
 const INTERCEPT_ELEMENT_TYPES = ["emoji", "mention"];
 
@@ -53,6 +53,8 @@ export function useMessageBoxActions(options: {
    const editMessageMutation = useEditMessage();
    const { reset: resetTyping, mutate: sendTypingMutate } = useSendTyping();
 
+   const [content, setContent] = useState<string>("");
+
    function clearEditor() {
       options.editor.delete({
          at: {
@@ -62,14 +64,14 @@ export function useMessageBoxActions(options: {
       });
    }
 
-   function submitMessage() {
+   const submitMessage = useEffectEvent(() => {
       if (currentEditingMessageId) {
          editMessage();
       } else {
          const flags: MessageFlags = MessageFlags.NONE;
          sendMessage(flags);
       }
-   }
+   });
 
    function sendGif(gifUrl: string) {
       const channelId = params.channelId;
@@ -77,10 +79,10 @@ export function useMessageBoxActions(options: {
 
       const messageReference = currentReplyingMessageId
          ? {
-            messageId: currentReplyingMessageId,
-            channelId: channelId,
-            type: MessageReferenceType.DEFAULT,
-         }
+              messageId: currentReplyingMessageId,
+              channelId: channelId,
+              type: MessageReferenceType.DEFAULT,
+           }
          : undefined;
 
       const nonce = client.generateNonce();
@@ -109,7 +111,6 @@ export function useMessageBoxActions(options: {
    function sendMessage(flags: MessageFlags) {
       if (isEditorEmpty() && options.attachments.length === 0) return;
 
-      const content = serializeSlate(options.editor.children).trim();
       const channelId = params.channelId;
 
       if (!content && !options.attachments.length) return;
@@ -124,10 +125,10 @@ export function useMessageBoxActions(options: {
 
       const messageReference = currentReplyingMessageId
          ? {
-            messageId: currentReplyingMessageId,
-            channelId: channelId,
-            type: MessageReferenceType.DEFAULT,
-         }
+              messageId: currentReplyingMessageId,
+              channelId: channelId,
+              type: MessageReferenceType.DEFAULT,
+           }
          : undefined;
 
       const nonce = client.generateNonce();
@@ -433,6 +434,10 @@ export function useMessageBoxActions(options: {
       sendTypingMutate(event, { channelId: params.channelId ?? "" });
    }
 
+   function onEditorChange(value: Descendant[]) {
+      setContent(serializeSlate(value).trim());
+   }
+
    // Escape key handler for canceling edit/reply
    useEffect(() => {
       const controller = new AbortController();
@@ -494,12 +499,14 @@ export function useMessageBoxActions(options: {
    }, [currentReplyingMessageId, huginnWindow.environment]);
 
    return {
+      content,
       sendGif,
       submitMessage,
       insertEmoji,
       cancelEditMessage,
       cancelReplyMessage,
       onEditorKeyDown,
+      onEditorChange,
       resetState,
       currentEditingMessageId,
       currentReplyingMessageId,

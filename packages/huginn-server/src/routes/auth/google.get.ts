@@ -1,5 +1,5 @@
 import { forbidden, tryCatch } from "@huginn/backend-shared";
-import { decodeBase64 } from "@std/encoding";
+import { base64 } from "@scure/base";
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
@@ -17,7 +17,7 @@ export const getGoogle = new Elysia().get(
          return status("Not Implemented");
       }
 
-      const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(decodeBase64(state)).split(":"));
+      const [error, decodedToken] = await tryCatch(() => new TextDecoder().decode(base64.decode(state)).split(":"));
       if (error) {
          return forbidden(status);
       }
