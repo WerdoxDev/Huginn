@@ -34,6 +34,7 @@ import type {
    PointerEvent,
    ReactNode,
    RefCallback,
+   RefObject,
    TouchEvent,
 } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
@@ -68,6 +69,7 @@ export type HuginnInputProps = {
 
 export type HuginnButtonProps = {
    children?: ReactNode;
+   ref?: RefObject<HTMLButtonElement | null>;
    type?: "submit" | "reset" | "button" | undefined;
    style?: CSSProperties;
    className?: string;

@@ -25,6 +25,8 @@ const initialStore = () => ({
    messageUploadProgresses: [] as UploadProgress[],
    currentEditingMessageId: undefined as Snowflake | undefined,
    currentReplyingMessageId: undefined as Snowflake | undefined,
+   isRecordingVoice: false,
+   isVoiceRecordingLocked: false,
    messageBoxHeight: 0,
 });
 
@@ -75,5 +77,7 @@ export const useChannelStore = create(
             },
          })),
       clearJumpToMessageRequest: () => set({ jumpToMessageRequest: undefined }),
+      setIsRecordingVoice: (isRecording: boolean) => set({ isRecordingVoice: isRecording }),
+      setIsVoiceRecordingLocked: (isLocked: boolean) => set({ isVoiceRecordingLocked: isLocked }),
    })),
 );
