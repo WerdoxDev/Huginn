@@ -11,7 +11,7 @@ import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
    content: t.Optional(t.String()),
-   attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String() }))),
+   attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String(), waveform: t.Optional(t.String()) }))),
    embeds: t.Optional(
       t.Array(
          t.Object({

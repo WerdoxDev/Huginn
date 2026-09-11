@@ -265,7 +265,7 @@ export enum MessageFlags {
    SUPPRESS_EMBEDS = 1 << 1,
    URGENT = 1 << 2,
    EPHEMERAL = 1 << 3,
-   LOADING = 1 << 4,
+   VOICE_MESSAGE = 1 << 4,
 }
 
 export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date | string | null };
@@ -316,6 +316,7 @@ export type APIVideo = {
 export type APIPostAttachmentJSONBody = {
    id: number;
    description?: string;
+   waveform?: string;
    filename: string;
 };
 
@@ -326,6 +327,8 @@ export type APIAttachment = {
    width?: number;
    height?: number;
    contentType: string;
+   duration?: number;
+   waveform?: string;
    url: string;
    size: number;
    flags: number;
