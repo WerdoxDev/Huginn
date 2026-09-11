@@ -89,8 +89,24 @@ export const electronAPI = {
 
    // Native
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ApplicationInfo[]>,
-   // getApplicationInfo: (processId: number) =>
-   //    ipcRenderer.invoke("native:get-application-info", processId) as Promise<{ displayName: string | null; icon: string | null }>,
+   startDesktopCapture: (options: { captureId: string; width: number; height: number; frameRate: number }) =>
+      ipcRenderer.send("native:start-desktop-capture", options),
+   stopDesktopCapture: (captureId?: string) => ipcRenderer.send("native:stop-desktop-capture", captureId),
+   desktopCaptureChunkConsumed: (captureId: string) => ipcRenderer.send("native:desktop-capture-chunk-consumed", captureId),
+   onDesktopCaptureChunk: (callback: (_event: Electron.IpcRendererEvent, captureId: string, chunk: Uint8Array<ArrayBuffer>) => void) => {
+      ipcRenderer.on("native:desktop-capture-chunk", callback);
+      return () => {
+         ipcRenderer.off("native:desktop-capture-chunk", callback);
+      };
+   },
+   onDesktopCaptureError: (callback: (_event: Electron.IpcRendererEvent, captureId: string, message: string) => void) => {
+      ipcRenderer.on("native:capture-error", callback);
+      return () => ipcRenderer.off("native:capture-error", callback);
+   },
+   onDesktopCaptureStopped: (callback: (_event: Electron.IpcRendererEvent, captureId: string) => void) => {
+      ipcRenderer.on("native:capture-stopped", callback);
+      return () => ipcRenderer.off("native:capture-stopped", callback);
+   },
 
    // App
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),

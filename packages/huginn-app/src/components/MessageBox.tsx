@@ -8,6 +8,7 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
+import { formatSeconds } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -28,8 +29,6 @@ import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import { MessageAutocomplete } from "./MessageAutocomplete";
 import { ExpressionRawPanel } from "./popover/ExpressionRawPanel";
-// import EmojiPickerPanel from "./popover/EmojiPickerPanel";
-// import EmojiPickerPopover from "./popover/EmojiPickerPopover";
 import ReplyingPreview from "./ReplyingPreview";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -61,7 +60,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const huginnWindow = useHuginnWindow();
    const isMobileEnvironment = huginnWindow.environment === "android";
    const isMobile = useIsMobile();
-   const { setMessageBoxHeight, isRecordingVoice, setIsRecordingVoice, isVoiceRecordingLocked } = useChannelStore();
+   const { setMessageBoxHeight, isRecordingVoice, setIsRecordingVoice, isVoiceRecordingLocked, voiceRecordingDuration } = useChannelStore();
    const {
       autocompleteKeyIntercept,
       state: autocompleteState,
@@ -279,7 +278,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         </div>
                      </>
                   ) : (
-                     <div className="text-text/80 mr-5 ml-auto flex h-14.5 items-center gap-x-2">
+                     <div className="text-text/80 my-auto mr-5 ml-auto flex items-center gap-x-2">
                         {isVoiceRecordingLocked ? (
                            <HuginnButton color="primary" className="px-2 py-1" onClick={handleCancelVoiceRecordingClick}>
                               Cancel
@@ -287,9 +286,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                         ) : (
                            <>
                               <IconMingcuteArrowLeftFill className="size-5" />
-                              <div className="box-exact">swipe to cancel</div>
+                              <div className="mb-0.5">swipe to cancel</div>
                            </>
                         )}
+                        <div className="font-ubuntu flex items-center gap-x-1.5 text-sm tabular-nums">
+                           <span className="bg-negative-400 size-2 rounded-full" />
+                           <span>{formatSeconds(voiceRecordingDuration)}</span>
+                        </div>
                      </div>
                   )}
                   <div className="flex gap-x-2 p-2 pl-1">
@@ -318,7 +321,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </ExpressionButton>
                         </>
                      )}
-                     <MessageSendButton onSubmit={submitMessage} content={content} />
+                     <MessageSendButton onSubmit={submitMessage} hasDraft={!!content || attachments.length > 0} />
                   </div>
                </div>
             </div>

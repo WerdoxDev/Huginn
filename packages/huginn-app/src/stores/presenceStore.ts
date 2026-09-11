@@ -181,10 +181,10 @@ function stopCheckingForActivity() {
 
 function detectKnownApplication(applications: ApplicationInfo[], knownApplications: APIKnownApplication[]) {
    const match = applications.flatMap((x) => {
-      const exeName = x.exePath.split(/[/\\]+/).pop();
+      const exeName = x.exePath?.split(/[/\\]+/).pop();
       const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
       const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
-      const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine.includes(y));
+      const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine?.includes(y));
       return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch) ? [{ detected: x, known: exeKnown! ?? nameKnown! }] : [];
    })[0];
 

@@ -54,8 +54,8 @@ export class VoiceHost {
       window.voiceHost = {
          hostId,
          getTrack: (id?: string) => (!id ? null : (this.tracks.get(id) ?? null)),
-         openCamera: (track) => this.enqueueMutation(() => this.openCamera(track)),
-         openCapturedStream: (options) => this.enqueueMutation(() => this.openCapturedStream(options)),
+         // openCamera: (track) => this.enqueueMutation(() => this.openCamera(track)),
+         // openCapturedStream: (options) => this.enqueueMutation(() => this.handleOpenCapturedStream(options)),
          openStream: (videoTrack, audioTrack, options) => this.enqueueMutation(() => this.openStream(videoTrack, audioTrack, options)),
       };
 
@@ -75,9 +75,9 @@ export class VoiceHost {
          status: this.voice.status,
          connection: connectionData
             ? {
-               channelId: connectionData.channelId,
-               guildId: connectionData.guildId,
-            }
+                 channelId: connectionData.channelId,
+                 guildId: connectionData.guildId,
+              }
             : null,
          mediaSources: this.mediaSources,
          popoutState: this.popoutState,
@@ -167,15 +167,23 @@ export class VoiceHost {
                   break;
                case "prepare_stream_replacement":
                   this.voice.transport.getProducer("stream_video")?.track?.stop();
+                  window.electronAPI?.stopDesktopCapture();
                   await new Promise((resolve) => setTimeout(resolve, 1000));
                   this.sendResult(request, undefined);
                   break;
+               case "open_captured_stream":
+                  await this.handleOpenCapturedStream(request.data);
+                  this.sendResult(request, undefined);
+                  break;
+               case "open_camera":
+                  await this.openCamera();
                case "update_stream":
                   await this.handleUpdateStream(request.data);
                   this.sendResult(request, undefined);
                   break;
                case "close_stream":
                   await this.voice.stream.closeStream();
+                  window.electronAPI?.stopDesktopCapture();
                   this.sendResult(request, undefined);
                   break;
                case "close_camera":
@@ -326,7 +334,11 @@ export class VoiceHost {
       }
    }
 
-   private async openCamera(track: MediaStreamTrack): Promise<void> {
+   private async handleOpenCamera(deviceId?: string, frameRate?: number, facingMode?: "user" | "environment"): Promise<void> {
+      const stream = await navigator.mediaDevices.getUserMedia({
+         video: { deviceId: deviceId, facingMode: { exact: facingMode }, frameRate },
+      });
+
       if (this.voice.transport.getProducer("camera")) {
          await this.voice.device.replaceCameraTrack(track);
       } else {
@@ -334,15 +346,26 @@ export class VoiceHost {
       }
    }
 
-   private async openCapturedStream(options: CapturedStreamOptions): Promise<void> {
+   private async handleOpenCapturedStream(options: CapturedStreamOptions): Promise<void> {
       await this.voice.stopAudioLoopback();
 
-      let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
+      if (options.type !== "device") {
+         window.electronAPI.setSelectedDisplaySource({
+            electronId: options.electronId!,
+            name: options.name,
+            thumbnail: null,
+            processId: options.processId,
+         });
+      }
+
+      const stream = await this.voice.startDesktopCapture(options.width, options.height, options.frameRate, options.deviceId, options.isAudioEnabled);
+
+      let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
       if (!audioTrack && options.isAudioEnabled && options.type !== "device") {
          audioTrack = await this.voice.startAudioLoopback(options.type === "screen" ? "system" : "application", options.processId);
       }
 
-      const videoTrack = options.stream.getVideoTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
       if (!videoTrack) throw new Error("Video track was null when opening a stream");
 
       await this.openStream(videoTrack, audioTrack, {
@@ -456,7 +479,6 @@ export class VoiceHost {
             if (preference.microphoneVolume === undefined || preference.streamVolume === undefined) {
                throw new Error("Creating new voice preference requires both microphone and screen share volumes");
             }
-
             if (!draft) draft = [];
 
             draft.push({

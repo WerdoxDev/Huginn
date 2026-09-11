@@ -43,6 +43,8 @@ export function useVoiceUtils() {
          if (isFullscreen) toggleFullscreen();
 
          if (huginnWindow.environment === "browser") {
+            // the browser screen sharing must stay in the window who initiated the streaming so the popup
+            // also opens on the same window rather than opening in the main window
             const stream = await navigator.mediaDevices.getDisplayMedia({
                audio: true,
                video: true,
@@ -58,7 +60,8 @@ export function useVoiceUtils() {
                   type: videoProducer ? "change" : "create",
                   callback: async (options) => {
                      try {
-                        await getVoiceHost().openCapturedStream(options);
+                        VoiceClient.sendMessage("open_captured_stream", options);
+                        // await getVoiceHost().openCapturedStream(options);
                      } catch (e) {
                         updateModals({
                            info: {
@@ -151,12 +154,7 @@ export function useVoiceUtils() {
 
    async function openCamera() {
       try {
-         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: settings.cameraDeviceId, frameRate: 30 },
-         });
-         const track = stream.getVideoTracks()[0];
-
-         await getVoiceHost().openCamera(track);
+         await VoiceClient.sendMessage("open_camera", { deviceId: settings.cameraDeviceId, frameRate: 30 });
       } catch (e) {
          updateModals({
             info: {
@@ -168,26 +166,16 @@ export function useVoiceUtils() {
          });
 
          analytics.log({ level: "error", body: "failed to open camera", exception: e });
-
          await VoiceClient.sendMessage("close_camera").catch(() => undefined);
       }
    }
 
    async function flipCamera(currentFacingMode?: string) {
       const facingMode = currentFacingMode === "environment" ? "user" : "environment";
-      let track: MediaStreamTrack | undefined;
 
       try {
-         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { exact: facingMode }, frameRate: 30 },
-         });
-         track = stream.getVideoTracks()[0];
-
-         if (!track) throw new Error("The selected camera did not provide a video track");
-
-         await getVoiceHost().openCamera(track);
+         await VoiceClient.sendMessage("open_camera", { facingMode, frameRate: 30 });
       } catch (e) {
-         track?.stop();
          updateModals({
             info: {
                status: "error",
@@ -198,6 +186,7 @@ export function useVoiceUtils() {
          });
 
          analytics.log({ level: "error", body: "failed to switch camera", exception: e, attributes: { facingMode } });
+         await VoiceClient.sendMessage("close_camera").catch(() => undefined);
       }
    }
 

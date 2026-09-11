@@ -27,6 +27,7 @@ const initialStore = () => ({
    currentReplyingMessageId: undefined as Snowflake | undefined,
    isRecordingVoice: false,
    isVoiceRecordingLocked: false,
+   voiceRecordingDuration: 0,
    messageBoxHeight: 0,
 });
 
@@ -79,5 +80,6 @@ export const useChannelStore = create(
       clearJumpToMessageRequest: () => set({ jumpToMessageRequest: undefined }),
       setIsRecordingVoice: (isRecording: boolean) => set({ isRecordingVoice: isRecording }),
       setIsVoiceRecordingLocked: (isLocked: boolean) => set({ isVoiceRecordingLocked: isLocked }),
+      setVoiceRecordingDuration: (duration: number) => set({ voiceRecordingDuration: duration }),
    })),
 );

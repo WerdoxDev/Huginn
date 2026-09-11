@@ -64,12 +64,12 @@ export function useMessageBoxActions(options: {
       });
    }
 
-   const submitMessage = useEffectEvent(() => {
+   const submitMessage = useEffectEvent((flags: MessageFlags, attachments?: AppAttachment[]) => {
       if (currentEditingMessageId) {
          editMessage();
       } else {
-         const flags: MessageFlags = MessageFlags.NONE;
-         sendMessage(flags);
+         // const flags: MessageFlags = MessageFlags.NONE;
+         sendMessage(flags, attachments);
       }
    });
 
@@ -108,19 +108,21 @@ export function useMessageBoxActions(options: {
       clearEditor();
    }
 
-   function sendMessage(flags: MessageFlags) {
-      if (isEditorEmpty() && options.attachments.length === 0) return;
+   function sendMessage(flags: MessageFlags, attachmentOverride?: AppAttachment[]) {
+      const isDetachedAttachmentSubmission = attachmentOverride !== undefined;
+      const attachments = attachmentOverride ?? options.attachments;
+      const messageContent = isDetachedAttachmentSubmission ? "" : content;
+      if (isEditorEmpty() && attachments.length === 0) return;
 
       const channelId = params.channelId;
 
-      if (!content && !options.attachments.length) return;
+      if (!messageContent && !attachments.length) return;
       if (!user || !channelId || !client) return;
 
       posthog.capture("message:send", {
-         has_attachments: options.attachments.length > 0,
-         attachment_count: options.attachments.length,
+         has_attachments: attachments.length > 0,
+         attachment_count: attachments.length,
          is_reply: !!currentReplyingMessageId,
-         has_suppress_notifications: !!(flags & MessageFlags.SUPPRESS_NOTIFICATIONS),
       });
 
       const messageReference = currentReplyingMessageId
@@ -135,10 +137,10 @@ export function useMessageBoxActions(options: {
       const previewMessage = createPreviewMessage(queryClient, {
          authorId: user.id,
          channelId,
-         content,
+         content: messageContent,
          nonce,
          flags,
-         attachments: options.attachments,
+         attachments,
          messageReference,
       });
 
@@ -150,9 +152,11 @@ export function useMessageBoxActions(options: {
          setReplyingMessageId(undefined);
       }
 
-      resetTyping();
-      options.clearAttachments();
-      clearEditor();
+      if (!isDetachedAttachmentSubmission) {
+         resetTyping();
+         options.clearAttachments();
+         clearEditor();
+      }
    }
 
    function insertEmoji(slug: string) {
@@ -424,7 +428,7 @@ export function useMessageBoxActions(options: {
          event.preventDefault();
       }
       if (!event.shiftKey && event.code === "Enter" && !isMobile) {
-         submitMessage();
+         submitMessage(MessageFlags.NONE);
          event.preventDefault();
       }
       if (event.ctrlKey && event.key === "b" && options.editor.selection) toggleMarkAtSelection("bold");

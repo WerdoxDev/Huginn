@@ -13,7 +13,7 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import "dotenv/config";
 
-import { version } from "./package.json";
+import { version } from "./package.json" with { type: "json" };
 // const reactCompilerConfig = { target: "19" };
 
 const isHttps = process.env.VITE_LAN_HTTPS === "true";
@@ -133,12 +133,12 @@ export default defineConfig(({ mode }) => {
 
       resolve: {
          alias: {
-            "@": path.join(__dirname, "./src"),
-            "@lib": path.join(__dirname, "./src/lib"),
-            "@hooks": path.join(__dirname, "./src/hooks"),
-            "@contexts": path.join(__dirname, "./src/contexts"),
-            "@components": path.join(__dirname, "./src/components"),
-            "@stores": path.join(__dirname, "./src/stores"),
+            "@": path.join(import.meta.dirname, "./src"),
+            "@lib": path.join(import.meta.dirname, "./src/lib"),
+            "@hooks": path.join(import.meta.dirname, "./src/hooks"),
+            "@contexts": path.join(import.meta.dirname, "./src/contexts"),
+            "@components": path.join(import.meta.dirname, "./src/components"),
+            "@stores": path.join(import.meta.dirname, "./src/stores"),
          },
       },
       clearScreen: false,

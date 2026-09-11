@@ -11,7 +11,6 @@ declare global {
   const IconLetsIconsSendHorFill: typeof import('~icons/lets-icons/send-hor-fill.jsx').default
   const IconLogosGithubIcon: typeof import('~icons/logos/github-icon.jsx').default
   const IconLogosGoogleIcon: typeof import('~icons/logos/google-icon.jsx').default
-  const IconMigcuteLockFill: typeof import('~icons/mi/gcute-lock-fill.jsx').default
   const IconMingcuteAddFill: typeof import('~icons/mingcute/add-fill.jsx').default
   const IconMingcuteAirplaneFill: typeof import('~icons/mingcute/airplane-fill.jsx').default
   const IconMingcuteAlertFill: typeof import('~icons/mingcute/alert-fill.jsx').default

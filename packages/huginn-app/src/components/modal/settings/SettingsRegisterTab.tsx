@@ -10,7 +10,7 @@ import { useHuginnWindow } from "@stores/windowStore";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import type { SelectItem, SettingsTabProps } from "@/types";
+import type { CustomApplication, SelectItem, SettingsTabProps } from "@/types";
 
 export default function SettingsRegisterTab(_props: SettingsTabProps) {
    const { session } = usePresenceStore();
@@ -30,20 +30,14 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
       refetchInterval: 1000,
    });
 
-   const applicationOptions = useMemo(
-      () =>
-         data?.map((x) => ({
-            id: Math.random(),
-            value: x.processId.toString(),
-            text: x.windowTitle,
-            icon: x.icon ? (
-               <img src={x.icon} className="aspect-square size-6 shrink-0" />
-            ) : (
-               <div className="size-6 shrink-0 rounded-sm bg-white/50" />
-            ),
-         })),
-      [data],
-   );
+   const applicationOptions = useMemo(() => {
+      return data?.map((x) => ({
+         id: Math.random(),
+         value: x.processId.toString(),
+         text: x.windowTitle,
+         icon: x.icon ? <img src={x.icon} className="aspect-square size-6 shrink-0" /> : <div className="size-6 shrink-0 rounded-sm bg-white/50" />,
+      }));
+   }, [data]);
 
    function handleApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
@@ -66,8 +60,8 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
       }
 
       await setValue("custom-applications", [
-         ...customApplications,
-         { exePath: application.exePath, title: application.displayName || application.windowTitle, isEnabled: true },
+         ...(customApplications as CustomApplication[]),
+         { exePath: application.exePath ?? "unknown", title: application.displayName || application.windowTitle, isEnabled: true },
       ]);
    }
 
@@ -125,7 +119,7 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
             )}
             <div className="flex flex-col">
                <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Registered Applications</div>
-               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3 pl-2">
+               <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   {customApplications.length === 0 ? (
                      <div className="text-text/80">No applications registered...</div>
                   ) : (

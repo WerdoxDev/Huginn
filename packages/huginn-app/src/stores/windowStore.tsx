@@ -6,7 +6,7 @@ import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import type { Environment } from "@/types";
+import type { Environment, Platform } from "@/types";
 
 const store = createStore(
    combine(
@@ -16,6 +16,7 @@ const store = createStore(
          browserFullscreen: false,
          focused: false,
          environment: (window.electronAPI ? "desktop" : Capacitor.getPlatform() === "android" ? "android" : "browser") as Environment,
+         platform: undefined as Platform | undefined,
          args: [] as string[],
          version: "",
          processId: 0,
@@ -30,11 +31,13 @@ const store = createStore(
 );
 
 export async function initWindowStore() {
+   const osInfo = window.electronAPI ? await window.electronAPI.getOsInfo() : undefined;
    store.setState({
       maximized: false,
       fullscreen: false,
       browserFullscreen: false,
       focused: document.hasFocus(),
+      platform: osInfo?.platform as Platform,
       args: window.electronAPI ? await window.electronAPI.getArgs() : undefined,
       version: window.electronAPI ? await window.electronAPI.getVersion() : __APP_VERSION__,
       processId: window.electronAPI ? await window.electronAPI.processId() : 0,
@@ -108,6 +111,7 @@ syncZustandStore(store, {
    name: "windowStore",
    partialize: (state) => ({
       environment: state.environment,
+      platform: state.platform,
       maximized: state.maximized,
       fullscreen: state.fullscreen,
       browserFullscreen: state.browserFullscreen,
