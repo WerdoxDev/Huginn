@@ -14,6 +14,8 @@ export const attachmentExtension = Prisma.defineExtension({
             width?: number,
             height?: number,
             description?: string,
+            duration?: number,
+            waveform?: string,
          ) {
             return analytics.startActiveSpan("db.attachment.createOne", async (span) => {
                span.setAttributes({
@@ -36,6 +38,8 @@ export const attachmentExtension = Prisma.defineExtension({
                         width,
                         height,
                         flags,
+                        duration,
+                        waveform,
                      },
                   });
 

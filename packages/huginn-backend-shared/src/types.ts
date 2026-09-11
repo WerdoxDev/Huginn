@@ -32,6 +32,7 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
    contentType: string;
    size: number;
    url: string;
+   duration?: number;
    height?: number;
    width?: number;
    flags: number;
@@ -64,9 +65,14 @@ declare module "crossws" {
 export type VideoData = {
    width: number;
    height: number;
+   duration: number;
 };
 
 export type ImageData = {
    width: number;
    height: number;
+};
+
+export type AudioData = {
+   duration: number;
 };
