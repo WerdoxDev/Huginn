@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
    const isGithub = !!process.env.GITHUB_ACTIONS || process.env.CI === "true";
    const isVercel = process.env.VERCEL === "1" || process.env.CI === "1";
 
-   const shouldUploadSourcemaps = isGithub || isVercel;
+   const shouldUploadSourcemaps = (isGithub || isVercel) && Boolean(process.env.POSTHOG_CLI_API_KEY && process.env.POSTHOG_PROJECT_ID);
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
    // const isVercelPreview = process.env.VERCEL === "1";
    const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app/";

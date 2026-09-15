@@ -5,6 +5,7 @@ allowBuilds:
   "@posthog/cli": true
   "@prisma/engines": false
   core-js: false
+  electron: true
   electron-winstaller: false
   esbuild: false
   mediasoup: true
