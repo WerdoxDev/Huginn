@@ -25,7 +25,7 @@
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "smoke:web": "pnpm run vite:build && playwright test --config playwright.config.ts",
       "smoke:electron": "pnpm run vite:build --mode electron && bun ./scripts/build.ts && playwright test --config playwright.electron.config.ts",
-      "smoke:android": "pnpm run vite:build-cap && cd android && ./gradlew connectedDebugAndroidTest",
+      "smoke:android": "pnpm run vite:build-cap && cd android && ./gradlew :app:connectedDebugAndroidTest",
       "test": "vitest --coverage",
       "test-gen": "playwright codegen localhost:5174",
       "electron:rebuild": "electron-rebuild -f -v 44.0.0 -m native-addon",
