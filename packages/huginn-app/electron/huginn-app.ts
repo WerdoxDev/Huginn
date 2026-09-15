@@ -1,6 +1,6 @@
 import { analytics, analyticsShim, initAnalytics } from "@huginnjs/shared";
 import { RuntimeAnalytics } from "@huginnjs/shared/runtime-analytics";
-import { Tray, app, Menu, ipcMain, session } from "electron";
+import { Tray, app, Menu, ipcMain, nativeImage, session } from "electron";
 import updater from "electron-updater";
 import path from "node:path";
 
@@ -105,9 +105,14 @@ export class HuginnApp {
 
    private createTray() {
       const iconName = "tray.ico";
-      this.tray = new Tray(
-         app.isPackaged ? path.join(process.resourcesPath, "electron-assets", iconName) : path.join(__dirname, "../", "electron-assets", iconName),
-      );
+      const iconPath = app.isPackaged
+         ? path.join(process.resourcesPath, "electron-assets", iconName)
+         : path.join(__dirname, "../", "electron-assets", iconName);
+      const icon = nativeImage.createFromPath(iconPath);
+
+      if (icon.isEmpty()) return;
+
+      this.tray = new Tray(icon);
       const contextMenu = Menu.buildFromTemplate([
          {
             label: "Quit",

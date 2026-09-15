@@ -34,6 +34,7 @@ import type {
    PointerEvent,
    ReactNode,
    RefCallback,
+   RefObject,
    TouchEvent,
 } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
@@ -68,6 +69,7 @@ export type HuginnInputProps = {
 
 export type HuginnButtonProps = {
    children?: ReactNode;
+   ref?: RefObject<HTMLButtonElement | null>;
    type?: "submit" | "reset" | "button" | undefined;
    style?: CSSProperties;
    className?: string;
@@ -279,6 +281,7 @@ export type AppAttachment = {
    key: string;
    data: (() => Promise<ArrayBuffer>) | ArrayBuffer;
    previewDataUrl?: string;
+   waveform?: string;
    filename: string;
    contentType: string;
    description?: string;
@@ -594,6 +597,7 @@ export type VoiceDebugData = {
 };
 
 export type Environment = "desktop" | "browser" | "android";
+export type Platform = "win32" | "linux";
 
 export type ScreenShareQuality = (typeof SCREEN_SHARE_QUALITIES)[number]["value"];
 export type ScreenShareFrameRate = (typeof SCREEN_SHARE_FRAME_RATES)[number];

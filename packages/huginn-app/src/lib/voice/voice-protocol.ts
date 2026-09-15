@@ -56,6 +56,14 @@ type VoiceProtocol = {
       data: { processId: number; maxAudioBitrate: number };
       result: undefined;
    };
+   open_captured_stream: {
+      data: CapturedStreamOptions;
+      result: undefined;
+   };
+   open_camera: {
+      data: { deviceId?: string; frameRate?: number; facingMode?: "user" | "environment" };
+      result: undefined;
+   };
    prepare_stream_replacement: {
       data: undefined;
       result: undefined;
@@ -110,22 +118,22 @@ export type VoiceRequest = {
 
 export type VoiceResult = {
    [K in keyof VoiceProtocol]:
-   | {
-      kind: "result";
-      hostId: string;
-      requestId: string;
-      type: K;
-      result: VoiceProtocol[K]["result"];
-      error?: never;
-   }
-   | {
-      kind: "result";
-      hostId: string;
-      requestId: string;
-      type: K;
-      result?: never;
-      error: string;
-   };
+      | {
+           kind: "result";
+           hostId: string;
+           requestId: string;
+           type: K;
+           result: VoiceProtocol[K]["result"];
+           error?: never;
+        }
+      | {
+           kind: "result";
+           hostId: string;
+           requestId: string;
+           type: K;
+           result?: never;
+           error: string;
+        };
 }[keyof VoiceProtocol];
 
 export type VoiceEvents = {
@@ -146,18 +154,23 @@ export type VoiceMessage = VoiceRequest | VoiceResult | VoiceEvent;
 
 export type CapturedStreamOptions = {
    type: "screen" | "application" | "device";
-   stream: MediaStream;
+   name: string;
+   deviceId?: string;
+   electronId?: string;
+   processId?: number;
+   width: number;
+   height: number;
+   frameRate: number;
    maxAudioBitrate: number;
    maxVideoBitrate: number;
    isAudioEnabled: boolean;
    isSimulcastEnabled: boolean;
-   processId?: number;
 };
 
 export type VoiceWindowHost = {
    hostId: string;
    getTrack: (id?: string) => MediaStreamTrack | null;
-   openCamera: (track: MediaStreamTrack) => Promise<void>;
-   openCapturedStream: (options: CapturedStreamOptions) => Promise<void>;
+   // openCamera: (track: MediaStreamTrack) => Promise<void>;
+   // openCapturedStream: (options: CapturedStreamOptions) => Promise<void>;
    openStream: (videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions) => Promise<void>;
 };

@@ -4,7 +4,7 @@ import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
 
-import type { ImageData, VideoData } from "#types";
+import type { AudioData, ImageData, VideoData } from "#types";
 
 import { unauthorized } from "#elysia-errors";
 import { verifyToken, type TokenPayload, type TokenType } from "#token-factory";
@@ -30,7 +30,6 @@ export async function getImageData(source: string | ArrayBuffer): Promise<ImageD
 
       return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
    } catch (e) {
-      error("backend-shared:route-utils", "Getting image data failed:", e);
       return undefined;
    }
 }
@@ -39,10 +38,22 @@ export async function getVideoData(source: ArrayBuffer): Promise<VideoData | und
    try {
       const input = new Input({ source: new BufferSource(source), formats: ALL_FORMATS });
       const video = await input.getPrimaryVideoTrack();
+      const duration = await video?.computeDuration();
 
-      return { width: (await video?.getDisplayWidth()) ?? 0, height: (await video?.getDisplayHeight()) ?? 0 };
+      return { width: (await video?.getDisplayWidth()) ?? 0, height: (await video?.getDisplayHeight()) ?? 0, duration: duration ?? 0 };
    } catch (e) {
-      error("backend-shared:route-utils", "Getting video data failed:", e);
+      return undefined;
+   }
+}
+
+export async function getAudioData(source: ArrayBuffer): Promise<AudioData | undefined> {
+   try {
+      const input = new Input({ source: new BufferSource(source), formats: ALL_FORMATS });
+      const audio = await input.getPrimaryAudioTrack();
+      const duration = await audio?.computeDuration();
+
+      return { duration: duration ?? 0 };
+   } catch (e) {
       return undefined;
    }
 }

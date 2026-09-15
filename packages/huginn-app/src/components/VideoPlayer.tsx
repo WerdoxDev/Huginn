@@ -15,6 +15,7 @@ export default function VideoPlayer(props: {
    url: string;
    width: number;
    height: number;
+   duration: number;
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
    const containerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +25,6 @@ export default function VideoPlayer(props: {
    const [currentVideoPercent, setCurrentVideoPercent] = useState(0);
    const [bufferedPercent, setBufferedPercent] = useState(0);
    const [currentTime, setCurrentTime] = useState(0);
-   const [videoDuration, setVideoDuration] = useState(0);
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
    const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
@@ -56,10 +56,6 @@ export default function VideoPlayer(props: {
          },
          { signal: controller.signal },
       );
-
-      videoRef.current?.addEventListener("loadedmetadata", () => {
-         setVideoDuration(videoRef.current?.duration ?? 0);
-      });
 
       videoRef.current?.addEventListener(
          "timeupdate",
@@ -154,7 +150,7 @@ export default function VideoPlayer(props: {
                   <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm">
                      <span>{formatSeconds(currentTime)}</span>
                      <span>/</span>
-                     <span>{formatSeconds(videoDuration)}</span>
+                     <span>{formatSeconds(props.duration)}</span>
                   </div>
                )}
                <HuginnMediaSlider

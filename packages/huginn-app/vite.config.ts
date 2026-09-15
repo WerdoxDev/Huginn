@@ -13,7 +13,7 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import "dotenv/config";
 
-import { version } from "./package.json";
+import { version } from "./package.json" with { type: "json" };
 // const reactCompilerConfig = { target: "19" };
 
 const isHttps = process.env.VITE_LAN_HTTPS === "true";
@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
    const isGithub = !!process.env.GITHUB_ACTIONS || process.env.CI === "true";
    const isVercel = process.env.VERCEL === "1" || process.env.CI === "1";
 
-   const shouldUploadSourcemaps = isGithub || isVercel;
+   const shouldUploadSourcemaps = (isGithub || isVercel) && Boolean(process.env.POSTHOG_CLI_API_KEY && process.env.POSTHOG_PROJECT_ID);
    const isVercelPreview = process.env.VERCEL_ENV === "preview";
    // const isVercelPreview = process.env.VERCEL === "1";
    const base = isVercelPreview ? "/" : isElectron ? "./" : isCapacitor ? "/" : "/app/";
@@ -133,12 +133,12 @@ export default defineConfig(({ mode }) => {
 
       resolve: {
          alias: {
-            "@": path.join(__dirname, "./src"),
-            "@lib": path.join(__dirname, "./src/lib"),
-            "@hooks": path.join(__dirname, "./src/hooks"),
-            "@contexts": path.join(__dirname, "./src/contexts"),
-            "@components": path.join(__dirname, "./src/components"),
-            "@stores": path.join(__dirname, "./src/stores"),
+            "@": path.join(import.meta.dirname, "./src"),
+            "@lib": path.join(import.meta.dirname, "./src/lib"),
+            "@hooks": path.join(import.meta.dirname, "./src/hooks"),
+            "@contexts": path.join(import.meta.dirname, "./src/contexts"),
+            "@components": path.join(import.meta.dirname, "./src/components"),
+            "@stores": path.join(import.meta.dirname, "./src/stores"),
          },
       },
       clearScreen: false,

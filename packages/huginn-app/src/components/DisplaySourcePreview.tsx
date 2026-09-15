@@ -39,12 +39,12 @@ export default function DisplaySourcePreview(props: {
          </div>
          <div className="flex items-center gap-x-2">
             {hasIcon ? (
-               <img src={props.source!.appIcon!} alt={props.source!.name} className="aspect-square size-5" />
+               <img src={props.source!.appIcon!} alt={props.source!.name} className="aspect-square size-5 shrink-0" />
             ) : props.source ? (
                props.source.electronId.includes("screen") ? (
-                  <IconMingcuteMonitorFill className="text-text size-5" />
+                  <IconMingcuteMonitorFill className="text-text size-5 shrink-0" />
                ) : (
-                  <IconMingcuteWebFill className="text-text size-5" />
+                  <IconMingcuteWebFill className="text-text size-5 shrink-0" />
                )
             ) : (
                <IconMingcuteVideoCamera2Fill className="text-text size-5" />

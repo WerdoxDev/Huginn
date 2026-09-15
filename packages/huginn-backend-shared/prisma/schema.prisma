@@ -237,6 +237,8 @@ model Attachment {
    width       Int?
    height      Int?
    flags       Int     @db.SmallInt
+   waveform    String?
+   duration    Float?
    messageId   BigInt?
 
    message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)

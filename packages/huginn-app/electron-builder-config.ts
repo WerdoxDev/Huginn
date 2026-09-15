@@ -18,6 +18,27 @@ export default {
       },
    },
 
+   linux: {
+      target: { target: "pacman", arch: ["x64"] },
+      icon: "src/assets/icons/default/outline-thick/outline-thick-512.png",
+   },
+
+   pacman: {
+      artifactName: "${productName}_${version}_${arch}.tar.zst",
+      compression: "zstd",
+      depends: [
+         "gtk3",
+         "libnotify",
+         "nss",
+         "libxss",
+         "libxtst",
+         "xdg-utils",
+         "at-spi2-core",
+         "libsecret",
+         "wf-recorder",
+      ],
+   },
+
    npmRebuild: false,
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
    files: [

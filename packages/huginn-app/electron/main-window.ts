@@ -12,6 +12,7 @@ import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
 import { ScreenManager } from "./screen-manager";
+import { isLinux, isWindows } from "./utils";
 
 const { autoUpdater } = electronUpdater;
 
@@ -20,6 +21,7 @@ export class MainWindow extends BaseWindow {
    private notificationController: NotificationController = new NotificationController();
    private screenManager: ScreenManager = new ScreenManager();
    private loopbackCapture: LoopbackCapture | undefined;
+   private nativeCaptureOptions?: { captureId: string; width: number; height: number; frameRate: number };
 
    public constructor() {
       super("main", {
@@ -50,7 +52,7 @@ export class MainWindow extends BaseWindow {
       this.registerShellEvents();
       this.registerAudioEvents(window);
       this.registerNotificationEvents(window);
-      this.registerNativeEvents();
+      this.registerNativeEvents(window);
       this.registerSessionEvents();
       this.registerMediaEvents(window);
    }
@@ -175,15 +177,21 @@ export class MainWindow extends BaseWindow {
 
       ipcMain.handle("window:get-display-sources", async () => {
          return await analytics.startActiveSpan("electronMain.getDisplaySources", async (span) => {
-            const screens = screen.getAllDisplays();
+            const screens = await this.screenManager.getAllDisplays();
 
             span.setAttribute("screen.count", screens.length);
 
+            const openApplications = await native.getOpenApplications();
+
             const applications = await Promise.all(
-               native.getOpenApplications().map(async (x) => {
+               openApplications.map(async (x) => {
                   const [icon, thumbnail] = await Promise.all([
                      native.getProcessIconBase64(x.processId),
-                     native.getWindowThumbnailBase64(x.hwnd, 256, 256),
+                     isLinux && x.rect && x.stableId
+                        ? native.getWindowThumbnailBase64LINUX(x.stableId, 1)
+                        : x.hwnd
+                          ? native.getWindowThumbnailBase64WIN(x.hwnd, 256, 256)
+                          : undefined,
                   ]);
                   return { ...x, icon, thumbnail };
                }),
@@ -193,12 +201,12 @@ export class MainWindow extends BaseWindow {
 
             const screenSources: DisplaySource[] = await Promise.all(
                screens.map(async (x, i) => {
-                  const rect = screen.dipToScreenRect(null, x.bounds);
+                  const rect = isLinux ? x.bounds : screen.dipToScreenRect(null, x.bounds);
                   const thumbnail = await native.getScreenThumbnailBase64(rect.x, rect.y, rect.width, rect.height);
                   const electronId = this.screenManager.getDisplaySourceId(x.id);
                   return {
                      thumbnail: thumbnail,
-                     electronId: `${electronId}`,
+                     electronId: `${electronId ?? `screen:${x.id}`}`,
                      name: `Screen ${i + 1}`,
                      processId: undefined,
                   } as DisplaySource;
@@ -211,7 +219,7 @@ export class MainWindow extends BaseWindow {
                (x) =>
                   ({
                      thumbnail: x.thumbnail,
-                     electronId: `window:${x.hwnd}:0`,
+                     electronId: `window:${x.hwnd ?? x.processId}:0`,
                      name: x.windowTitle,
                      appIcon: x.icon,
                      processId: x.processId,
@@ -225,8 +233,9 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.handle("window:get-audio-sources", async () => {
+         const openApplications = await native.getOpenApplications();
          const applications = await Promise.all(
-            native.getOpenApplications().map(async (x) => {
+            openApplications.map(async (x) => {
                const icon = await native.getProcessIconBase64(x.processId);
                return { ...x, icon };
             }),
@@ -347,25 +356,94 @@ export class MainWindow extends BaseWindow {
       });
    }
 
-   private registerNativeEvents() {
+   private registerNativeEvents(window: BrowserWindow) {
       ipcMain.handle("native:get-open-applications", async () => {
+         const openApplications = await native.getOpenApplications();
          const applications = await Promise.all(
-            native.getOpenApplications().map(async (x) => {
-               const [icon, displayName] = await Promise.all([native.getProcessIconBase64(x.processId), native.getPackageDisplayName(x.processId)]);
-               return { ...x, icon, displayName };
+            openApplications.map(async (x) => {
+               if (isWindows) {
+                  const [icon, displayName] = await Promise.all([
+                     native.getProcessIconBase64(x.processId),
+                     native.getPackageDisplayName(x.processId),
+                  ]);
+                  return { ...x, icon, displayName };
+               }
+
+               return { ...x, icon: await native.getProcessIconBase64(x.processId) };
             }),
          );
 
          return applications;
       });
 
-      // const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
-      ipcMain.handle("native:get-application-info", async (_, processId: number) => {
-         // const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(processId));
-         const icon = await native.getProcessIconBase64(processId);
-         const displayName = native.getPackageDisplayName(processId);
-         const info = { displayName, icon };
-         return info;
+      ipcMain.on("native:start-desktop-capture", async (_, options: { captureId: string; width: number; height: number; frameRate: number }) => {
+         const reportError = (error: unknown) => {
+            const message = error instanceof Error ? error.message : String(error);
+            if (!window.webContents.isDestroyed()) window.webContents.send("native:capture-error", options.captureId, message);
+         };
+
+         if (!this.selectedDisplaySource) {
+            reportError(new Error("No display source was selected"));
+            return;
+         }
+
+         try {
+            const displays = await this.screenManager.getAllDisplays();
+            const applications = await native.getOpenApplications();
+
+            const screenOrProcessId = this.selectedDisplaySource.electronId.split(":")[1];
+            const foundDisplay = displays.find((display) => display.id.toString() === screenOrProcessId);
+            const foundApplication = applications.find((app) => app.processId.toString() === screenOrProcessId);
+
+            const width = Math.max(2, Math.floor(options.width / 2) * 2);
+            const height = Math.max(2, Math.floor(options.height / 2) * 2);
+            const frameRate = Math.max(1, Math.min(60, Math.floor(options.frameRate)));
+            if (![width, height, frameRate].every(Number.isFinite)) throw new Error("Invalid capture dimensions or frame rate");
+
+            const previousCaptureId = this.nativeCaptureOptions?.captureId;
+            if (previousCaptureId) {
+               native.stopDesktopCaptureLINUX();
+            }
+            this.nativeCaptureOptions = options;
+
+            native.startDesktopCaptureLINUX({
+               monitor: foundDisplay?.name,
+               rect: foundApplication?.rect ?? undefined,
+               width,
+               height,
+               frameRate,
+               callback: (chunk) => {
+                  if (this.nativeCaptureOptions?.captureId === options.captureId && !window.webContents.isDestroyed()) {
+                     window.webContents.send("native:desktop-capture-chunk", options.captureId, chunk);
+                  }
+               },
+               errorCallback: (error) => {
+                  if (this.nativeCaptureOptions?.captureId !== options.captureId) return;
+
+                  this.nativeCaptureOptions = undefined;
+                  reportError(error);
+               },
+            });
+         } catch (error) {
+            reportError(error);
+         }
+      });
+
+      ipcMain.on("native:desktop-capture-chunk-consumed", (_, captureId: string) => {
+         if (captureId === this.nativeCaptureOptions?.captureId) native.resumeDesktopCaptureLINUX();
+      });
+      ipcMain.on("native:stop-desktop-capture", (_, captureId?: string, stopStream?: boolean) => {
+         if (captureId && captureId !== this.nativeCaptureOptions?.captureId) return;
+
+         const stoppedCaptureId = this.nativeCaptureOptions?.captureId;
+         this.nativeCaptureOptions = undefined;
+         native.stopDesktopCaptureLINUX();
+         if (stoppedCaptureId && !window.webContents.isDestroyed() && stopStream) window.webContents.send("native:capture-stopped", stoppedCaptureId);
+      });
+
+      window.once("closed", () => {
+         this.nativeCaptureOptions = undefined;
+         native.stopDesktopCaptureLINUX();
       });
    }
 

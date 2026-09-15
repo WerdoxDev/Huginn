@@ -106,7 +106,9 @@ jobs:
          matrix:
             include:
                - platform: "windows-latest"
-                 args: ""
+                 mode: "windows"
+               - platform: "ubuntu-latest"
+                 mode: "linux"
       runs-on: ${{ matrix.platform }}
       if: ${{needs.release-please.outputs.app_release_created == 'true'}}
       env:
@@ -145,7 +147,7 @@ jobs:
          - name: Upload App
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-           run: cd packages/huginn-app && bun run scripts/upload.ts --mode windows
+           run: cd packages/huginn-app && bun run scripts/upload.ts --mode ${{ matrix.mode }}
 
    publish-android:
       needs: release-please

@@ -3,6 +3,7 @@ import type { Snowflake } from "@huginnjs/shared";
 
 import { clientStore } from "@stores/clientStoreState";
 import { storageStore } from "@stores/storageStore";
+import { windowStore } from "@stores/windowStore";
 import { produce } from "immer";
 
 import type { MediaSource, PopoutState } from "@/types";
@@ -54,8 +55,8 @@ export class VoiceHost {
       window.voiceHost = {
          hostId,
          getTrack: (id?: string) => (!id ? null : (this.tracks.get(id) ?? null)),
-         openCamera: (track) => this.enqueueMutation(() => this.openCamera(track)),
-         openCapturedStream: (options) => this.enqueueMutation(() => this.openCapturedStream(options)),
+         // openCamera: (track) => this.enqueueMutation(() => this.openCamera(track)),
+         // openCapturedStream: (options) => this.enqueueMutation(() => this.handleOpenCapturedStream(options)),
          openStream: (videoTrack, audioTrack, options) => this.enqueueMutation(() => this.openStream(videoTrack, audioTrack, options)),
       };
 
@@ -75,9 +76,9 @@ export class VoiceHost {
          status: this.voice.status,
          connection: connectionData
             ? {
-               channelId: connectionData.channelId,
-               guildId: connectionData.guildId,
-            }
+                 channelId: connectionData.channelId,
+                 guildId: connectionData.guildId,
+              }
             : null,
          mediaSources: this.mediaSources,
          popoutState: this.popoutState,
@@ -166,8 +167,19 @@ export class VoiceHost {
                   this.sendResult(request, undefined);
                   break;
                case "prepare_stream_replacement":
-                  this.voice.transport.getProducer("stream_video")?.track?.stop();
-                  await new Promise((resolve) => setTimeout(resolve, 1000));
+                  if (windowStore.getState().platform !== "linux") {
+                     this.voice.transport.getProducer("stream_video")?.track?.stop();
+                     window.electronAPI?.stopDesktopCapture();
+                     await new Promise((resolve) => setTimeout(resolve, 1000));
+                  }
+                  this.sendResult(request, undefined);
+                  break;
+               case "open_captured_stream":
+                  await this.handleOpenCapturedStream(request.data);
+                  this.sendResult(request, undefined);
+                  break;
+               case "open_camera":
+                  await this.handleOpenCamera(request.data.deviceId, request.data.frameRate, request.data.facingMode);
                   this.sendResult(request, undefined);
                   break;
                case "update_stream":
@@ -176,6 +188,7 @@ export class VoiceHost {
                   break;
                case "close_stream":
                   await this.voice.stream.closeStream();
+                  window.electronAPI?.stopDesktopCapture();
                   this.sendResult(request, undefined);
                   break;
                case "close_camera":
@@ -267,6 +280,7 @@ export class VoiceHost {
       const tracks = new Map<string, MediaStreamTrack>();
       const remoteConsumers = this.voice.transport.getRemoteConsumers();
       const currentUserId = this.voice.client.currentUser?.id;
+      const desktopCaptureOptions = this.voice.getDesktopCaptureOptions();
 
       for (const consumer of this.voice.transport.getConsumers()) {
          sources.push({
@@ -285,13 +299,17 @@ export class VoiceHost {
       }
 
       for (const producer of this.voice.transport.getProducers()) {
+         const trackSettings = producer.track?.getSettings();
          sources.push({
             userId: producer.appData.userId,
             kind: producer.appData.mediaKind,
             consumerUserIds: remoteConsumers.filter((x) => x.producerId === producer.id).map((x) => x.userId),
             consumerId: undefined,
             producerId: producer.id,
-            trackSettings: producer.track?.getSettings(),
+            trackSettings:
+               producer.appData.mediaKind === "stream_video" && desktopCaptureOptions
+                  ? { ...trackSettings, ...desktopCaptureOptions }
+                  : trackSettings,
             maxBitrate: producer.rtpSender?.getParameters().encodings?.at(-1)?.maxBitrate,
             type: "producing",
          });
@@ -326,7 +344,12 @@ export class VoiceHost {
       }
    }
 
-   private async openCamera(track: MediaStreamTrack): Promise<void> {
+   private async handleOpenCamera(deviceId?: string, frameRate?: number, facingMode?: "user" | "environment"): Promise<void> {
+      const stream = await navigator.mediaDevices.getUserMedia({
+         video: { deviceId: deviceId, facingMode: { exact: facingMode }, frameRate },
+      });
+      const track = stream.getVideoTracks()[0];
+
       if (this.voice.transport.getProducer("camera")) {
          await this.voice.device.replaceCameraTrack(track);
       } else {
@@ -334,15 +357,26 @@ export class VoiceHost {
       }
    }
 
-   private async openCapturedStream(options: CapturedStreamOptions): Promise<void> {
+   private async handleOpenCapturedStream(options: CapturedStreamOptions): Promise<void> {
       await this.voice.stopAudioLoopback();
 
-      let audioTrack: MediaStreamTrack | undefined = options.stream.getAudioTracks()[0];
+      if (options.type !== "device") {
+         window.electronAPI.setSelectedDisplaySource({
+            electronId: options.electronId!,
+            name: options.name,
+            thumbnail: null,
+            processId: options.processId,
+         });
+      }
+
+      const stream = await this.voice.startDesktopCapture(options.width, options.height, options.frameRate, options.deviceId, options.isAudioEnabled);
+
+      let audioTrack: MediaStreamTrack | undefined = stream.getAudioTracks()[0];
       if (!audioTrack && options.isAudioEnabled && options.type !== "device") {
          audioTrack = await this.voice.startAudioLoopback(options.type === "screen" ? "system" : "application", options.processId);
       }
 
-      const videoTrack = options.stream.getVideoTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
       if (!videoTrack) throw new Error("Video track was null when opening a stream");
 
       await this.openStream(videoTrack, audioTrack, {
@@ -350,6 +384,7 @@ export class VoiceHost {
          maxAudioBitrate: options.maxAudioBitrate,
          maxVideoBitrate: options.maxVideoBitrate,
       });
+      this.refreshMediaSources(true);
    }
 
    private async openStream(videoTrack: MediaStreamTrack, audioTrack?: MediaStreamTrack, options?: VoiceStreamOptions): Promise<void> {
@@ -357,7 +392,7 @@ export class VoiceHost {
       const audioProducer = this.voice.transport.getProducer("stream_audio");
 
       if (videoProducer) {
-         await this.voice.stream.replaceStreamVideoTrack(videoTrack);
+         if (videoProducer.track !== videoTrack) await this.voice.stream.replaceStreamVideoTrack(videoTrack);
          if (options?.maxVideoBitrate) await this.voice.stream.updateVideoBitrate(options.maxVideoBitrate);
       } else {
          await this.voice.stream.openStream(videoTrack, audioTrack, options);
@@ -412,8 +447,24 @@ export class VoiceHost {
    }
 
    private async handleUpdateStream(update: VoiceStreamUpdate): Promise<void> {
-      if (update.video) await this.voice.stream.updateVideoParameters(update.video);
-      if (update.audio?.maxBitrate) await this.voice.stream.updateAudioBitrate(update.audio.maxBitrate);
+      const platform = windowStore.getState().platform;
+
+      if (platform === "linux") {
+         const { maxBitrate, ...captureOptions } = update.video ?? {};
+         if (captureOptions.width !== undefined || captureOptions.height !== undefined || captureOptions.frameRate !== undefined) {
+            await this.voice.updateDesktopCapture(captureOptions);
+         }
+         if (maxBitrate !== undefined) await this.voice.stream.updateVideoBitrate(maxBitrate);
+         if (update.audio?.maxBitrate !== undefined) await this.voice.stream.updateAudioBitrate(update.audio.maxBitrate);
+      } else {
+         if (update.video) {
+            await this.voice.stream.updateVideoParameters(update.video);
+            this.voice.updateDesktopCaptureOptions(update.video);
+         }
+         if (update.audio?.maxBitrate) await this.voice.stream.updateAudioBitrate(update.audio.maxBitrate);
+      }
+
+      this.refreshMediaSources(true);
    }
 
    private async handleToggleMute(): Promise<void> {
@@ -456,7 +507,6 @@ export class VoiceHost {
             if (preference.microphoneVolume === undefined || preference.streamVolume === undefined) {
                throw new Error("Creating new voice preference requires both microphone and screen share volumes");
             }
-
             if (!draft) draft = [];
 
             draft.push({

@@ -23,6 +23,7 @@ const qualityOptions: SelectItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,
    value: x.value,
 }));
+
 const frameRateOptions: SelectItem[] = SCREEN_SHARE_FRAME_RATES.map((x) => ({
    text: `${x} fps`,
    value: x.toString(),
@@ -60,6 +61,7 @@ export default function ScreenShareModal() {
             : x.value === settings.screenShareQuality,
       ) ?? qualityOptions[0],
    );
+
    const [selectedFramerate, setSelectedFramerate] = useState<SelectItem>(
       frameRateOptions.find((x) =>
          videoProducer?.trackSettings
@@ -67,6 +69,7 @@ export default function ScreenShareModal() {
             : x.value === settings.screenShareFramerate,
       ) ?? frameRateOptions[0],
    );
+
    const [selectedInput, setSelectedInput] = useState<SelectItem>(inputDeviceOptions[0]);
    const [maxVideoBitrate, setMaxVideoBitrate] = useState<number>(videoProducer?.maxBitrate ?? settings.screenShareVideoBitrate);
    const [maxAudioBitrate, setMaxAudioBitrate] = useState<number>(audioProducer?.maxBitrate ?? settings.screenShareAudioBitrate);
@@ -129,49 +132,19 @@ export default function ScreenShareModal() {
             // This is to prevent Electron from giving the same video track back
             await VoiceClient.sendMessage("prepare_stream_replacement");
 
-            let stream: MediaStream;
-            if (source) {
-               stream = await navigator.mediaDevices.getDisplayMedia({
-                  audio: false,
-                  video: {
-                     frameRate: { ideal: frameRate },
-                     width: { ideal: width },
-                     height: { ideal: height },
-                  },
-               });
-            } else {
-               stream = await navigator.mediaDevices.getUserMedia({
-                  audio: isAudioEnabled
-                     ? {
-                          deviceId: selectedInput.value,
-                          sampleRate: 48000,
-                          channelCount: 2,
-                          echoCancellation: false,
-                          noiseSuppression: false,
-                          autoGainControl: false,
-                       }
-                     : false,
-                  video: {
-                     frameRate: { ideal: frameRate },
-                     width: { ideal: width },
-                     height: { ideal: height },
-                  },
-               });
-            }
-
-            span.setAttributes({
-               "stream.audio_tracks.count": stream.getAudioTracks().length,
-               "stream.video_tracks.count": stream.getVideoTracks().length,
-            });
-
             await modal.callback?.({
                type: type,
-               stream,
+               deviceId: deviceInfo?.deviceId ?? selectedInput?.value,
+               electronId: source?.electronId,
+               processId: source?.processId,
+               name: source?.name ?? deviceInfo?.label ?? "Unknown",
+               width,
+               height,
+               frameRate,
                isAudioEnabled,
                isSimulcastEnabled,
                maxAudioBitrate,
                maxVideoBitrate,
-               processId: source?.processId,
             });
          } catch (e) {
             recordSpanError(e);

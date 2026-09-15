@@ -1,8 +1,6 @@
 #pragma once
-#include <string>
-#include <filesystem>
 
-namespace fs = std::filesystem;
+#include <string>
 
 namespace file_util
 {

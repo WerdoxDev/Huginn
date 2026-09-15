@@ -82,6 +82,7 @@ export function useSendMessage() {
                           id: x.id,
                           filename: x.filename,
                           description: x.description,
+                          waveform: x.waveform,
                        }))
                      : undefined,
                content: data.previewMessage.content,

@@ -54,6 +54,8 @@ type AttachmentElement = {
    height?: number;
    filename: string;
    size: number;
+   waveform?: string;
+   duration?: number;
    children: Descendant[];
    contentType: string;
 };
@@ -155,6 +157,10 @@ declare global {
 
    interface AudioContextOptions {
       sinkId?: string;
+   }
+
+   interface HTMLVideoElement {
+      captureStream(): MediaStream;
    }
 
    interface RTCIceCandidateStats {

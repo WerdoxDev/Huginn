@@ -194,6 +194,8 @@ export const messagesExtension = Prisma.defineExtension({
                               attachment.width,
                               attachment.height,
                               attachment.description,
+                              attachment.duration,
+                              attachment.waveform,
                            ),
                         );
                      }

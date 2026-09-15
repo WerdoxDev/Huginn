@@ -9,3 +9,6 @@ export async function exists(path: string) {
       return false;
    }
 }
+
+export const isLinux = process.platform === "linux";
+export const isWindows = process.platform === "win32";

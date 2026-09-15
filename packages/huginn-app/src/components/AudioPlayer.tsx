@@ -10,13 +10,17 @@ import HuginnMediaSlider from "./HuginnMediaSlider";
 import LoadingBackground from "./LoadingBackground";
 import VolumeSlider from "./VolumeSlider";
 
-export default function AudioPlayer(props: { url: string; filename: string; onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void }) {
+export default function AudioPlayer(props: {
+   url: string;
+   filename: string;
+   onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void;
+   duration: number;
+}) {
    const audioRef = useRef<HTMLAudioElement>(null);
    const [playing, setPlaying] = useState(false);
    const [currentPercent, setCurrentPercent] = useState(0);
    const [bufferedPercent, setBufferedPercent] = useState(0);
    const [currentTime, setCurrentTime] = useState(0);
-   const [duration, setDuration] = useState(0);
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
    const { openUrl } = useOpen();
@@ -36,13 +40,6 @@ export default function AudioPlayer(props: { url: string; filename: string; onCo
 
       audio?.addEventListener("play", () => setPlaying(true), { signal: controller.signal });
       audio?.addEventListener("pause", () => setPlaying(false), { signal: controller.signal });
-      audio?.addEventListener(
-         "loadedmetadata",
-         () => {
-            setDuration(audio.duration);
-         },
-         { signal: controller.signal },
-      );
       audio?.addEventListener(
          "timeupdate",
          () => {
@@ -104,10 +101,10 @@ export default function AudioPlayer(props: { url: string; filename: string; onCo
          </button>
          {/* <button type="button" onClick={togglePlaying} className="bg-primary-500 h-max shrink-0 cursor-pointer text-white/80 hover:text-white">
          </button> */}
-         <div className="flex min-w-0 flex-1 flex-col justify-center gap-y-0.5">
+         <div className="flex min-w-0 flex-1 flex-col justify-center">
             <button
                type="button"
-               className="text-primary-500 cursor-pointer overflow-hidden text-left text-sm text-nowrap text-ellipsis hover:underline"
+               className="text-primary-500 h-6 cursor-pointer overflow-hidden text-left text-sm text-nowrap text-ellipsis hover:underline"
                onClick={() => openUrl(props.url)}
             >
                {props.filename}
@@ -124,12 +121,12 @@ export default function AudioPlayer(props: { url: string; filename: string; onCo
                   onError={() => setHasError(true)}
                />
                <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
-               {isLoaded && !hasError && (
+               {isLoaded && !hasError ? (
                   <>
                      <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm">
                         <span>{formatSeconds(currentTime)}</span>
                         <span>/</span>
-                        <span>{formatSeconds(duration)}</span>
+                        <span>{formatSeconds(props.duration)}</span>
                      </div>
                      <HuginnMediaSlider
                         orientation="horizontal"
@@ -139,6 +136,8 @@ export default function AudioPlayer(props: { url: string; filename: string; onCo
                      />
                      <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateVolumePercent} />
                   </>
+               ) : (
+                  <div className="h-6 w-full"></div>
                )}
             </div>
          </div>

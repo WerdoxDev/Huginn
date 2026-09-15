@@ -60,7 +60,12 @@ const initialStore = () => ({
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {
       callback?: (options: {
          type: "screen" | "application" | "device";
-         stream: MediaStream;
+         name: string;
+         deviceId?: string;
+         electronId?: string;
+         width: number;
+         height: number;
+         frameRate: number;
          maxAudioBitrate: number;
          maxVideoBitrate: number;
          isAudioEnabled: boolean;

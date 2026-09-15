@@ -8,6 +8,7 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
+import { formatSeconds } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -20,6 +21,7 @@ import type { AppMessage, AutocompleteItem } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import ExpressionButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
+import HuginnButton from "./button/HuginnButton";
 import MessageSendButton from "./button/MessageSendButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
@@ -27,8 +29,6 @@ import DraggingIndicator from "./DraggingIndicator";
 import EditingPreview from "./EditingPreview";
 import { MessageAutocomplete } from "./MessageAutocomplete";
 import { ExpressionRawPanel } from "./popover/ExpressionRawPanel";
-// import EmojiPickerPanel from "./popover/EmojiPickerPanel";
-// import EmojiPickerPopover from "./popover/EmojiPickerPopover";
 import ReplyingPreview from "./ReplyingPreview";
 import Tooltip from "./tooltip/Tooltip";
 
@@ -60,7 +60,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const huginnWindow = useHuginnWindow();
    const isMobileEnvironment = huginnWindow.environment === "android";
    const isMobile = useIsMobile();
-   const { setMessageBoxHeight } = useChannelStore();
+   const { setMessageBoxHeight, isRecordingVoice, setIsRecordingVoice, isVoiceRecordingLocked, voiceRecordingDuration } = useChannelStore();
    const {
       autocompleteKeyIntercept,
       state: autocompleteState,
@@ -191,6 +191,10 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       setActiveMobilePanel(null);
    }
 
+   function handleCancelVoiceRecordingClick() {
+      setIsRecordingVoice(false);
+   }
+
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
@@ -211,7 +215,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             />
             <div
                className={clsx(
-                  "bg-surface-alt border-surface mx-2 mb-2 shrink-0 overflow-hidden rounded-xl border-2 transition-[border-radius]",
+                  "bg-surface-alt border-surface mx-2 mb-2 shrink-0 rounded-xl border-2 transition-[border-radius]",
                   hasAddon && "rounded-t-xl",
                )}
                ref={containerRef}
@@ -225,53 +229,74 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                />
                <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
                <div className="flex h-full items-end lg:items-start">
-                  <div className="flex gap-x-2 py-2 pl-2">
-                     {!currentEditingMessageId &&
-                        (isMobileEnvironment ? (
-                           <FilePickerButton
-                              onClick={() => handleMobilePanelClick("files")}
-                              isActive={activeMobilePanel === "files" && !isKeyboardOpenOnEditor}
-                           />
-                        ) : (
-                           <Tooltip>
-                              <Tooltip.Trigger asChild>
-                                 <FilePickerButton onClick={openFileSelector} />
-                              </Tooltip.Trigger>
-                              <Tooltip.Content>Upload Files</Tooltip.Content>
-                           </Tooltip>
-                        ))}
-                     {isMobileEnvironment && (
-                        <ExpressionButton
-                           onClick={() => handleMobilePanelClick("expression")}
-                           isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
-                        >
-                           <IconMingcuteEmoji2Fill className="text-text size-full" />
-                        </ExpressionButton>
-                     )}
-                  </div>
-                  <div className="h-full w-full overflow-hidden">
-                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange} onValueChange={onEditorChange}>
-                        <Editable
-                           ref={editorRef}
-                           onPaste={onPaste}
-                           placeholder={`Message ${currentChannel?.name}`}
-                           className={clsx(
-                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
-                              currentEditingMessageId && "pl-2.25",
+                  {!isRecordingVoice ? (
+                     <>
+                        <div className="flex gap-x-2 py-2 pl-2">
+                           {!currentEditingMessageId &&
+                              (isMobileEnvironment ? (
+                                 <FilePickerButton
+                                    onClick={() => handleMobilePanelClick("files")}
+                                    isActive={activeMobilePanel === "files" && !isKeyboardOpenOnEditor}
+                                 />
+                              ) : (
+                                 <Tooltip>
+                                    <Tooltip.Trigger asChild>
+                                       <FilePickerButton onClick={openFileSelector} />
+                                    </Tooltip.Trigger>
+                                    <Tooltip.Content>Upload Files</Tooltip.Content>
+                                 </Tooltip>
+                              ))}
+                           {isMobileEnvironment && (
+                              <ExpressionButton
+                                 onClick={() => handleMobilePanelClick("expression")}
+                                 isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
+                              >
+                                 <IconMingcuteEmoji2Fill className="text-text size-full" />
+                              </ExpressionButton>
                            )}
-                           onClick={handleEditorClick}
-                           renderLeaf={renderLeaf}
-                           renderElement={renderElement}
-                           decorate={decorate}
-                           onKeyDown={onEditorKeyDown}
-                           renderPlaceholder={Placeholder}
-                           disableDefaultStyles
-                           data-keyboard-no-resize
-                        />
-                     </Slate>
-                  </div>
+                        </div>
+                        <div className="h-full w-full overflow-hidden">
+                           <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange} onValueChange={onEditorChange}>
+                              <Editable
+                                 ref={editorRef}
+                                 onPaste={onPaste}
+                                 placeholder={`Message ${currentChannel?.name}`}
+                                 className={clsx(
+                                    "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
+                                    currentEditingMessageId && "pl-2.25",
+                                 )}
+                                 onClick={handleEditorClick}
+                                 renderLeaf={renderLeaf}
+                                 renderElement={renderElement}
+                                 decorate={decorate}
+                                 onKeyDown={onEditorKeyDown}
+                                 renderPlaceholder={Placeholder}
+                                 disableDefaultStyles
+                                 data-keyboard-no-resize
+                              />
+                           </Slate>
+                        </div>
+                     </>
+                  ) : (
+                     <div className="text-text/80 my-auto mr-5 ml-auto flex items-center gap-x-2">
+                        {isVoiceRecordingLocked ? (
+                           <HuginnButton color="primary" className="px-2 py-1" onClick={handleCancelVoiceRecordingClick}>
+                              Cancel
+                           </HuginnButton>
+                        ) : (
+                           <>
+                              <IconMingcuteArrowLeftFill className="size-5" />
+                              <div className="mb-0.5">swipe to cancel</div>
+                           </>
+                        )}
+                        <div className="font-ubuntu flex items-center gap-x-1.5 text-sm tabular-nums">
+                           <span className="bg-negative-400 size-2 rounded-full" />
+                           <span>{formatSeconds(voiceRecordingDuration)}</span>
+                        </div>
+                     </div>
+                  )}
                   <div className="flex gap-x-2 p-2 pl-1">
-                     {!isMobileEnvironment && (
+                     {!isMobileEnvironment && !isRecordingVoice && (
                         <>
                            <ExpressionButton
                               onClick={(e) =>
@@ -296,7 +321,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </ExpressionButton>
                         </>
                      )}
-                     <MessageSendButton onSubmit={submitMessage} content={content} />
+                     <MessageSendButton onSubmit={submitMessage} hasDraft={!!content || attachments.length > 0} />
                   </div>
                </div>
             </div>

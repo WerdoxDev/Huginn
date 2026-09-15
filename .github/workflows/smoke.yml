@@ -1,0 +1,146 @@
+name: smoke
+
+on:
+   workflow_dispatch:
+   pull_request:
+   push:
+      branches:
+         - master
+         - release
+
+permissions:
+   contents: read
+
+jobs:
+   web:
+      name: Web smoke
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@v4
+
+         - name: Install PNPM
+           uses: pnpm/action-setup@v4
+
+         - name: Install dependencies
+           run: pnpm install --frozen-lockfile
+
+         - name: Install Chromium
+           run: pnpm --dir packages/huginn-app exec playwright install --with-deps chromium
+
+         - name: Run web smoke test
+           run: pnpm --dir packages/huginn-app smoke:web
+
+         - name: Upload Playwright report
+           if: always()
+           uses: actions/upload-artifact@v4
+           with:
+              name: playwright-web-report
+              path: packages/huginn-app/playwright-report
+              if-no-files-found: ignore
+
+   desktop:
+      name: ${{ matrix.name }} desktop smoke
+      strategy:
+         fail-fast: false
+         matrix:
+            include:
+               - name: Linux
+                 os: ubuntu-latest
+               - name: Windows
+                 os: windows-latest
+      runs-on: ${{ matrix.os }}
+      steps:
+         - uses: actions/checkout@v4
+
+         - name: Install PNPM
+           uses: pnpm/action-setup@v4
+
+         - name: Install Bun
+           uses: oven-sh/setup-bun@v2
+           with:
+              bun-version: latest
+
+         - name: Setup CMake
+           uses: jwlawson/actions-setup-cmake@v2
+           with:
+              cmake-version: "4.x.x"
+
+         - name: Install dependencies
+           run: pnpm install --frozen-lockfile
+
+         - name: Rebuild Electron
+           run: pnpm rebuild electron
+
+         - name: Install Linux runtime and browser dependencies
+           if: runner.os == 'Linux'
+           run: |
+              sudo apt-get update
+              sudo apt-get install --yes libpipewire-0.3-0t64
+              pnpm --dir packages/huginn-app exec playwright install-deps chromium
+
+         - name: Compile native addon
+           run: pnpm --dir packages/native-addon build
+
+         - name: Run Windows smoke test
+           if: runner.os == 'Windows'
+           run: pnpm --dir packages/huginn-app smoke:electron
+
+         - name: Run Linux smoke test
+           if: runner.os == 'Linux'
+           run: xvfb-run --auto-servernum pnpm --dir packages/huginn-app smoke:electron
+
+         - name: Upload Playwright report
+           if: always()
+           uses: actions/upload-artifact@v4
+           with:
+              name: playwright-${{ matrix.name }}-report
+              path: packages/huginn-app/playwright-report
+              if-no-files-found: ignore
+
+   android:
+      name: Android smoke
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@v4
+           with:
+              fetch-depth: 0
+
+         - name: Install PNPM
+           uses: pnpm/action-setup@v4
+
+         - name: Install Bun
+           uses: oven-sh/setup-bun@v2
+           with:
+              bun-version: latest
+
+         - name: Set up JDK
+           uses: actions/setup-java@v4
+           with:
+              java-version: "21"
+              distribution: temurin
+
+         - name: Install dependencies
+           run: pnpm install --frozen-lockfile
+
+         - name: Enable KVM
+           run: |
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+
+         - name: Build and run Android smoke test
+           uses: reactivecircus/android-emulator-runner@v2
+           with:
+              api-level: 36
+              arch: x86_64
+              target: google_apis
+              disable-animations: true
+              script: pnpm --dir packages/huginn-app smoke:android
+
+         - name: Upload Android test report
+           if: always()
+           uses: actions/upload-artifact@v4
+           with:
+              name: android-smoke-report
+              path: packages/huginn-app/android/app/build/reports/androidTests/connected
+              if-no-files-found: ignore

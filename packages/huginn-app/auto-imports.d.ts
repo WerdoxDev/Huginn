@@ -63,6 +63,7 @@ declare global {
   const IconMingcuteLeftFill: typeof import('~icons/mingcute/left-fill.jsx').default
   const IconMingcuteLink2Fill: typeof import('~icons/mingcute/link2-fill.jsx').default
   const IconMingcuteLoading3Fill: typeof import('~icons/mingcute/loading3-fill.jsx').default
+  const IconMingcuteLockFill: typeof import('~icons/mingcute/lock-fill.jsx').default
   const IconMingcuteLookDownFill: typeof import('~icons/mingcute/look-down-fill.jsx').default
   const IconMingcuteMenuFill: typeof import('~icons/mingcute/menu-fill.jsx').default
   const IconMingcuteMessage1Fill: typeof import('~icons/mingcute/message1-fill.jsx').default
@@ -96,6 +97,7 @@ declare global {
   const IconMingcuteText2Fill: typeof import('~icons/mingcute/text2-fill.jsx').default
   const IconMingcuteTransfer3Fill: typeof import('~icons/mingcute/transfer3-fill.jsx').default
   const IconMingcuteTrendingUpFill: typeof import('~icons/mingcute/trending-up-fill.jsx').default
+  const IconMingcuteUnlockFill: typeof import('~icons/mingcute/unlock-fill.jsx').default
   const IconMingcuteUpFill: typeof import('~icons/mingcute/up-fill.jsx').default
   const IconMingcuteUser3Fill: typeof import('~icons/mingcute/user3-fill.jsx').default
   const IconMingcuteUserAdd2Fill: typeof import('~icons/mingcute/user-add2-fill.jsx').default

@@ -118,6 +118,8 @@ export const selectMessageAttachments = {
          size: true,
          url: true,
          width: true,
+         duration: true,
+         waveform: true,
       },
    },
 } satisfies Prisma.MessageSelect;

@@ -2,8 +2,10 @@ import AudioPlayer from "@components/AudioPlayer";
 import ImagePreview from "@components/ImagePreview";
 import Tooltip from "@components/tooltip/Tooltip";
 import VideoPlayer from "@components/VideoPlayer";
+import VoicePlayer from "@components/VoicePlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
+import { hasFlag, MessageFlags } from "@huginnjs/api";
 import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { getSizeText } from "@lib/utils";
 import { useClientStore } from "@stores/clientStore";
@@ -19,6 +21,8 @@ export default function AttachmentElement(props: {
    filename: string;
    size: number;
    contentType: string;
+   duration?: number;
+   waveform?: string;
 }) {
    const { openUrl } = useOpen();
    const dimensions = useMemo(
@@ -33,6 +37,7 @@ export default function AttachmentElement(props: {
    const isImage = isImageMediaType(props.contentType);
    const isVideo = isVideoMediaType(props.contentType);
    const isAudio = isAudioMediaType(props.contentType);
+   const isVoice = context.message.flags ? hasFlag(context.message.flags, MessageFlags.VOICE_MESSAGE) : false;
 
    function handleImageContextMenu(e: MouseEvent<HTMLDivElement>) {
       e.stopPropagation();
@@ -97,12 +102,22 @@ export default function AttachmentElement(props: {
                   url={basedUrl}
                   width={dimensions.width}
                   height={dimensions.height}
+                  duration={props.duration ?? 0}
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
+               />
+            ) : isVoice ? (
+               <VoicePlayer
+                  url={basedUrl}
+                  filename={props.filename}
+                  waveform={props.waveform}
+                  duration={props.duration ?? 0}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleDefaultContextMenu}
                />
             ) : isAudio ? (
                <AudioPlayer
                   url={basedUrl}
                   filename={props.filename}
+                  duration={props.duration ?? 0}
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleDefaultContextMenu}
                />
             ) : (

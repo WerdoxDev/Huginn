@@ -179,6 +179,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                size: attachment.size,
                contentType: attachment.contentType,
                filename: attachment.filename,
+               waveform: attachment.waveform,
+               duration: attachment.duration,
             });
          }
       }

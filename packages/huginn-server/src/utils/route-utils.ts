@@ -1,6 +1,6 @@
 import type { Endpoints } from "@octokit/types";
 
-import { type DBAttachment, type DBEmbed, getImageData, getVideoData } from "@huginn/backend-shared";
+import { type DBAttachment, type DBEmbed, getAudioData, getImageData, getVideoData } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database/index";
 import { logger } from "@huginn/backend-shared/logger";
 import {
@@ -17,6 +17,7 @@ import {
    UserFlags,
    analytics,
    hasFlag,
+   isAudioMediaType,
    isImageMediaType,
    isVideoMediaType,
    marked,
@@ -333,11 +334,22 @@ export async function processAttachments(
          })) as string;
 
          let dimensions: { width: number; height: number } | undefined;
+         let duration: number | undefined;
          if (isImageMediaType(file.type)) {
             dimensions = await getImageData(fileArrayBuffer);
          }
          if (isVideoMediaType(file.type)) {
-            dimensions = await getVideoData(fileArrayBuffer);
+            const videoData = await getVideoData(fileArrayBuffer);
+            if (videoData) {
+               dimensions = { width: videoData.width, height: videoData.height };
+               duration = videoData.duration;
+            }
+         }
+         if (isAudioMediaType(file.type)) {
+            const audioData = await getAudioData(fileArrayBuffer);
+            if (audioData) {
+               duration = audioData.duration;
+            }
          }
 
          processedAttachments.push({
@@ -346,6 +358,8 @@ export async function processAttachments(
             size: file.size,
             filename: file.name,
             flags: 0,
+            waveform: isAudioMediaType(file.type) ? attachment.waveform : undefined,
+            duration: duration,
             width: dimensions?.width,
             height: dimensions?.height,
             url: `attachments/${channelId}/${messageId}/${name}`,
