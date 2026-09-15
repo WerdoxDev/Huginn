@@ -91,7 +91,7 @@ export const electronAPI = {
    getOpenApplications: () => ipcRenderer.invoke("native:get-open-applications") as Promise<ApplicationInfo[]>,
    startDesktopCapture: (options: { captureId: string; width: number; height: number; frameRate: number }) =>
       ipcRenderer.send("native:start-desktop-capture", options),
-   stopDesktopCapture: (captureId?: string) => ipcRenderer.send("native:stop-desktop-capture", captureId),
+   stopDesktopCapture: (captureId?: string, stopStream: boolean = true) => ipcRenderer.send("native:stop-desktop-capture", captureId, stopStream),
    desktopCaptureChunkConsumed: (captureId: string) => ipcRenderer.send("native:desktop-capture-chunk-consumed", captureId),
    onDesktopCaptureChunk: (callback: (_event: Electron.IpcRendererEvent, captureId: string, chunk: Uint8Array<ArrayBuffer>) => void) => {
       ipcRenderer.on("native:desktop-capture-chunk", callback);

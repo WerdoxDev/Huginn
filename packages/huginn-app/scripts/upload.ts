@@ -9,8 +9,8 @@ const args = process.argv.slice(2);
 const modeIndex = args.indexOf("--mode");
 const mode = modeIndex !== -1 ? args[modeIndex + 1] : null;
 
-if (!mode || !["windows", "android"].includes(mode)) {
-   console.error("Usage: bun upload.ts --mode <windows|android>");
+if (!mode || !["windows", "linux", "android"].includes(mode)) {
+   console.error("Usage: bun upload.ts --mode <windows|linux|android>");
    process.exit(1);
 }
 
@@ -56,6 +56,13 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
          path: "./dist/electron/latest.yml",
          name: "latest.yml",
          type: "text/yaml",
+      },
+   ],
+   linux: [
+      {
+         path: `./dist/electron/Huginn_${version}_x64.tar.zst`,
+         name: `Huginn_${version}_x64.tar.zst`,
+         type: "application/zstd",
       },
    ],
    android: androidFiles,

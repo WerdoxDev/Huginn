@@ -29,6 +29,8 @@ export class VoiceBridge extends Voice {
    public readonly inputDevice = VoiceInputDevice;
    private loopbackDataUnlisten?: () => void;
    private desktopCaptureCleanup?: () => void;
+   private desktopCaptureRestart?: (width: number, height: number, frameRate: number) => Promise<MediaStream>;
+   private desktopCaptureOptions?: { width: number; height: number; frameRate: number };
    public readonly debugger: VoiceDebugger;
    public readonly popout?: VoicePopout;
    public readonly host?: VoiceHost;
@@ -37,7 +39,6 @@ export class VoiceBridge extends Voice {
 
    private releaseInput?: () => void;
    private forgroundServiceListener?: PluginListenerHandle;
-
    /** Returns the slowest active WebRTC transport RTT, in milliseconds. */
    public async getCurrentRoundTripTime(): Promise<number | undefined> {
       const transports = [this.transport.sendTransport, this.transport.recvTransport].filter(
@@ -302,7 +303,6 @@ export class VoiceBridge extends Voice {
    private handleVoicePreferenceUpdated(current: VoicePreference[] | undefined) {
       for (const player of this.audioSourcePlayers) {
          const userPreference = current?.find((x) => x.userId === player.userId);
-
          if (!userPreference) {
             throw new Error(`Voice preference for user ${player.userId} was not found`);
          }
@@ -415,8 +415,7 @@ export class VoiceBridge extends Voice {
 
          try {
             await writer.write(audioData);
-            // oxlint-disable-next-line no-unused-vars
-         } catch (e) {
+         } catch {
             this.stopAudioLoopback();
          }
       });
@@ -443,134 +442,174 @@ export class VoiceBridge extends Voice {
       const huginnWindow = windowStore.getState();
 
       if (huginnWindow.platform === "linux") {
-         stream = await new Promise<MediaStream>((resolve, reject) => {
-            const captureId = crypto.randomUUID();
-
+         if (!this.desktopCaptureRestart) {
             const generator = new MediaStreamTrackGenerator({ kind: "video" });
             const writer = generator.writable.getWriter();
-            const stream = new MediaStream([generator]);
-            let pendingChunk: Uint8Array<ArrayBuffer> | undefined;
-            let settled = false;
+            const generatedStream = new MediaStream([generator]);
             let cleanedUp = false;
-            let unsubscribeChunk: (() => void) | undefined;
-            let unsubscribeError: (() => void) | undefined;
-            let unsubscribeStopped: (() => void) | undefined;
-            let chunkController: ReadableStreamDefaultController<Uint8Array<ArrayBuffer>>;
-
-            const enqueuePendingChunk = () => {
-               if (cleanedUp || !pendingChunk || chunkController.desiredSize === null || chunkController.desiredSize <= 0) return;
-
-               const chunk = pendingChunk;
-               pendingChunk = undefined;
-               chunkController.enqueue(chunk);
-               window.electronAPI.desktopCaptureChunkConsumed(captureId);
-            };
-
-            const chunkStream = new ReadableStream<Uint8Array<ArrayBuffer>>({
-               start(controller) {
-                  chunkController = controller;
-               },
-               pull() {
-                  enqueuePendingChunk();
-               },
-            });
-            const input = new Input({ source: new ReadableStreamSource(chunkStream), formats: [MPEG_TS] });
+            let activeCaptureId: string | undefined;
+            let disposeActiveInput: ((reason?: Error) => void) | undefined;
 
             const cleanup = (stopNativeCapture = true) => {
                if (cleanedUp) return;
                cleanedUp = true;
-               pendingChunk = undefined;
-               unsubscribeChunk?.();
-               unsubscribeError?.();
-               unsubscribeStopped?.();
-               input.dispose();
+               disposeActiveInput?.(new Error("Screen capture stopped"));
                void writer.abort().catch(() => undefined);
                generator.stop();
-               if (stopNativeCapture) window.electronAPI.stopDesktopCapture(captureId);
+               if (stopNativeCapture) window.electronAPI.stopDesktopCapture(activeCaptureId);
                if (this.desktopCaptureCleanup === cleanup) this.desktopCaptureCleanup = undefined;
+               if (this.desktopCaptureRestart === restart) this.desktopCaptureRestart = undefined;
+               this.desktopCaptureOptions = undefined;
             };
 
-            const fail = (reason: unknown) => {
-               const error = reason instanceof Error ? reason : new Error(String(reason));
-               cleanup();
-               if (!settled) {
-                  settled = true;
-                  reject(error);
-               } else {
-                  console.error("Linux screen capture failed", error);
-               }
-            };
-
-            unsubscribeChunk = window.electronAPI.onDesktopCaptureChunk((_, incomingCaptureId, chunk) => {
-               if (incomingCaptureId !== captureId || cleanedUp) return;
-               if (pendingChunk) {
-                  fail(new Error("Received a capture chunk before the previous chunk was consumed"));
-                  return;
-               }
-
-               pendingChunk = chunk;
-               enqueuePendingChunk();
-            });
-            unsubscribeError = window.electronAPI.onDesktopCaptureError((_, incomingCaptureId, message) => {
-               if (incomingCaptureId === captureId) fail(new Error(message));
-            });
-            unsubscribeStopped = window.electronAPI.onDesktopCaptureStopped((_, stoppedCaptureId) => {
-               if (stoppedCaptureId !== captureId) return;
-
-               cleanup(false);
-               if (!settled) {
-                  settled = true;
-                  reject(new Error("Screen capture stopped before it was ready"));
-               }
-            });
-
-            generator.contentHint = frameRate > 30 ? "motion" : "detail";
-            generator.addEventListener("ended", () => cleanup(), { once: true });
-            this.desktopCaptureCleanup = cleanup;
-
-            void (async () => {
-               const [videoTrack] = await input.getVideoTracks();
-               if (!videoTrack) throw new Error("The screen capture produced no video track");
-
-               const sink = new VideoSampleSink(videoTrack, { optimizeForLatency: true });
-               const startTimestamp = Math.max(0, await videoTrack.getFirstTimestamp());
-               for await (const sample of sink.samples(startTimestamp)) {
+            const restart = (captureWidth: number, captureHeight: number, captureFrameRate: number) =>
+               new Promise<MediaStream>((resolve, reject) => {
                   if (cleanedUp || generator.readyState === "ended") {
-                     sample.close();
+                     reject(new Error("The screen capture track has ended"));
                      return;
                   }
 
-                  let frame: VideoFrame;
-                  try {
-                     frame = sample.toVideoFrame();
-                  } finally {
-                     sample.close();
-                  }
+                  disposeActiveInput?.(new Error("Screen capture was replaced before it was ready"));
+
+                  const captureId = crypto.randomUUID();
+                  activeCaptureId = captureId;
+                  let pendingChunk: Uint8Array<ArrayBuffer> | undefined;
+                  let settled = false;
+                  let inputDisposed = false;
+                  let unsubscribeChunk: (() => void) | undefined;
+                  let unsubscribeError: (() => void) | undefined;
+                  let unsubscribeStopped: (() => void) | undefined;
+                  let chunkController: ReadableStreamDefaultController<Uint8Array<ArrayBuffer>>;
+
+                  const enqueuePendingChunk = () => {
+                     if (inputDisposed || !pendingChunk || chunkController.desiredSize === null || chunkController.desiredSize <= 0) return;
+
+                     const chunk = pendingChunk;
+                     pendingChunk = undefined;
+                     chunkController.enqueue(chunk);
+                     window.electronAPI.desktopCaptureChunkConsumed(captureId);
+                  };
+
+                  const chunkStream = new ReadableStream<Uint8Array<ArrayBuffer>>({
+                     start(controller) {
+                        chunkController = controller;
+                     },
+                     pull() {
+                        enqueuePendingChunk();
+                     },
+                  });
+                  const input = new Input({ source: new ReadableStreamSource(chunkStream), formats: [MPEG_TS] });
+
+                  const disposeInput = (reason?: Error) => {
+                     if (inputDisposed) return;
+                     inputDisposed = true;
+                     pendingChunk = undefined;
+                     unsubscribeChunk?.();
+                     unsubscribeError?.();
+                     unsubscribeStopped?.();
+                     input.dispose();
+                     if (activeCaptureId === captureId) disposeActiveInput = undefined;
+                     if (!settled && reason) {
+                        settled = true;
+                        reject(reason);
+                     }
+                  };
+                  disposeActiveInput = disposeInput;
+
+                  const fail = (reason: unknown) => {
+                     if (inputDisposed || activeCaptureId !== captureId) return;
+
+                     const error = reason instanceof Error ? reason : new Error(String(reason));
+                     if (!settled) {
+                        settled = true;
+                        reject(error);
+                     } else {
+                        console.error("Linux screen capture failed", error);
+                     }
+                     cleanup();
+                  };
+
+                  unsubscribeChunk = window.electronAPI.onDesktopCaptureChunk((_, incomingCaptureId, chunk) => {
+                     if (incomingCaptureId !== captureId || inputDisposed) return;
+                     if (pendingChunk) {
+                        fail(new Error("Received a capture chunk before the previous chunk was consumed"));
+                        return;
+                     }
+
+                     pendingChunk = chunk;
+                     enqueuePendingChunk();
+                  });
+                  unsubscribeError = window.electronAPI.onDesktopCaptureError((_, incomingCaptureId, message) => {
+                     if (incomingCaptureId === captureId) fail(new Error(message));
+                  });
+                  unsubscribeStopped = window.electronAPI.onDesktopCaptureStopped((_, stoppedCaptureId) => {
+                     if (stoppedCaptureId !== captureId || inputDisposed) return;
+                     if (!settled) {
+                        settled = true;
+                        reject(new Error("Screen capture stopped before it was ready"));
+                     }
+                     cleanup(false);
+                  });
+
+                  generator.contentHint = captureFrameRate > 30 ? "motion" : "detail";
+
+                  void (async () => {
+                     const [videoTrack] = await input.getVideoTracks();
+                     if (!videoTrack) throw new Error("The screen capture produced no video track");
+
+                     const sink = new VideoSampleSink(videoTrack, { optimizeForLatency: true });
+                     const startTimestamp = Math.max(0, await videoTrack.getFirstTimestamp());
+                     for await (const sample of sink.samples(startTimestamp)) {
+                        if (inputDisposed || activeCaptureId !== captureId || cleanedUp || generator.readyState === "ended") {
+                           sample.close();
+                           return;
+                        }
+
+                        let frame: VideoFrame;
+                        try {
+                           frame = sample.toVideoFrame();
+                        } finally {
+                           sample.close();
+                        }
+
+                        try {
+                           await writer.write(frame);
+                        } catch (error) {
+                           frame.close();
+                           throw error;
+                        }
+
+                        if (!settled) {
+                           settled = true;
+                           resolve(generatedStream);
+                        }
+                     }
+
+                     if (!inputDisposed && activeCaptureId === captureId && !cleanedUp) {
+                        throw new Error("The screen capture ended unexpectedly");
+                     }
+                  })().catch((error) => {
+                     if (!inputDisposed && activeCaptureId === captureId && !cleanedUp) fail(error);
+                  });
 
                   try {
-                     await writer.write(frame);
+                     window.electronAPI.startDesktopCapture({
+                        captureId,
+                        width: captureWidth,
+                        height: captureHeight,
+                        frameRate: captureFrameRate,
+                     });
                   } catch (error) {
-                     frame.close();
-                     throw error;
+                     fail(error);
                   }
+               });
 
-                  if (!settled) {
-                     settled = true;
-                     resolve(stream);
-                  }
-               }
+            generator.addEventListener("ended", () => cleanup(), { once: true });
+            this.desktopCaptureCleanup = cleanup;
+            this.desktopCaptureRestart = restart;
+         }
 
-               if (!cleanedUp) throw new Error("The screen capture ended unexpectedly");
-            })().catch((error) => {
-               if (!cleanedUp) fail(error);
-            });
-
-            try {
-               window.electronAPI.startDesktopCapture({ captureId, width, height, frameRate });
-            } catch (error) {
-               fail(error);
-            }
-         });
+         stream = await this.desktopCaptureRestart(width, height, frameRate);
       } else if (huginnWindow.platform === "win32") {
          stream = await navigator.mediaDevices.getDisplayMedia({
             audio: false,
@@ -600,7 +639,33 @@ export class VoiceBridge extends Voice {
          });
       }
 
+      this.desktopCaptureOptions = { width, height, frameRate };
       return stream;
+   }
+
+   public getDesktopCaptureOptions(): Readonly<{ width: number; height: number; frameRate: number }> | undefined {
+      return this.desktopCaptureOptions ? { ...this.desktopCaptureOptions } : undefined;
+   }
+
+   public updateDesktopCaptureOptions(options: { width?: number; height?: number; frameRate?: number }): void {
+      if (!this.desktopCaptureOptions) throw new Error("No desktop capture is active");
+
+      this.desktopCaptureOptions = {
+         width: options.width ?? this.desktopCaptureOptions.width,
+         height: options.height ?? this.desktopCaptureOptions.height,
+         frameRate: options.frameRate ?? this.desktopCaptureOptions.frameRate,
+      };
+   }
+
+   public async updateDesktopCapture(options: { width?: number; height?: number; frameRate?: number }): Promise<void> {
+      if (!this.desktopCaptureRestart || !this.desktopCaptureOptions) throw new Error("No Linux desktop capture is active");
+
+      const nextOptions = { ...this.desktopCaptureOptions };
+      if (options.width !== undefined) nextOptions.width = options.width;
+      if (options.height !== undefined) nextOptions.height = options.height;
+      if (options.frameRate !== undefined) nextOptions.frameRate = options.frameRate;
+      await this.desktopCaptureRestart(nextOptions.width, nextOptions.height, nextOptions.frameRate);
+      this.updateDesktopCaptureOptions(options);
    }
 
    private async registerForegroundServiceListeners() {

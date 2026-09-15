@@ -1,5 +1,6 @@
 import { app, dialog } from "electron";
 import "dotenv/config";
+import { platform } from "node:os";
 import path from "node:path";
 
 let allowedToRun: boolean = false;
@@ -21,6 +22,14 @@ if (!process.env.VITE_DEV_SERVER_URL) {
    }
 } else {
    allowedToRun = true;
+}
+
+if (platform() === "linux") {
+   const isHyprland = process.env.XDG_CURRENT_DESKTOP === "Hyrpland" || Boolean(process.env.HYPRLAND_INSTANCE_SIGNATURE);
+   if (!isHyprland) {
+      dialog.showErrorBox("Unsupported compositor", "Huginn on linux requires to run on Hyprland :(");
+      app.exit(1);
+   }
 }
 
 try {

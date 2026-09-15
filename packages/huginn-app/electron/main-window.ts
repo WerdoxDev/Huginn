@@ -21,7 +21,7 @@ export class MainWindow extends BaseWindow {
    private notificationController: NotificationController = new NotificationController();
    private screenManager: ScreenManager = new ScreenManager();
    private loopbackCapture: LoopbackCapture | undefined;
-   private nativeCaptureId?: string;
+   private nativeCaptureOptions?: { captureId: string; width: number; height: number; frameRate: number };
 
    public constructor() {
       super("main", {
@@ -186,7 +186,7 @@ export class MainWindow extends BaseWindow {
             const applications = await Promise.all(
                openApplications.map(async (x) => {
                   const [icon, thumbnail] = await Promise.all([
-                     isWindows ? native.getProcessIconBase64(x.processId) : undefined,
+                     native.getProcessIconBase64(x.processId),
                      isLinux && x.rect && x.stableId
                         ? native.getWindowThumbnailBase64LINUX(x.stableId, 1)
                         : x.hwnd
@@ -236,11 +236,8 @@ export class MainWindow extends BaseWindow {
          const openApplications = await native.getOpenApplications();
          const applications = await Promise.all(
             openApplications.map(async (x) => {
-               if (isWindows) {
-                  const icon = await native.getProcessIconBase64(x.processId);
-                  return { ...x, icon };
-               }
-               return { ...x, icon: undefined };
+               const icon = await native.getProcessIconBase64(x.processId);
+               return { ...x, icon };
             }),
          );
 
@@ -371,20 +368,12 @@ export class MainWindow extends BaseWindow {
                   ]);
                   return { ...x, icon, displayName };
                }
-               return { ...x };
+
+               return { ...x, icon: await native.getProcessIconBase64(x.processId) };
             }),
          );
 
          return applications;
-      });
-
-      // const applicationIconCache = new CacheStorage<number, AppInfo | null>(600);
-      ipcMain.handle("native:get-application-info", async (_, processId: number) => {
-         // const info = await applicationIconCache.cacheOrGet(processId, async () => await native.getApplicationInfo(processId));
-         const icon = await native.getProcessIconBase64(processId);
-         const displayName = native.getPackageDisplayName(processId);
-         const info = { displayName, icon };
-         return info;
       });
 
       ipcMain.on("native:start-desktop-capture", async (_, options: { captureId: string; width: number; height: number; frameRate: number }) => {
@@ -411,12 +400,11 @@ export class MainWindow extends BaseWindow {
             const frameRate = Math.max(1, Math.min(60, Math.floor(options.frameRate)));
             if (![width, height, frameRate].every(Number.isFinite)) throw new Error("Invalid capture dimensions or frame rate");
 
-            const previousCaptureId = this.nativeCaptureId;
+            const previousCaptureId = this.nativeCaptureOptions?.captureId;
             if (previousCaptureId) {
                native.stopDesktopCaptureLINUX();
-               if (!window.webContents.isDestroyed()) window.webContents.send("native:desktop-capture-stopped", previousCaptureId);
             }
-            this.nativeCaptureId = options.captureId;
+            this.nativeCaptureOptions = options;
 
             native.startDesktopCaptureLINUX({
                monitor: foundDisplay?.name,
@@ -425,14 +413,14 @@ export class MainWindow extends BaseWindow {
                height,
                frameRate,
                callback: (chunk) => {
-                  if (this.nativeCaptureId === options.captureId && !window.webContents.isDestroyed()) {
+                  if (this.nativeCaptureOptions?.captureId === options.captureId && !window.webContents.isDestroyed()) {
                      window.webContents.send("native:desktop-capture-chunk", options.captureId, chunk);
                   }
                },
                errorCallback: (error) => {
-                  if (this.nativeCaptureId !== options.captureId) return;
+                  if (this.nativeCaptureOptions?.captureId !== options.captureId) return;
 
-                  this.nativeCaptureId = undefined;
+                  this.nativeCaptureOptions = undefined;
                   reportError(error);
                },
             });
@@ -442,19 +430,19 @@ export class MainWindow extends BaseWindow {
       });
 
       ipcMain.on("native:desktop-capture-chunk-consumed", (_, captureId: string) => {
-         if (captureId === this.nativeCaptureId) native.resumeDesktopCaptureLINUX();
+         if (captureId === this.nativeCaptureOptions?.captureId) native.resumeDesktopCaptureLINUX();
       });
-      ipcMain.on("native:stop-desktop-capture", (_, captureId?: string) => {
-         if (captureId && captureId !== this.nativeCaptureId) return;
+      ipcMain.on("native:stop-desktop-capture", (_, captureId?: string, stopStream?: boolean) => {
+         if (captureId && captureId !== this.nativeCaptureOptions?.captureId) return;
 
-         const stoppedCaptureId = this.nativeCaptureId;
-         this.nativeCaptureId = undefined;
+         const stoppedCaptureId = this.nativeCaptureOptions?.captureId;
+         this.nativeCaptureOptions = undefined;
          native.stopDesktopCaptureLINUX();
-         if (stoppedCaptureId && !window.webContents.isDestroyed()) window.webContents.send("native:capture-stopped", stoppedCaptureId);
+         if (stoppedCaptureId && !window.webContents.isDestroyed() && stopStream) window.webContents.send("native:capture-stopped", stoppedCaptureId);
       });
 
       window.once("closed", () => {
-         this.nativeCaptureId = undefined;
+         this.nativeCaptureOptions = undefined;
          native.stopDesktopCaptureLINUX();
       });
    }

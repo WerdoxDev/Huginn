@@ -15,6 +15,57 @@ import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceBridge } from "./voice-bridge";
 import { makeStream } from "./voice-bridge-test-utils";
 
+const mediabunnyMocks = vi.hoisted(() => ({
+   inputs: [] as Array<{ disposed: boolean; release?: () => void }>,
+}));
+
+vi.mock("mediabunny", () => {
+   class Input {
+      public disposed = false;
+      public release?: () => void;
+
+      public constructor(_options: unknown) {
+         mediabunnyMocks.inputs.push(this);
+      }
+
+      public async getVideoTracks() {
+         return [{ input: this, getFirstTimestamp: async () => 0 }];
+      }
+
+      public dispose() {
+         this.disposed = true;
+         this.release?.();
+      }
+   }
+
+   class VideoSampleSink {
+      private readonly input: Input;
+
+      public constructor(track: { input: Input }, _options: unknown) {
+         this.input = track.input;
+      }
+
+      public async *samples() {
+         yield {
+            close: vi.fn(),
+            toVideoFrame: () => ({ close: vi.fn() }),
+         };
+         await new Promise<void>((resolve) => {
+            this.input.release = resolve;
+         });
+      }
+   }
+
+   return {
+      Input,
+      MPEG_TS: Symbol("MPEG_TS"),
+      ReadableStreamSource: class {
+         public constructor(_stream: ReadableStream) {}
+      },
+      VideoSampleSink,
+   };
+});
+
 vi.mock("@lib/capacitor/media-devices-plugin", () => ({
    NativeMediaDevices: {
       startCommunication: vi.fn(),
@@ -75,6 +126,7 @@ let bridge: VoiceBridge;
 
 beforeEach(() => {
    vi.clearAllMocks();
+   mediabunnyMocks.inputs.length = 0;
    vi.stubGlobal("MediaStream", FakeMediaStream);
    vi.stubGlobal("window", { electronAPI: undefined });
    windowStore.setState({ environment: "browser" });
@@ -821,5 +873,90 @@ describe("audio loopback", () => {
       await bridge.stopAudioLoopback();
 
       expect(stopAudioLoopback).toHaveBeenCalledTimes(1);
+   });
+});
+
+describe("Linux desktop capture", () => {
+   it("restarts the native recorder without replacing the generated stream", async () => {
+      class FakeGenerator extends EventTarget {
+         public contentHint = "";
+         public kind = "video";
+         public readyState: MediaStreamTrackState = "live";
+         public writable = {
+            getWriter: () => ({
+               abort: vi.fn(async () => {}),
+               write: vi.fn(async () => {}),
+            }),
+         };
+
+         public stop() {
+            this.readyState = "ended";
+            this.dispatchEvent(new Event("ended"));
+         }
+      }
+
+      const startDesktopCapture = vi.fn();
+      vi.stubGlobal("MediaStreamTrackGenerator", FakeGenerator);
+      vi.stubGlobal("window", {
+         electronAPI: {
+            startDesktopCapture,
+            stopDesktopCapture: vi.fn(),
+            desktopCaptureChunkConsumed: vi.fn(),
+            onDesktopCaptureChunk: vi.fn(() => vi.fn()),
+            onDesktopCaptureError: vi.fn(() => vi.fn()),
+            onDesktopCaptureStopped: vi.fn(() => vi.fn()),
+         },
+      });
+      windowStore.setState({ platform: "linux" });
+
+      const firstStream = await bridge.startDesktopCapture(1920, 1080, 30);
+      const secondStream = await bridge.startDesktopCapture(1280, 720, 60);
+
+      expect(secondStream).toBe(firstStream);
+      expect(startDesktopCapture).toHaveBeenCalledTimes(2);
+      expect(startDesktopCapture).toHaveBeenNthCalledWith(1, expect.objectContaining({ width: 1920, height: 1080, frameRate: 30 }));
+      expect(startDesktopCapture).toHaveBeenNthCalledWith(2, expect.objectContaining({ width: 1280, height: 720, frameRate: 60 }));
+      expect(startDesktopCapture.mock.calls[0][0].captureId).not.toBe(startDesktopCapture.mock.calls[1][0].captureId);
+      expect(mediabunnyMocks.inputs).toHaveLength(2);
+      expect(mediabunnyMocks.inputs[0].disposed).toBe(true);
+      expect(mediabunnyMocks.inputs[1].disposed).toBe(false);
+      expect(bridge.getDesktopCaptureOptions()).toEqual({ width: 1280, height: 720, frameRate: 60 });
+   });
+
+   it("merges partial capture updates with the active recorder options", async () => {
+      const restart = vi.fn(async () => new FakeMediaStream());
+      Object.assign(bridge, {
+         desktopCaptureRestart: restart,
+         desktopCaptureOptions: { width: 1920, height: 1080, frameRate: 30 },
+      });
+
+      await bridge.updateDesktopCapture({ frameRate: 60 });
+
+      expect(restart).toHaveBeenCalledWith(1920, 1080, 60);
+      expect(bridge.getDesktopCaptureOptions()).toEqual({ width: 1920, height: 1080, frameRate: 60 });
+   });
+
+   it("tracks partial capture option updates without exposing mutable state", () => {
+      Object.assign(bridge, {
+         desktopCaptureOptions: { width: 1920, height: 1080, frameRate: 30 },
+      });
+
+      bridge.updateDesktopCaptureOptions({ width: 1280, height: 720 });
+      const options = bridge.getDesktopCaptureOptions()! as { width: number; height: number; frameRate: number };
+      options.width = 1;
+
+      expect(bridge.getDesktopCaptureOptions()).toEqual({ width: 1280, height: 720, frameRate: 30 });
+   });
+
+   it("stores requested capture options for non-Linux screen sharing", async () => {
+      const capturedStream = new FakeMediaStream();
+      vi.stubGlobal("navigator", {
+         mediaDevices: { getDisplayMedia: vi.fn(async () => capturedStream) },
+      });
+      windowStore.setState({ platform: "win32" });
+
+      await expect(bridge.startDesktopCapture(2560, 1440, 60)).resolves.toBe(capturedStream);
+
+      expect(bridge.getDesktopCaptureOptions()).toEqual({ width: 2560, height: 1440, frameRate: 60 });
    });
 });

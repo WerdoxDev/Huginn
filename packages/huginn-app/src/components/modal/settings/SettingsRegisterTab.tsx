@@ -31,6 +31,7 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
    });
 
    const applicationOptions = useMemo(() => {
+      console.log(data);
       return data?.map((x) => ({
          id: Math.random(),
          value: x.processId.toString(),
