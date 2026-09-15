@@ -71,9 +71,12 @@ jobs:
          - name: Rebuild Electron
            run: pnpm rebuild electron
 
-         - name: Install Linux browser dependencies
+         - name: Install Linux runtime and browser dependencies
            if: runner.os == 'Linux'
-           run: pnpm --dir packages/huginn-app exec playwright install-deps chromium
+           run: |
+              sudo apt-get update
+              sudo apt-get install --yes libpipewire-0.3-0t64
+              pnpm --dir packages/huginn-app exec playwright install-deps chromium
 
          - name: Compile native addon
            run: pnpm --dir packages/native-addon build
