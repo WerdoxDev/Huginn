@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.51.0...server@v0.52.0) (2026-09-16)
+
+
+### Features
+
+* **server:** add duration field for all supported media types ([1932f30](https://github.com/WerdoxDev/Huginn/commit/1932f3040d13bc108015a6522f5be74473b212ce))
+
 ## [0.51.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.50.0...server@v0.51.0) (2026-08-24)
 
 

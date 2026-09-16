@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.2...backend-shared@v0.32.0) (2026-09-16)
+
+
+### Features
+
+* **backend-shared:** audio data computing with mediabunny ([d5ffc14](https://github.com/WerdoxDev/Huginn/commit/d5ffc14f25ba005067e63716a625158a1f72d9b9))
+
 ## [0.31.2](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.1...backend-shared@v0.31.2) (2026-08-25)
 
 

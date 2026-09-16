@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.7.0...native-addon@v0.8.0) (2026-09-16)
+
+
+### Features
+
+* **native-addon:** linux application icon fetching ([57e0bc8](https://github.com/WerdoxDev/Huginn/commit/57e0bc8ca84aa0b7c4cfb907eb3d48fd9045f471))
+* **native:** add linux screen and region capturing ([b90be6d](https://github.com/WerdoxDev/Huginn/commit/b90be6dfe93b477e6f4822e83be6b0827bb89044))
+
 ## [0.7.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.6.0...native-addon@v0.7.0) (2026-07-17)
 
 
