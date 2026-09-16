@@ -10,11 +10,10 @@ RUN mkdir -p /temp/deps
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc /temp/deps/
 COPY packages/huginn-backend-shared/package.json /temp/deps/packages/huginn-backend-shared/package.json
-COPY packages/huginn-runtime-shared/package.json /temp/deps/packages/huginn-runtime-shared/package.json
 COPY packages/huginn-shared/package.json /temp/deps/packages/huginn-shared/package.json
 COPY packages/huginn-server/package.json /temp/deps/packages/huginn-server/package.json
 
-RUN cd /temp/deps && pnpm install --frozen-lockfile --ignore-scripts
+RUN cd /temp/deps && pnpm install --filter @huginn/server... --prod --frozen-lockfile --ignore-scripts
 
 FROM oven/bun:1.4.0-alpine AS prerelease
 LABEL org.opencontainers.image.source=https://github.com/werdoxdev/huginn
@@ -23,10 +22,11 @@ WORKDIR /src
 # install ffmpeg
 RUN apk add --no-cache ffmpeg
 
-COPY . /src
+COPY packages/huginn-shared packages/huginn-shared
+COPY packages/huginn-backend-shared packages/huginn-backend-shared
+COPY packages/huginn-server packages/huginn-server
 COPY --from=install /temp/deps/node_modules node_modules
 COPY --from=install /temp/deps/packages/huginn-backend-shared/node_modules packages/huginn-backend-shared/node_modules
-COPY --from=install /temp/deps/packages/huginn-runtime-shared/node_modules packages/huginn-runtime-shared/node_modules
 COPY --from=install /temp/deps/packages/huginn-shared/node_modules packages/huginn-shared/node_modules
 COPY --from=install /temp/deps/packages/huginn-server/node_modules packages/huginn-server/node_modules
 
@@ -36,4 +36,4 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 3004/tcp
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["packages/huginn-server", "server"]
+CMD ["packages/huginn-server", "start"]
