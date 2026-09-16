@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.90.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.89.1...app@v0.90.0) (2026-09-16)
+
+
+### Features
+
+* **app:** add arch pacman packaging ([045c1a7](https://github.com/WerdoxDev/Huginn/commit/045c1a7f9a20142256974ae816e7999c450f61f3))
+* **app:** left over files to comit ([55930a4](https://github.com/WerdoxDev/Huginn/commit/55930a4dfa2e2bdea1a0696d8f1909bfbe83acbe))
+* **app:** linux support for screen sharing and audio streaming ([c19702a](https://github.com/WerdoxDev/Huginn/commit/c19702a2517f0e1759e9f2f34ca2f4ac93fa7ea8))
+* **app:** more work on WIP voice message sending ([609ef37](https://github.com/WerdoxDev/Huginn/commit/609ef379f96a4f3d1a3f88439ef62cfcf2c851fb))
+* **app:** very WIP voice message recording ([91a9ee4](https://github.com/WerdoxDev/Huginn/commit/91a9ee49f7cb0476a730f894fbcecd9b279f3adc))
+
 ## [0.89.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.89.0...app@v0.89.1) (2026-08-25)
 
 
