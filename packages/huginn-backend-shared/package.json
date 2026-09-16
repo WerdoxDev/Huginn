@@ -17,6 +17,7 @@
       "./types": "./src/types.ts"
    },
    "dependencies": {
+      "@elysia/opentelemetry": "^1.4.12",
       "@huginnjs/shared": "workspace:*",
       "@neondatabase/serverless": "^1.1.0",
       "@prisma/adapter-neon": "^7.10.0",
@@ -26,6 +27,7 @@
       "dotenv": "^17.4.2",
       "drizzle-kit": "^0.31.10",
       "drizzle-orm": "^0.45.2",
+      "elysia": "1.4.29",
       "elysia-rate-limit": "^4.6.3",
       "jose": "^6.2.10",
       "mediabunny": "^1.55.2",
@@ -36,10 +38,8 @@
       "sharp": "^0.35.4"
    },
    "devDependencies": {
-      "@elysia/opentelemetry": "^1.4.12",
       "@types/bun": "1.4.0",
       "@types/pg": "^8.23.1",
-      "crossws": "^0.4.12",
-      "elysia": "1.4.29"
+      "crossws": "^0.4.12"
    }
 }

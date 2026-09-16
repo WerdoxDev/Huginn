@@ -22,6 +22,7 @@ WORKDIR /src
 # install ffmpeg
 RUN apk add --no-cache ffmpeg
 
+COPY tsconfig.json tsconfig.json
 COPY packages/huginn-shared packages/huginn-shared
 COPY packages/huginn-backend-shared packages/huginn-backend-shared
 COPY packages/huginn-server packages/huginn-server
