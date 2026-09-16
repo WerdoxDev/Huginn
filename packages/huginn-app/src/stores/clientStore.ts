@@ -102,6 +102,11 @@ const NAVIGATOR_PLATFORM_TO_OS: Record<string, string> = {
    "Linux x86_64": "linux",
 };
 
+const NODE_PLATFORM_TO_UPDATE_ROUTE: Record<string, string | undefined> = {
+   win32: "windows",
+   linux: "linux",
+};
+
 function getChromeVersion() {
    var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
    return raw ? parseInt(raw[2], 10) : undefined;
@@ -159,8 +164,9 @@ export async function initializeClient() {
 
    thisStore = store.getState();
 
-   if (window.electronAPI && thisStore.hostnames.api) {
-      const url = `${thisStore.hostnames.api}/api/update/win`;
+   const updateRoute = osInfo?.platform ? NODE_PLATFORM_TO_UPDATE_ROUTE[osInfo.platform] : undefined;
+   if (window.electronAPI && thisStore.hostnames.api && updateRoute) {
+      const url = `${thisStore.hostnames.api}/api/update/${updateRoute}`;
       window.electronAPI.setUpdateUrl(url);
    }
 

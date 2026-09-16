@@ -64,6 +64,11 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
          name: `Huginn_${version}_x64.tar.zst`,
          type: "application/zstd",
       },
+      {
+         path: "./dist/electron/latest-linux.yml",
+         name: "latest-linux.yml",
+         type: "text/yaml",
+      },
    ],
    android: androidFiles,
 };

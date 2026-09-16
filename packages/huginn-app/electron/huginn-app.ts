@@ -104,11 +104,13 @@ export class HuginnApp {
    }
 
    private createTray() {
-      const iconName = "tray.ico";
+      const iconName = "tray.png";
       const iconPath = app.isPackaged
          ? path.join(process.resourcesPath, "electron-assets", iconName)
          : path.join(__dirname, "../", "electron-assets", iconName);
       const icon = nativeImage.createFromPath(iconPath);
+
+      console.log(icon.isEmpty(), iconPath);
 
       if (icon.isEmpty()) return;
 
