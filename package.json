@@ -6,7 +6,12 @@
       "bifrost": "cd packages/huginn-bifrost && bun start",
       "server": "cd packages/huginn-server && bun start",
       "cdn": "cd packages/huginn-cdn && bun start",
-      "voice": "cd packages/huginn-voice && bun start"
+      "voice": "cd packages/huginn-voice && bun start",
+      "count": "bun ./scripts/count.ts",
+      "deploy": "bun ./scripts/deploy.ts",
+      "redeploy": "bun ./scripts/redeploy.ts",
+      "reinstall-packages": "bun ./scripts/reinstall-packages.ts",
+      "update-secret": "bun ./scripts/update-secret.ts"
    },
    "devDependencies": {
       "@types/bun": "latest",
