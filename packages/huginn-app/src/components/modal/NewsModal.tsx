@@ -11,9 +11,11 @@ import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { useMemo } from "react";
 
+import type { Environment } from "@/types";
+
 import HuginnDialogPanel from "./HuginnDialogPanel";
 
-const PLATFORM_TO_HUGINN_ENV_MAP = {
+const PLATFORM_TO_HUGINN_ENV_MAP: Record<string, Environment[]> = {
    windows: ["browser", "desktop"],
    macos: ["browser", "desktop"],
    linux: ["browser", "desktop"],

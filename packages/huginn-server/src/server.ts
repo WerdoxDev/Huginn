@@ -52,7 +52,7 @@ import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
-import { getWinUpdate } from "#routes/update/win.get";
+import { getDesktopUpdate } from "#routes/update/linux_windows.get";
 import { getMe } from "#routes/users/@me.get";
 import { patchMe } from "#routes/users/@me.patch";
 import { getUserChannels } from "#routes/users/@me/channels.get";
@@ -209,7 +209,7 @@ export const app = new Elysia({
    .use(getLatestRelease)
    .use(getOnlineUsers)
    .use(postUniqueUsername)
-   .use(getWinUpdate)
+   .use(getDesktopUpdate)
    .use(getAndroidUpdate)
    .use(postLog)
    .use(getIndex)
