@@ -130,6 +130,12 @@ jobs:
            with:
               bun-version: latest
 
+         - name: Install Linux packaging dependencies
+           if: runner.os == 'Linux'
+           run: |
+              sudo apt-get update
+              sudo apt-get install --yes libarchive-tools
+
          - name: Install dependencies
            run: cd packages/huginn-app && pnpm install --ignore-scripts
 
