@@ -70,6 +70,7 @@ export function setupWebInstrumentation(
             // Selects which backend servers are allowed to receive trace headers for linking traces across services.
             // Using /.*/ acts as a wildcard. For safer usage in production, replace with specific domains:
             // e.g. propagateTraceHeaderCorsUrls: [/api\.example\.com/, /my-backend\.internal/]
+            ignoreUrls: [/^https?:\/\/(.*\.)?cloudflare\.com/],
             propagateTraceHeaderCorsUrls: /.*/,
             requestHook: requestHook,
          }),
