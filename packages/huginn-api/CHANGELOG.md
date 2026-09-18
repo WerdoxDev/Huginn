@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.44.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.1...api@v0.44.2) (2026-09-18)
+
+
+### Bug Fixes
+
+* **api:** better determination of browser for cloudflare ([5552553](https://github.com/WerdoxDev/Huginn/commit/555255370d809454406d965f62fa02ea861f8d16))
+
 ## [0.44.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.0...api@v0.44.1) (2026-08-24)
 
 
