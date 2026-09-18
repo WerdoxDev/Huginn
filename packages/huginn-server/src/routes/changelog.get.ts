@@ -39,13 +39,14 @@ function getEntryDate(entry: PageObjectResponse) {
    return dateProperty.date.start;
 }
 
-function getEntryPlatform(entry: PageObjectResponse) {
+function getEntryPlatforms(entry: PageObjectResponse) {
    const platformProperty = entry.properties?.Platform;
+   console.log(platformProperty);
 
-   if (!platformProperty || platformProperty.type !== "select") return "";
+   if (!platformProperty || platformProperty.type !== "multi_select") return [];
 
-   const platformText = platformProperty.select?.name.toLowerCase().trim();
-   return platformText ?? "";
+   const platformText = platformProperty.multi_select.map((x) => x.name.toLowerCase().trim());
+   return platformText ?? [];
 }
 
 const querySchema = t.Object({ since: t.Optional(t.String()), current: t.String() });
@@ -88,7 +89,7 @@ export const getChangelog = new Elysia().get(
                version: getEntryVersion(entry),
                content: result,
                date: getEntryDate(entry),
-               platform: getEntryPlatform(entry),
+               platforms: getEntryPlatforms(entry),
             };
          }),
       );
