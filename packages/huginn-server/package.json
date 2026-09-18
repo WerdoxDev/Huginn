@@ -17,7 +17,6 @@
       "@elysia/opentelemetry": "^1.4.10",
       "@elysia/static": "^1.4.7",
       "@huginn/backend-shared": "workspace:*",
-      "@huginn/runtime-shared": "workspace:*",
       "@huginnjs/shared": "workspace:*",
       "@notionhq/client": "^5.26.0",
       "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",

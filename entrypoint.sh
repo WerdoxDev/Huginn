@@ -40,4 +40,5 @@ echo "Runner: $RUNNER | Exec command: $RUNNER_EXEC"
 
 (cd packages/huginn-backend-shared && $RUNNER_EXEC prisma migrate deploy) || true
 # Execute the provided command
+cd "$WORKING_DIR"
 exec $RUNNER run "$SCRIPT"
