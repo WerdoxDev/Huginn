@@ -316,8 +316,9 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          try {
-            const id = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
-            const token = typeof process !== "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
+            const id = typeof window === "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
+            const token = typeof window === "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
+
             span.setAttributes({
                "turn.has_id": !!id,
                "turn.has_token": !!token,
