@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.20.0...voice@v0.20.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **voice:** incorrect websocket path ([a0f9bdf](https://github.com/WerdoxDev/Huginn/commit/a0f9bdfa3a1c01b0ef33d6fab798cb7452ab9b4f))
+
 ## [0.20.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.19.1...voice@v0.20.0) (2026-08-02)
 
 

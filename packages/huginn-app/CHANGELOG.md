@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.90.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.90.0...app@v0.90.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **app:** add electorn's recommended stuff in package.json for linux app ([cb8c45d](https://github.com/WerdoxDev/Huginn/commit/cb8c45d8affe7fb757420e2e304e47416a283cd4))
+* **app:** call resize fix + default device fix + multi platform news modal + context menu close fix ([88b40e6](https://github.com/WerdoxDev/Huginn/commit/88b40e69df543b5011ef075805f1ad0678addade))
+
 ## [0.90.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.89.1...app@v0.90.0) (2026-09-16)
 
 

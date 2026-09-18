@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.52.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.52.0...server@v0.52.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **server:** add backwards compatibility with old "win" path for update ([b1c7ced](https://github.com/WerdoxDev/Huginn/commit/b1c7cedb6ea91803be13d2f0a581ea84760d0a9e))
+* **server:** multi platform changelog ([666e3ac](https://github.com/WerdoxDev/Huginn/commit/666e3ac833778e372cda9a7479a13fbc59b54f33))
+
 ## [0.52.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.51.0...server@v0.52.0) (2026-09-16)
 
 
