@@ -17,7 +17,7 @@ const ws = crossws({
    },
 });
 
-export const app = new Elysia().ws("/", {
+export const app = new Elysia().ws("/voice", {
    upgrade({ request, server }) {
       return ws.handleUpgrade(request, server!);
    },
