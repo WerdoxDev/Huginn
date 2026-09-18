@@ -7,6 +7,10 @@ export class CacheStorage<K, V> {
    }
 
    public async cacheOrGet(key: K, getter: (() => V) | (() => Promise<V>)): Promise<V> {
+      if (process.env.DISABLE_CACHE_STORAGE === "true") {
+         return await getter();
+      }
+
       const now = new Date();
       const existing = this._storage.get(key);
 

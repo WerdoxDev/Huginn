@@ -87,12 +87,13 @@ export default function VoicePlayer(props: {
    return (
       <div className="bg-surface-alt flex w-[min(24rem,100%)] items-center gap-x-3 rounded-md px-3 py-3" onContextMenu={props.onContextMenu}>
          <button
-            className="bg-primary-500 relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-md p-2 text-white/80 hover:text-white"
+            className="bg-primary-500 relative size-12 shrink-0 cursor-pointer rounded-md p-2 text-white/80 hover:text-white"
             onClick={togglePlaying}
          >
             <div className="absolute inset-0 z-10 flex items-center justify-center">
                {playing ? <IconMingcutePauseFill className="size-8" /> : <IconMingcutePlayFill className="size-8" />}
             </div>
+            <LoadingBackground hasError={hasError} isLoaded={isLoaded} className="z-10" />
          </button>
          <div className="flex min-w-0 flex-1 flex-col justify-center">
             <div className="relative flex items-center gap-x-2">
@@ -103,7 +104,6 @@ export default function VoicePlayer(props: {
                   onLoadedMetadata={() => setIsLoaded(true)}
                   onError={() => setHasError(true)}
                />
-               <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
                {isLoaded && !hasError ? (
                   <>
                      <WaveformSlider

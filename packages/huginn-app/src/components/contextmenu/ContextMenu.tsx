@@ -1,4 +1,4 @@
-import { ContextMenu as BaseContextMenu, Drawer } from "@base-ui/react";
+import { Drawer, Menu as BaseMenu } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
 import LoadingIcon from "@components/LoadingIcon";
@@ -81,19 +81,20 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
                </Drawer.Portal>
             </Drawer.Root>
          ) : (
-            <BaseContextMenu.Root
+            // This menu is opened externally at a virtual anchor. Base UI's ContextMenu.Root
+            // assumes a Trigger and delays outside-press dismissal when one did not open it.
+            <BaseMenu.Root
                open={props.contextMenu?.isOpen ?? false}
                onOpenChange={(open) => {
                   if (!open) props.onClose?.();
                }}
             >
-               <BaseContextMenu.Portal container={props.contextMenu?.parent ?? undefined}>
-                  {/* <BaseContextMenu.Backdrop className="fixed inset-0 z-997" /> */}
-                  <BaseContextMenu.Positioner anchor={anchor} sideOffset={0} alignOffset={0} className="z-998">
-                     <BaseContextMenu.Popup className={popupClass}>{children}</BaseContextMenu.Popup>
-                  </BaseContextMenu.Positioner>
-               </BaseContextMenu.Portal>
-            </BaseContextMenu.Root>
+               <BaseMenu.Portal container={props.contextMenu?.parent ?? undefined}>
+                  <BaseMenu.Positioner anchor={anchor} sideOffset={2} align="end" className="z-998">
+                     <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
+                  </BaseMenu.Positioner>
+               </BaseMenu.Portal>
+            </BaseMenu.Root>
          )}
       </HuginnErrorBoundary>
    );
@@ -145,7 +146,7 @@ function Item(
    }
 
    return (
-      <BaseContextMenu.Item
+      <BaseMenu.Item
          ref={props.ref}
          label={props.label}
          disabled={props.disabled || isLoading}
@@ -155,24 +156,24 @@ function Item(
       >
          {props.label}
          {isLoading ? <LoadingIcon /> : props.children}
-      </BaseContextMenu.Item>
+      </BaseMenu.Item>
    );
 }
 
 function SubmenuContent(
-   props: BaseContextMenu.Popup.Props & {
-      side?: BaseContextMenu.Positioner.Props["side"];
-      align?: BaseContextMenu.Positioner.Props["align"];
+   props: BaseMenu.Popup.Props & {
+      side?: BaseMenu.Positioner.Props["side"];
+      align?: BaseMenu.Positioner.Props["align"];
       sideOffset?: number;
       alignOffset?: number;
    },
 ) {
    return (
-      <BaseContextMenu.Portal keepMounted={false}>
-         <BaseContextMenu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
-            <BaseContextMenu.Popup className={clsx(popupClass, props.className)}>{props.children}</BaseContextMenu.Popup>
-         </BaseContextMenu.Positioner>
-      </BaseContextMenu.Portal>
+      <BaseMenu.Portal keepMounted={false}>
+         <BaseMenu.Positioner side={props.side} align={props.align} sideOffset={props.sideOffset} alignOffset={props.alignOffset}>
+            <BaseMenu.Popup className={clsx(popupClass, props.className)}>{props.children}</BaseMenu.Popup>
+         </BaseMenu.Positioner>
+      </BaseMenu.Portal>
    );
 }
 
@@ -223,8 +224,8 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
    }
 
    return (
-      <BaseContextMenu.SubmenuRoot>
-         <BaseContextMenu.SubmenuTrigger
+      <BaseMenu.SubmenuRoot>
+         <BaseMenu.SubmenuTrigger
             openOnHover
             delay={0}
             closeDelay={100}
@@ -239,17 +240,17 @@ function Submenu(props: { label: ReactNode; children?: ReactNode; color?: Tone; 
                   <IconMingcuteRightLine className="size-5 text-white/80" />
                </span>
             </span>
-         </BaseContextMenu.SubmenuTrigger>
+         </BaseMenu.SubmenuTrigger>
 
          <SubmenuContent side="right" align="start" sideOffset={12} alignOffset={-8}>
             {children}
          </SubmenuContent>
-      </BaseContextMenu.SubmenuRoot>
+      </BaseMenu.SubmenuRoot>
    );
 }
 
 function Divider(props: { className?: string }) {
-   return <BaseContextMenu.Separator className={clsx("bg-surface mx-1 my-2 h-px shrink-0", props.className)} />;
+   return <BaseMenu.Separator className={clsx("bg-surface mx-1 my-2 h-px shrink-0", props.className)} />;
 }
 
 ContextMenu.Item = Item;

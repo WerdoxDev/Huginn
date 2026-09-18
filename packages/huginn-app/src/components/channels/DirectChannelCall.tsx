@@ -159,7 +159,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       return () => {
          controller.abort();
       };
-   }, [isShown, maximizedSource, isMobileCallHidden]);
+   }, [isShown, maximizedSource, isMobileCallHidden, isMobile]);
 
    useEffect(() => {
       if (maximizedSource && !mediaSources.some((source) => source.producerId === maximizedSource.producerId)) {

@@ -17,13 +17,13 @@ import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
-import SettingsVoiceTab from "./settings/SettingsVoiceTab";
 
 const tabs: SettingsTabType[] = [
    {
@@ -55,7 +55,7 @@ const tabs: SettingsTabType[] = [
             name: "voice",
             text: "Audio & Video",
             icon: <IconMingcuteSpeakerFill />,
-            component: SettingsVoiceTab,
+            component: SettingsAudioVideoTab,
          },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
          {

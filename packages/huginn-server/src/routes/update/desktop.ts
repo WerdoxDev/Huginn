@@ -80,4 +80,6 @@ const routeOptions = { params: t.Object({ file: t.String() }) };
 
 export const getDesktopUpdate = new Elysia()
    .get("/api/update/windows/:file", ({ params: { file }, request }) => handleDesktopUpdate("windows", file, request), routeOptions)
-   .get("/api/update/linux/:file", ({ params: { file }, request }) => handleDesktopUpdate("linux", file, request), routeOptions);
+   .get("/api/update/linux/:file", ({ params: { file }, request }) => handleDesktopUpdate("linux", file, request), routeOptions)
+   // as a compatibility
+   .get("/api/update/win/:file", ({ params: { file }, request }) => handleDesktopUpdate("windows", file, request), routeOptions);

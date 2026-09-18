@@ -1,4 +1,4 @@
-import { CommonWebsocket, createToken, verifyToken } from "@huginn/backend-shared";
+import { CommonWebsocket, createToken, DBErrorType, isDBError, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    omitChannelRecipient,
@@ -237,6 +237,12 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             this.presenceManager.sendUserSessionUpdate(user.id);
          } catch (e) {
             recordSpanError(e);
+
+            if (isDBError(e) && e.isErrorType(DBErrorType.NULL_USER)) {
+               session.peer.close(GatewayCode.AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED");
+               return;
+            }
+
             throw e;
          }
       });

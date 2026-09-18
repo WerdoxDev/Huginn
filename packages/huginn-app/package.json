@@ -134,9 +134,15 @@
       "workbox-core": "^7.4.0",
       "workbox-precaching": "^7.4.1"
    },
+   "build": {
+      "linux": {
+         "syncDesktopName": true
+      }
+   },
    "cmake-js": {
       "runtime": "electron",
       "runtimeVersion": "40.0.0",
       "arch": "x64"
-   }
+   },
+   "desktopName": "dev.huginn.Huginn.desktop"
 }
