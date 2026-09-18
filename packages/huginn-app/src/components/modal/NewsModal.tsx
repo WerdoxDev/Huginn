@@ -26,12 +26,13 @@ export default function NewsModal() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
    const { updateModals, news: modal } = useModals();
-   const { data, isLoading } = useQuery(getChangelogOptions(client!, huginnWindow.version, modal.lastVersion));
+   // const { data, isLoading } = useQuery(getChangelogOptions(client!, huginnWindow.version, modal.lastVersion));
+   const { data, isLoading } = useQuery(getChangelogOptions(client!, "0.90.0", "0.89.0"));
 
    const changelogs = useMemo(() => {
       if (!data || data.length === 0) return;
       return data
-         .filter((x) => PLATFORM_TO_HUGINN_ENV_MAP[x.platform as keyof typeof PLATFORM_TO_HUGINN_ENV_MAP].includes(huginnWindow.environment))
+         .filter((x) => x.platforms.some((platform) => PLATFORM_TO_HUGINN_ENV_MAP[platform]?.includes(huginnWindow.environment)))
          .reduce(
             (acc, item) => {
                acc[item.version] = { html: marked.parse(item.content) as string, date: item.date, title: item.title };

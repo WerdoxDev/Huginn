@@ -15,6 +15,7 @@ const SelectContext = createContext<{
    id: string;
    isMobile: boolean;
    isDrawerOpen: boolean;
+   disabled: boolean;
    setIsDrawerOpen: (open: boolean) => void;
 }>(undefined!);
 
@@ -22,6 +23,7 @@ export default function HuginnSelect<T = string>(props: {
    children?: ReactNode;
    className?: string;
    selected?: SelectItem<T>;
+   disabled?: boolean;
    onChange?: (value: SelectItem<T>) => void;
 }) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
@@ -37,10 +39,11 @@ export default function HuginnSelect<T = string>(props: {
    useStackBackHandler(`select-drawer-${id}`, () => setIsDrawerOpen(false), isDrawerOpen);
 
    return (
-      <SelectContext.Provider value={{ id, isMobile, isDrawerOpen, setIsDrawerOpen }}>
+      <SelectContext.Provider value={{ id, isMobile, isDrawerOpen, setIsDrawerOpen, disabled: props.disabled ?? false }}>
          <Select.Root
             id={id}
             modal={false}
+            disabled={props.disabled}
             value={props.selected ?? null}
             onValueChange={handleValueChange}
             itemToStringLabel={(x) => x.text}
@@ -72,7 +75,8 @@ function List(props: {
             aria-label={props.ariaLabel}
             onClick={context.isMobile ? () => context.setIsDrawerOpen(true) : props.onClick}
             className={clsx(
-               "relative flex w-full cursor-pointer items-center gap-x-1.5 p-2 text-white outline-hidden select-none",
+               "relative flex w-full items-center gap-x-1.5 p-2 text-white outline-hidden select-none",
+               context.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                props.triggerClassName,
             )}
          >
