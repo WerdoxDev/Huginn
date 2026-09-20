@@ -15,6 +15,15 @@ import { getMediaErrorMessage } from "@/lib/utils";
 import HuginnButton from "./HuginnButton";
 
 type RecordingStatus = "idle" | "requesting" | "recording" | "processing";
+type RecordingGesture = {
+   pointerId: number;
+   startX: number;
+   startY: number;
+   direction?: "cancel" | "lock";
+};
+
+const GESTURE_TRIGGER_DISTANCE = 72;
+const CANCEL_RESET_DISTANCE = 48;
 
 export default function MessageSendButton(props: { onSubmit: (flags: MessageFlags, attachments?: AppAttachment[]) => void; hasDraft: boolean }) {
    const timeoutRef = useRef<number | undefined>(undefined);
@@ -25,21 +34,24 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
    const isOpeningInputRef = useRef(false);
    const durationIntervalRef = useRef<number | undefined>(undefined);
    const isPointerDownRef = useRef(false);
+   const recordingGestureRef = useRef<RecordingGesture | null>(null);
+   const isCancellingRef = useRef(false);
+   const suppressNextClickRef = useRef(false);
    const shouldSubmitRef = useRef(false);
    const receivedDataRef = useRef(false);
    const settings = useStorage("settings");
    const { showError } = useModals();
-   const lockRef = useRef<HTMLDivElement | null>(null);
-   const buttonRef = useRef<HTMLButtonElement | null>(null);
-   const cancelRef = useRef<HTMLDivElement | null>(null);
    const [isCancelling, setIsCancelling] = useState(false);
    const [recordingStatus, setRecordingStatus] = useState<RecordingStatus>("idle");
    const { isRecordingVoice, setIsRecordingVoice, isVoiceRecordingLocked, setIsVoiceRecordingLocked, setVoiceRecordingDuration } = useChannelStore();
 
    function handleClickStart(e: PointerEvent<HTMLButtonElement>) {
+      suppressNextClickRef.current = false;
       if (e.button !== 0 || props.hasDraft || recordingStatus === "processing") return;
+      if (useChannelStore.getState().isVoiceRecordingLocked || recordingGestureRef.current) return;
 
       isPointerDownRef.current = true;
+      recordingGestureRef.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY };
       e.currentTarget.setPointerCapture(e.pointerId);
 
       clearTimeout(timeoutRef.current);
@@ -50,19 +62,24 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
 
    function handleClickEnd(e: PointerEvent<HTMLButtonElement>, discard = false) {
       if (props.hasDraft || recordingStatus === "processing") return;
+      const gesture = recordingGestureRef.current;
+      if (gesture && gesture.pointerId !== e.pointerId) return;
 
       isPointerDownRef.current = false;
+      recordingGestureRef.current = null;
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
          e.currentTarget.releasePointerCapture(e.pointerId);
       }
+
+      if (gesture && useChannelStore.getState().isRecordingVoice) suppressNextClickRef.current = true;
 
       if (recordingStatus === "requesting") {
          setIsVoiceRecordingLocked(true);
          return;
       }
 
-      if (isVoiceRecordingLocked) return;
-      stopRecording(discard || isCancelling);
+      if (useChannelStore.getState().isVoiceRecordingLocked) return;
+      stopRecording(discard || isCancellingRef.current);
    }
 
    function handlePointerCancel(e: PointerEvent<HTMLButtonElement>) {
@@ -71,14 +88,34 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
 
    function handleClickMove(e: PointerEvent<HTMLButtonElement>) {
       if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-      if (!buttonRef.current || !lockRef.current || !cancelRef.current) return;
-      if (isVoiceRecordingLocked) return;
+      const gesture = recordingGestureRef.current;
+      if (!gesture || gesture.pointerId !== e.pointerId) return;
+      if (!useChannelStore.getState().isRecordingVoice || useChannelStore.getState().isVoiceRecordingLocked) return;
 
-      const lockRect = lockRef.current.getBoundingClientRect();
-      const cancelRect = cancelRef.current.getBoundingClientRect();
+      const leftDistance = gesture.startX - e.clientX;
+      const upDistance = gesture.startY - e.clientY;
 
-      setIsVoiceRecordingLocked(lockRect.bottom >= e.clientY);
-      setIsCancelling(cancelRect.right > e.clientX);
+      if (!gesture.direction) {
+         if (upDistance >= GESTURE_TRIGGER_DISTANCE && upDistance > leftDistance) {
+            gesture.direction = "lock";
+            setCancelling(false);
+            setIsVoiceRecordingLocked(true);
+            return;
+         }
+
+         if (leftDistance >= GESTURE_TRIGGER_DISTANCE && leftDistance > upDistance) {
+            gesture.direction = "cancel";
+         }
+      }
+
+      if (gesture.direction === "cancel") {
+         setCancelling(leftDistance >= CANCEL_RESET_DISTANCE);
+      }
+   }
+
+   function setCancelling(value: boolean) {
+      isCancellingRef.current = value;
+      setIsCancelling(value);
    }
 
    async function startRecording() {
@@ -212,7 +249,8 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
       setIsVoiceRecordingLocked(false);
       setIsRecordingVoice(false);
       setVoiceRecordingDuration(0);
-      setIsCancelling(false);
+      recordingGestureRef.current = null;
+      setCancelling(false);
 
       const recorder = recorderRef.current;
       if (recorder?.state === "recording") {
@@ -231,6 +269,10 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
    }
 
    function handleClick() {
+      if (suppressNextClickRef.current) {
+         suppressNextClickRef.current = false;
+         return;
+      }
       if (recordingStatus === "processing") return;
 
       if (isRecordingVoice && isVoiceRecordingLocked) {
@@ -264,10 +306,9 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
    return (
       <div className="relative flex items-center justify-center">
          <HuginnButton
-            ref={buttonRef}
             color={isCancelling ? "negative" : "primary"}
             className={clsx(
-               "flex size-10 cursor-pointer items-center justify-center rounded-full! p-2 transition-all!",
+               "flex size-10 cursor-pointer touch-none items-center justify-center rounded-full! p-2 transition-all! select-none",
                recordingStatus === "recording" && "scale-125 animate-pulse",
             )}
             disabled={recordingStatus === "processing"}
@@ -288,7 +329,7 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
             )}
          </HuginnButton>
          {isRecordingVoice && (
-            <div className="bg-surface-alt absolute -top-32 -right-1 z-20 size-12 rounded-full p-2" ref={lockRef}>
+            <div className="bg-surface-alt absolute -top-32 -right-1 z-20 size-12 rounded-full p-2">
                {isVoiceRecordingLocked ? (
                   <IconMingcuteLockFill className="text-negative-300 size-full" />
                ) : (
@@ -296,7 +337,6 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
                )}
             </div>
          )}
-         <div className="fixed size-5" style={{ right: "min(calc(100vw - 3rem),200px)" }} ref={cancelRef}></div>
       </div>
    );
 }

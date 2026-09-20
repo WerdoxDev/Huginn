@@ -105,7 +105,7 @@ function createInputStream() {
 }
 
 async function startRecording(button: HTMLButtonElement) {
-   fireEvent.pointerDown(button, { button: 0, pointerId: 1 });
+   fireEvent.pointerDown(button, { button: 0, clientX: 240, clientY: 400, pointerId: 1, pointerType: "touch" });
    await act(async () => {
       vi.advanceTimersByTime(250);
       await Promise.resolve();
@@ -157,7 +157,11 @@ describe("MessageSendButton voice recording", () => {
       });
       expect(useChannelStore.getState().voiceRecordingDuration).toBe(1.25);
 
-      fireEvent.pointerUp(button, { button: 0, pointerId: 1 });
+      fireEvent.pointerMove(button, { clientX: 232, clientY: 392, pointerId: 1, pointerType: "touch" });
+      expect(useChannelStore.getState().isVoiceRecordingLocked).toBe(false);
+
+      fireEvent.pointerUp(button, { button: 0, clientX: 232, clientY: 392, pointerId: 1, pointerType: "touch" });
+      fireEvent.click(button);
       await act(async () => {
          await Promise.resolve();
          await Promise.resolve();
@@ -214,5 +218,51 @@ describe("MessageSendButton voice recording", () => {
       expect(useChannelStore.getState().isVoiceRecordingLocked).toBe(true);
       expect(onSubmit).not.toHaveBeenCalled();
       expect(mocks.releaseInput).not.toHaveBeenCalled();
+   });
+
+   it("cancels only after a deliberate left swipe", async () => {
+      const onSubmit = vi.fn();
+      const { container } = render(<MessageSendButton onSubmit={onSubmit} hasDraft={false} />);
+      const button = container.querySelector("button")!;
+
+      await startRecording(button);
+      fireEvent.pointerMove(button, { clientX: 160, clientY: 396, pointerId: 1, pointerType: "touch" });
+      fireEvent.pointerUp(button, { button: 0, clientX: 160, clientY: 396, pointerId: 1, pointerType: "touch" });
+      fireEvent.click(button);
+
+      await act(async () => {
+         await Promise.resolve();
+      });
+
+      expect(recorderInstances[0].state).toBe("inactive");
+      expect(onSubmit).not.toHaveBeenCalled();
+   });
+
+   it("keeps recording after an upward lock gesture until a separate tap", async () => {
+      const onSubmit = vi.fn();
+      const { container } = render(<MessageSendButton onSubmit={onSubmit} hasDraft={false} />);
+      const button = container.querySelector("button")!;
+
+      await startRecording(button);
+      fireEvent.pointerMove(button, { clientX: 236, clientY: 320, pointerId: 1, pointerType: "touch" });
+      expect(useChannelStore.getState().isVoiceRecordingLocked).toBe(true);
+
+      fireEvent.pointerUp(button, { button: 0, clientX: 236, clientY: 320, pointerId: 1, pointerType: "touch" });
+      fireEvent.click(button);
+
+      expect(recorderInstances[0].state).toBe("recording");
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      fireEvent.pointerDown(button, { button: 0, pointerId: 2, pointerType: "touch" });
+      fireEvent.pointerUp(button, { button: 0, pointerId: 2, pointerType: "touch" });
+      fireEvent.click(button);
+      await act(async () => {
+         await Promise.resolve();
+         await Promise.resolve();
+         await Promise.resolve();
+      });
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveBeenCalledWith(MessageFlags.VOICE_MESSAGE, expect.any(Array));
    });
 });
