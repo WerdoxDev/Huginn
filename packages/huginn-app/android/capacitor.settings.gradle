@@ -12,10 +12,10 @@ include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.pnpm/@capacitor+filesystem@8.1.3_@capacitor+core@8.5.0/node_modules/@capacitor/filesystem/android')
 
 include ':capawesome-team-capacitor-android-foreground-service'
-project(':capawesome-team-capacitor-android-foreground-service').projectDir = new File('../../../node_modules/.pnpm/@capawesome-team+capacitor-_0605fc9e4b6e830388c08fb92922eed5/node_modules/@capawesome-team/capacitor-android-foreground-service/android')
+project(':capawesome-team-capacitor-android-foreground-service').projectDir = new File('../../../node_modules/.pnpm/@capawesome-team+capacitor-android-foreground-service@8.1.0_@capacitor+core@8.5.0/node_modules/@capawesome-team/capacitor-android-foreground-service/android')
 
 include ':capawesome-capacitor-live-update'
-project(':capawesome-capacitor-live-update').projectDir = new File('../../../node_modules/.pnpm/@capawesome+capacitor-live-_e2b76c13df7f9fc8156af361c8760e17/node_modules/@capawesome/capacitor-live-update/android')
+project(':capawesome-capacitor-live-update').projectDir = new File('../../../node_modules/.pnpm/@capawesome+capacitor-live-update@8.4.1_@capacitor+core@8.5.0/node_modules/@capawesome/capacitor-live-update/android')
 
 include ':capacitor-native-settings'
 project(':capacitor-native-settings').projectDir = new File('../../../node_modules/.pnpm/capacitor-native-settings@8.2.0_@capacitor+core@8.5.0/node_modules/capacitor-native-settings/android')

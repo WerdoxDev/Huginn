@@ -2,6 +2,7 @@ import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
 import HuginnButton from "@components/button/HuginnButton";
 import LoadingIcon from "@components/LoadingIcon";
+import UserAvatar from "@components/UserAvatar";
 import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import AndroidCameraFlipButton from "@components/voice/AndroidCameraFlipButton";
 import VoiceElement from "@components/voice/VoiceElement";
@@ -9,6 +10,7 @@ import VoicePopoutIndicator from "@components/voice/VoicePopoutIndicator";
 import VoicePopoutStatus from "@components/voice/VoicePopoutStatus";
 import VoiceControls from "@components/VoiceControls";
 import { Transition } from "@headlessui/react";
+import { useUsers } from "@hooks/api-hooks/userHooks";
 import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useHover } from "@hooks/useHover";
@@ -41,6 +43,8 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const thisCallState = useMemo(() => callStates.find((x) => x.channelId === props.channelId), [callStates, props.channelId]);
    const isGridView = useMemo(() => thisVoiceStates.some((x) => x.isAudioStreaming || x.isScreenSharing || x.isCameraOn), [thisVoiceStates]);
 
+   const users = useUsers(thisVoiceStates.map((x) => x.userId));
+   const usersLookup = useLookup(users, (user) => user.id);
    const usersSpeakingLookup = useLookup(speakingStates, (state) => state.userId);
    const voicePreferencesLookup = useLookup(voicePreferences, (pref) => pref.userId);
 
@@ -78,6 +82,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    const [isMobileControlsHidden, setIsMobileControlHidden] = useState(true);
    const { isFullscreen: actualIsFullScreen, toggleFullscreen } = useFullscreen();
    const [maximizedSource, setMaximizedSource] = useState<Unpacked<typeof mediaSources> | undefined>(undefined);
+   const previousChannelId = useRef<Snowflake | undefined>(undefined);
    const isFullscreen = actualIsFullScreen || !isMainWindow;
    const isOverlay = isFullscreen || isMobile;
 
@@ -91,8 +96,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       if (!voiceState.channelId) {
          setMaximizedSource(undefined);
          setIsMobileCallHidden(true);
-      } else if (voiceState.channelId === props.channelId) {
+         previousChannelId.current = undefined;
+      } else if (voiceState.channelId === props.channelId && previousChannelId.current !== voiceState.channelId) {
          setIsMobileCallHidden(false);
+         previousChannelId.current = props.channelId;
       }
    }, [voiceState]);
 
@@ -321,18 +328,28 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    ]);
 
    const mobileCallIndicator = (
-      <div className={clsx("fixed top-20 right-4 z-20 transition-opacity", isMobileCallHidden ? "opacity-100" : "pointer-events-none opacity-0")}>
+      <div className={clsx("fixed inset-x-3 top-20 z-20 transition-opacity", isMobileCallHidden ? "opacity-100" : "pointer-events-none opacity-0")}>
          <HuginnButton
-            style={indicatorMask}
             color="primary"
-            className="flex size-16 items-center justify-center rounded-full! text-white shadow-lg"
+            className="relative flex w-full items-center p-1 px-2 text-white shadow-md"
             onClick={() => setIsMobileCallHidden(false)}
          >
-            <IconMingcutePhoneFill className="size-8" />
+            <div className="flex items-center gap-x-1">
+               {thisVoiceStates.slice(0, 2).map((x) => (
+                  <UserAvatar userId={x.userId} avatarHash={usersLookup[x.userId].avatar} hideStatus size={2} key={x.userId} />
+               ))}
+
+               {thisVoiceStates.length > 2 && (
+                  <div className="bg-primary-800 flex size-8 items-center justify-center rounded-full text-sm">{thisVoiceStates.length - 2}</div>
+               )}
+            </div>
+            <div className="absolute inset-x-0 text-center">In Call</div>
+            <div className="ml-auto flex items-center gap-x-1">
+               {voiceState.isCameraOn && <IconMingcuteCamera2Fill className="text-positive-300 size-5" />}
+               {voiceState.isAudioMuted && <IconMingcuteMicOffFill className="text-negative-300 size-5" />}
+               {voiceState.isAudioDeafened && <IconMingcuteVolumeOffFill className="text-negative-300 size-5" />}
+            </div>
          </HuginnButton>
-         <div className="bg-positive-500 absolute right-0 bottom-0 flex size-5 items-center justify-center rounded-full text-sm text-white">
-            {thisVoiceStates.length}
-         </div>
       </div>
    );
 
