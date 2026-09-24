@@ -50,6 +50,11 @@ export default function MessageSendButton(props: { onSubmit: (flags: MessageFlag
       if (e.button !== 0 || props.hasDraft || recordingStatus === "processing") return;
       if (useChannelStore.getState().isVoiceRecordingLocked || recordingGestureRef.current) return;
 
+      // Keep the message editor focused while starting a voice gesture. On
+      // Android, allowing the button to take focus starts closing the IME
+      // before MessageBox's focusout handler can restore the editor focus.
+      e.preventDefault();
+
       isPointerDownRef.current = true;
       recordingGestureRef.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY };
       e.currentTarget.setPointerCapture(e.pointerId);

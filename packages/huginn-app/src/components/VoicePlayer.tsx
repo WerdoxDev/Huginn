@@ -1,3 +1,4 @@
+import { useIsMobile } from "@hooks/useIsMobile";
 import { formatSeconds } from "@huginnjs/shared";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
@@ -21,6 +22,7 @@ export default function VoicePlayer(props: {
    const [currentTime, setCurrentTime] = useState(0);
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
+   const isMobile = useIsMobile();
    const settings = useStorage("settings");
    const { updateSettings } = useStorageStore();
 
@@ -96,7 +98,7 @@ export default function VoicePlayer(props: {
             <LoadingBackground hasError={hasError} isLoaded={isLoaded} className="z-10" />
          </button>
          <div className="flex min-w-0 flex-1 flex-col justify-center">
-            <div className="relative flex items-center gap-x-2">
+            <div className="relative flex h-6 items-center gap-x-2">
                <audio
                   src={props.url}
                   ref={audioRef}
@@ -113,7 +115,7 @@ export default function VoicePlayer(props: {
                         onChange={updateCurrentPercent}
                         waveform={props.waveform}
                      />
-                     <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateVolumePercent} />
+                     {!isMobile && <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateVolumePercent} />}
                   </>
                ) : (
                   <div className="h-6 w-full"></div>

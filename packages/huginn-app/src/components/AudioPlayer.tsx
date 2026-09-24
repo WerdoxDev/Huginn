@@ -1,4 +1,5 @@
 import { useAudioCoverImage } from "@hooks/useAudioMetadata";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useOpen } from "@hooks/useOpen";
 import { formatSeconds } from "@huginnjs/shared";
 import { clsx } from "clsx";
@@ -22,6 +23,7 @@ export default function AudioPlayer(props: {
    const [bufferedPercent, setBufferedPercent] = useState(0);
    const [currentTime, setCurrentTime] = useState(0);
    const [isLoaded, setIsLoaded] = useState(false);
+   const isMobile = useIsMobile();
    const [hasError, setHasError] = useState(false);
    const { openUrl } = useOpen();
    const settings = useStorage("settings");
@@ -111,7 +113,7 @@ export default function AudioPlayer(props: {
             >
                {props.filename}
             </button>
-            <div className="relative flex items-center gap-x-2">
+            <div className="relative flex h-6 items-center gap-x-2">
                <audio
                   src={props.url}
                   ref={audioRef}
@@ -132,7 +134,7 @@ export default function AudioPlayer(props: {
                         bufferedPercent={bufferedPercent}
                         onChange={updateCurrentPercent}
                      />
-                     <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateVolumePercent} />
+                     {!isMobile && <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateVolumePercent} />}
                   </>
                ) : (
                   <div className="h-6 w-full"></div>

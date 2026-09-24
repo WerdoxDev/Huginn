@@ -41,6 +41,7 @@
    },
    "dependencies": {
       "@base-ui/react": "^1.7.0",
+      "@capacitor-community/camera-preview": "^8.0.1",
       "@capacitor/android": "^8.5.0",
       "@capacitor/app": "^8.1.1",
       "@capacitor/core": "^8.5.0",

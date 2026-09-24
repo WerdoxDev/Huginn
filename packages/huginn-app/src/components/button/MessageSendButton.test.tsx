@@ -144,6 +144,21 @@ afterEach(() => {
 });
 
 describe("MessageSendButton voice recording", () => {
+   it("prevents the voice button from taking focus when a gesture starts", () => {
+      const { container } = render(<MessageSendButton onSubmit={vi.fn()} hasDraft={false} />);
+      const button = container.querySelector("button")!;
+
+      const pointerDownDispatched = fireEvent.pointerDown(button, {
+         button: 0,
+         clientX: 240,
+         clientY: 400,
+         pointerId: 1,
+         pointerType: "touch",
+      });
+
+      expect(pointerDownDispatched).toBe(false);
+   });
+
    it("submits the first recording directly without composer attachment state", async () => {
       const onSubmit = vi.fn();
       const { container } = render(<MessageSendButton onSubmit={onSubmit} hasDraft={false} />);
