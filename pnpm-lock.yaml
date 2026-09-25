@@ -197,6 +197,9 @@ importers:
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@huginn/frontend-shared':
+        specifier: workspace:*
+        version: link:../huginn-frontend-shared
       '@huginnjs/api':
         specifier: workspace:*
         version: link:../huginn-api
@@ -598,6 +601,22 @@ importers:
         specifier: ^3.5.40
         version: 3.5.40(typescript@7.0.2)
 
+  packages/huginn-frontend-shared:
+    dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.18
+        version: 19.2.18
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
   packages/huginn-runtime-shared:
     dependencies:
       '@huginnjs/shared':
@@ -835,6 +854,9 @@ importers:
       '@headlessui/tailwindcss':
         specifier: ^0.2.1
         version: 0.2.2(tailwindcss@4.3.3)
+      '@huginn/frontend-shared':
+        specifier: workspace:*
+        version: link:../huginn-frontend-shared
       '@huginnjs/shared':
         specifier: workspace:*
         version: link:../huginn-shared

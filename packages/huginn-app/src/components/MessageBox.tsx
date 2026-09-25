@@ -21,7 +21,7 @@ import type { AppMessage, AutocompleteItem } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import ExpressionButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
-import HuginnButton from "./button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import MessageSendButton from "./button/MessageSendButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";

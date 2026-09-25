@@ -5,7 +5,7 @@ import { Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 
-import HuginnButton from "./button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 
 export default function ErrorComponent(props: { error: unknown }) {
    const router = useRouter();

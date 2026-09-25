@@ -12,7 +12,7 @@ import type { AppAttachment } from "@/types";
 import { createAudioWaveform } from "@/lib/audio-waveform";
 import { getMediaErrorMessage } from "@/lib/utils";
 
-import HuginnButton from "./HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 
 type RecordingStatus = "idle" | "requesting" | "recording" | "processing";
 

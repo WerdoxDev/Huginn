@@ -1,4 +1,4 @@
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import HuginnLabel from "@components/HuginnLabel";
 import { useBackgroundImageUrl, useGlobalChannelBackground } from "@hooks/useChannelBackgrounds";
 import { useModals } from "@stores/modalsStore";

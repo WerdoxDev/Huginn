@@ -12,5 +12,6 @@
    "packages/huginn-tui": "0.5.0",
    "packages/transactional": "0.3.0",
    "packages/huginn-assets": "0.5.1",
-   "packages/huginn-docs": "0.0.0"
+   "packages/huginn-docs": "0.0.0",
+   "packages/huginn-frontend-shared": "0.1.0"
 }

@@ -1,6 +1,6 @@
 import { Drawer } from "@base-ui/react";
 import { Capacitor } from "@capacitor/core";
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import HuginnLabel from "@components/HuginnLabel";
 import HuginnTab from "@components/HuginnTab";

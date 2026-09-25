@@ -1,6 +1,6 @@
 import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import LoadingIcon from "@components/LoadingIcon";
 import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import AndroidCameraFlipButton from "@components/voice/AndroidCameraFlipButton";

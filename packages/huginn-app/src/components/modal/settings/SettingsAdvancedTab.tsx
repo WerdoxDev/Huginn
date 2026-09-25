@@ -1,4 +1,4 @@
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnLabel from "@components/HuginnLabel";

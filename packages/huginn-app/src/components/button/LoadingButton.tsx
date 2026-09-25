@@ -1,9 +1,8 @@
 import { omit } from "@huginnjs/shared";
+import { HuginnButton } from "@huginn/frontend-shared";
 import clsx from "clsx";
 
 import type { HuginnLoadingButtonProps } from "@/types";
-
-import HuginnButton from "./HuginnButton";
 
 export default function LoadingButton(props: HuginnLoadingButtonProps) {
    return (

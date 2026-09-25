@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../huginn-frontend-shared/src";
 
 @theme inline {
    --color-background: rgb(var(--background));

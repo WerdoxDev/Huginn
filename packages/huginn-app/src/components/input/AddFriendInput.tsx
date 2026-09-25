@@ -1,7 +1,8 @@
 import LoadingButton from "@components/button/LoadingButton";
+import type { HuginnButtonProps } from "@huginn/frontend-shared";
 import clsx from "clsx";
 
-import type { HuginnButtonProps, HuginnInputProps } from "@/types";
+import type { HuginnInputProps } from "@/types";
 
 import HuginnInput from "./HuginnInput";
 

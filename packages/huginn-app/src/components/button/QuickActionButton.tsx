@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import HuginnButton from "./HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 
 export default function QuickActionButton(props: { children?: ReactNode; onClick?: () => void }) {
    return (

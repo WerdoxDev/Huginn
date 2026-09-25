@@ -1,4 +1,4 @@
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import LoadingButton from "@components/button/LoadingButton";
 import DialogActions from "@components/DialogActions";
 import HuginnLabel from "@components/HuginnLabel";

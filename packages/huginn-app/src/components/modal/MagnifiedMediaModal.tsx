@@ -1,4 +1,4 @@
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import ModalCloseButton from "@components/button/ModalCloseButton";
 import LoadingBackground from "@components/LoadingBackground";
 import { useOpen } from "@hooks/useOpen";

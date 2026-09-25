@@ -3,6 +3,7 @@ import type { CreateDMChannelMutationVars } from "@hooks/mutations/useCreateDMCh
 import type { CreateRelationshipMutationVars } from "@hooks/mutations/useCreateRelationship";
 import type { PatchDMChannelMutationVars } from "@hooks/mutations/usePatchDMChannel";
 import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRemoveChannelRecipient";
+import type { HuginnButtonProps } from "@huginn/frontend-shared";
 import type {
    APICallMessage,
    APIDefaultMessage,
