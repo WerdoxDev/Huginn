@@ -1,5 +1,5 @@
 import { getCurrentSpan } from "@elysia/opentelemetry";
-import { error, type OAuthTokenPayload, type UserTokenPayload } from "@huginnjs/shared";
+import { type OAuthTokenPayload, type UserTokenPayload } from "@huginnjs/shared";
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { ALL_FORMATS, BufferSource, Input } from "mediabunny";
@@ -29,7 +29,7 @@ export async function getImageData(source: string | ArrayBuffer): Promise<ImageD
       const metadata = await new Bun.Image(arrayBuffer).metadata();
 
       return { width: metadata.width ?? 0, height: metadata.height ?? 0 };
-   } catch (e) {
+   } catch {
       return undefined;
    }
 }
@@ -41,7 +41,7 @@ export async function getVideoData(source: ArrayBuffer): Promise<VideoData | und
       const duration = await video?.computeDuration();
 
       return { width: (await video?.getDisplayWidth()) ?? 0, height: (await video?.getDisplayHeight()) ?? 0, duration: duration ?? 0 };
-   } catch (e) {
+   } catch {
       return undefined;
    }
 }
@@ -53,7 +53,7 @@ export async function getAudioData(source: ArrayBuffer): Promise<AudioData | und
       const duration = await audio?.computeDuration();
 
       return { duration: duration ?? 0 };
-   } catch (e) {
+   } catch {
       return undefined;
    }
 }

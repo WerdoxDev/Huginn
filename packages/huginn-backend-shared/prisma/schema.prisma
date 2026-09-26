@@ -1,292 +1,365 @@
 generator client {
-   provider        = "prisma-client"
-   output          = "./generated"
-   previewFeatures = ["relationJoins"]
+  provider        = "prisma-client"
+  output          = "./generated"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-   provider = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-   id              BigInt    @id
-   username        String    @unique
-   displayName     String?
-   email           String    @unique
-   avatar          String?
-   banner          String?
-   bannerColor     String?
-   accentColor     String?
-   bio             String?
-   password        String?
-   flags           Int       @db.SmallInt
-   system          Boolean   @default(false)
-   createdAt       DateTime  @default(now())
-   updatedAt       DateTime? @updatedAt
-   emailVerifiedAt DateTime?
+  id              BigInt    @id
+  username        String    @unique
+  displayName     String?
+  email           String    @unique
+  avatar          String?
+  banner          String?
+  bannerColor     String?
+  accentColor     String?
+  bio             String?
+  password        String?
+  flags           Int       @db.SmallInt
+  system          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  emailVerifiedAt DateTime?
 
-   includedChannels        Channel[]           @relation("channel_recipients")
-   ownedChannels           Channel[]           @relation("channel_owner")
-   tempDeletedChannels     Channel[]           @relation("channel_temp_deleted")
-   messages                Message[]
-   mentionedMessages       Message[]           @relation("message_mentions")
-   relationships           Relationship[]      @relation("relation_owner")
-   relatedRelationships    Relationship[]      @relation("relation_user")
-   identityProvider        IdentityProvider[]
-   readStates              ReadState[]
-   participatedCalls       Call[]              @relation("participated_calls")
-   settings                Settings?
-   contributedApplications KnownApplication[]
-   emailVerifications      EmailVerification[]
-   pinnedMessages          MessagePin[]
-   notificationTokens      NotificationToken[]
-   reactions               Reaction[]
+  includedChannels     Channel[]            @relation("channel_recipients")
+  ownedChannels        Channel[]            @relation("channel_owner")
+  tempDeletedChannels  Channel[]            @relation("channel_temp_deleted")
+  messages             Message[]
+  mentionedMessages    Message[]            @relation("message_mentions")
+  relationships        Relationship[]       @relation("relation_owner")
+  relatedRelationships Relationship[]       @relation("relation_user")
+  identityProvider     IdentityProvider[]
+  readStates           ReadState[]
+  participatedCalls    Call[]               @relation("participated_calls")
+  settings             Settings?
+  applicationMatchers  ApplicationMatcher[]
+  contributions        Contribution[]
+  emailVerifications   EmailVerification[]
+  pinnedMessages       MessagePin[]
+  notificationTokens   NotificationToken[]
+  reactions            Reaction[]
 }
 
 model EmailVerification {
-   id        BigInt   @id
-   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   userId    BigInt   @unique
-   purpose   String   @default("email_change")
-   email     String
-   code      String
-   expiresAt DateTime
-   createdAt DateTime @default(now())
+  id        BigInt   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    BigInt   @unique
+  purpose   String   @default("email_change")
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model IdentityProvider {
-   id             BigInt  @id
-   providerUserId String  @unique
-   userId         BigInt?
-   completed      Boolean
-   providerType   String
-   refreshToken   String
+  id             BigInt  @id
+  providerUserId String  @unique
+  userId         BigInt?
+  completed      Boolean
+  providerType   String
+  refreshToken   String
 
-   user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 }
 
 model Channel {
-   id                BigInt             @id
-   icon              String?
-   lastMessageId     BigInt?
-   name              String?
-   ownerId           BigInt?
-   type              Int
-   messages          Message[]
-   readStates        ReadState[]
-   messageReferences MessageReference[]
-   pinnedMessages    MessagePin[]
-   createdAt         DateTime           @default(now())
-   updatedAt         DateTime?          @updatedAt
+  id                BigInt             @id
+  icon              String?
+  lastMessageId     BigInt?
+  name              String?
+  ownerId           BigInt?
+  type              Int
+  messages          Message[]
+  readStates        ReadState[]
+  messageReferences MessageReference[]
+  pinnedMessages    MessagePin[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime?          @updatedAt
 
-   lastMessage        Message? @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-   owner              User?    @relation("channel_owner", fields: [ownerId], references: [id])
-   recipients         User[]   @relation("channel_recipients")
-   tempDeletedByUsers User[]   @relation("channel_temp_deleted")
+  lastMessage        Message? @relation("channel_last_message", fields: [lastMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  owner              User?    @relation("channel_owner", fields: [ownerId], references: [id])
+  recipients         User[]   @relation("channel_recipients")
+  tempDeletedByUsers User[]   @relation("channel_temp_deleted")
 
-   @@index([type])
+  @@index([type])
 }
 
 model Message {
-   id                  BigInt       @id
-   authorId            BigInt
-   channelId           BigInt
-   content             String
-   timestamp           DateTime
-   editedTimestamp     DateTime?
-   embeds              Embed[]
-   attachments         Attachment[]
-   call                Call?
-   pinned              Boolean
-   type                Int
-   flags               Int          @db.SmallInt
-   lastReadMessages    ReadState[]
-   lastMessageChannels Channel[]    @relation("channel_last_message")
-   pin                 MessagePin?
+  id                  BigInt       @id
+  authorId            BigInt
+  channelId           BigInt
+  content             String
+  timestamp           DateTime
+  editedTimestamp     DateTime?
+  embeds              Embed[]
+  attachments         Attachment[]
+  call                Call?
+  pinned              Boolean
+  type                Int
+  flags               Int          @db.SmallInt
+  lastReadMessages    ReadState[]
+  lastMessageChannels Channel[]    @relation("channel_last_message")
+  pin                 MessagePin?
 
-   mentionEveryone Boolean @default(false)
-   mentionOwner    Boolean @default(false)
+  mentionEveryone Boolean @default(false)
+  mentionOwner    Boolean @default(false)
 
-   reactions          Reaction[]
-   reactionAggregates ReactionAggregate[]
+  reactions          Reaction[]
+  reactionAggregates ReactionAggregate[]
 
-   author            User               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   channel           Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   mentions          User[]             @relation("message_mentions")
-   messageReference  MessageReference?  @relation("message_referrer")
-   referringMessages MessageReference[] @relation("message_reference")
+  author            User               @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  channel           Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  mentions          User[]             @relation("message_mentions")
+  messageReference  MessageReference?  @relation("message_referrer")
+  referringMessages MessageReference[] @relation("message_reference")
 
-   @@index([channelId])
+  @@index([channelId])
 }
 
 model Reaction {
-   channelId BigInt
-   messageId BigInt
-   userId    BigInt
-   emojiKey  String
+  channelId BigInt
+  messageId BigInt
+  userId    BigInt
+  emojiKey  String
 
-   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-   @@id([channelId, messageId, userId, emojiKey])
-   @@index([messageId, emojiKey])
+  @@id([channelId, messageId, userId, emojiKey])
+  @@index([messageId, emojiKey])
 }
 
 model ReactionAggregate {
-   messageId BigInt
-   emojiKey  String
-   count     Int
+  messageId BigInt
+  emojiKey  String
+  count     Int
 
-   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-   @@id([messageId, emojiKey])
+  @@id([messageId, emojiKey])
 }
 
 model MessagePin {
-   messageId  BigInt   @id
-   channelId  BigInt
-   pinnedById BigInt
-   pinnedAt   DateTime @default(now())
+  messageId  BigInt   @id
+  channelId  BigInt
+  pinnedById BigInt
+  pinnedAt   DateTime @default(now())
 
-   channel  Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-   message  Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-   pinnedBy User    @relation(fields: [pinnedById], references: [id], onDelete: Cascade)
+  channel  Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  message  Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  pinnedBy User    @relation(fields: [pinnedById], references: [id], onDelete: Cascade)
 
-   @@index([channelId])
-   @@index([pinnedById])
+  @@index([channelId])
+  @@index([pinnedById])
 }
 
 model Call {
-   id             BigInt    @id
-   messageId      BigInt    @unique
-   endedTimestamp DateTime?
+  id             BigInt    @id
+  messageId      BigInt    @unique
+  endedTimestamp DateTime?
 
-   message      Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   participants User[]  @relation("participated_calls")
+  message      Message @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  participants User[]  @relation("participated_calls")
 }
 
 model Relationship {
-   id        BigInt    @id
-   type      Int       @db.SmallInt
-   nickname  String
-   since     DateTime?
-   ownerId   BigInt
-   userId    BigInt
-   createdAt DateTime  @default(now())
-   updatedAt DateTime? @updatedAt
+  id        BigInt    @id
+  type      Int       @db.SmallInt
+  nickname  String
+  since     DateTime?
+  ownerId   BigInt
+  userId    BigInt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
-   owner User @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   user  User @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  owner User @relation("relation_owner", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User @relation("relation_user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-   @@index([ownerId])
+  @@index([ownerId])
 }
 
 model ReadState {
-   channelId         BigInt
-   userId            BigInt
-   lastReadMessageId BigInt?
+  channelId         BigInt
+  userId            BigInt
+  lastReadMessageId BigInt?
 
-   channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-   lastReadMessage Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  lastReadMessage Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-   @@id([channelId, userId])
+  @@id([channelId, userId])
 }
 
 model Embed {
-   id          BigInt     @id
-   title       String?
-   type        String
-   description String?
-   url         String?
-   timestamp   DateTime?
-   messageId   BigInt?
-   thumbnail   Thumbnail?
-   video       Video?
+  id          BigInt     @id
+  title       String?
+  type        String
+  description String?
+  url         String?
+  timestamp   DateTime?
+  messageId   BigInt?
+  thumbnail   Thumbnail?
+  video       Video?
 
-   message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Thumbnail {
-   id      BigInt @id
-   width   Int
-   height  Int
-   url     String
-   embedId BigInt @unique
+  id      BigInt @id
+  width   Int
+  height  Int
+  url     String
+  embedId BigInt @unique
 
-   embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Video {
-   id      BigInt @id
-   width   Int
-   height  Int
-   url     String
-   embedId BigInt @unique
+  id      BigInt @id
+  width   Int
+  height  Int
+  url     String
+  embedId BigInt @unique
 
-   embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  embed Embed @relation(fields: [embedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Attachment {
-   id          BigInt  @id
-   filename    String
-   description String?
-   contentType String
-   size        Int
-   url         String
-   width       Int?
-   height      Int?
-   flags       Int     @db.SmallInt
-   waveform    String?
-   duration    Float?
-   messageId   BigInt?
+  id          BigInt  @id
+  filename    String
+  description String?
+  contentType String
+  size        Int
+  url         String
+  width       Int?
+  height      Int?
+  flags       Int     @db.SmallInt
+  waveform    String?
+  duration    Float?
+  messageId   BigInt?
 
-   message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Settings {
-   userId BigInt @id @unique
-   json   Json
+  userId BigInt @id @unique
+  json   Json
 
-   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model KnownApplication {
-   id                  Int       @id @default(autoincrement())
-   names               String[]
-   exeName             String
-   igdbId              Int?
-   contributorId       BigInt?
-   createdAt           DateTime  @default(now())
-   updatedAt           DateTime? @updatedAt
-   deletedAt           DateTime?
-   commandLinePatterns String[]
-   active              Boolean   @default(false)
+enum ApplicationMatcherStatus {
+  pending
+  verified
+  rejected
+}
 
-   contributor User? @relation(fields: [contributorId], references: [id])
+enum ApplicationVerificationMethod {
+  exact_title
+  subtitle
+  fuzzy_title
+  external_id
+  manual
+  legacy
+}
 
-   @@index([names])
+enum ContributionStatus {
+  pending
+  accepted
+  rejected
+}
+
+model KnownGame {
+  id            Int       @id @default(autoincrement())
+  igdbId        Int       @unique
+  canonicalName String
+  aliases       String[]
+  revision      BigInt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+  deletedAt     DateTime?
+
+  applicationMatchers ApplicationMatcher[]
+  contributions       Contribution[]
+
+  @@index([aliases], type: Gin)
+  @@index([revision])
+}
+
+model ApplicationMatcher {
+  id                  Int                           @id @default(autoincrement())
+  knownGameId         Int
+  exeNames            String[]
+  windowTitles        String[]
+  platform            String
+  status              ApplicationMatcherStatus      @default(pending)
+  verificationMethod  ApplicationVerificationMethod
+  contributorId       BigInt?
+  commandLinePatterns String[]
+  revision            BigInt
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime?                     @updatedAt
+  deletedAt           DateTime?
+
+  knownGame     KnownGame      @relation(fields: [knownGameId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  contributor   User?          @relation(fields: [contributorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  contributions Contribution[]
+
+  @@index([knownGameId])
+  @@index([exeNames], type: Gin)
+  @@index([status])
+  @@index([revision])
+}
+
+model Contribution {
+  id                   Int                @id @default(autoincrement())
+  windowTitle          String
+  cleanedWindowTitle   String
+  exePath              String
+  commandLine          String?
+  platform             String
+  iconHash             String?
+  status               ContributionStatus @default(pending)
+  contributorId        BigInt?
+  knownGameId          Int?
+  applicationMatcherId Int?
+  legacyData           Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime?          @updatedAt
+
+  contributor        User?               @relation(fields: [contributorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  knownGame          KnownGame?          @relation(fields: [knownGameId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  applicationMatcher ApplicationMatcher? @relation(fields: [applicationMatcherId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([contributorId])
+  @@index([knownGameId])
+  @@index([applicationMatcherId])
+  @@index([status])
 }
 
 model MessageReference {
-   id                BigInt  @id
-   type              Int
-   referrerMessageId BigInt  @unique
-   messageId         BigInt?
-   channelId         BigInt
+  id                BigInt  @id
+  type              Int
+  referrerMessageId BigInt  @unique
+  messageId         BigInt?
+  channelId         BigInt
 
-   referrerMessage Message  @relation("message_referrer", fields: [referrerMessageId], references: [id], onDelete: Cascade)
-   message         Message? @relation("message_reference", fields: [messageId], references: [id])
-   channel         Channel  @relation(fields: [channelId], references: [id])
+  referrerMessage Message  @relation("message_referrer", fields: [referrerMessageId], references: [id], onDelete: Cascade)
+  message         Message? @relation("message_reference", fields: [messageId], references: [id])
+  channel         Channel  @relation(fields: [channelId], references: [id])
 
-   @@index([referrerMessageId])
+  @@index([referrerMessageId])
 }
 
 model NotificationToken {
-   deviceId  String   @id
-   token     String
-   userId    BigInt
-   createdAt DateTime @default(now())
+  deviceId  String   @id
+  token     String
+  userId    BigInt
+  createdAt DateTime @default(now())
 
-   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

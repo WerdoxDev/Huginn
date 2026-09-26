@@ -26,8 +26,14 @@ export type RelationshipPayload<Args extends RelationshipArgs | undefined> = Big
 export type ReadStateArgs = Prisma.ReadStateDefaultArgs;
 export type ReadStatePayload<Args extends ReadStateArgs | undefined> = BigIntToString<Prisma.ReadStateGetPayload<Args>>;
 
-export type KnownApplicationArgs = Prisma.KnownApplicationDefaultArgs;
-export type KnownApplicationPayload<Args extends KnownApplicationArgs | undefined> = BigIntToString<Prisma.KnownApplicationGetPayload<Args>>;
+export type KnownGameArgs = Prisma.KnownGameDefaultArgs;
+export type KnownGamePayload<Args extends KnownGameArgs | undefined> = Prisma.KnownGameGetPayload<Args>;
+
+export type ApplicationMatcherArgs = Prisma.ApplicationMatcherDefaultArgs;
+export type ApplicationMatcherPayload<Args extends ApplicationMatcherArgs | undefined> = Prisma.ApplicationMatcherGetPayload<Args>;
+
+export type ContributionArgs = Prisma.ContributionDefaultArgs;
+export type ContributionPayload<Args extends ContributionArgs | undefined> = Prisma.ContributionGetPayload<Args>;
 
 export type ReactionArgs = Prisma.ReactionDefaultArgs;
 export type ReactionPayload<Args extends ReactionArgs | undefined> = BigIntToString<Prisma.ReactionGetPayload<Args>>;
@@ -195,14 +201,25 @@ export const omitRelationshipUserIds = {
    ownerId: true,
 } satisfies Prisma.RelationshipOmit;
 
-export const selectKnownApplication = {
+export const selectKnownGame = {
    id: true,
-   createdAt: true,
-   deletedAt: true,
-   exeName: true,
-   names: true,
-   updatedAt: true,
-   contributorId: true,
    igdbId: true,
+   canonicalName: true,
+   aliases: true,
+   createdAt: true,
+   updatedAt: true,
+} satisfies Prisma.KnownGameSelect;
+
+export const selectApplicationMatcher = {
+   id: true,
+   knownGameId: true,
+   exeNames: true,
+   windowTitles: true,
+   platform: true,
+   status: true,
+   verificationMethod: true,
+   contributorId: true,
    commandLinePatterns: true,
-} satisfies Prisma.KnownApplicationSelect;
+   createdAt: true,
+   updatedAt: true,
+} satisfies Prisma.ApplicationMatcherSelect;
