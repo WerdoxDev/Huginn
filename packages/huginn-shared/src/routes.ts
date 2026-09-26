@@ -229,6 +229,38 @@ export const Routes = {
 
    /**
     * Route for:
+    * - GET "/staff/@me"
+    */
+   staffMe() {
+      return "/staff/@me" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET "/staff/game-contributions"
+    */
+   staffGameContributions() {
+      return "/staff/game-contributions" as const;
+   },
+
+   /**
+    * Route for:
+    * - POST "/staff/game-contributions/{contribution.id}/accept"
+    */
+   staffAcceptGameContribution(contributionId: number): `/staff/game-contributions/${number}/accept` {
+      return `/staff/game-contributions/${contributionId}/accept`;
+   },
+
+   /**
+    * Route for:
+    * - GET "/staff/igdb-games"
+    */
+   staffIGDBGames() {
+      return "/staff/igdb-games" as const;
+   },
+
+   /**
+    * Route for:
     * - POST '/users/@me/verify-email'
     */
    verifyEmail() {

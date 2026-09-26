@@ -357,9 +357,10 @@ export type APIRelease = {
    date: string;
    url: string;
    description?: string;
-   windowsSetupUrl?: string;
-   macosSetupUrl?: string;
-   linuxSetupUrl?: string;
+   windowsDownloadUrl?: string;
+   macosDownloadUrl?: string;
+   linuxDownloadUrl?: string;
+   androidDownloadUrl?: string;
 };
 export type APIGetLatestReleaseResult = APIRelease | undefined;
 export type APIGetAllReleasesResult = APIRelease[];
@@ -470,21 +471,39 @@ export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
 export type APIPatchUserSettingsJSONBody = Partial<Omit<UserSettings, "favoriteGifs"> & { favoriteGifs?: FavoriteGif[] }>;
 export type APIPatchUserSettingsResult = UserSettings;
 
-export type APIKnownApplication = {
+export type ApplicationMatcherStatus = "pending" | "verified" | "rejected";
+export type ApplicationVerificationMethod = "exact_title" | "fuzzy_title" | "subtitle" | "external_id" | "manual" | "legacy";
+
+export type APIKnownGame = {
    id: number;
-   names: string[];
-   exeName: string;
-   commandLinePatterns: string[];
-   updatedAt: Date | string | null;
+   igdbId: number;
+   canonicalName: string;
+   aliases: string[];
    createdAt: Date | string;
-   deletedAt?: Date | string | null;
+   updatedAt: Date | string | null;
+};
+
+export type APIApplicationMatcher = {
+   id: number;
+   knownGameId: number;
+   exeNames: string[];
+   windowTitles: string[];
+   platform: string;
+   status: ApplicationMatcherStatus;
+   verificationMethod: ApplicationVerificationMethod;
+   commandLinePatterns: string[];
+   createdAt: Date | string;
+   updatedAt: Date | string | null;
    contributorId?: Snowflake;
-   igdbId?: number;
 };
 
 export type APIGetKnownApplicationsResult = {
-   lastUpdated: string;
-   applications: APIKnownApplication[];
+   cursor: string;
+   full: boolean;
+   games: APIKnownGame[];
+   matchers: APIApplicationMatcher[];
+   deletedGameIds: number[];
+   deletedMatcherIds: number[];
 };
 
 export type APIPostApplicationIconJSONBody = {
@@ -495,11 +514,61 @@ export type APIPostApplicationIconJSONBody = {
 export type APIPostKnownApplicationJSONBody = {
    windowTitle: string;
    exePath: string;
+   commandLine?: string;
+   platform?: string;
+   icon?: string;
 };
 
 export type APIPostApplicationIconResult = string;
 
-export type APIPostKnownApplicationResult = APIKnownApplication;
+export type APIPostKnownApplicationResult = {
+   contributionId: number;
+};
+
+export type APIStaffUser = Pick<APIUser, "id" | "username" | "displayName" | "avatar" | "flags">;
+
+export type APIStaffGameContribution = {
+   id: number;
+   windowTitle: string;
+   cleanedWindowTitle: string;
+   exePath: string;
+   exeName: string;
+   commandLine: string | null;
+   platform: string;
+   iconUrl: string | null;
+   contributor: Pick<APIPublicUser, "id" | "username" | "displayName" | "avatar"> | null;
+   createdAt: Date | string;
+};
+
+export type APIGetStaffGameContributionsResult = {
+   contributions: APIStaffGameContribution[];
+};
+
+export type APIIGDBGameCandidate = {
+   id: number;
+   name: string;
+   coverUrl: string | null;
+   summary: string | null;
+   firstReleaseDate: number | null;
+   rating: number | null;
+   url: string | null;
+   genres: string[];
+   platforms: string[];
+   developers: string[];
+};
+
+export type APIGetStaffIGDBGamesResult = {
+   games: APIIGDBGameCandidate[];
+};
+
+export type APIPostAcceptGameContributionJSONBody = {
+   igdbId: number;
+};
+
+export type APIPostAcceptGameContributionResult = {
+   game: APIKnownGame;
+   matcher: APIApplicationMatcher;
+};
 
 // export type APIEmailVerification =
 
