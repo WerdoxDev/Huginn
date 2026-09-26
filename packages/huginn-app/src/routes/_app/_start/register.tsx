@@ -1,9 +1,6 @@
 import type { APIPostRegisterJSONBody, OAuthType } from "@huginnjs/shared";
 
-import { HuginnButton } from "@huginn/frontend-shared";
 import LinkButton from "@components/button/LinkButton";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -11,6 +8,7 @@ import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
+import { HuginnButton, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -161,9 +159,9 @@ function RegisterComponent() {
                </PasswordInput>
             </div>
 
-            <LoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
+            <HuginnLoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                Register
-            </LoadingButton>
+            </HuginnLoadingButton>
 
             <div className="mt-3 flex items-center select-none">
                <span className="text-text text-sm opacity-70">Already have an account? </span>

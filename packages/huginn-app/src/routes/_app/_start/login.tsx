@@ -1,15 +1,13 @@
 import type { APIPostLoginJSONBody, OAuthType } from "@huginnjs/shared";
 
-import { HuginnButton } from "@huginn/frontend-shared";
 import LinkButton from "@components/button/LinkButton";
-import LoadingButton from "@components/button/LoadingButton";
-import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useOAuth } from "@hooks/useOAuth";
+import { HuginnButton, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -136,9 +134,9 @@ function LoginComponent() {
 
             {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
-            <LoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
+            <HuginnLoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login
-            </LoadingButton>
+            </HuginnLoadingButton>
 
             <div className="mt-3 flex items-center select-none">
                <span className="text-text text-sm opacity-70"> Don't have an account? </span>

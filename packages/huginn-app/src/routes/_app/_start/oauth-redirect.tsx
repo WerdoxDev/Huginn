@@ -1,15 +1,13 @@
 import type { APIPostOAuthConfirmJSONBody, OAuthTokenPayload } from "@huginnjs/shared";
 
-import { HuginnButton } from "@huginn/frontend-shared";
-import LoadingButton from "@components/button/LoadingButton";
 import ImagePicker from "@components/ImagePicker";
-import HuginnInput from "@components/input/HuginnInput";
 import StartWrapper from "@components/StartWrapper";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
 import { useInitializeClient } from "@hooks/useInitializeClient";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
+import { HuginnButton, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { getUserAvatarOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -183,9 +181,9 @@ function OAuthRedirectComponent() {
                      <HuginnButton className="w-full" color="surface-alt" onClick={abort} type="button">
                         Abort
                      </HuginnButton>
-                     <LoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
+                     <HuginnLoadingButton isLoading={formState.isSubmitting} className="h-10 w-full" color="primary" type="submit">
                         Confirm
-                     </LoadingButton>
+                     </HuginnLoadingButton>
                   </div>
                </>
             )}
