@@ -3,6 +3,10 @@
    "version": "0.5.1",
    "private": true,
    "type": "module",
+   "exports": {
+      "./icons/*": "./icons/*",
+      "./palettes.json": "./palettes.json"
+   },
    "dependencies": {
       "@huginnjs/shared": "workspace:*",
       "culori": "^4.0.2",

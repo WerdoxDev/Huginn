@@ -10,7 +10,7 @@ async function main() {
       const palette = modifiedPalettes.primary[theme as keyof typeof modifiedPalettes.primary];
 
       await createIcon({
-         outputDir: `./icon-out/${theme}`,
+         outputDir: `./icons/${theme}`,
          canvasSize: 2048,
          icoSizes: [512],
          pngSizes: [512],
