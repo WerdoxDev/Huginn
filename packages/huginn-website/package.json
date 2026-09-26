@@ -8,20 +8,24 @@
       "preview": "vite preview"
    },
    "dependencies": {
-      "@headlessui/react": "^2.2.10",
-      "@headlessui/tailwindcss": "^0.2.1",
       "@huginn/frontend-shared": "workspace:*",
       "@huginnjs/shared": "workspace:*",
-      "@iconify/react": "^4.1.1",
       "@rive-app/canvas": "^2.20.0",
       "@tailwindcss/vite": "^4.3.0",
-      "@tanstack/react-router": "^1.130.9",
+      "@tanstack/markdown": "^0.0.15",
+      "@tanstack/react-query": "^5.102.5",
+      "@tanstack/react-router": "^1.170.32",
+      "@tanstack/react-store": "^0.11.1",
       "@vercel/analytics": "^1.4.0",
+      "clsx": "^2.1.1",
       "moment": "^2.30.1",
       "react": "^19.2.8",
       "react-dom": "^19.2.8"
    },
    "devDependencies": {
+      "@iconify/json": "^2.2.520",
+      "@tailwindcss/typography": "^0.5.20",
+      "@tanstack/router-plugin": "^1.168.35",
       "@types/react": "^19.2.15",
       "@types/react-dom": "^19.2.3",
       "@vitejs/plugin-react": "^5.1.0",
@@ -29,6 +33,8 @@
       "postcss": "^8.4.41",
       "tailwindcss": "^4.3.3",
       "typescript": "^7.0.2",
+      "unplugin-auto-import": "^21.1.0",
+      "unplugin-icons": "^23.0.1",
       "vite": "^8.2.2"
    }
 }
