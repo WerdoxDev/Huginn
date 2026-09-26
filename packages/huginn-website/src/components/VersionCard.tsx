@@ -1,73 +1,90 @@
 import type { APIRelease } from "@huginnjs/shared";
 
-import { Popover, Transition } from "@headlessui/react";
-import { Icon } from "@iconify/react";
-import moment from "moment";
-import { Fragment, useEffect, useState } from "react";
-
-import PlatformItem from "./PlatformItem";
+import { HuginnButton, HuginnMenu } from "@huginn/frontend-shared";
+import { renderHtml } from "@tanstack/markdown";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
 
 type VersionCardProps = APIRelease & { latest?: boolean };
 
-export default function VersionCard({ version, date, description, latest, url, windowsSetupUrl, macosSetupUrl, linuxSetupUrl }: VersionCardProps) {
+export default function VersionCard({
+   description,
+   latest,
+   windowsDownloadUrl: windowsSetupUrl,
+   macosDownloadUrl: macosSetupUrl,
+   linuxDownloadUrl: linuxSetupUrl,
+   androidDownloadUrl: androidSetupUrl,
+}: VersionCardProps) {
    const [isVisible, setIsVisible] = useState(false);
+   const [html, setHtml] = useState<string | null>(null);
 
    useEffect(() => {
       const frame = requestAnimationFrame(() => setIsVisible(true));
       return () => cancelAnimationFrame(frame);
    }, []);
 
+   useEffect(() => {
+      if (!description) return;
+
+      const html = renderHtml(description);
+      setHtml(html);
+   }, [description]);
+
    return (
       <div
-         className={`group border-text/50 bg-secondary ease w-full rounded-lg border border-b-2 p-4 shadow-md transition-all duration-250 hover:shadow-lg md:max-w-md ${
-            latest ? "border-b-success/70" : "border-b-warning/70"
-         } ${isVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}
+         className={clsx(
+            "group bg-surface-alt ease w-full rounded-lg border-2 p-4 shadow-md transition-all duration-250 hover:shadow-lg lg:max-w-md",
+            latest ? "border-positive-500" : "border-caution-500",
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
+         )}
       >
-         <div className="flex items-center">
-            <div className="text-xl font-semibold">{version}</div>
-            <div className={`ml-2 rounded-lg border px-2 py-0.5 ${latest ? "border-success/70 text-success" : "border-warning/70 text-warning"}`}>
-               {latest ? "latest" : "old"}
-            </div>
-            <div className="text-text/70 ml-auto hidden self-start md:block">{moment(date).format("Do MMM YYYY")}</div>
-            <div className="text-text/70 ml-auto self-start md:hidden">{moment(date).format("DD.MM.YYYY")}</div>
-         </div>
+         {!description ? (
+            <div className="text-text/50 mt-3 italic">This release has no description</div>
+         ) : (
+            <div
+               className="prose prose-sm prose-invert text-text prose-headings:text-text prose-a:text-primary-500 prose- max-w-none"
+               dangerouslySetInnerHTML={{ __html: html ?? "" }}
+            />
+         )}
 
-         <div className="mt-3">
-            {description}
-            {!description ? <span className="italic">This release has no description</span> : null}
-         </div>
          <div className="mt-3 flex items-end justify-between">
             <div className="flex shrink-0 items-center justify-center gap-x-2">
-               <Icon icon="mingcute:windows-fill" className={`size-6 ${windowsSetupUrl ? "text-white" : "text-white/50"}`} />
-               <Icon icon="mingcute:apple-fill" className={`size-6 ${macosSetupUrl ? "text-white" : "text-white/50"}`} />
-               <Icon icon="mingcute:linux-fill" className={`size-6 ${linuxSetupUrl ? "text-white" : "text-white/50"}`} />
+               <IconMingcuteWindowsFill className={clsx("$ size-6", windowsSetupUrl ? "text-white" : "text-white/50")} />
+               <IconMingcuteLinuxFill className={clsx("size-6", linuxSetupUrl ? "text-white" : "text-white/50")} />
+               <IconMingcuteAndroidFill className={clsx("size-6", androidSetupUrl ? "text-white" : "text-white/50")} />
+               <IconMingcuteAppleFill className={clsx("size-6", macosSetupUrl ? "text-white" : "text-white/50")} />
             </div>
-            <Popover className="relative">
+            <HuginnMenu>
                {({ open }) => (
                   <>
-                     <Popover.Button className="border-success/50 bg-background hover:border-success hover:bg-background/50 ml-auto flex w-fit cursor-pointer items-center justify-center gap-x-2 rounded-md border px-4 py-2 text-white transition-all outline-none">
-                        <Icon icon="mingcute:download-3-fill" className="size-5" />
+                     {/*<HuginnMenu.Trigger className="border-positive-500 bg-surface hover:border-positive-500 hover:bg-surface ml-auto flex w-40 items-center justify-center gap-x-2 rounded-md border py-2 text-white transition-all outline-none">
+                        <IconMingcuteDownload3Fill className="size-5" />
                         <span>Download</span>
-                        <Icon icon="mingcute:down-fill" className={`size-5 transition-all ${open ? "-scale-100" : ""}`} />
-                     </Popover.Button>
-                     <Transition
-                        as={Fragment}
-                        enter="transition duration-200 ease-out"
-                        enterFrom="translate-y-1 opacity-0"
-                        enterTo="translate-y-0 opacity-100"
-                        leave="transition duration-150 ease-in"
-                        leaveFrom="translate-y-0 opacity-100"
-                        leaveTo="translate-y-1 opacity-0"
-                     >
-                        <Popover.Panel className="bg-tertiary absolute top-12 right-0 left-0 z-10 flex flex-col gap-y-1 rounded-lg p-2 shadow-md">
-                           <PlatformItem icon="mingcute:windows-fill" text="Windows" url={windowsSetupUrl} />
-                           <PlatformItem icon="mingcute:apple-fill" text="MacOS" url={macosSetupUrl} />
-                           <PlatformItem icon="mingcute:linux-fill" text="Linux" url={linuxSetupUrl} />
-                        </Popover.Panel>
-                     </Transition>
+                        <IconMingcuteDownFill className={`size-5 transition-all ${open ? "-scale-100" : ""}`} />
+                     </HuginnMenu.Trigger>*/}
+                     <HuginnMenu.Trigger asChild>
+                        <HuginnButton color="positive" className="flex w-40 items-center justify-center gap-x-2 py-2">
+                           <IconMingcuteDownload3Fill className="size-5" />
+                           <span>Download</span>
+                           <IconMingcuteDownFill className={`size-5 transition-all ${open ? "-scale-100" : ""}`} />
+                        </HuginnButton>
+                     </HuginnMenu.Trigger>
+                     <HuginnMenu.Content side="bottom" align="end" sideOffset={8} className="bg-surface-deep w-40 gap-y-1">
+                        {[
+                           { icon: IconMingcuteWindowsFill, text: "Windows", url: windowsSetupUrl },
+                           { icon: IconMingcuteLinuxFill, text: "Linux", url: linuxSetupUrl },
+                           { icon: IconMingcuteAppleFill, text: "MacOS", url: macosSetupUrl },
+                           { icon: IconMingcuteAndroidFill, text: "Android", url: androidSetupUrl },
+                        ].map(({ icon: PlatformIcon, text, url }) => (
+                           <HuginnMenu.Item key={text} disabled={!url} onClick={() => url && window.location.assign(url)} className="justify-start gap-x-2">
+                              <PlatformIcon className="size-6" />
+                              <span>{text}</span>
+                           </HuginnMenu.Item>
+                        ))}
+                     </HuginnMenu.Content>
                   </>
                )}
-            </Popover>
+            </HuginnMenu>
          </div>
       </div>
    );

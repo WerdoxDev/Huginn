@@ -1,20 +1,19 @@
 {
+   "extends": "../../tsconfig.json",
    "compilerOptions": {
-      "target": "ES2020",
-      "useDefineForClassFields": true,
-      "module": "ESNext",
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "skipLibCheck": true,
-      "moduleResolution": "bundler",
-      "allowImportingTsExtensions": true,
-      "isolatedModules": true,
-      "moduleDetection": "force",
-      "noEmit": true,
+      "types": ["unplugin-icons/types/react", "vite/client", "bun"],
       "jsx": "react-jsx",
-      "strict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noFallthroughCasesInSwitch": true
+
+      "paths": {
+         "@stores/*": ["./src/stores/*"],
+         "@components/*": ["./src/components/*"],
+         "@contexts/*": ["./src/contexts/*"],
+         "@hooks/*": ["./src/hooks/*"],
+         "@lib/*": ["./src/lib/*"],
+         "@/*": ["./src/*"]
+      },
+      "rootDirs": ["."]
    },
-   "include": ["src/**/*.ts", "src/**/*.tsx"]
+
+   "include": ["src/**/*.ts", "src/**/*.tsx", "auto-imports.d.ts"]
 }
