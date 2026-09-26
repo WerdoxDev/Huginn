@@ -1,7 +1,6 @@
 import AudioSourcePreview from "@components/AudioSourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import LoadingIcon from "@components/LoadingIcon";
-import { HuginnDialogPanel } from "@huginn/frontend-shared";
+import { HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { analytics, recordSpanError } from "@huginnjs/shared";
 import { AUDIO_QUALITIES } from "@lib/constants";
 import { useModals } from "@stores/modalsStore";
@@ -75,7 +74,7 @@ export default function AudioStreamModal() {
          <div className="scroll-surface-alt grid h-full w-full grid-cols-2 gap-5 overflow-y-scroll pt-5 pr-1.5 pb-5 pl-5">
             {isLoading ? (
                <div className="col-span-2 flex h-full w-full items-center justify-center">
-                  <LoadingIcon className="size-16" />
+                  <HuginnLoadingIcon className="size-16" />
                </div>
             ) : (
                data?.map((x) => <AudioSourcePreview onSelect={handleSelect} source={x} key={x.processId} />)

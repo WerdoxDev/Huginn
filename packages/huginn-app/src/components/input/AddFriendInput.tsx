@@ -1,9 +1,7 @@
-import { HuginnLoadingButton, type HuginnButtonProps } from "@huginn/frontend-shared";
+import { HuginnInput, HuginnLoadingButton, type HuginnButtonProps } from "@huginn/frontend-shared";
 import clsx from "clsx";
 
 import type { HuginnInputProps } from "@/types";
-
-import HuginnInput from "./HuginnInput";
 
 export default function AddFriendInput(props: {
    className?: string;

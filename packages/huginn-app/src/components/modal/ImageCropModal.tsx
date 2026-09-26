@@ -1,9 +1,8 @@
-import HuginnLabel from "@components/HuginnLabel";
 import UserProfilePreview from "@components/profile/UserProfilePreview";
 
 import "../../cropper.css";
 import VoiceElement from "@components/voice/VoiceElement";
-import { DialogActions, HuginnButton, HuginnDialogPanel, HuginnLoadingButton } from "@huginn/frontend-shared";
+import { DialogActions, HuginnButton, HuginnDialogPanel, HuginnLabel, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { analytics } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";

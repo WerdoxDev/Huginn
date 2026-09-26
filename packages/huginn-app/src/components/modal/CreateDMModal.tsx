@@ -1,9 +1,8 @@
 import AddRecipientInput from "@components/input/AddRecipientInput";
-import HuginnInput from "@components/input/HuginnInput";
 import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { DialogActions, DialogBody, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
+import { DialogActions, DialogBody, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { HuginnButton } from "@huginn/frontend-shared";
 import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { getRelationshipsOptions } from "@lib/queries";

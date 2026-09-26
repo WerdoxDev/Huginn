@@ -1,9 +1,16 @@
 import ImagePicker from "@components/ImagePicker";
-import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
-import { DialogActions, DialogBody, HuginnButton, HuginnDialogPanel, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
+import {
+   DialogActions,
+   DialogBody,
+   HuginnButton,
+   HuginnDialogPanel,
+   HuginnDialogTitle,
+   HuginnInput,
+   HuginnLoadingButton,
+} from "@huginn/frontend-shared";
 import { ChannelType } from "@huginnjs/shared";
 import { getChannelIconOptions } from "@lib/queries";
 import { getGroupChannelName } from "@lib/query-utils";

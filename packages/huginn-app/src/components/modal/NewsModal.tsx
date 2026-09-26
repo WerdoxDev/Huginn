@@ -1,5 +1,4 @@
-import LoadingIcon from "@components/LoadingIcon";
-import { HuginnDialogTitle } from "@huginn/frontend-shared";
+import { HuginnDialogTitle, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { ModalCloseButton } from "@huginn/frontend-shared";
 import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { marked } from "@huginnjs/shared";
@@ -52,7 +51,7 @@ export default function NewsModal() {
             <div className="bg-surface-alt mx-2 mt-5 h-0.5" />
             {isLoading ? (
                <div className="flex h-40 items-center justify-center">
-                  <LoadingIcon className="size-10" />
+                  <HuginnLoadingIcon className="size-10" />
                </div>
             ) : changelogs ? (
                <div className="scroll-surface-deep flex h-full max-h-[70vh] flex-col gap-y-5 overflow-y-scroll pt-5 pr-2 pl-5">

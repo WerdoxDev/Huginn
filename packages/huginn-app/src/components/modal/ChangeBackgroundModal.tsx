@@ -1,7 +1,6 @@
 import ColorPicker from "@components/ColorPicker";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
-import HuginnLabel from "@components/HuginnLabel";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import Tooltip from "@components/tooltip/Tooltip";
@@ -10,7 +9,15 @@ import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { useBackgroundImageUrl, useChannelBackgrounds, useGlobalChannelBackground } from "@hooks/useChannelBackgrounds";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFileDialog } from "@hooks/useFileDialog";
-import { DialogActions, DialogBody, HuginnButton, HuginnDialogPanel, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
+import {
+   DialogActions,
+   DialogBody,
+   HuginnButton,
+   HuginnDialogPanel,
+   HuginnDialogTitle,
+   HuginnLabel,
+   HuginnLoadingButton,
+} from "@huginn/frontend-shared";
 import { MessageType, type BackgroundStyle, type Snowflake } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";

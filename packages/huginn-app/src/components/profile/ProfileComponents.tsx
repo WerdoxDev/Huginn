@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import HuginnLabel from "@components/HuginnLabel";
 import { useElapsedTime } from "@hooks/useElapsedTime";
+import { HuginnLabel } from "@huginn/frontend-shared";
 import { type Activity, ActivityType } from "@huginnjs/shared";
 import clsx from "clsx";
 

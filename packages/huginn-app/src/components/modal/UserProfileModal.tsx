@@ -1,4 +1,3 @@
-import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
@@ -9,7 +8,7 @@ import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
-import { DialogBody, HuginnButton, HuginnDialogPanel } from "@huginn/frontend-shared";
+import { DialogBody, HuginnButton, HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { RelationshipType } from "@huginnjs/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -262,7 +261,7 @@ export default function UserProfileModal() {
          <Suspense
             fallback={
                <div className="bg-surface-alt flex h-48 items-center justify-center rounded-lg">
-                  <LoadingIcon className="size-10" />
+                  <HuginnLoadingIcon className="size-10" />
                </div>
             }
          >

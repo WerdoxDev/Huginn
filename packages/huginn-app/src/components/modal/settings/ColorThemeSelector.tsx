@@ -1,6 +1,5 @@
 import HuginnIcon from "@components/HuginnIcon";
-import HuginnLabel from "@components/HuginnLabel";
-import { mappedColorThemes, type ColorTheme } from "@huginn/frontend-shared";
+import { HuginnLabel, mappedColorThemes, type ColorTheme } from "@huginn/frontend-shared";
 import { parseOklchToRgb, type ThemeType } from "@huginnjs/shared";
 import { useTheme } from "@stores/themeStore";
 import { animate, createDraggable, createScope, utils, type Draggable, type Scope } from "animejs";
