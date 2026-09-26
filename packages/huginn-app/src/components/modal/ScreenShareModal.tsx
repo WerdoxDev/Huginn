@@ -6,6 +6,7 @@ import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import LoadingIcon from "@components/LoadingIcon";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { analytics, CONSTANTS, recordSpanError } from "@huginnjs/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { VoiceClient } from "@lib/voice/voice-client";
@@ -16,8 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
 import type { DisplaySource, SelectItem } from "@/types";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const qualityOptions: SelectItem[] = SCREEN_SHARE_QUALITIES.map((x) => ({
    text: `${x.name} ${x.height}p`,

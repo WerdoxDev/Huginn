@@ -1,5 +1,2 @@
-import clsx from "clsx";
-
-export default function LoadingIcon(props: { className?: string; style?: React.CSSProperties }) {
-   return <IconMingcuteLoading3Fill className={clsx("text-text animate-spin", props.className)} style={props.style} />;
-}
+export { HuginnLoadingIcon as default } from "@huginn/frontend-shared";
+export type { HuginnLoadingIconProps } from "@huginn/frontend-shared";

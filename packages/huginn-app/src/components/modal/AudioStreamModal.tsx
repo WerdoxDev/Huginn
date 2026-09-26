@@ -1,19 +1,15 @@
 import AudioSourcePreview from "@components/AudioSourcePreview";
-import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import LoadingIcon from "@components/LoadingIcon";
-import Tooltip from "@components/tooltip/Tooltip";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { analytics, recordSpanError } from "@huginnjs/shared";
 import { AUDIO_QUALITIES } from "@lib/constants";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import type { AudioSource, SelectItem } from "@/types";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const qualityOptions: SelectItem[] = AUDIO_QUALITIES.map((x) => ({ text: `${x.name} (${x.bitrate / 1000} kbps)`, value: x.value }));
 const audioQualityToBitrate: Record<string, number> = AUDIO_QUALITIES.reduce(

@@ -1,11 +1,6 @@
-import { HuginnButton } from "@huginn/frontend-shared";
-import LoadingButton from "@components/button/LoadingButton";
 import ColorPicker from "@components/ColorPicker";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnLabel from "@components/HuginnLabel";
 import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
@@ -15,6 +10,7 @@ import { useChannel } from "@hooks/api-hooks/channelHooks";
 import { useBackgroundImageUrl, useChannelBackgrounds, useGlobalChannelBackground } from "@hooks/useChannelBackgrounds";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useFileDialog } from "@hooks/useFileDialog";
+import { DialogActions, DialogBody, HuginnButton, HuginnDialogPanel, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { MessageType, type BackgroundStyle, type Snowflake } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -24,8 +20,6 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import type { ProcessedMessage, SelectItem } from "@/types";
 
 import * as palette from "@/assets/palettes.json";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const COLOR_PRESETS = Object.values(palette.primary).map((color) => color["primary-800"]);
 const DEFAULT_COLOR = COLOR_PRESETS[0];
@@ -342,9 +336,9 @@ export default function ChangeBackgroundModal() {
                   Reset
                </HuginnButton>
             )}
-            <LoadingButton isLoading={isLoading} className="h-10 flex-1" color="primary" onClick={save} type="button">
+            <HuginnLoadingButton isLoading={isLoading} className="h-10 flex-1" color="primary" onClick={save} type="button">
                Save
-            </LoadingButton>
+            </HuginnLoadingButton>
          </DialogActions>
       </HuginnDialogPanel>
    );

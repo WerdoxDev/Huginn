@@ -1,18 +1,13 @@
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnInput from "@components/input/HuginnInput";
 import OTPInput from "@components/input/OTPInput";
 import { useResendVerificationEmail } from "@hooks/mutations/useResendVerificationEmail";
 import { useVerifyEmail } from "@hooks/mutations/useVerifyEmail";
 import { useCountdown } from "@hooks/useCountdown";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { CONSTANTS } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useEffect } from "react";
-
-import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    verificationCode?: string;
@@ -67,7 +62,7 @@ export default function VerifyEmailModal() {
                </HuginnInput>
             </DialogBody>
             <DialogActions>
-               <LoadingButton
+               <HuginnLoadingButton
                   isLoading={resendMutation.isPending}
                   type="button"
                   color="surface"
@@ -76,10 +71,10 @@ export default function VerifyEmailModal() {
                   className="h-10 w-full"
                >
                   Resend Code {!canResend && <span className="text-sm text-white/80">({countdown}s)</span>}
-               </LoadingButton>
-               <LoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-52" type="submit">
+               </HuginnLoadingButton>
+               <HuginnLoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-52" type="submit">
                   Verify
-               </LoadingButton>
+               </HuginnLoadingButton>
             </DialogActions>
          </form>
       </HuginnDialogPanel>

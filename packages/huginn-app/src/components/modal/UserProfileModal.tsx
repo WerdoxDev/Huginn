@@ -1,5 +1,3 @@
-import { HuginnButton } from "@huginn/frontend-shared";
-import DialogBody from "@components/DialogBody";
 import LoadingIcon from "@components/LoadingIcon";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
@@ -11,6 +9,7 @@ import { useUser, useUserProfile } from "@hooks/api-hooks/userHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
+import { DialogBody, HuginnButton, HuginnDialogPanel } from "@huginn/frontend-shared";
 import { RelationshipType } from "@huginnjs/shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -19,8 +18,6 @@ import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { Suspense, useMemo, type MouseEvent } from "react";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null; imageSrc?: string | null }) {
    const hasBannerImage = props.imageSrc !== undefined ? !!props.imageSrc : !!props.banner;

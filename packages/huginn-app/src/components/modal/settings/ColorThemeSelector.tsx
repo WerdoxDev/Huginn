@@ -1,12 +1,13 @@
 import HuginnIcon from "@components/HuginnIcon";
 import HuginnLabel from "@components/HuginnLabel";
+import { mappedColorThemes, type ColorTheme } from "@huginn/frontend-shared";
 import { parseOklchToRgb, type ThemeType } from "@huginnjs/shared";
-import { mappedColorThemes, useTheme } from "@stores/themeStore";
+import { useTheme } from "@stores/themeStore";
 import { animate, createDraggable, createScope, utils, type Draggable, type Scope } from "animejs";
 import clsx from "clsx";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
-import type { ColorTheme, SettingsTabProps } from "@/types";
+import type { SettingsTabProps } from "@/types";
 
 const primaryCorners = ["primary-300", "primary-700", "primary-500", "primary-900"] as const;
 

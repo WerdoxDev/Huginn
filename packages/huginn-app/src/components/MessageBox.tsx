@@ -8,6 +8,7 @@ import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
+import { HuginnButton } from "@huginn/frontend-shared";
 import { formatSeconds } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
@@ -21,7 +22,6 @@ import type { AppMessage, AutocompleteItem } from "@/types";
 import AttachmentsPreview from "./AttachmentsPreview";
 import ExpressionButton from "./button/EmojiPickerButton";
 import FilePickerButton from "./button/FilePickerButton";
-import { HuginnButton } from "@huginn/frontend-shared";
 import MessageSendButton from "./button/MessageSendButton";
 import ChannelTypingIndicator from "./channels/ChannelTypingIndicator";
 import FilePickerDrawer from "./channels/FilePickerDrawer";
@@ -290,7 +290,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            </>
                         )}
                         <div className="font-ubuntu flex items-center gap-x-1.5 text-sm tabular-nums">
-                           <span className="bg-negative-400 size-2 rounded-full" />
+                           <span className="bg-negative-300 size-2 rounded-full" />
                            <span>{formatSeconds(voiceRecordingDuration)}</span>
                         </div>
                      </div>

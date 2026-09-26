@@ -1,16 +1,11 @@
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import HuginnInput from "@components/input/HuginnInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
-
-import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    displayName?: string;
@@ -53,9 +48,9 @@ export default function ChangeDisplayNameModal() {
                </HuginnInput>
             </DialogBody>
             <DialogActions>
-               <LoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-full" type="submit">
+               <HuginnLoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-full" type="submit">
                   Save
-               </LoadingButton>
+               </HuginnLoadingButton>
             </DialogActions>
          </form>
       </HuginnDialogPanel>
