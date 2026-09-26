@@ -22,8 +22,4 @@ export function initAnalytics() {
    );
 
    store.storage.adapter.setAnalytics(analytics);
-
-   // unlistenLogger = logger.listen("error", ({ section, args }) => {
-   //    posthog.captureException(`${section}: ${args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(" ")}`);
-   // });
 }

@@ -25,18 +25,7 @@ import type {
 } from "@huginnjs/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
-import type {
-   ChangeEvent,
-   CSSProperties,
-   FocusEvent,
-   HTMLInputTypeAttribute,
-   MouseEvent,
-   PointerEvent,
-   ReactNode,
-   RefCallback,
-   RefObject,
-   TouchEvent,
-} from "react";
+import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute, ReactNode, RefCallback } from "react";
 import type { FieldPath, FieldValues } from "react-hook-form";
 
 export type StatusType = "none" | "default" | "error" | "success";
@@ -65,21 +54,6 @@ export type HuginnInputProps = {
    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
    onBlur?: (e: FocusEvent) => void;
    onFocus?: (e: FocusEvent) => void;
-};
-
-export type HuginnButtonProps = {
-   children?: ReactNode;
-   ref?: RefObject<HTMLButtonElement | null>;
-   type?: "submit" | "reset" | "button" | undefined;
-   style?: CSSProperties;
-   className?: string;
-   disabled?: boolean;
-   color?: "primary" | "surface-deep" | "surface-alt" | "surface" | "positive" | "negative" | "caution" | "ghost";
-   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-   onPointerDown?: (e: PointerEvent<HTMLButtonElement>) => void;
-   onPointerUp?: (e: PointerEvent<HTMLButtonElement>) => void;
-   onPointerMove?: (e: PointerEvent<HTMLButtonElement>) => void;
-   onPointerCancel?: (e: PointerEvent<HTMLButtonElement>) => void;
 };
 
 export type HuginnLoadingButtonProps = HuginnButtonProps & {
@@ -118,40 +92,6 @@ export type SelectItem<T = string> = {
    text: string;
    icon?: ReactNode;
    value: T;
-};
-
-export type ColorTheme = {
-   surface: string;
-   "surface-alt": string;
-   "surface-deep": string;
-   "surface-void": string;
-   text: string;
-
-   "primary-300": string;
-   "primary-400": string;
-   "primary-500": string;
-   "primary-600": string;
-   "primary-700": string;
-   "primary-800": string;
-   "primary-900": string;
-
-   "positive-100": string;
-   "positive-300": string;
-   "positive-500": string;
-   "positive-700": string;
-   "positive-900": string;
-
-   "negative-100": string;
-   "negative-300": string;
-   "negative-500": string;
-   "negative-700": string;
-   "negative-900": string;
-
-   "caution-100": string;
-   "caution-300": string;
-   "caution-500": string;
-   "caution-700": string;
-   "caution-900": string;
 };
 
 export type ContextMenuProps<T> = {

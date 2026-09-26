@@ -65,7 +65,14 @@ export const storageDefaults: StorageMap = {
       { type: "toggle_mute", combination: [], isEnabled: true },
    ],
    "client-info": { id: "" },
-   "known-applications": { lastUpdated: "", applications: [] },
+   "known-applications": {
+      cursor: "0",
+      full: true,
+      games: [],
+      matchers: [],
+      deletedGameIds: [],
+      deletedMatcherIds: [],
+   },
    "custom-applications": [],
    "pinned-channels": [],
 };

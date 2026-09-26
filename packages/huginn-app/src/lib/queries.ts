@@ -82,7 +82,7 @@ export const getUserProfileOptions = defineQuery(
 export const getChannelsOptions = defineQuery(
    "channels",
    (guildId: Snowflake) => [guildId],
-   async (guildId: Snowflake) => (await getClient().channels.getAll()).map((x) => convertToAppDirectChannel(x)),
+   async (_guildId: Snowflake) => (await getClient().channels.getAll()).map((x) => convertToAppDirectChannel(x)),
    { initialData: () => getInitialChannels() },
 );
 

@@ -1,4 +1,13 @@
-import { ActivityType, error, type APIKnownApplication, type GatewaySession, type Snowflake } from "@huginnjs/shared";
+import {
+   ActivityType,
+   cleanApplicationTitle,
+   error,
+   type APIApplicationMatcher,
+   type APIGetKnownApplicationsResult,
+   type APIKnownGame,
+   type GatewaySession,
+   type Snowflake,
+} from "@huginnjs/shared";
 import { convertToAppPresence, convertToAppSession } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";
@@ -109,11 +118,11 @@ function startCheckingForActivity() {
 
          if (!client?.gateway.isAuthenticated || !client.gateway.sessionId) return;
 
-         const knownApplications = storageStore.getState().getCachedValue("known-applications").applications;
+         const knownApplications = storageStore.getState().getCachedValue("known-applications");
          const customApplications = storageStore.getState().getCachedValue("custom-applications");
          const openApplications = await window.electronAPI.getOpenApplications();
 
-         const knownMatch = detectKnownApplication(openApplications, knownApplications);
+         const knownMatch = detectKnownApplication(openApplications, knownApplications, windowStore.getState().platform);
          const customMatch = detectCustomApplication(openApplications, customApplications);
 
          const ourActivities = session.activities.filter((x) => x.sessionId === client.gateway.sessionId);
@@ -132,13 +141,13 @@ function startCheckingForActivity() {
          const match: {
             detected: ApplicationInfo;
             custom?: CustomApplication;
-            known?: APIKnownApplication;
+            known?: { matcher: APIApplicationMatcher; game: APIKnownGame };
          } = knownMatch ?? customMatch;
 
          // Skip if we already have the activity
          if (ourActivities[0]) {
             if (match.known) {
-               if (match.known.id === ourActivities[0].applicationId) {
+               if (match.known.matcher.id === ourActivities[0].applicationId) {
                   return;
                }
             } else if (match.custom) {
@@ -156,12 +165,12 @@ function startCheckingForActivity() {
          client.gateway.updatePresence({
             activities: [
                {
-                  name: match.known?.names[0] ?? match.custom?.title ?? "Unknown",
+                  name: match.known?.game.canonicalName ?? match.custom?.title ?? "Unknown",
                   type: ActivityType.PLAYING,
                   createdAt: new Date().getTime(),
                   startedAt: new Date().getTime(),
                   iconUrl: iconHash ? `application-icons/${iconHash}.webp` : undefined,
-                  applicationId: match.known?.id,
+                  applicationId: match.known?.matcher.id,
                },
             ],
             status: session.status,
@@ -179,16 +188,45 @@ function stopCheckingForActivity() {
    }
 }
 
-function detectKnownApplication(applications: ApplicationInfo[], knownApplications: APIKnownApplication[]) {
-   const match = applications.flatMap((x) => {
-      const exeName = x.exePath?.split(/[/\\]+/).pop();
-      const exeKnown = knownApplications?.find((y) => y.exeName === exeName);
-      const nameKnown = knownApplications?.find((y) => y.names.includes(x.windowTitle));
-      const cmdLineMatch = exeKnown?.commandLinePatterns.every((y) => x.cmdLine?.includes(y));
-      return (nameKnown || exeKnown) && (cmdLineMatch === undefined ? true : cmdLineMatch) ? [{ detected: x, known: exeKnown! ?? nameKnown! }] : [];
-   })[0];
+export function detectKnownApplication(applications: ApplicationInfo[], catalog: APIGetKnownApplicationsResult, platform?: string) {
+   const games = new Map(catalog.games.map((game) => [game.id, game]));
+   let bestMatch:
+      | {
+           detected: ApplicationInfo;
+           known: { matcher: APIApplicationMatcher; game: APIKnownGame };
+           score: number;
+        }
+      | undefined;
 
-   return match;
+   for (const application of applications) {
+      const exeName = application.exePath?.split(/[/\\]+/).pop();
+      const windowTitle = cleanApplicationTitle(application.windowTitle);
+
+      for (const matcher of catalog.matchers) {
+         if (matcher.platform !== "unknown" && platform && matcher.platform !== platform) continue;
+
+         const game = games.get(matcher.knownGameId);
+         if (!game) continue;
+
+         const exeMatches = exeName !== undefined && matcher.exeNames.includes(exeName);
+         const knownTitles = [game.canonicalName, ...game.aliases, ...matcher.windowTitles].map(cleanApplicationTitle);
+         const titleMatches = knownTitles.includes(windowTitle);
+         const commandLineMatches = matcher.commandLinePatterns.every((pattern) => application.cmdLine?.includes(pattern) === true);
+
+         if ((exeMatches || titleMatches) && commandLineMatches) {
+            const score = matcher.commandLinePatterns.length + Number(exeMatches) + Number(titleMatches) + Number(matcher.platform === platform);
+
+            if (!bestMatch || score > bestMatch.score) {
+               bestMatch = { detected: application, known: { matcher, game }, score };
+            }
+         }
+      }
+   }
+
+   if (bestMatch) {
+      const { score: _, ...match } = bestMatch;
+      return match;
+   }
 }
 
 function detectCustomApplication(applications: ApplicationInfo[], customApplications: CustomApplication[]) {
