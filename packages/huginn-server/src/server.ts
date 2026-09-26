@@ -50,6 +50,10 @@ import { getTrendingGifs } from "#routes/gifs/trending.get";
 import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
+import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
+import { postAcceptGameContribution } from "#routes/staff/game-contributions/[contributionId]/accept.post";
+import { getStaffIGDBGames } from "#routes/staff/igdb-games.get";
+import { getStaffMe } from "#routes/staff/me.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
 import { getDesktopUpdate } from "#routes/update/desktop";
@@ -203,6 +207,12 @@ export const app = new Elysia({
    .use(postApplicationIcon)
    .use(postKnownApplication)
    .use(getKnownApplications)
+
+   // staff
+   .use(getStaffMe)
+   .use(getStaffGameContributions)
+   .use(getStaffIGDBGames)
+   .use(postAcceptGameContribution)
 
    // misc
    .use(getAllReleases)

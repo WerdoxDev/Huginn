@@ -38,6 +38,14 @@ export function getWindowsAssetUrl(release?: Unpacked<Endpoints["GET /repos/{own
    return release?.assets.find((x) => x.name.endsWith("setup.exe"))?.browser_download_url;
 }
 
+export function getLinuxAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
+   return release?.assets.find((x) => x.name.endsWith("tar.zst"))?.browser_download_url;
+}
+
+export function getAndroidAssetUrl(release?: Unpacked<Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"]>) {
+   return release?.assets.find((x) => x.name.endsWith(".apk"))?.browser_download_url;
+}
+
 export function getAppPackageVersion(tagName: string) {
    return tagName.replace("app@", "");
 }
