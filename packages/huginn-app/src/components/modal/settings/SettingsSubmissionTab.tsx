@@ -1,13 +1,8 @@
-import type { ProcessInfo } from "native-addon";
-
-import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useSubmitKnownApplication } from "@hooks/mutations/useSubmitKnownApplication";
-import { JsonCode } from "@huginnjs/shared";
-import { APIMessages } from "@lib/error-messages";
-import { isWorthyHuginnError } from "@lib/utils";
+import { HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
 import { useStorage } from "@stores/storageStore";
@@ -22,7 +17,6 @@ import type { SelectItem, SettingsTabProps } from "@/types";
 import huginnInHuginnUrl from "@/assets/huginn-in-huginn-meme.jpg";
 
 export default function SettingsSubmissionTab(_props: SettingsTabProps) {
-   // const [openApplications, setOpenApplications] = useState<OpenApplication[]>([]);
    const knownApplications = useStorage("known-applications");
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const submitMutation = useSubmitKnownApplication();
@@ -55,13 +49,16 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       [data],
    );
 
-   const contributedApplications = useMemo(
-      () =>
-         knownApplications.applications
-            .filter((x) => x.contributorId === user?.id)
-            .sort((a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf()),
-      [user, knownApplications],
-   );
+   const contributedApplications = useMemo(() => {
+      const games = new Map(knownApplications.games.map((game) => [game.id, game]));
+      return knownApplications.matchers
+         .filter((matcher) => matcher.contributorId === user?.id)
+         .flatMap((matcher) => {
+            const game = games.get(matcher.knownGameId);
+            return game ? [{ matcher, game }] : [];
+         })
+         .sort((a, b) => moment(b.matcher.createdAt).valueOf() - moment(a.matcher.createdAt).valueOf());
+   }, [user, knownApplications]);
 
    function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
@@ -69,7 +66,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
 
    async function submit() {
       const application = data?.find((x) => x.processId === Number(selectedApplication?.value));
-      if (!application) return;
+      if (!application?.exePath) return;
 
       if (application.processId === huginnWindow.processId) {
          updateModals({ info: { isOpen: true, title: "WHAT?!", text: <img src={huginnInHuginnUrl} />, status: "info" } });
@@ -77,48 +74,35 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
       }
 
       try {
-         const result = await submitMutation.mutateAsync({
+         await submitMutation.mutateAsync({
             exePath: application.exePath,
             windowTitle: application.displayName || application.windowTitle,
+            commandLine: application.cmdLine,
+            platform: huginnWindow.platform,
+            icon: application.icon ?? undefined,
          });
          updateModals({
             info: {
                status: "success",
-               title: "Success!",
+               title: "Submitted!",
+               text: "Your game contribution is now waiting for staff review.",
+               isOpen: true,
+            },
+         });
+      } catch {
+         updateModals({
+            info: {
+               status: "error",
+               title: "Submission failed",
                text: (
                   <div>
-                     <p>Congratulations! The application got verified by Huginn under these names:</p>
-                     <div className="mt-1 space-y-1">
-                        {result?.names.map((x, i) => (
-                           <div key={i} className="font-semibold">
-                              {x}
-                           </div>
-                        ))}
-                     </div>
+                     Huginn could not submit <span className="font-semibold">{application.displayName ?? application.windowTitle}</span>. Please try
+                     again.
                   </div>
                ),
                isOpen: true,
             },
          });
-      } catch (e) {
-         if (isWorthyHuginnError(e) && e.code === JsonCode.KNOWN_APPLICATION_EXISTS) {
-            updateModals({
-               info: { status: "error", text: APIMessages[e.code], title: "Failed!", isOpen: true },
-            });
-         } else {
-            updateModals({
-               info: {
-                  status: "info",
-                  title: "Sorry!",
-                  text: (
-                     <div>
-                        Huginn was not able to verify <span className="font-semibold">{application.displayName ?? application.windowTitle}</span> :(
-                     </div>
-                  ),
-                  isOpen: true,
-               },
-            });
-         }
       }
    }
 
@@ -151,7 +135,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                            </HuginnSelect.ItemsWrapper>
                         </HuginnSelect.List>
                      </HuginnSelect>
-                     <LoadingButton
+                     <HuginnLoadingButton
                         isLoading={submitMutation.isPending}
                         onClick={submit}
                         color="primary"
@@ -159,7 +143,7 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                         disabled={!selectedApplication}
                      >
                         Submit
-                     </LoadingButton>
+                     </HuginnLoadingButton>
                   </div>
                </div>
             )}
@@ -169,22 +153,24 @@ export default function SettingsSubmissionTab(_props: SettingsTabProps) {
                   {contributedApplications.length === 0 ? (
                      <div className="text-text/80">No applications contributed...</div>
                   ) : (
-                     contributedApplications.map((x) => (
-                        <div className="flex items-center gap-x-2" key={x.id}>
-                           <div className="text-white">{x.names[0]}</div>
-                           {x.names.length > 1 && (
+                     contributedApplications.map(({ matcher, game }) => (
+                        <div className="flex items-center gap-x-2" key={matcher.id}>
+                           <div className="text-white">{game.canonicalName}</div>
+                           {game.aliases.length > 0 && (
                               <Tooltip>
                                  <Tooltip.Trigger className="bg-surface rounded-md p-1">
                                     <IconMingcuteMore1Fill className="text-text size-5" />
                                  </Tooltip.Trigger>
                                  <Tooltip.Content>
-                                    {x.names.slice(1).map((y) => (
-                                       <div className="text-white">{y}</div>
+                                    {game.aliases.map((alias) => (
+                                       <div className="text-white" key={alias}>
+                                          {alias}
+                                       </div>
                                     ))}
                                  </Tooltip.Content>
                               </Tooltip>
                            )}
-                           <div className="ml-auto text-white/70">{moment(x.createdAt).format("DD.MM.YYYY")}</div>
+                           <div className="ml-auto text-white/70">{moment(matcher.createdAt).format("DD.MM.YYYY")}</div>
                         </div>
                      ))
                   )}

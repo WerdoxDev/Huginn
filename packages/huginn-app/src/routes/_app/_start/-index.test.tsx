@@ -15,8 +15,8 @@ expect.extend(matchers);
 
 // ---- presentational component stubs ----------------------------------------
 // Keep these thin - we only care that props/children pass through, not styling.
-vi.mock("@components/button/HuginnButton", () => ({
-   default: ({ children, onClick, ...rest }: any) => (
+vi.mock("@huginn/frontend-shared", () => ({
+   HuginnButton: ({ children, onClick, ...rest }: any) => (
       <button onClick={onClick} {...rest}>
          {children}
       </button>

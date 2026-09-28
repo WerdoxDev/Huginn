@@ -1,6 +1,5 @@
 import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
-import HuginnButton from "@components/button/HuginnButton";
 import LoadingIcon from "@components/LoadingIcon";
 import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import AndroidCameraFlipButton from "@components/voice/AndroidCameraFlipButton";
@@ -16,8 +15,8 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
+import { HuginnButton } from "@huginn/frontend-shared";
 import { isChildWindow } from "@lib/child-window";
-import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
@@ -311,14 +310,6 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    if (!user || !isShown) {
       return;
    }
-
-   const indicatorMask = createRadialMaskStyle([
-      {
-         radius: `0.75rem`,
-         x: `calc(100% - 0.75rem + 2px)`,
-         y: `calc(100% - 0.75rem + 2px)`,
-      },
-   ]);
 
    const mobileCallIndicator = (
       <div className={clsx("fixed top-20 right-4 z-20 transition-opacity", isMobileCallHidden ? "opacity-100" : "pointer-events-none opacity-0")}>

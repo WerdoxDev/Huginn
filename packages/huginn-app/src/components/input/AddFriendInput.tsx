@@ -1,9 +1,7 @@
-import LoadingButton from "@components/button/LoadingButton";
+import { HuginnInput, HuginnLoadingButton, type HuginnButtonProps } from "@huginn/frontend-shared";
 import clsx from "clsx";
 
-import type { HuginnButtonProps, HuginnInputProps } from "@/types";
-
-import HuginnInput from "./HuginnInput";
+import type { HuginnInputProps } from "@/types";
 
 export default function AddFriendInput(props: {
    className?: string;
@@ -17,7 +15,7 @@ export default function AddFriendInput(props: {
       <HuginnInput {...props.inputProps} className={clsx(props.inputProps.className, "w-full", props.className)} placeholder="e.g: Werdox">
          <HuginnInput.Wrapper className="gap-x-5 rounded-lg! px-3 pl-5">
             <HuginnInput.Input className="px-0 py-5" />
-            <LoadingButton
+            <HuginnLoadingButton
                {...props.buttonProps}
                iconClassName="size-6!"
                isLoading={props.loading}
@@ -27,7 +25,7 @@ export default function AddFriendInput(props: {
                onClick={() => props.onClick?.()}
             >
                Send Friend Request
-            </LoadingButton>
+            </HuginnLoadingButton>
          </HuginnInput.Wrapper>
       </HuginnInput>
    );

@@ -1,4 +1,4 @@
-import HuginnButton from "@components/button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import ChannelRecipient from "@components/ChannelRecipient";
 import LoadingIcon from "@components/LoadingIcon";
 import { useUsers } from "@hooks/api-hooks/userHooks";

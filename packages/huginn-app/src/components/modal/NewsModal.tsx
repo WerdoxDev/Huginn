@@ -1,6 +1,6 @@
-import ModalCloseButton from "@components/button/ModalCloseButton";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import LoadingIcon from "@components/LoadingIcon";
+import { HuginnDialogTitle, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { ModalCloseButton } from "@huginn/frontend-shared";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { marked } from "@huginnjs/shared";
 import { getChangelogOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
@@ -13,8 +13,6 @@ import { useMemo } from "react";
 
 import type { Environment } from "@/types";
 
-import HuginnDialogPanel from "./HuginnDialogPanel";
-
 const PLATFORM_TO_HUGINN_ENV_MAP: Record<string, Environment[]> = {
    windows: ["browser", "desktop"],
    macos: ["browser", "desktop"],
@@ -26,8 +24,7 @@ export default function NewsModal() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
    const { updateModals, news: modal } = useModals();
-   // const { data, isLoading } = useQuery(getChangelogOptions(client!, huginnWindow.version, modal.lastVersion));
-   const { data, isLoading } = useQuery(getChangelogOptions(client!, "0.90.0", "0.89.0"));
+   const { data, isLoading } = useQuery(getChangelogOptions(client!, huginnWindow.version, modal.lastVersion));
 
    const changelogs = useMemo(() => {
       if (!data || data.length === 0) return;
@@ -54,7 +51,7 @@ export default function NewsModal() {
             <div className="bg-surface-alt mx-2 mt-5 h-0.5" />
             {isLoading ? (
                <div className="flex h-40 items-center justify-center">
-                  <LoadingIcon className="size-10" />
+                  <HuginnLoadingIcon className="size-10" />
                </div>
             ) : changelogs ? (
                <div className="scroll-surface-deep flex h-full max-h-[70vh] flex-col gap-y-5 overflow-y-scroll pt-5 pr-2 pl-5">

@@ -1,15 +1,9 @@
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
-import HuginnInput from "@components/input/HuginnInput";
 import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { useEffect } from "react";
-
-import HuginnDialogPanel from "../HuginnDialogPanel";
 
 type Inputs = {
    newPassword: string;
@@ -61,9 +55,9 @@ export default function ChangePasswordModal() {
                </PasswordInput>
             </DialogBody>
             <DialogActions>
-               <LoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-full" type="submit">
+               <HuginnLoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-full" type="submit">
                   Save
-               </LoadingButton>
+               </HuginnLoadingButton>
             </DialogActions>
          </form>
       </HuginnDialogPanel>

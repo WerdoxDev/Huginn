@@ -1,9 +1,10 @@
 import { Dialog } from "@base-ui/react";
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import SettingsTab from "@components/SettingsTab";
 import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
+import { ModalCloseButton } from "@huginn/frontend-shared";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -14,7 +15,6 @@ import { Fragment, memo, useEffect, useMemo, useState } from "react";
 
 import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
-import HuginnDialogPanel from "./HuginnDialogPanel";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";

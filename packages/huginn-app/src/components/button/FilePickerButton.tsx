@@ -1,4 +1,4 @@
-import HuginnButton from "./HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 
 export default function FilePickerButton(props: { onClick: () => void; isActive?: boolean }) {
    return (

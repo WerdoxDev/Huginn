@@ -1,13 +1,10 @@
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import AddRecipientInput from "@components/input/AddRecipientInput";
-import HuginnInput from "@components/input/HuginnInput";
 import { useChannelNamePlaceholder } from "@hooks/api-hooks/channelHooks";
 import { useCreateDMChannel } from "@hooks/mutations/useCreateDMChannel";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { DialogActions, DialogBody, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
+import { HuginnButton } from "@huginn/frontend-shared";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -16,8 +13,6 @@ import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 
 import type { AppUser } from "@/types";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 type Input = {
    name?: string;
@@ -89,7 +84,7 @@ export default function CreateDMModal() {
             <HuginnButton color="surface" className="w-full" onClick={close}>
                Cancel
             </HuginnButton>
-            <LoadingButton
+            <HuginnLoadingButton
                isLoading={mutation.isPending}
                className="h-10 w-full"
                color="primary"
@@ -97,7 +92,7 @@ export default function CreateDMModal() {
                disabled={selectedUsers.length === 0}
             >
                Find or Create
-            </LoadingButton>
+            </HuginnLoadingButton>
          </DialogActions>
       </HuginnDialogPanel>
    );

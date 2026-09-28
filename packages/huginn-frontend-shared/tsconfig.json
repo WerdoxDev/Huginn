@@ -1,0 +1,16 @@
+{
+   "extends": "../../tsconfig.json",
+   "compilerOptions": {
+      "jsx": "react-jsx",
+      "paths": {
+         "@stores/*": ["./src/stores/*"],
+         "@components/*": ["./src/components/*"],
+         "@contexts/*": ["./src/contexts/*"],
+         "@hooks/*": ["./src/hooks/*"],
+         "@lib/*": ["./src/lib/*"],
+         "@/*": ["./src/*"]
+      },
+      "rootDirs": ["."]
+   },
+   "include": ["src"]
+}

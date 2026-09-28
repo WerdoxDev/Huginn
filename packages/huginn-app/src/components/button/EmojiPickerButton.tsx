@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 
 import { clsx } from "clsx";
 
-import HuginnButton from "./HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 
 export default function ExpressionButton(props: {
    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;

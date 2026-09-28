@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppDirectChannel } from "@/types";
 
 import AttentionIndicator from "./AttentionIndicator";
-import HuginnButton from "./button/HuginnButton";
+import { HuginnButton } from "@huginn/frontend-shared";
 import RingLinkButton from "./button/RingLinkButton";
 import DirectMessageChannel from "./DirectMessageChannel";
 import VoiceStatus from "./voice/VoiceStatus";

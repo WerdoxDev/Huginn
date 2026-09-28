@@ -1,11 +1,8 @@
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import HuginnLabel from "@components/HuginnLabel";
+import UserProfilePreview from "@components/profile/UserProfilePreview";
 
 import "../../cropper.css";
-import UserProfilePreview from "@components/profile/UserProfilePreview";
 import VoiceElement from "@components/voice/VoiceElement";
+import { DialogActions, HuginnButton, HuginnDialogPanel, HuginnLabel, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { analytics } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
@@ -14,7 +11,6 @@ import { type CSSProperties, useCallback, useEffect, useRef, useState } from "re
 import Cropper, { type ReactCropperElement } from "react-cropper";
 import { SuperImageCropper } from "super-image-cropper";
 
-import HuginnDialogPanel from "./HuginnDialogPanel";
 import { UserProfileCropPreview } from "./UserProfileModal";
 
 export default function ImageCropModal() {
@@ -225,9 +221,9 @@ export default function ImageCropModal() {
                <HuginnButton onClick={close} className="h-10 flex-1" color="surface">
                   Cancel
                </HuginnButton>
-               <LoadingButton onClick={confirm} className="h-10 flex-1" color="primary" isLoading={isLoading}>
+               <HuginnLoadingButton onClick={confirm} className="h-10 flex-1" color="primary" isLoading={isLoading}>
                   Confirm
-               </LoadingButton>
+               </HuginnLoadingButton>
             </DialogActions>
          </div>
       </HuginnDialogPanel>

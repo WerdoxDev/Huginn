@@ -50,6 +50,7 @@
       "@capawesome/capacitor-live-update": "^8.4.1",
       "@chenglou/pretext": "^0.0.8",
       "@headlessui/react": "^2.2.9",
+      "@huginn/frontend-shared": "workspace:*",
       "@huginnjs/api": "workspace:*",
       "@huginnjs/shared": "workspace:*",
       "@posthog/rollup-plugin": "^1.5.1",

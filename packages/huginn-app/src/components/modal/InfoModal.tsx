@@ -1,14 +1,10 @@
 import { Dialog } from "@base-ui/react";
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
+import { DialogActions, DialogBody, HuginnButton, HuginnDialogPanel, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { animate, createScope } from "animejs";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
-import HuginnDialogPanel from "./HuginnDialogPanel";
 // import { usePostHog } from "posthog-js/react";
 
 const innerColorMap: Record<string, string> = {
@@ -143,9 +139,9 @@ export default function InfoModal() {
                {modal.action?.cancel?.text ?? "Close"}
             </HuginnButton>
             {modal.action?.confirm && (
-               <LoadingButton isLoading={isLoading} className="text-text h-10 w-full" color="primary" onClick={handleConfirmClicked}>
+               <HuginnLoadingButton isLoading={isLoading} className="text-text h-10 w-full" color="primary" onClick={handleConfirmClicked}>
                   {modal.action.confirm.text}
-               </LoadingButton>
+               </HuginnLoadingButton>
             )}
          </DialogActions>
       </HuginnDialogPanel>

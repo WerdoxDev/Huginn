@@ -1,13 +1,11 @@
-import HuginnButton from "@components/button/HuginnButton";
-import ModalCloseButton from "@components/button/ModalCloseButton";
 import LoadingBackground from "@components/LoadingBackground";
 import { useOpen } from "@hooks/useOpen";
+import { HuginnButton, ModalCloseButton } from "@huginn/frontend-shared";
+import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { clamp, constrainImageSize } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState, type TouchEvent, type WheelEvent, type MouseEvent, type Touch, type RefObject } from "react";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;

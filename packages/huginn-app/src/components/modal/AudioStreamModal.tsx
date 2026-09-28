@@ -1,19 +1,14 @@
 import AudioSourcePreview from "@components/AudioSourcePreview";
-import LoadingButton from "@components/button/LoadingButton";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import LoadingIcon from "@components/LoadingIcon";
-import Tooltip from "@components/tooltip/Tooltip";
+import { HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { analytics, recordSpanError } from "@huginnjs/shared";
 import { AUDIO_QUALITIES } from "@lib/constants";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import type { AudioSource, SelectItem } from "@/types";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 const qualityOptions: SelectItem[] = AUDIO_QUALITIES.map((x) => ({ text: `${x.name} (${x.bitrate / 1000} kbps)`, value: x.value }));
 const audioQualityToBitrate: Record<string, number> = AUDIO_QUALITIES.reduce(
@@ -79,7 +74,7 @@ export default function AudioStreamModal() {
          <div className="scroll-surface-alt grid h-full w-full grid-cols-2 gap-5 overflow-y-scroll pt-5 pr-1.5 pb-5 pl-5">
             {isLoading ? (
                <div className="col-span-2 flex h-full w-full items-center justify-center">
-                  <LoadingIcon className="size-16" />
+                  <HuginnLoadingIcon className="size-16" />
                </div>
             ) : (
                data?.map((x) => <AudioSourcePreview onSelect={handleSelect} source={x} key={x.processId} />)

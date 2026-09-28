@@ -1,3 +1,4 @@
+import { HuginnButton } from "@huginn/frontend-shared";
 import { MessageFlags } from "@huginnjs/shared";
 import { VoiceInputDevice } from "@lib/voice/voice-input-device";
 import { useChannelStore } from "@stores/channelStore";
@@ -11,8 +12,6 @@ import type { AppAttachment } from "@/types";
 
 import { createAudioWaveform } from "@/lib/audio-waveform";
 import { getMediaErrorMessage } from "@/lib/utils";
-
-import HuginnButton from "./HuginnButton";
 
 type RecordingStatus = "idle" | "requesting" | "recording" | "processing";
 

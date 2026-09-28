@@ -1,13 +1,16 @@
-import HuginnButton from "@components/button/HuginnButton";
-import LoadingButton from "@components/button/LoadingButton";
-import DialogActions from "@components/DialogActions";
-import DialogBody from "@components/DialogBody";
-import HuginnDialogTitle from "@components/HuginnDialogTitle";
 import ImagePicker from "@components/ImagePicker";
-import HuginnInput from "@components/input/HuginnInput";
 import { usePatchDMChannel } from "@hooks/mutations/usePatchDMChannel";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import {
+   DialogActions,
+   DialogBody,
+   HuginnButton,
+   HuginnDialogPanel,
+   HuginnDialogTitle,
+   HuginnInput,
+   HuginnLoadingButton,
+} from "@huginn/frontend-shared";
 import { ChannelType } from "@huginnjs/shared";
 import { getChannelIconOptions } from "@lib/queries";
 import { getGroupChannelName } from "@lib/query-utils";
@@ -15,8 +18,6 @@ import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-
-import HuginnDialogPanel from "./HuginnDialogPanel";
 
 type Input = {
    name?: string;
@@ -107,9 +108,9 @@ export default function EditGroupModal() {
                <HuginnButton className="h-10 w-full" color="surface" onClick={close} type="button">
                   Cancel
                </HuginnButton>
-               <LoadingButton isLoading={mutation.isPending} className="h-10 w-full" color="primary" type="submit">
+               <HuginnLoadingButton isLoading={mutation.isPending} className="h-10 w-full" color="primary" type="submit">
                   Save
-               </LoadingButton>
+               </HuginnLoadingButton>
             </DialogActions>
          </form>
       </HuginnDialogPanel>

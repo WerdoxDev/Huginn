@@ -109,7 +109,7 @@ export default function VideoPlayer(props: {
       void updateSettings({ mediaVolume: percent });
    }
 
-   function togglePlaying(e: MouseEvent) {
+   function togglePlaying() {
       if (playing) {
          videoRef.current?.pause();
       } else {
