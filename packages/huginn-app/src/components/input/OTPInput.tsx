@@ -1,7 +1,6 @@
+import { HuginnInput } from "@huginn/frontend-shared";
 import clsx from "clsx";
 import { useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
-
-import HuginnInput from "./HuginnInput";
 
 export default function OTPInput() {
    const inputContext = useContext(HuginnInput.InputContext);

@@ -1,5 +1,6 @@
 import { useSafeDeleteDMChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { ChannelType } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { usePresence } from "@stores/presenceStore";
@@ -12,7 +13,6 @@ import type { AppDirectChannel } from "@/types";
 
 import ActivityPreview from "./ActivityPreview";
 import ChannelIcon from "./ChannelIcon";
-import LoadingIcon from "./LoadingIcon";
 import UserAvatar from "./UserAvatar";
 
 export default function DirectMessageChannel(props: { channel: AppDirectChannel; ref: Ref<HTMLLIElement>; pinned?: boolean }) {
@@ -111,7 +111,7 @@ export default function DirectMessageChannel(props: { channel: AppDirectChannel;
                </div>
             ) : (
                <div className="mr-2 flex shrink-0 items-center justify-center">
-                  <LoadingIcon className="size-7" />
+                  <HuginnLoadingIcon className="size-7" />
                </div>
             )}
          </Link>

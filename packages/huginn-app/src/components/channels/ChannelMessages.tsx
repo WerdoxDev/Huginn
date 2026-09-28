@@ -1,10 +1,10 @@
-import LoadingIcon from "@components/LoadingIcon";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageScroll } from "@hooks/useMessageScroll";
 import { useVisibleMessages } from "@hooks/useVisibleMessages";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { ChannelType, MessageType, type Snowflake } from "@huginnjs/shared";
 import { getMessagesOptions } from "@lib/queries";
 import { convertToAppMessage } from "@lib/utils";
@@ -285,7 +285,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
                className="bg-surface-alt ring-primary-700 hover:bg-primary-800 hover:text-text text-text/80 absolute right-4 bottom-4 z-20 cursor-pointer rounded-full p-2 ring-1 transition-all"
                onClick={handleLoadLatest}
             >
-               {isLoadingLatest ? <LoadingIcon className="size-5" /> : <IconMingcuteDownFill className="size-5" />}
+               {isLoadingLatest ? <HuginnLoadingIcon className="size-5" /> : <IconMingcuteDownFill className="size-5" />}
             </button>
          )}
       </div>

@@ -1,6 +1,5 @@
-import { HuginnButton } from "@huginn/frontend-shared";
-import HuginnLabel from "@components/HuginnLabel";
 import { useBackgroundImageUrl, useGlobalChannelBackground } from "@hooks/useChannelBackgrounds";
+import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 
 export default function DefaultChannelBackgroundSelector() {

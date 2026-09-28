@@ -1,10 +1,9 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import HuginnIcon from "@components/HuginnIcon";
-import LoadingIcon from "@components/LoadingIcon";
 import StartWrapper from "@components/StartWrapper";
 import { useConnect } from "@hooks/useConnect";
 import { useCountdown } from "@hooks/useCountdown";
 import { useUpdater } from "@hooks/useUpdater";
+import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
 import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -298,7 +297,7 @@ function IndexComponent() {
                         state.current === "update" ||
                         state.current === "initialize" ||
                         state.current === "fetch_hostnames") &&
-                        progress === 0 && <LoadingIcon className="size-6" />}
+                        progress === 0 && <HuginnLoadingIcon className="size-6" />}
                   </div>
                </div>
             )}

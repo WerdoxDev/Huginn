@@ -1,9 +1,9 @@
-import LoadingIcon from "@components/LoadingIcon";
 import HuginnPopover from "@components/popover/HuginnPopover";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { usePinnedMessages } from "@hooks/api-hooks/messageHooks";
 import { useUnpinMessage } from "@hooks/mutations/useUnpinMessage";
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useModals } from "@stores/modalsStore";
@@ -105,7 +105,7 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
          <div className="scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pl-2" onScroll={onScroll}>
             {isLoading && (
                <div className="text-text/70 flex h-20 items-center justify-center gap-x-2">
-                  <LoadingIcon className="size-10" />
+                  <HuginnLoadingIcon className="size-10" />
                </div>
             )}
             {isError && !isLoading && <div className="text-text/70 flex items-center justify-center py-6">Failed to load pinned messages.</div>}
@@ -146,7 +146,7 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
             )}
             {isFetchingNextPage && (
                <div className="flex items-center justify-center py-2">
-                  <LoadingIcon className="size-10" />
+                  <HuginnLoadingIcon className="size-10" />
                </div>
             )}
          </div>

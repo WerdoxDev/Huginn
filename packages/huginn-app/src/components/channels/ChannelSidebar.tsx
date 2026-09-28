@@ -1,9 +1,8 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import ChannelRecipient from "@components/ChannelRecipient";
-import LoadingIcon from "@components/LoadingIcon";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { ChannelType } from "@huginnjs/shared";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
@@ -106,7 +105,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
                   </HuginnButton>
                   {loading && (
                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <LoadingIcon className="size-10" />
+                        <HuginnLoadingIcon className="size-10" />
                      </div>
                   )}
                </div>

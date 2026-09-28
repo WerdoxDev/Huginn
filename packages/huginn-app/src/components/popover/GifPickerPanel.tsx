@@ -1,14 +1,13 @@
 import type { APIGif, FavoriteGif } from "@huginnjs/shared";
 
 import HuginnTab from "@components/HuginnTab";
-import HuginnInput from "@components/input/HuginnInput";
-import LoadingIcon from "@components/LoadingIcon";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useContainerWidth } from "@hooks/useContainerWidth";
 import { useFavoriteGifs } from "@hooks/useFavoriteGifs";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { HuginnInput, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { getGifCategoriesOptions, getSearchGifsOptions, getTrendingGifsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -212,7 +211,7 @@ function GifGrid(props: {
    return (
       <div ref={containerRef} className="flex h-full w-full flex-col" style={{ gap: props.gap }}>
          {props.isLoading || !width ? (
-            <PickerMessage className="h-full w-full" icon={<LoadingIcon className="size-10" />} />
+            <PickerMessage className="h-full w-full" icon={<HuginnLoadingIcon className="size-10" />} />
          ) : (
             rows?.map((row, index) => (
                <div className="flex" key={index} style={{ gap: props.gap }}>

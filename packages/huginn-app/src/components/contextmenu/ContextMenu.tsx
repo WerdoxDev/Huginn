@@ -1,10 +1,10 @@
 import { Drawer, Menu as BaseMenu } from "@base-ui/react";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { HuginnErrorBoundary } from "@components/HuginnErrorBoundary";
-import LoadingIcon from "@components/LoadingIcon";
 import { useErrorHandler } from "@hooks/useErrorHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { snowflake, WorkerID } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
@@ -140,7 +140,7 @@ function Item(
       return (
          <button ref={props.ref} type="button" disabled={props.disabled || isLoading} onClick={handleClick} className={itemClass}>
             {props.label}
-            {isLoading ? <LoadingIcon /> : props.children}
+            {isLoading ? <HuginnLoadingIcon /> : props.children}
          </button>
       );
    }
@@ -155,7 +155,7 @@ function Item(
          className={itemClass}
       >
          {props.label}
-         {isLoading ? <LoadingIcon /> : props.children}
+         {isLoading ? <HuginnLoadingIcon /> : props.children}
       </BaseMenu.Item>
    );
 }
