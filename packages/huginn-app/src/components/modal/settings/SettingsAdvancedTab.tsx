@@ -1,10 +1,7 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnCheckbox from "@components/HuginnCheckbox";
-import HuginnLabel from "@components/HuginnLabel";
-import HuginnInput from "@components/input/HuginnInput";
 import { type ConnectionStatus, useConnectionStatus } from "@hooks/useConnectionStatus";
 import { useHuginnForm } from "@hooks/useHuginnForm";
+import { HuginnButton, HuginnCheckbox, HuginnInput, HuginnLabel } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";

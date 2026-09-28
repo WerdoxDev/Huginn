@@ -1,4 +1,4 @@
-import HuginnCheckbox from "@components/HuginnCheckbox";
+import { HuginnCheckbox } from "@huginn/frontend-shared";
 import { useStorage } from "@stores/storageStore";
 
 import type { SettingsTabProps } from "@/types";

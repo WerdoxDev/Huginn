@@ -1,5 +1,5 @@
-import HuginnCheckbox from "@components/HuginnCheckbox";
 import Tooltip from "@components/tooltip/Tooltip";
+import { HuginnCheckbox } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import clsx from "clsx";

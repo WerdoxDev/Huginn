@@ -1,11 +1,11 @@
 import type { GatewayVoiceState, Snowflake, VoicePreference } from "@huginnjs/shared";
 
-import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import UserBanner from "@components/UserBanner";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -212,7 +212,7 @@ export default function VoiceElement(props: {
          />
          {isLoadingStream ? (
             <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
-               <LoadingIcon className="size-12" />
+               <HuginnLoadingIcon className="size-12" />
             </div>
          ) : (
             isPreview && (

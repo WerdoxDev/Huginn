@@ -1,7 +1,7 @@
-import HuginnInput from "@components/input/HuginnInput";
 import HuginnSlider from "@components/input/HuginnSlider";
 import HuginnPopover from "@components/popover/HuginnPopover";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { HuginnInput } from "@huginn/frontend-shared";
 import { usePopover } from "@stores/popoverStore";
 import clsx from "clsx";
 import { type MouseEvent, type PointerEvent, useEffect, useId, useState } from "react";
