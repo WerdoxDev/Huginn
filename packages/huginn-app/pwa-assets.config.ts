@@ -7,5 +7,5 @@ export default defineConfig({
       transparent: { sizes: [64, 192, 512], favicons: [[96, "favicon.ico"]] },
       png: { compressionLevel: 0, quality: 100, colors: 3 },
    },
-   images: ["src/assets/icons/default/outline/outline-512.png"],
+   images: ["../huginn-assets/icons/default/outline/outline-512.png"],
 });

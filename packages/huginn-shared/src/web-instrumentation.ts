@@ -27,10 +27,10 @@ export function setupWebInstrumentation(
 ): void {
    const logProvider = new LoggerProvider({
       processors: [
-         new BatchLogRecordProcessor(new OTLPLogExporter({ url: options.otlpLogUrl })),
-         new BatchLogRecordProcessor(
-            new OTLPLogExporter({ url: `${options.posthogHost}/i/v1/logs`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
-         ),
+         new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }),
+         new BatchLogRecordProcessor({
+            exporter: new OTLPLogExporter({ url: `${options.posthogHost}/i/v1/logs`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
+         }),
       ],
       resource: resourceFromAttributes({
          "service.name": options.serviceName,

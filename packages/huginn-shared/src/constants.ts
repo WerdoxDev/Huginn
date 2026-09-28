@@ -29,6 +29,7 @@ export const CONSTANTS = {
    EMBED_MEDIA_MAX_HEIGHT: 300,
    CALL_RINGING_TIMEOUT: 10000,
    KNOWN_APPLICATION_SIMILARITY_THRESHOLD: 90,
+   KNOWN_APPLICATION_IGNORED_SUBTITLES: ["demo", "trailer", "teaser", "preview", "beta", "alpha", "early access", "game", "launcher"] as string[],
    MAX_VIDEO_BITRATE: 4000000,
    MIN_VIDEO_BITRATE: 400000,
    DEFAULT_VIDEO_BITRATE: 3000000,

@@ -1,77 +1,88 @@
-import { Icon } from "@iconify/react";
+import type { ThemeType } from "@huginnjs/shared";
+
+import { mappedColorThemes } from "@huginn/frontend-shared";
+import { themeStore } from "@stores/themeStore";
+import clsx from "clsx";
 import { useState } from "react";
 
-import { ceruleanTheme, charcoalTheme, coffeeTheme, eggplantTheme, pineGreenTheme, type ColorTheme, useTheme } from "../scripts/useChangeTheme";
-
-type ThemeChangerProps = {
-   className?: string;
-};
-
-export default function ThemeChanger({ className }: ThemeChangerProps) {
+export default function ThemeChanger(props: { className?: string }) {
    const [isOpen, setIsOpen] = useState(false);
-   const { setThemeType } = useTheme();
+   const { setTheme } = themeStore.actions;
 
    const toggleMenu = () => {
       setIsOpen((prev) => !prev);
    };
 
-   const chooseTheme = (theme: ColorTheme) => {
-      setThemeType(theme.type);
+   function handleChooseTheme(theme: ThemeType) {
+      setTheme(theme);
       setIsOpen(false);
-   };
-
-   const rootClassName = ["w-fit", className].filter(Boolean).join(" ");
+   }
 
    return (
-      <div className={rootClassName}>
-         <button onClick={toggleMenu} className="shadow-4xl bg-tertiary z-30 rounded-full p-4 shadow-md transition-all hover:shadow-lg" type="button">
-            <Icon icon="material-symbols:brush" className="text-accent size-7" />
+      <div className={clsx("w-fit", props.className)}>
+         <button
+            onClick={toggleMenu}
+            className="shadow-4xl bg-surface-deep z-30 cursor-pointer rounded-full p-4 shadow-md transition-all outline-none hover:shadow-lg"
+            type="button"
+         >
+            <IconMaterialSymbolsBrush className="text-primary-500 size-7" />
          </button>
 
          <div
-            className={`bg-tertiary outline-primary ease absolute right-20 bottom-0 grid h-44 w-28 grid-cols-2 gap-x-2 rounded-lg p-3 shadow-2xl outline outline-1 transition-all duration-[250ms] md:h-36 md:w-24 ${
-               isOpen ? "scale-100 opacity-100" : "pointer-events-none scale-90 opacity-0"
-            }`}
+            className={clsx(
+               "bg-surface-deep absolute right-20 bottom-0 grid w-max grid-cols-2 gap-3 rounded-lg p-3 transition-all duration-250",
+               isOpen ? "scale-100 opacity-100" : "pointer-events-none scale-90 opacity-0",
+            )}
          >
-            <button
-               onClick={() => chooseTheme(coffeeTheme)}
-               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8"
+            {Object.keys(mappedColorThemes).map((theme) => (
+               <button
+                  key={theme}
+                  onClick={() => handleChooseTheme(theme as ThemeType)}
+                  className="flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-105"
+                  type="button"
+               >
+                  <div className="size-10 rounded-full" style={{ backgroundColor: mappedColorThemes[theme as ThemeType]["primary-500"] }}></div>
+               </button>
+            ))}
+            {/*<button
+               onClick={() => handleChooseTheme("coffee")}
+               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 lg:size-8"
                type="button"
             >
-               <div className="size-8 rounded-full bg-[#D99A6C] md:size-6"></div>
+               <div className="size-8 rounded-full bg-[#D99A6C] lg:size-6"></div>
             </button>
 
             <button
-               onClick={() => chooseTheme(ceruleanTheme)}
-               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8"
+               onClick={() => handleChooseTheme("cerulean")}
+               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 lg:size-8"
                type="button"
             >
-               <div className="size-8 rounded-full bg-[#00A7E3] md:size-6"></div>
+               <div className="size-8 rounded-full bg-[#00A7E3] lg:size-6"></div>
             </button>
 
             <button
-               onClick={() => chooseTheme(pineGreenTheme)}
-               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8"
+               onClick={() => handleChooseTheme("pine-green")}
+               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 lg:size-8"
                type="button"
             >
-               <div className="size-8 rounded-full bg-[#02CAB9] md:size-6"></div>
+               <div className="size-8 rounded-full bg-[#02CAB9] lg:size-6"></div>
             </button>
 
             <button
-               onClick={() => chooseTheme(eggplantTheme)}
-               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8"
+               onClick={() => handleChooseTheme("plum")}
+               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 lg:size-8"
                type="button"
             >
-               <div className="size-8 rounded-full bg-[#DC8B9A] md:size-6"></div>
+               <div className="size-8 rounded-full bg-[#DC8B9A] lg:size-6"></div>
             </button>
 
             <button
-               onClick={() => chooseTheme(charcoalTheme)}
-               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 md:size-8"
+               onClick={() => handleChooseTheme("rose")}
+               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black/30 lg:size-8"
                type="button"
             >
-               <div className="size-8 rounded-full bg-[#9FB1BD] md:size-6"></div>
-            </button>
+               <div className="size-8 rounded-full bg-[#9FB1BD] lg:size-6"></div>
+            </button>*/}
          </div>
       </div>
    );

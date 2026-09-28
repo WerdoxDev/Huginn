@@ -1,0 +1,182 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@source "../../huginn-frontend-shared/src";
+
+@theme {
+   --font-*: initial;
+   --font-ubuntu: "Ubuntu Mono", monospace;
+
+   --text-tiny: 0.688rem;
+}
+
+@theme inline {
+   --color-surface: var(--tcolor-surface);
+   --color-surface-alt: var(--tcolor-surface-alt);
+   --color-surface-deep: var(--tcolor-surface-deep);
+   --color-surface-void: var(--tcolor-surface-void);
+
+   --color-primary-300: var(--tcolor-primary-300);
+   --color-primary-400: var(--tcolor-primary-400);
+   --color-primary-500: var(--tcolor-primary-500);
+   --color-primary-600: var(--tcolor-primary-600);
+   --color-primary-700: var(--tcolor-primary-700);
+   --color-primary-800: var(--tcolor-primary-800);
+   --color-primary-900: var(--tcolor-primary-900);
+
+   --color-positive-100: var(--tcolor-positive-100);
+   --color-positive-300: var(--tcolor-positive-300);
+   --color-positive-500: var(--tcolor-positive-500);
+   --color-positive-700: var(--tcolor-positive-700);
+   --color-positive-900: var(--tcolor-positive-900);
+
+   --color-negative-100: var(--tcolor-negative-100);
+   --color-negative-300: var(--tcolor-negative-300);
+   --color-negative-500: var(--tcolor-negative-500);
+   --color-negative-700: var(--tcolor-negative-700);
+   --color-negative-900: var(--tcolor-negative-900);
+
+   --color-caution-100: var(--tcolor-caution-100);
+   --color-caution-300: var(--tcolor-caution-300);
+   --color-caution-500: var(--tcolor-caution-500);
+   --color-caution-700: var(--tcolor-caution-700);
+   --color-caution-900: var(--tcolor-caution-900);
+
+   --color-text: var(--tcolor-text);
+}
+
+li::marker {
+   color: theme("colors.primary.500");
+}
+
+@font-face {
+   font-family: "Rubik";
+   src: url("assets/Rubik-VariableFont_wght.ttf") format("TrueType");
+   font-style: normal;
+}
+
+@font-face {
+   font-family: "Rubik";
+   src: url("assets/Rubik-Italic-VariableFont_wght.ttf") format("TrueType");
+   font-style: italic;
+}
+
+@font-face {
+   font-family: "Ubuntu Mono";
+   src: url("../../huginn-app/src/assets/UbuntuMono-Regular.ttf") format("TrueType");
+   font-style: normal;
+   font-weight: 400;
+}
+
+@font-face {
+   font-family: "Ubuntu Mono";
+   src: url("../../huginn-app/src/assets/UbuntuMono-Bold.ttf") format("TrueType");
+   font-style: normal;
+   font-weight: 700;
+}
+
+:root {
+   /*font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;*/
+   font-family: "Rubik", sans-serif;
+   /*line-height: 1.5;*/
+   /*font-weight: 400;*/
+
+   color-scheme: dark;
+   /*@apply bg-surface;*/
+   /*@apply text-text;*/
+
+   font-synthesis: none;
+   text-rendering: optimizeLegibility;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+   @apply bg-primary-700;
+}
+
+html,
+body,
+#root {
+   @apply h-full;
+}
+
+.staff-interface {
+   -webkit-font-smoothing: none;
+   overscroll-behavior: none;
+}
+
+.staff-interface ::-webkit-scrollbar {
+   @apply h-3 w-3;
+}
+
+.staff-interface * {
+   --staff-scrollbar-thumb: transparent;
+}
+
+.staff-interface *:hover {
+   --staff-scrollbar-thumb: var(--color-surface);
+}
+
+.staff-interface ::-webkit-scrollbar-thumb {
+   @apply rounded-full border-3 border-solid border-transparent bg-clip-padding;
+   background-color: var(--staff-scrollbar-thumb);
+}
+
+.staff-interface .scroll-surface-deep:hover {
+   --staff-scrollbar-thumb: var(--color-surface-deep);
+}
+
+.staff-interface .scroll-thin::-webkit-scrollbar {
+   @apply h-2.5 w-2.5;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+   opacity: 0;
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+   transition-property: opacity;
+   transition-duration: 250ms;
+   transition-timing-function: ease;
+}
+
+.fade-enter-from {
+   opacity: 0;
+   translate: 0 100px;
+}
+
+.fade-enter-active {
+   transition-property: all;
+   transition-duration: 500ms;
+   transition-timing-function: ease;
+}
+
+.slide-in-out-enter-from,
+.slide-in-out-leave-to {
+   translate: 100% 0;
+}
+
+.slide-in-out-enter-active,
+.slide-in-out-leave-active {
+   transition-property: translate;
+   transition-duration: 250ms;
+   transition-timing-function: ease;
+}
+
+.version-card-enter-from,
+.version-card-leave-to {
+   opacity: 0;
+}
+
+.version-card-enter-active,
+.version-card-leave-active {
+   transition-property: translate opacity;
+   transition-duration: 250ms;
+   transition-timing-function: ease;
+}
+
+::-webkit-search-cancel-button {
+   -webkit-appearance: none;
+}

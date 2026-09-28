@@ -168,21 +168,5 @@ export const assertExtension = Prisma.defineExtension({
             });
          },
       },
-      knownApplication: {
-         async assertKnownApplicationsExist(methodName: string, knownApplicationIds: number[]) {
-            return analytics.startActiveSpan("db.knownApplication.assertKnownApplicationsExist", async (span) => {
-               span.setAttribute("query.known_application.count", knownApplicationIds.length);
-               try {
-                  const foundCount = await prisma.knownApplication.count({
-                     where: { id: { in: knownApplicationIds } },
-                  });
-                  assertCondition(methodName, foundCount !== knownApplicationIds.length, DBErrorType.NULL_KNOWN_APPLICATION, knownApplicationIds.join(","));
-               } catch (e) {
-                  recordSpanError(e);
-                  throw e;
-               }
-            });
-         },
-      },
    },
 });

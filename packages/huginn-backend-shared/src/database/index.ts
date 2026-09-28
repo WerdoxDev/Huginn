@@ -7,7 +7,6 @@ import { attachmentExtension } from "./attachment";
 import { channelExtension } from "./channel";
 import { emailVerificationExtension } from "./emailVerification";
 import { embedExtension } from "./embed";
-import { knownApplicationExtension } from "./knownApplication";
 import { messagesExtension } from "./message";
 import { messagePinExtension } from "./messagePin";
 import { notificationTokenExtension } from "./notificationToken";
@@ -45,7 +44,6 @@ export const prisma = prismaBase
    .$extends(embedExtension)
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
-   .$extends(knownApplicationExtension)
    .$extends(emailVerificationExtension)
    .$extends(notificationTokenExtension)
    .$extends(reactionExtension);
@@ -63,5 +61,6 @@ export const prisma = prismaBase
 
 export * from "./error";
 export * from "./common";
+export * from "./applicationCatalog";
 export { Prisma, type Message, type EmailVerification };
 export { drizzle } from "./drizzle/db";

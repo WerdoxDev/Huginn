@@ -1,7 +1,7 @@
 import { type APIGetLatestReleaseResult } from "@huginnjs/shared";
 import Elysia from "elysia";
 
-import { getAllAppReleases, getAppPackageVersion, getWindowsAssetUrl } from "#utils/route-utils";
+import { getAllAppReleases, getAndroidAssetUrl, getAppPackageVersion, getLinuxAssetUrl, getWindowsAssetUrl } from "#utils/route-utils";
 
 export const getLatestRelease = new Elysia().get("/api/latest-release", async ({ status }) => {
    const releases = await getAllAppReleases();
@@ -9,11 +9,15 @@ export const getLatestRelease = new Elysia().get("/api/latest-release", async ({
    const [latestRelease] = releases;
 
    const releaseWindowsSetupUrl = getWindowsAssetUrl(latestRelease);
+   const releaseLinuxSetupUrl = getLinuxAssetUrl(latestRelease);
+   const releaseAndroidSetupUrl = getAndroidAssetUrl(latestRelease);
 
    const json: APIGetLatestReleaseResult = latestRelease && {
       version: getAppPackageVersion(latestRelease.tag_name),
       date: latestRelease.published_at ?? "",
-      windowsSetupUrl: releaseWindowsSetupUrl,
+      windowsDownloadUrl: releaseWindowsSetupUrl,
+      linuxDownloadUrl: releaseLinuxSetupUrl,
+      androidDownloadUrl: releaseAndroidSetupUrl,
       url: latestRelease.url,
       description: latestRelease.body === null ? undefined : latestRelease.body,
    };

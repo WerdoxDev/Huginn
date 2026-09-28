@@ -1,10 +1,12 @@
 import { prisma } from "@huginn/backend-shared/database";
 import {
+   selectApplicationMatcher,
    selectChannelDefaults,
-   selectKnownApplication,
+   selectKnownGame,
    selectAllMessage,
+   type ApplicationMatcherPayload,
    type ChannelPayload,
-   type KnownApplicationPayload,
+   type KnownGamePayload,
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
 import { logger } from "@huginn/backend-shared/logger";
@@ -161,13 +163,27 @@ export function filterChannel<T extends ChannelPayload<{ select: typeof selectCh
    return channel;
 }
 
-export function filterKnownApplication<T extends KnownApplicationPayload<{ select: typeof selectKnownApplication }>>(knownApplication: T) {
+export function filterKnownGame<T extends KnownGamePayload<{ select: typeof selectKnownGame }>>(knownGame: T) {
+   return pick(knownGame, ["id", "igdbId", "canonicalName", "aliases", "createdAt", "updatedAt"]);
+}
+
+export function filterApplicationMatcher<T extends ApplicationMatcherPayload<{ select: typeof selectApplicationMatcher }>>(matcher: T) {
    return {
-      ...omit(knownApplication, ["igdbId", "contributorId"]),
-      ...(knownApplication.contributorId !== null && {
-         contributorId: knownApplication.contributorId,
+      ...pick(matcher, [
+         "id",
+         "knownGameId",
+         "exeNames",
+         "windowTitles",
+         "platform",
+         "status",
+         "verificationMethod",
+         "commandLinePatterns",
+         "createdAt",
+         "updatedAt",
+      ]),
+      ...(matcher.contributorId !== null && {
+         contributorId: String(matcher.contributorId),
       }),
-      ...(knownApplication.igdbId !== null && { igdbId: knownApplication.igdbId }),
    };
 }
 

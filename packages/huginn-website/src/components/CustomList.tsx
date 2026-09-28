@@ -1,10 +1,11 @@
-import { Listbox } from "@headlessui/react";
-import { Icon } from "@iconify/react";
+import { HuginnSelect } from "@huginn/frontend-shared";
 import { useMemo, useState } from "react";
+
+import type { IconComponent } from "@/types";
 
 type ListOption = {
    text: string;
-   icon: string;
+   icon: IconComponent;
    disabled: boolean;
    hidden: boolean;
 };
@@ -17,45 +18,37 @@ type CustomListProps = {
 };
 
 export default function CustomList({ options, default: defaultValue, className, onChanged }: CustomListProps) {
-   const initialOption = useMemo(() => {
-      return options.find((option) => option.text.trim().toLowerCase() === defaultValue) ?? options[0] ?? null;
-   }, [defaultValue, options]);
+   const initialOption = useMemo(() => options.find((option) => option.text.trim().toLowerCase() === defaultValue) ?? options[0], [defaultValue, options]);
+   const [selectedOption, setSelectedOption] = useState(initialOption);
+   const SelectedIcon = selectedOption?.icon ?? IconMdiClose;
 
-   const [selectedOption, setSelectedOption] = useState<ListOption | null>(initialOption);
+   if (!selectedOption) return null;
 
    return (
-      <Listbox
-         value={selectedOption}
-         onChange={(option) => {
+      <HuginnSelect
+         className="relative mx-2"
+         selected={{ text: selectedOption.text, value: selectedOption.text }}
+         onChange={(item) => {
+            const option = options.find((candidate) => candidate.text === item.value);
+            if (!option) return;
             setSelectedOption(option);
             onChanged?.(option.text.trim().toLowerCase());
          }}
       >
-         <div className="relative mx-2 select-none">
-            <Listbox.Button className={`bg-secondary flex items-center rounded-md px-2 py-1 ${className ?? ""}`.trim()}>
-               <Icon icon={selectedOption?.icon ?? "mdi:cross"} className="mr-1" />
-               {selectedOption?.text}
-               <Icon icon="gridicons:dropdown" className="ml-auto" />
-            </Listbox.Button>
-
-            <Listbox.Options className="bg-secondary absolute mt-1 w-full overflow-hidden rounded-md shadow-lg">
-               {options.map((option) => (
-                  <Listbox.Option
+         <HuginnSelect.List className={className} startIcon={<SelectedIcon className="mr-1" />} />
+         <HuginnSelect.ItemsWrapper>
+            {options.map((option) => {
+               const OptionIcon = option.icon;
+               return (
+                  <HuginnSelect.Item
                      key={option.text}
-                     value={option}
+                     item={{ text: option.text, value: option.text, icon: <OptionIcon className="mr-1" /> }}
                      disabled={option.disabled}
-                     className={({ active, disabled }) =>
-                        `flex cursor-pointer items-center px-2 py-1 pr-9 ${
-                           active && !disabled ? "bg-black/50" : ""
-                        } ${disabled ? "text-text/50 cursor-not-allowed" : ""} ${option.hidden ? "hidden" : ""}`
-                     }
-                  >
-                     <Icon icon={option.icon} className="mr-1" />
-                     {option.text}
-                  </Listbox.Option>
-               ))}
-            </Listbox.Options>
-         </div>
-      </Listbox>
+                     className={option.hidden ? "hidden" : undefined}
+                  />
+               );
+            })}
+         </HuginnSelect.ItemsWrapper>
+      </HuginnSelect>
    );
 }

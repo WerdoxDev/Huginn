@@ -1,13 +1,11 @@
-import { prisma } from "@huginn/backend-shared/database/index";
+import { nextApplicationCatalogRevision, prismaBase } from "@huginn/backend-shared/database/index";
 
 import type { TwitchOAuthResult } from "#utils/types";
 
 import { env } from "#setup";
 import { serverFetch } from "#utils/server-request";
 
-const knownApplications = await prisma.knownApplication.findMany({
-   where: { igdbId: { not: null } },
-});
+const knownGames = await prismaBase.knownGame.findMany();
 
 type IGDBSearchResult = {
    id: number;
@@ -15,6 +13,7 @@ type IGDBSearchResult = {
    rating: number;
    url: string;
    alternative_names?: Array<{ name: string }>;
+   game_localizations?: Array<{ name: string }>;
 };
 const search = new URLSearchParams({
    client_id: env.IGDB_CLIENT_ID!,
@@ -26,30 +25,41 @@ const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2
 });
 const token = result.access_token;
 
-let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
+if (knownGames.length === 0) {
+   process.exit(0);
+}
+
+const searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
    headers: { "Client-ID": env.IGDB_CLIENT_ID! },
    auth: true,
    token: token,
    body: `
-      fields id,name,rating,url,alternative_names.name,game_type;
-      where id = (${knownApplications.map((x) => x.igdbId).join(",")});
+      fields id,name,rating,url,alternative_names.name,game_localizations.name,game_type;
+      where id = (${knownGames.map((game) => game.igdbId).join(",")});
       limit 500;
       `,
 });
 
-const names: Array<{ id: number; name: string }> = [];
-for (const result of searchResult) {
-   names.push({ name: result.name, id: result.id });
-   if (result.alternative_names && result.alternative_names.length !== 0) {
-      names.push(...result.alternative_names.map((x) => ({ id: result.id, name: x.name })));
-   }
-}
+for (const knownGame of knownGames) {
+   const result = searchResult.find((game) => game.id === knownGame.igdbId);
+   if (!result) continue;
 
-for (const application of knownApplications) {
-   const foundNames = names.filter((x) => x.id === application.igdbId);
-   application.names = foundNames.map((x) => x.name);
-}
+   const aliases = [
+      ...(result.alternative_names ?? []).map((alternative) => alternative.name),
+      ...(result.game_localizations ?? []).map((localization) => localization.name),
+   ].filter((name, index, names) => name !== result.name && names.indexOf(name) === index);
 
-for (const application of knownApplications) {
-   await prisma.knownApplication.update({ where: { id: application.id }, data: application });
+   const unchanged =
+      knownGame.canonicalName === result.name &&
+      knownGame.aliases.length === aliases.length &&
+      knownGame.aliases.every((alias, index) => alias === aliases[index]);
+   if (unchanged) continue;
+
+   await prismaBase.$transaction(async (transaction) => {
+      const revision = await nextApplicationCatalogRevision(transaction);
+      await transaction.knownGame.update({
+         where: { id: knownGame.id },
+         data: { canonicalName: result.name, aliases, revision },
+      });
+   });
 }

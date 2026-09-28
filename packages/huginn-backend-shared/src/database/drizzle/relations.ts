@@ -15,7 +15,9 @@ import {
    notificationToken,
    call,
    settings,
-   knownApplication,
+   knownGame,
+   applicationMatcher,
+   contribution,
    messageReference,
    channelRecipients,
    channelTempDeleted,
@@ -49,7 +51,12 @@ export const userRelations = relations(user, ({ many }) => ({
    pinnedMessages: many(messagePin),
    notificationTokens: many(notificationToken),
    settings: many(settings),
-   knownApplications: many(knownApplication),
+   applicationMatchers: many(applicationMatcher, {
+      relationName: "applicationMatcher_contributorId_user_id",
+   }),
+   contributions: many(contribution, {
+      relationName: "contribution_contributorId_user_id",
+   }),
    includedChannels: many(channelRecipients),
    tempDeletedChannels: many(channelTempDeleted),
    mentionedMessages: many(messageMentions),
@@ -198,10 +205,37 @@ export const settingsRelations = relations(settings, ({ one }) => ({
    }),
 }));
 
-export const knownApplicationRelations = relations(knownApplication, ({ one }) => ({
-   user: one(user, {
-      fields: [knownApplication.contributorId],
+export const knownGameRelations = relations(knownGame, ({ many }) => ({
+   applicationMatchers: many(applicationMatcher),
+   contributions: many(contribution),
+}));
+
+export const applicationMatcherRelations = relations(applicationMatcher, ({ one, many }) => ({
+   knownGame: one(knownGame, {
+      fields: [applicationMatcher.knownGameId],
+      references: [knownGame.id],
+   }),
+   contributor: one(user, {
+      fields: [applicationMatcher.contributorId],
       references: [user.id],
+      relationName: "applicationMatcher_contributorId_user_id",
+   }),
+   contributions: many(contribution),
+}));
+
+export const contributionRelations = relations(contribution, ({ one }) => ({
+   contributor: one(user, {
+      fields: [contribution.contributorId],
+      references: [user.id],
+      relationName: "contribution_contributorId_user_id",
+   }),
+   knownGame: one(knownGame, {
+      fields: [contribution.knownGameId],
+      references: [knownGame.id],
+   }),
+   applicationMatcher: one(applicationMatcher, {
+      fields: [contribution.applicationMatcherId],
+      references: [applicationMatcher.id],
    }),
 }));
 

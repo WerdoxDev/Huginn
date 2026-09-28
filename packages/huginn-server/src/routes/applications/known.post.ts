@@ -1,102 +1,57 @@
-import { invalidBody, notFound, singleError, verifyJwt } from "@huginn/backend-shared";
-import { prisma, selectKnownApplication } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors, findClosestString, type APIPostKnownApplicationResult } from "@huginnjs/shared";
+import { invalidBody, verifyJwt } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
+import { logger } from "@huginn/backend-shared/logger";
+import { CDNRoutes, cleanApplicationTitle, getFileHash, toArrayBuffer, type APIPostKnownApplicationResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
-import type { TwitchOAuthResult, IGDBSearchResult } from "#utils/types";
+import { cdnUpload } from "#utils/server-request";
 
-import { env } from "#setup";
-import { filterKnownApplication } from "#utils/helpers";
-import { serverFetch } from "#utils/server-request";
-
-const schema = t.Object({ windowTitle: t.String(), exePath: t.String() });
+const schema = t.Object({
+   windowTitle: t.String({ minLength: 1, maxLength: 1_024 }),
+   exePath: t.String({ minLength: 1, maxLength: 32_768 }),
+   commandLine: t.Optional(t.String({ maxLength: 131_072 })),
+   platform: t.Optional(t.String({ minLength: 1, maxLength: 64 })),
+   icon: t.Optional(t.String({ maxLength: 4_000_000 })),
+});
 
 export const postKnownApplication = new Elysia().use(verifyJwt()).post(
    "/api/applications/known",
    async ({ body, status, tokenPayload }) => {
-      const exeName = body.exePath.split(/[/\\]+/).pop();
+      const cleanedWindowTitle = cleanApplicationTitle(body.windowTitle);
+      if (!cleanedWindowTitle) return invalidBody(status);
 
-      let title = body.windowTitle.trim();
-      title = title.replace(/[\u00A9\u00AE\u2120\u2122\u2117]/g, "");
-
-      if (!exeName) {
-         return invalidBody(status);
-      }
-
-      const search = new URLSearchParams({
-         client_id: env.IGDB_CLIENT_ID!,
-         client_secret: env.IGDB_CLIENT_SECRET!,
-         grant_type: "client_credentials",
-      });
-      const result: TwitchOAuthResult = await serverFetch("https://id.twitch.tv/oauth2/token", "POST", { query: search });
-      const token = result.access_token;
-
-      let searchResult: IGDBSearchResult[] = await serverFetch("https://api.igdb.com/v4/games", "POST", {
-         headers: { "Client-ID": env.IGDB_CLIENT_ID! },
-         auth: true,
-         token: token,
-         body: `
-      fields id,name,rating,url,alternative_names.name,game_type;
-      search "${title}";
-      where platforms = (6,53);
-      `,
+      const contribution = await prisma.contribution.create({
+         data: {
+            windowTitle: body.windowTitle,
+            cleanedWindowTitle,
+            exePath: body.exePath,
+            commandLine: body.commandLine,
+            platform: body.platform ?? "unknown",
+            contributorId: BigInt(tokenPayload.id),
+            status: "pending",
+         },
+         select: { id: true },
       });
 
-      const searchableNames: Array<{ id: number; name: string }> = [];
+      if (body.icon) {
+         try {
+            const data = toArrayBuffer(body.icon);
+            const iconHash = getFileHash(data);
 
-      for (const search of searchResult) {
-         searchableNames.push({ id: search.id, name: search.name });
-         if (search.alternative_names && search.alternative_names.length !== 0) {
-            searchableNames.push(...search.alternative_names.map((x) => ({ id: search.id, name: x.name })));
+            await cdnUpload(CDNRoutes.uploadApplicationIcon(contribution.id), {
+               files: [{ data, name: iconHash }],
+            });
+            await prisma.contribution.update({
+               where: { id: contribution.id },
+               data: { iconHash },
+            });
+         } catch (error) {
+            logger.warn({ error, contributionId: contribution.id }, "failed to store a contribution icon");
          }
       }
 
-      if (
-         await prisma.knownApplication.exists({
-            names: { hasSome: searchableNames.map((x) => x.name) },
-            exeName: exeName,
-         })
-      ) {
-         return singleError(Errors.knownApplicationExists(), status);
-      }
-
-      const bestMatch = findClosestString(
-         title,
-         searchableNames.map((x) => x.name),
-      );
-
-      if (bestMatch.similarity >= CONSTANTS.KNOWN_APPLICATION_SIMILARITY_THRESHOLD) {
-         const resultMatch = searchableNames.find((x) => x.name === bestMatch.match);
-
-         const names = searchableNames.filter((x) => x.id === resultMatch?.id).map((x) => x.name);
-
-         const createdKnownApplication = await prisma.knownApplication.createOne(
-            {
-               names,
-               exeName,
-               contributorId: tokenPayload.id,
-               igdbId: resultMatch?.id,
-               isActive: true,
-            },
-            { select: selectKnownApplication },
-         );
-
-         const json: APIPostKnownApplicationResult = filterKnownApplication(createdKnownApplication);
-         return status("Created", json);
-      } else {
-         // Create an inactive field just to have user submissions recorded
-         await prisma.knownApplication.createOne(
-            {
-               names: [title],
-               exeName: exeName ?? "",
-               contributorId: tokenPayload.id,
-               isActive: false,
-            },
-            { select: selectKnownApplication },
-         );
-      }
-
-      return notFound(status);
+      const json: APIPostKnownApplicationResult = { contributionId: contribution.id };
+      return status("Accepted", json);
    },
    { body: schema },
 );

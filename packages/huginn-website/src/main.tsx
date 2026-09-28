@@ -1,47 +1,13 @@
-import "./style.css";
-import { RouterProvider, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
+import "./index.css";
+import type { ThemeType } from "@huginnjs/shared";
+
+import { themeStore } from "@stores/themeStore";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 
-import About from "./About";
-import App from "./App";
-import Download from "./Download";
-import Home from "./Home";
-import Redirect from "./Redirect";
-import { ThemeProvider } from "./scripts/useChangeTheme";
-
-const rootRoute = createRootRoute({
-   component: App,
-});
-
-const indexRoute = createRoute({
-   getParentRoute: () => rootRoute,
-   path: "/",
-   component: Home,
-});
-
-const aboutRoute = createRoute({
-   getParentRoute: () => rootRoute,
-   path: "about",
-   component: About,
-});
-
-const downloadRoute = createRoute({
-   getParentRoute: () => rootRoute,
-   path: "download",
-   component: Download,
-});
-
-const redirectRoute = createRoute({
-   getParentRoute: () => rootRoute,
-   path: "redirect",
-   component: Redirect,
-});
-
-const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, downloadRoute, redirectRoute]);
-
-const router = createRouter({
-   routeTree,
-});
+import { queryClient } from "./lib/queries";
+import { router } from "./router";
 
 declare module "@tanstack/react-router" {
    interface Register {
@@ -49,13 +15,18 @@ declare module "@tanstack/react-router" {
    }
 }
 
-const container = document.getElementById("app");
+const container = document.getElementById("root");
 if (!container) {
    throw new Error("App container not found");
 }
 
+const theme = (localStorage.getItem("theme") as string) || "pine-green";
+if (theme) {
+   themeStore.actions.setTheme(theme as ThemeType);
+}
+
 createRoot(container).render(
-   <ThemeProvider>
+   <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-   </ThemeProvider>,
+   </QueryClientProvider>,
 );

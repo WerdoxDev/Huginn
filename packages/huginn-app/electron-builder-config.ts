@@ -10,7 +10,7 @@ export default {
 
    win: {
       target: { target: "nsis", arch: ["x64"] },
-      icon: "src/assets/icons/default/outline-thick/outline-thick.ico",
+      icon: "../huginn-assets/icons/default/outline-thick/outline-thick.ico",
       publish: {
          provider: "generic",
          url: process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
@@ -20,7 +20,7 @@ export default {
 
    linux: {
       target: { target: "pacman", arch: ["x64"] },
-      icon: "src/assets/icons/default/outline-thick/outline-thick-512.png",
+      icon: "../huginn-assets/icons/default/outline-thick/outline-thick-512.png",
       publish: {
          provider: "generic",
          url: process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
@@ -48,6 +48,6 @@ export default {
    directories: {
       output: "dist/electron",
    },
-   icon: "src/assets/icons/default/outline-thick/outline-thick.ico",
+   icon: "../huginn-assets/icons/default/outline-thick/outline-thick.ico",
    extraResources: ["electron-assets"],
 } as Configuration;

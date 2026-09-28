@@ -1,7 +1,6 @@
 import type { APIPostKnownApplicationJSONBody } from "@huginnjs/shared";
 
 import { useClient } from "@stores/clientStore";
-import { updateKnownApplications } from "@stores/storageStore";
 import { useMutation } from "@tanstack/react-query";
 
 export function useSubmitKnownApplication() {
@@ -10,9 +9,6 @@ export function useSubmitKnownApplication() {
       mutationKey: ["submit-known-application"],
       async mutationFn(data: APIPostKnownApplicationJSONBody) {
          return await client?.applications.submitKnown(data);
-      },
-      async onSuccess(data, variables, context) {
-         await updateKnownApplications();
       },
    });
 

@@ -16,10 +16,10 @@ export class ApplicationAPI {
       this.rest = rest;
    }
 
-   public async getKnown(since?: Date): Promise<APIGetKnownApplicationsResult> {
+   public async getKnown(cursor?: string): Promise<APIGetKnownApplicationsResult> {
       return this.rest.get(Routes.knownApplications(), {
          auth: true,
-         query: since ? new URLSearchParams({ since: since.getTime().toString() }) : undefined,
+         query: cursor ? new URLSearchParams({ cursor }) : undefined,
       }) as Promise<APIGetKnownApplicationsResult>;
    }
 

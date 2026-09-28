@@ -62,7 +62,6 @@ export async function assertExists(
    ids: (Snowflake | undefined)[],
 ): Promise<void>;
 
-export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_KNOWN_APPLICATION, ids: number[]): Promise<void>;
 // Compound ID error types
 export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_READ_STATE, ids: ReadStateId[]): Promise<void>;
 export async function assertExists(error: unknown, methodName: string, errorType: DBErrorType.NULL_REACTION, ids: ReactionId[]): Promise<void>;
@@ -95,8 +94,6 @@ export async function assertExists(
       await prisma.reaction.assertReactionsExist(methodName, ids as ReactionId[]);
    } else if (errorType === DBErrorType.NULL_REACTION_AGGREGATE) {
       await prisma.reactionAggregate.assertReactionAggregatesExist(methodName, ids as ReactionAggregateId[]);
-   } else if (errorType === DBErrorType.NULL_KNOWN_APPLICATION) {
-      await prisma.knownApplication.assertKnownApplicationsExist(methodName, ids as number[]);
    }
 }
 

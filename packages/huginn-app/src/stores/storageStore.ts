@@ -1,4 +1,5 @@
 import { analyticsShim } from "@huginnjs/shared";
+import { applyApplicationCatalogUpdate } from "@lib/application-catalog";
 import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
@@ -77,7 +78,19 @@ export function initStorageStoreClient() {
    };
 }
 
+let knownApplicationsSync: Promise<void> | undefined;
+
 export async function updateKnownApplications() {
+   if (knownApplicationsSync) return knownApplicationsSync;
+
+   knownApplicationsSync = syncKnownApplications().finally(() => {
+      knownApplicationsSync = undefined;
+   });
+
+   return knownApplicationsSync;
+}
+
+async function syncKnownApplications() {
    const client = clientStore.getState().client;
 
    if (!client) {
@@ -85,41 +98,11 @@ export async function updateKnownApplications() {
    }
 
    const value = await storage.loadFile("known-applications");
-   if (value.created) {
-      const knownApplications = await client.applications.getKnown();
-      for (const application of knownApplications.applications) {
-         delete application.deletedAt;
-      }
-      store.getState().setValue("known-applications", knownApplications);
-   } else {
-      const finalFile = { ...value.data };
-      const result = await client?.applications.getKnown(finalFile.lastUpdated ? new Date(finalFile.lastUpdated) : undefined);
+   const cached = value.data;
+   const hasCurrentSchema = Array.isArray(cached.games) && Array.isArray(cached.matchers) && typeof cached.cursor === "string";
+   const result = await client.applications.getKnown(hasCurrentSchema && cached.cursor ? cached.cursor : undefined);
 
-      for (const application of result.applications) {
-         const existingIndex = finalFile.applications.findIndex((x) => x.id === application.id);
-
-         // Remove the application if it's deleted in the new list
-         if (application.deletedAt) {
-            finalFile.applications = finalFile.applications.filter((x) => x.id !== application.id);
-            continue;
-         }
-
-         delete application.deletedAt;
-
-         // Update any updated applications
-         if (existingIndex !== -1) {
-            finalFile.applications[existingIndex] = application;
-         }
-         // Add any new ones
-         else {
-            finalFile.applications.push(application);
-         }
-      }
-
-      finalFile.lastUpdated = result.lastUpdated;
-
-      store.getState().setValue("known-applications", finalFile);
-   }
+   await store.getState().setValue("known-applications", applyApplicationCatalogUpdate(hasCurrentSchema ? cached : undefined, result));
 }
 
 function registerChangeHandlers() {

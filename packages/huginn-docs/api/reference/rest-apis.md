@@ -102,11 +102,11 @@ Accessed through `client.relationships`.
 
 Accessed through `client.applications`.
 
-| Method                   | Returns                         | Description                                                                 |
-| ------------------------ | ------------------------------- | --------------------------------------------------------------------------- |
-| `getKnown(since?: Date)` | `APIGetKnownApplicationsResult` | Fetch known applications, optionally changed since a millisecond timestamp. |
-| `submitKnown(body)`      | `APIPostKnownApplicationResult` | Submit known-application metadata.                                          |
-| `uploadIcon(body)`       | `APIPostApplicationIconResult`  | Upload an application icon.                                                 |
+| Method                      | Returns                         | Description                                                          |
+| --------------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| `getKnown(cursor?: string)` | `APIGetKnownApplicationsResult` | Fetch a full application catalog or changes after a revision cursor. |
+| `submitKnown(body)`         | `APIPostKnownApplicationResult` | Submit the observed process metadata for IGDB verification.          |
+| `uploadIcon(body)`          | `APIPostApplicationIconResult`  | Upload an application icon.                                          |
 
 ## GIFs
 

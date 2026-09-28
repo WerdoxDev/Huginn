@@ -14,6 +14,7 @@ import {
    jsonb,
    serial,
    primaryKey,
+   pgEnum,
 } from "drizzle-orm/pg-core";
 
 export const identityProvider = pgTable(
@@ -390,29 +391,115 @@ export const settings = pgTable(
    ],
 );
 
-export const knownApplication = pgTable(
-   "KnownApplication",
+export const applicationMatcherStatus = pgEnum("ApplicationMatcherStatus", ["pending", "verified", "rejected"]);
+export const applicationVerificationMethod = pgEnum("ApplicationVerificationMethod", ["exact_title", "fuzzy_title", "external_id", "manual", "legacy"]);
+export const contributionStatus = pgEnum("ContributionStatus", ["pending", "accepted", "rejected"]);
+
+export const knownGame = pgTable(
+   "KnownGame",
    {
       id: serial().primaryKey().notNull(),
-      names: text().array().notNull(),
-      exeName: text().notNull(),
-      igdbId: integer(),
-      // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-      contributorId: bigint({ mode: "bigint" }),
+      igdbId: integer().notNull(),
+      canonicalName: text().notNull(),
+      aliases: text().array().notNull(),
+      revision: bigint({ mode: "bigint" }).notNull(),
       createdAt: timestamp({ precision: 3, mode: "string" })
          .default(sql`CURRENT_TIMESTAMP`)
          .notNull(),
       updatedAt: timestamp({ precision: 3, mode: "string" }),
       deletedAt: timestamp({ precision: 3, mode: "string" }),
-      commandLinePatterns: text().array(),
-      active: boolean().default(false).notNull(),
    },
    (table) => [
-      index("KnownApplication_names_idx").using("btree", table.names.asc().nullsLast().op("array_ops")),
+      uniqueIndex("KnownGame_igdbId_key").using("btree", table.igdbId.asc().nullsLast().op("int4_ops")),
+      index("KnownGame_aliases_idx").using("gin", table.aliases.asc().nullsLast().op("array_ops")),
+      index("KnownGame_revision_idx").using("btree", table.revision.asc().nullsLast().op("int8_ops")),
+   ],
+);
+
+export const applicationMatcher = pgTable(
+   "ApplicationMatcher",
+   {
+      id: serial().primaryKey().notNull(),
+      knownGameId: integer().notNull(),
+      exeNames: text().array().notNull(),
+      windowTitles: text().array().notNull(),
+      platform: text().notNull(),
+      status: applicationMatcherStatus().default("pending").notNull(),
+      verificationMethod: applicationVerificationMethod().notNull(),
+      contributorId: bigint({ mode: "bigint" }),
+      commandLinePatterns: text().array().notNull(),
+      revision: bigint({ mode: "bigint" }).notNull(),
+      createdAt: timestamp({ precision: 3, mode: "string" })
+         .default(sql`CURRENT_TIMESTAMP`)
+         .notNull(),
+      updatedAt: timestamp({ precision: 3, mode: "string" }),
+      deletedAt: timestamp({ precision: 3, mode: "string" }),
+   },
+   (table) => [
+      index("ApplicationMatcher_knownGameId_idx").using("btree", table.knownGameId.asc().nullsLast().op("int4_ops")),
+      index("ApplicationMatcher_exeNames_idx").using("gin", table.exeNames.asc().nullsLast().op("array_ops")),
+      index("ApplicationMatcher_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+      index("ApplicationMatcher_revision_idx").using("btree", table.revision.asc().nullsLast().op("int8_ops")),
+      foreignKey({
+         columns: [table.knownGameId],
+         foreignColumns: [knownGame.id],
+         name: "ApplicationMatcher_knownGameId_fkey",
+      })
+         .onUpdate("cascade")
+         .onDelete("cascade"),
       foreignKey({
          columns: [table.contributorId],
          foreignColumns: [user.id],
-         name: "KnownApplication_contributorId_fkey",
+         name: "ApplicationMatcher_contributorId_fkey",
+      })
+         .onUpdate("cascade")
+         .onDelete("set null"),
+   ],
+);
+
+export const contribution = pgTable(
+   "Contribution",
+   {
+      id: serial().primaryKey().notNull(),
+      windowTitle: text().notNull(),
+      cleanedWindowTitle: text().notNull(),
+      exePath: text().notNull(),
+      commandLine: text(),
+      platform: text().notNull(),
+      iconHash: text(),
+      status: contributionStatus().default("pending").notNull(),
+      contributorId: bigint({ mode: "bigint" }),
+      knownGameId: integer(),
+      applicationMatcherId: integer(),
+      legacyData: boolean().default(false).notNull(),
+      createdAt: timestamp({ precision: 3, mode: "string" })
+         .default(sql`CURRENT_TIMESTAMP`)
+         .notNull(),
+      updatedAt: timestamp({ precision: 3, mode: "string" }),
+   },
+   (table) => [
+      index("Contribution_contributorId_idx").using("btree", table.contributorId.asc().nullsLast().op("int8_ops")),
+      index("Contribution_knownGameId_idx").using("btree", table.knownGameId.asc().nullsLast().op("int4_ops")),
+      index("Contribution_applicationMatcherId_idx").using("btree", table.applicationMatcherId.asc().nullsLast().op("int4_ops")),
+      index("Contribution_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+      foreignKey({
+         columns: [table.contributorId],
+         foreignColumns: [user.id],
+         name: "Contribution_contributorId_fkey",
+      })
+         .onUpdate("cascade")
+         .onDelete("set null"),
+      foreignKey({
+         columns: [table.knownGameId],
+         foreignColumns: [knownGame.id],
+         name: "Contribution_knownGameId_fkey",
+      })
+         .onUpdate("cascade")
+         .onDelete("set null"),
+      foreignKey({
+         columns: [table.applicationMatcherId],
+         foreignColumns: [applicationMatcher.id],
+         name: "Contribution_applicationMatcherId_fkey",
       })
          .onUpdate("cascade")
          .onDelete("set null"),

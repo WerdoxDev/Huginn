@@ -410,6 +410,18 @@ export function calculateSimilarity(string1: string, string2: string): number {
    return Math.round(((maxLength - distance) / maxLength) * 100);
 }
 
+export function cleanApplicationTitle(title: string): string {
+   return (
+      title
+         .replace(/[\u00A9\u00AE\u2120\u2122\u2117]/g, "")
+         .normalize("NFKC")
+         // oxlint-disable-next-line no-control-regex -- window titles may contain invisible control characters
+         .replace(/[\u0000-\u001f\u007f-\u009f]/g, " ")
+         .replace(/\s+/g, " ")
+         .trim()
+   );
+}
+
 /**
  * finds the properties that differ in both objects and only returns those properties from "a"
  * NOTE: only works with shallow objects. So no nested objects
