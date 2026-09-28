@@ -90,7 +90,7 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
                }}
             >
                <BaseMenu.Portal container={props.contextMenu?.parent ?? undefined}>
-                  <BaseMenu.Positioner anchor={anchor} sideOffset={2} align="end" className="z-998">
+                  <BaseMenu.Positioner anchor={anchor} sideOffset={2} align="start" className="z-998">
                      <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
                   </BaseMenu.Positioner>
                </BaseMenu.Portal>

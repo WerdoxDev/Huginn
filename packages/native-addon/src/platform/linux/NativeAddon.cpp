@@ -1,7 +1,5 @@
 #include "NativeAddon.h"
 
-#include "file_util.h"
-
 #include <exception>
 #include <string>
 

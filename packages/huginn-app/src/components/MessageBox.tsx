@@ -228,57 +228,56 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   show={!!currentReplyingMessageId}
                />
                <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
-               <div className="flex h-full items-end lg:items-start">
-                  {!isRecordingVoice ? (
-                     <>
-                        <div className="flex gap-x-2 py-2 pl-2">
-                           {!currentEditingMessageId &&
-                              (isMobileEnvironment ? (
-                                 <FilePickerButton
-                                    onClick={() => handleMobilePanelClick("files")}
-                                    isActive={activeMobilePanel === "files" && !isKeyboardOpenOnEditor}
-                                 />
-                              ) : (
-                                 <Tooltip>
-                                    <Tooltip.Trigger asChild>
-                                       <FilePickerButton onClick={openFileSelector} />
-                                    </Tooltip.Trigger>
-                                    <Tooltip.Content>Upload Files</Tooltip.Content>
-                                 </Tooltip>
-                              ))}
-                           {isMobileEnvironment && (
-                              <ExpressionButton
-                                 onClick={() => handleMobilePanelClick("expression")}
-                                 isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
-                              >
-                                 <IconMingcuteEmoji2Fill className="text-text size-full" />
-                              </ExpressionButton>
-                           )}
-                        </div>
-                        <div className="h-full w-full overflow-hidden">
-                           <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange} onValueChange={onEditorChange}>
-                              <Editable
-                                 ref={editorRef}
-                                 onPaste={onPaste}
-                                 placeholder={`Message ${currentChannel?.name}`}
-                                 className={clsx(
-                                    "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
-                                    currentEditingMessageId && "pl-2.25",
-                                 )}
-                                 onClick={handleEditorClick}
-                                 renderLeaf={renderLeaf}
-                                 renderElement={renderElement}
-                                 decorate={decorate}
-                                 onKeyDown={onEditorKeyDown}
-                                 renderPlaceholder={Placeholder}
-                                 disableDefaultStyles
-                                 data-keyboard-no-resize
+               <div className="relative flex h-full items-end lg:items-start">
+                  {!isRecordingVoice && (
+                     <div className="flex gap-x-2 py-2 pl-2">
+                        {!currentEditingMessageId &&
+                           (isMobileEnvironment ? (
+                              <FilePickerButton
+                                 onClick={() => handleMobilePanelClick("files")}
+                                 isActive={activeMobilePanel === "files" && !isKeyboardOpenOnEditor}
                               />
-                           </Slate>
-                        </div>
-                     </>
-                  ) : (
-                     <div className="text-text/80 my-auto mr-5 ml-auto flex items-center gap-x-2">
+                           ) : (
+                              <Tooltip>
+                                 <Tooltip.Trigger asChild>
+                                    <FilePickerButton onClick={openFileSelector} />
+                                 </Tooltip.Trigger>
+                                 <Tooltip.Content>Upload Files</Tooltip.Content>
+                              </Tooltip>
+                           ))}
+                        {isMobileEnvironment && (
+                           <ExpressionButton
+                              onClick={() => handleMobilePanelClick("expression")}
+                              isActive={activeMobilePanel === "expression" && !isKeyboardOpenOnEditor}
+                           >
+                              <IconMingcuteEmoji2Fill className="text-text size-full" />
+                           </ExpressionButton>
+                        )}
+                     </div>
+                  )}
+                  <div className={clsx("h-full w-full overflow-hidden", isRecordingVoice && "pointer-events-none opacity-0")}>
+                     <Slate editor={editor} initialValue={initialValue} onChange={handleEditorChange} onValueChange={onEditorChange}>
+                        <Editable
+                           ref={editorRef}
+                           onPaste={onPaste}
+                           placeholder={`Message ${currentChannel?.name}`}
+                           className={clsx(
+                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
+                              currentEditingMessageId && "pl-2.25",
+                           )}
+                           onClick={handleEditorClick}
+                           renderLeaf={renderLeaf}
+                           renderElement={renderElement}
+                           decorate={decorate}
+                           onKeyDown={onEditorKeyDown}
+                           renderPlaceholder={Placeholder}
+                           disableDefaultStyles
+                           data-keyboard-no-resize
+                        />
+                     </Slate>
+                  </div>
+                  {isRecordingVoice && (
+                     <div className="text-text/80 absolute inset-y-0 right-16 z-10 flex items-center gap-x-2">
                         {isVoiceRecordingLocked ? (
                            <HuginnButton color="primary" className="px-2 py-1" onClick={handleCancelVoiceRecordingClick}>
                               Cancel
