@@ -32,6 +32,22 @@ function formatReleaseDate(value: number | null) {
    return new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" }).format(new Date(value * 1_000));
 }
 
+function parseMatcherValues(value: string) {
+   return [
+      ...new Set(
+         value
+            .split(/\r?\n/)
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+      ),
+   ];
+}
+
+function isValidExeName(value: string) {
+   const parts = value.split(/[/\\]/);
+   return parts.length <= 2 && parts.every((part) => part.length > 0 && part !== "." && part !== "..");
+}
+
 function Detail({ label, children, mono = false }: { label: string; children: ReactNode; mono?: boolean }) {
    return (
       <div className="bg-surface rounded-lg p-3">
@@ -53,6 +69,9 @@ function StaffGameContributionsComponent() {
    const [searchLoading, setSearchLoading] = useState(false);
    const [searchError, setSearchError] = useState("");
    const [candidateToAccept, setCandidateToAccept] = useState<APIIGDBGameCandidate>();
+   const [exeNamesInput, setExeNamesInput] = useState("");
+   const [windowTitlesInput, setWindowTitlesInput] = useState("");
+   const [matcherError, setMatcherError] = useState("");
    const [isAccepting, setAccepting] = useState(false);
 
    const selectedContribution = useMemo(() => contributions.find((contribution) => contribution.id === selectedId), [contributions, selectedId]);
@@ -80,12 +99,17 @@ function StaffGameContributionsComponent() {
    }, [token]);
 
    useEffect(() => {
+      setMatcherError("");
       if (!selectedContribution) {
          setSearchQuery("");
          setCandidates([]);
+         setExeNamesInput("");
+         setWindowTitlesInput("");
          return;
       }
       setSearchQuery(selectedContribution.cleanedWindowTitle || selectedContribution.windowTitle);
+      setExeNamesInput(selectedContribution.exeName);
+      setWindowTitlesInput(selectedContribution.cleanedWindowTitle);
    }, [selectedContribution?.id]);
 
    useEffect(() => {
@@ -140,7 +164,11 @@ function StaffGameContributionsComponent() {
 
       setAccepting(true);
       try {
-         await acceptGameContribution(token, selectedContribution.id, candidateToAccept.id);
+         await acceptGameContribution(token, selectedContribution.id, {
+            igdbId: candidateToAccept.id,
+            exeNames: parseMatcherValues(exeNamesInput),
+            windowTitles: parseMatcherValues(windowTitlesInput),
+         });
          const remaining = contributions.filter((contribution) => contribution.id !== selectedContribution.id);
          setContributions(remaining);
          setSelectedId(remaining[0]?.id);
@@ -150,6 +178,22 @@ function StaffGameContributionsComponent() {
       } finally {
          setAccepting(false);
       }
+   }
+
+   function handleSelectCandidate(candidate: APIIGDBGameCandidate) {
+      const exeNames = parseMatcherValues(exeNamesInput);
+      const windowTitles = parseMatcherValues(windowTitlesInput);
+      if (exeNames.length === 0 && windowTitles.length === 0) {
+         setMatcherError("Add at least one executable name or window title.");
+         return;
+      }
+      if (exeNames.some((exeName) => !isValidExeName(exeName))) {
+         setMatcherError("Executable names may include at most one parent folder, for example bin/game.exe.");
+         return;
+      }
+
+      setMatcherError("");
+      setCandidateToAccept(candidate);
    }
 
    return (
@@ -299,6 +343,47 @@ function StaffGameContributionsComponent() {
                      <Detail label="Command line" mono>
                         {selectedContribution.commandLine}
                      </Detail>
+                     <div className="bg-surface rounded-lg p-3">
+                        <label htmlFor="matcher-exe-names" className="text-text/70 mb-1 block text-xs font-medium uppercase">
+                           Executable names
+                        </label>
+                        <textarea
+                           id="matcher-exe-names"
+                           value={exeNamesInput}
+                           onChange={(event) => {
+                              setExeNamesInput(event.target.value);
+                              setMatcherError("");
+                           }}
+                           rows={3}
+                           spellCheck={false}
+                           className="bg-surface-deep font-ubuntu placeholder:text-text/40 focus:ring-primary-700 min-h-20 w-full resize-y rounded-md p-2 text-sm text-white outline-none focus:ring-1"
+                           placeholder="game.exe"
+                        />
+                        <p className="text-text/50 mt-1 text-xs">One per line. You can include one parent folder, such as bin/game.exe.</p>
+                     </div>
+                     <div className="bg-surface rounded-lg p-3">
+                        <label htmlFor="matcher-window-titles" className="text-text/70 mb-1 block text-xs font-medium uppercase">
+                           Window titles
+                        </label>
+                        <textarea
+                           id="matcher-window-titles"
+                           value={windowTitlesInput}
+                           onChange={(event) => {
+                              setWindowTitlesInput(event.target.value);
+                              setMatcherError("");
+                           }}
+                           rows={3}
+                           spellCheck={false}
+                           className="bg-surface-deep placeholder:text-text/40 focus:ring-primary-700 min-h-20 w-full resize-y rounded-md p-2 text-sm text-white outline-none focus:ring-1"
+                           placeholder="Exact window title"
+                        />
+                        <p className="text-text/50 mt-1 text-xs">One exact title per line. Leave empty to rely on the executable.</p>
+                     </div>
+                     {matcherError ? (
+                        <div role="alert" className="text-negative-300 text-sm">
+                           {matcherError}
+                        </div>
+                     ) : null}
                      <Detail label="Contributor">
                         {selectedContribution.contributor
                            ? `${selectedContribution.contributor.displayName ?? selectedContribution.contributor.username} (@${selectedContribution.contributor.username})`
@@ -383,7 +468,7 @@ function StaffGameContributionsComponent() {
                               <HuginnButton
                                  type="button"
                                  color="primary"
-                                 onClick={() => setCandidateToAccept(candidate)}
+                                 onClick={() => handleSelectCandidate(candidate)}
                                  className="ml-auto h-8 px-3 text-sm font-medium"
                               >
                                  Use this game
@@ -424,6 +509,12 @@ function StaffGameContributionsComponent() {
                         Match <strong className="font-semibold text-white">{selectedContribution?.windowTitle}</strong> to{" "}
                         <strong className="font-semibold text-white">{candidateToAccept?.name}</strong>? This publishes the matcher to the application catalog.
                      </p>
+                     <div className="bg-surface-deep mt-3 rounded-lg p-3 text-sm">
+                        <div className="text-text/60 text-xs font-medium uppercase">Executable names</div>
+                        <div className="font-ubuntu mt-1 break-all text-white">{parseMatcherValues(exeNamesInput).join(", ") || "None"}</div>
+                        <div className="text-text/60 mt-3 text-xs font-medium uppercase">Window titles</div>
+                        <div className="mt-1 break-all text-white">{parseMatcherValues(windowTitlesInput).join(", ") || "None"}</div>
+                     </div>
                   </DialogBody>
                   <DialogActions>
                      <HuginnButton color="surface" className="w-full" disabled={isAccepting} onClick={() => setCandidateToAccept(undefined)}>
