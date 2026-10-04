@@ -1,4 +1,4 @@
-import type { APIApplicationMatcher, APIGetKnownApplicationsResult, APIKnownGame } from "@huginnjs/shared";
+import type { APIApplicationMatcher, APIGetApplicationCatalogResult, APIKnownGame } from "@huginnjs/shared";
 
 import { describe, expect, test } from "vitest";
 
@@ -9,6 +9,7 @@ const game = (id: number, name: string): APIKnownGame => ({
    igdbId: id * 10,
    canonicalName: name,
    aliases: [],
+   iconHash: null,
    createdAt: "2026-01-01T00:00:00.000Z",
    updatedAt: null,
 });
@@ -26,7 +27,7 @@ const matcher = (id: number, knownGameId: number): APIApplicationMatcher => ({
    updatedAt: null,
 });
 
-const catalog = (options: Partial<APIGetKnownApplicationsResult> = {}): APIGetKnownApplicationsResult => ({
+const catalog = (options: Partial<APIGetApplicationCatalogResult> = {}): APIGetApplicationCatalogResult => ({
    cursor: "0",
    full: true,
    games: [],

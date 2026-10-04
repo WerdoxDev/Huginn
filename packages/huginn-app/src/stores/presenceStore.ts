@@ -1,9 +1,10 @@
 import {
    ActivityType,
+   CDNRoutes,
    cleanApplicationTitle,
    error,
    type APIApplicationMatcher,
-   type APIGetKnownApplicationsResult,
+   type APIGetApplicationCatalogResult,
    type APIKnownGame,
    type GatewaySession,
    type Snowflake,
@@ -118,7 +119,7 @@ function startCheckingForActivity() {
 
          if (!client?.gateway.isAuthenticated || !client.gateway.sessionId) return;
 
-         const knownApplications = storageStore.getState().getCachedValue("known-applications");
+         const knownApplications = storageStore.getState().getCachedValue("application-catalog");
          const customApplications = storageStore.getState().getCachedValue("custom-applications");
          const openApplications = await window.electronAPI.getOpenApplications();
 
@@ -144,10 +145,15 @@ function startCheckingForActivity() {
             known?: { matcher: APIApplicationMatcher; game: APIKnownGame };
          } = knownMatch ?? customMatch;
 
+         const knownIconUrl = match.known?.game.iconHash ? CDNRoutes.applicationIcon(match.known.game.id, match.known.game.iconHash) : undefined;
+
          // Skip if we already have the activity
          if (ourActivities[0]) {
             if (match.known) {
-               if (match.known.matcher.id === ourActivities[0].applicationId) {
+               if (
+                  match.known.matcher.id === ourActivities[0].applicationId &&
+                  (knownIconUrl ? ourActivities[0].iconUrl?.endsWith(knownIconUrl) : !ourActivities[0].iconUrl)
+               ) {
                   return;
                }
             } else if (match.custom) {
@@ -157,9 +163,10 @@ function startCheckingForActivity() {
             }
          }
 
-         let iconHash;
-         if (match.detected.icon) {
-            iconHash = await client.applications.uploadIcon({ icon: match.detected.icon });
+         let iconUrl = knownIconUrl;
+         if (match.custom && match.detected.icon && client.currentUser) {
+            const iconHash = await client.applications.uploadIcon({ icon: match.detected.icon });
+            iconUrl = CDNRoutes.applicationIcon(client.currentUser.id, iconHash);
          }
 
          client.gateway.updatePresence({
@@ -169,7 +176,7 @@ function startCheckingForActivity() {
                   type: ActivityType.PLAYING,
                   createdAt: new Date().getTime(),
                   startedAt: new Date().getTime(),
-                  iconUrl: iconHash ? `application-icons/${iconHash}.webp` : undefined,
+                  iconUrl,
                   applicationId: match.known?.matcher.id,
                },
             ],
@@ -188,7 +195,7 @@ function stopCheckingForActivity() {
    }
 }
 
-export function detectKnownApplication(applications: ApplicationInfo[], catalog: APIGetKnownApplicationsResult, platform?: string) {
+export function detectKnownApplication(applications: ApplicationInfo[], catalog: APIGetApplicationCatalogResult, platform?: string) {
    const games = new Map(catalog.games.map((game) => [game.id, game]));
    let bestMatch:
       | {

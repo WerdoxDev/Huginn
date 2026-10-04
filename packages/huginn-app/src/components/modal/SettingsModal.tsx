@@ -18,11 +18,11 @@ import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
+import SettingsContributionTab from "./settings/SettingsContributionTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
-import SettingsSubmissionTab from "./settings/SettingsSubmissionTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTabType[] = [
@@ -81,7 +81,7 @@ const tabs: SettingsTabType[] = [
             name: "contributions",
             text: "Contributions",
             icon: <IconMingcuteChecksFill />,
-            component: SettingsSubmissionTab,
+            component: SettingsContributionTab,
          },
       ],
    },

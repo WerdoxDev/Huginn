@@ -7,7 +7,7 @@ import type { HuginnButtonProps } from "@huginn/frontend-shared";
 import type {
    APICallMessage,
    APIDefaultMessage,
-   APIGetKnownApplicationsResult,
+   APIGetApplicationCatalogResult,
    APIRelationshipWithoutOwner,
    APIReferenceMessage,
    APIUserProfile,
@@ -324,7 +324,7 @@ export type ClientInfo = {
 export type StorageMap = {
    settings: AppSettings;
    keybinds: Keybind[];
-   "known-applications": APIGetKnownApplicationsResult;
+   "application-catalog": APIGetApplicationCatalogResult;
    "custom-applications": CustomApplication[];
    "client-info": ClientInfo;
    "pinned-channels": Snowflake[];

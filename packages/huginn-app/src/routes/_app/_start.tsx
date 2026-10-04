@@ -28,6 +28,7 @@ function StartLayoutComponent() {
       queryClient.removeQueries({ queryKey: ["channels"] });
       queryClient.removeQueries({ queryKey: ["messages"] });
       queryClient.removeQueries({ queryKey: ["relationships"] });
+      queryClient.removeQueries({ queryKey: ["application-contributions"] });
    }, []);
    return (
       <div className="absolute inset-0">
