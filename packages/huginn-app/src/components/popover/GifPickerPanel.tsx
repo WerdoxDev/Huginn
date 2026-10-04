@@ -1,13 +1,12 @@
 import type { APIGif, FavoriteGif } from "@huginnjs/shared";
 
-import HuginnTab from "@components/HuginnTab";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useContainerWidth } from "@hooks/useContainerWidth";
 import { useFavoriteGifs } from "@hooks/useFavoriteGifs";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { HuginnInput, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { HuginnInput, HuginnLoadingIcon, HuginnTab } from "@huginn/frontend-shared";
 import { getGifCategoriesOptions, getSearchGifsOptions, getTrendingGifsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";

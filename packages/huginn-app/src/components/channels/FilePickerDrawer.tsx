@@ -1,13 +1,12 @@
 import { Drawer } from "@base-ui/react";
 import { Capacitor } from "@capacitor/core";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
-import HuginnTab from "@components/HuginnTab";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
 import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
-import { HuginnButton, HuginnLabel, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnLabel, HuginnLoadingIcon, HuginnTab } from "@huginn/frontend-shared";
 import { Files, type FileItem } from "@lib/capacitor/files-plugin";
 import {
    Gallery,

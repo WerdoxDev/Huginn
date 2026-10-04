@@ -10,18 +10,41 @@ import {
    HuginnInput,
    HuginnLoadingButton,
    HuginnLoadingIcon,
+   HuginnTab,
    ModalCloseButton,
 } from "@huginn/frontend-shared";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import KnownGamesPanel from "@/components/staff/KnownGamesPanel";
 import { StaffAPIError, acceptGameContribution, getGameContributions, searchIGDB } from "@/lib/api";
 import { clearStaffToken } from "@/lib/auth";
 
 export const Route = createFileRoute("/staff/_staff/game-contributions")({
-   component: StaffGameContributionsComponent,
+   component: StaffGamesComponent,
 });
+
+function StaffGamesComponent() {
+   return (
+      <HuginnTab defaultTab="submissions" className="flex h-full min-h-0 flex-col">
+         <div className="border-surface bg-surface-deep shrink-0 border-b-2 px-5 py-2">
+            <HuginnTab.TabList className="w-fit" tabClassName="h-9 px-4 text-sm font-medium">
+               <HuginnTab.Tab value="submissions">Submissions</HuginnTab.Tab>
+               <HuginnTab.Tab value="known-games">Known games</HuginnTab.Tab>
+            </HuginnTab.TabList>
+         </div>
+         <HuginnTab.TabPanels className="min-h-0 flex-1" panelClassName="h-full min-h-0">
+            <HuginnTab.TabPanel value="submissions">
+               <StaffGameContributionsComponent />
+            </HuginnTab.TabPanel>
+            <HuginnTab.TabPanel value="known-games">
+               <KnownGamesPanel />
+            </HuginnTab.TabPanel>
+         </HuginnTab.TabPanels>
+      </HuginnTab>
+   );
+}
 
 function formatDate(value: Date | string) {
    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));

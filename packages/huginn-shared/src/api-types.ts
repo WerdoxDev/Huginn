@@ -544,6 +544,14 @@ export type APIGetStaffGameContributionsResult = {
    contributions: APIStaffGameContribution[];
 };
 
+export type APIStaffKnownGame = APIKnownGame & {
+   matchers: APIApplicationMatcher[];
+};
+
+export type APIGetStaffKnownGamesResult = {
+   games: APIStaffKnownGame[];
+};
+
 export type APIIGDBGameCandidate = {
    id: number;
    name: string;

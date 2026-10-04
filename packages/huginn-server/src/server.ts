@@ -53,6 +53,8 @@ import { getOnlineUsers } from "#routes/online-users.get";
 import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
 import { postAcceptGameContribution } from "#routes/staff/game-contributions/[contributionId]/accept.post";
 import { getStaffIGDBGames } from "#routes/staff/igdb-games.get";
+import { getStaffKnownGames } from "#routes/staff/known-games.get";
+import { deleteStaffKnownGame } from "#routes/staff/known-games/[gameId].delete";
 import { getStaffMe } from "#routes/staff/me.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
@@ -212,6 +214,8 @@ export const app = new Elysia({
    .use(getStaffMe)
    .use(getStaffGameContributions)
    .use(getStaffIGDBGames)
+   .use(getStaffKnownGames)
+   .use(deleteStaffKnownGame)
    .use(postAcceptGameContribution)
 
    // misc
