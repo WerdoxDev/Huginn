@@ -1,5 +1,4 @@
 import { HTTPError, HuginnAPIError, type HuginnErrorData } from "@huginnjs/shared";
-import { join } from "pathe";
 
 let _hostname = "";
 export async function prepareServer(hostname: string) {
