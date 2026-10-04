@@ -25,8 +25,6 @@ import { createPortal } from "react-dom";
 
 import type { AppAttachment, AttachmentInput } from "@/types";
 
-import CameraPreview from "./CameraPreview";
-
 export default function FilePickerDrawer(props: {
    attachments: AppAttachment[];
    onAdd: (input: AttachmentInput[]) => void;
@@ -459,7 +457,7 @@ function MediaPickerPanel(props: {
                   onScroll={handleScroll}
                >
                   <div className="relative grid w-full grid-cols-3 content-start items-start gap-2">
-                     <CameraPreview />
+                     {/*<CameraPreview />*/}
                      {mediaResult?.pages
                         .flatMap((x) => x.media)
                         .map((media) => (
