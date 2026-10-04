@@ -402,6 +402,7 @@ export const knownGame = pgTable(
       igdbId: integer().notNull(),
       canonicalName: text().notNull(),
       aliases: text().array().notNull(),
+      iconHash: text(),
       revision: bigint({ mode: "bigint" }).notNull(),
       createdAt: timestamp({ precision: 3, mode: "string" })
          .default(sql`CURRENT_TIMESTAMP`)

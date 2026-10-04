@@ -5,6 +5,7 @@ import { Prisma, PrismaClient, type Message, type EmailVerification } from "#pri
 import { assertExtension } from "./assert";
 import { attachmentExtension } from "./attachment";
 import { channelExtension } from "./channel";
+import { contributionExtension } from "./contribution";
 import { emailVerificationExtension } from "./emailVerification";
 import { embedExtension } from "./embed";
 import { messagesExtension } from "./message";
@@ -46,7 +47,8 @@ export const prisma = prismaBase
    .$extends(settingsExtension)
    .$extends(emailVerificationExtension)
    .$extends(notificationTokenExtension)
-   .$extends(reactionExtension);
+   .$extends(reactionExtension)
+   .$extends(contributionExtension);
 
 // let longest = 0;
 // prismaBase.$on("query", (e) => {

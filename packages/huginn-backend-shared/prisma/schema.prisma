@@ -278,6 +278,7 @@ model KnownGame {
   igdbId        Int       @unique
   canonicalName String
   aliases       String[]
+  iconHash      String?
   revision      BigInt
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
