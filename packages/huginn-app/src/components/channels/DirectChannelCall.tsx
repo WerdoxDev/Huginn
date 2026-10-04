@@ -1,6 +1,5 @@
 import type { Snowflake, Unpacked } from "@huginnjs/shared";
 
-import LoadingIcon from "@components/LoadingIcon";
 import UserAvatar from "@components/UserAvatar";
 import AndroidAudioRouteSelect from "@components/voice/AndroidAudioRouteSelect";
 import AndroidCameraFlipButton from "@components/voice/AndroidCameraFlipButton";
@@ -17,7 +16,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useLookup } from "@hooks/useLookup";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
-import { HuginnButton } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { isChildWindow } from "@lib/child-window";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore, voiceStore } from "@stores/voiceStore";
@@ -389,7 +388,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
             {popoutState.isPopoutOpen && !isChildWindow() ? (
                <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
             ) : isLoading ? (
-               <LoadingIcon className="size-16" />
+               <HuginnLoadingIcon className="size-16" />
             ) : (
                <>
                   {/* Consumable or consuming streams */}

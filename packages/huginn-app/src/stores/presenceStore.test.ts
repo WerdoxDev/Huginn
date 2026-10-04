@@ -60,6 +60,24 @@ describe("detectKnownApplication", () => {
       expect(match?.known.game.id).toBe(2);
    });
 
+   test("matches an executable qualified by its parent folder", () => {
+      const games = [game(1, "Retail game"), game(2, "Modded game")];
+      const matchers = [matcher(1, 1, { exeNames: ["game.exe"] }), matcher(2, 2, { exeNames: ["mods/game.exe"] })];
+
+      const match = detectKnownApplication([application({ exePath: "C:\\Games\\mods\\game.exe" })], catalog(games, matchers), "win32");
+
+      expect(match?.known.game.id).toBe(2);
+   });
+
+   test("does not match a qualified executable from another folder", () => {
+      const games = [game(1, "Modded game")];
+      const matchers = [matcher(1, 1, { exeNames: ["mods/game.exe"] })];
+
+      const match = detectKnownApplication([application({ exePath: "C:\\Games\\retail\\game.exe" })], catalog(games, matchers), "win32");
+
+      expect(match).toBeUndefined();
+   });
+
    test("prefers a matcher with matching command-line constraints", () => {
       const games = [game(1, "Base game"), game(2, "Modded game")];
       const matchers = [matcher(1, 1, { exeNames: ["game.exe"] }), matcher(2, 2, { exeNames: ["game.exe"], commandLinePatterns: ["--modded"] })];

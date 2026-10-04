@@ -1,13 +1,13 @@
 import { Checkbox } from "@base-ui/react";
 import UserAvatar from "@components/UserAvatar";
 import { useUsers } from "@hooks/api-hooks/userHooks";
+import { HuginnInput } from "@huginn/frontend-shared";
 import { RelationshipType, type Snowflake } from "@huginnjs/shared";
 import { useMemo, useState } from "react";
 
 import type { AppRelationship, AppUser } from "@/types";
 
 import ComboboxInput from "./ComboboxInput";
-import HuginnInput from "./HuginnInput";
 
 export default function AddRecipientInput(props: {
    label?: string;

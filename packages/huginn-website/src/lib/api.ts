@@ -56,9 +56,9 @@ export function searchIGDB(token: string, query: string, signal?: AbortSignal) {
    return staffRequest<APIGetStaffIGDBGamesResult>(`${staffRoutes.igdbGames}?${search}`, token, { signal });
 }
 
-export function acceptGameContribution(token: string, contributionId: number, igdbId: number) {
+export function acceptGameContribution(token: string, contributionId: number, body: import("@huginnjs/shared").APIPostAcceptGameContributionJSONBody) {
    return staffRequest<APIPostAcceptGameContributionResult>(staffRoutes.acceptContribution(contributionId), token, {
       method: "POST",
-      body: JSON.stringify({ igdbId }),
+      body: JSON.stringify(body),
    });
 }

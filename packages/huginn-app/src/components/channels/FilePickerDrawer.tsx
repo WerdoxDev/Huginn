@@ -1,15 +1,13 @@
 import { Drawer } from "@base-ui/react";
 import { Capacitor } from "@capacitor/core";
-import { HuginnButton } from "@huginn/frontend-shared";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
-import HuginnLabel from "@components/HuginnLabel";
 import HuginnTab from "@components/HuginnTab";
-import LoadingIcon from "@components/LoadingIcon";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
 import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
+import { HuginnButton, HuginnLabel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { Files, type FileItem } from "@lib/capacitor/files-plugin";
 import {
    Gallery,
@@ -225,7 +223,7 @@ function FilesPanel(props: {
                onScroll={(event) => props.onScroll(event.currentTarget.scrollTop)}
             >
                {isPending ? (
-                  <PickerMessage icon={<LoadingIcon className="size-8" />}>Loading recent files…</PickerMessage>
+                  <PickerMessage icon={<HuginnLoadingIcon className="size-8" />}>Loading recent files…</PickerMessage>
                ) : error ? (
                   <PickerMessage icon={<IconMingcuteSadFill className="size-8" />}>
                      Recent files could not be loaded. You can still browse for a file.

@@ -1,9 +1,9 @@
 import { Slider } from "@base-ui/react";
-import HuginnLabel from "@components/HuginnLabel";
 import Tooltip from "@components/tooltip/Tooltip";
+import { HuginnLabel } from "@huginn/frontend-shared";
 import { snowflake, WorkerID } from "@huginnjs/shared";
 import clsx from "clsx";
-import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
 const SliderContext = createContext<{
    id: string;

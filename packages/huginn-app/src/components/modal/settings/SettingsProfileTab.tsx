@@ -1,7 +1,5 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import { ImagePickerDeleteButton, ImagePickerEditButton } from "@components/button/ImagePickerButtons";
 import ColorPicker from "@components/ColorPicker";
-import HuginnLabel from "@components/HuginnLabel";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
@@ -11,6 +9,7 @@ import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
+import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginnjs/shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useModals } from "@stores/modalsStore";

@@ -1,12 +1,12 @@
 import type { Range } from "@tanstack/react-virtual";
 
 import HuginnSelect from "@components/dropdown/HuginnSelect";
-import HuginnInput from "@components/input/HuginnInput";
 import PickerMessage from "@components/PickerMessage";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useRecentEmojis } from "@hooks/useRecentEmojis";
+import { HuginnInput } from "@huginn/frontend-shared";
 import { type Emoji, getAllEmojis, getEmojiByCodepoint } from "@huginnjs/shared";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
 import { clsx } from "clsx";

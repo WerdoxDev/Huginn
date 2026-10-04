@@ -9,11 +9,38 @@ import { getIGDBGame } from "#utils/igdb";
 import { verifyStaff } from "#utils/staff";
 
 const paramsSchema = t.Object({ contributionId: t.Numeric({ minimum: 1 }) });
-const bodySchema = t.Object({ igdbId: t.Number({ minimum: 1 }) });
+const matcherValuesSchema = t.Array(t.String({ minLength: 1, maxLength: 1_024 }), { maxItems: 50 });
+const bodySchema = t.Object({
+   igdbId: t.Number({ minimum: 1 }),
+   exeNames: matcherValuesSchema,
+   windowTitles: matcherValuesSchema,
+});
+
+function normalizeMatcherValues(values: string[]) {
+   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function normalizeExeNames(values: string[]) {
+   return normalizeMatcherValues(values).map((value) => value.replaceAll("\\", "/"));
+}
+
+function isValidExeName(value: string) {
+   const parts = value.split("/");
+   return parts.length <= 2 && parts.every((part) => part.length > 0 && part !== "." && part !== "..");
+}
 
 export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
    "/api/staff/game-contributions/:contributionId/accept",
    async ({ params: { contributionId }, body, status }) => {
+      const exeNames = normalizeExeNames(body.exeNames);
+      const windowTitles = normalizeMatcherValues(body.windowTitles);
+      if (exeNames.some((exeName) => !isValidExeName(exeName))) {
+         return status("Bad Request", { message: "Executable names may include at most one parent folder." });
+      }
+      if (exeNames.length === 0 && windowTitles.length === 0) {
+         return status("Bad Request", { message: "At least one executable name or window title is required." });
+      }
+
       const pendingContribution = await prisma.contribution.findUnique({
          where: { id: contributionId },
          select: { id: true, status: true },
@@ -37,9 +64,6 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
             const contribution = await transaction.contribution.findUnique({ where: { id: contributionId } });
             if (!contribution || contribution.status !== "pending") return null;
 
-            const exeName = contribution.exePath.split(/[/\\]+/).pop();
-            if (!exeName) return null;
-
             const revision = await nextApplicationCatalogRevision(transaction);
             const existingGame = await transaction.knownGame.findUnique({ where: { igdbId: selectedGame.id } });
             const game = existingGame
@@ -56,16 +80,16 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
             const existingMatcher = await transaction.applicationMatcher.findFirst({
                where: {
                   knownGameId: game.id,
-                  exeNames: { has: exeName },
                   platform: contribution.platform,
+                  ...(exeNames.length > 0 ? { exeNames: { hasSome: exeNames } } : { windowTitles: { hasSome: windowTitles } }),
                },
             });
             const matcher = existingMatcher
                ? await transaction.applicationMatcher.update({
                     where: { id: existingMatcher.id },
                     data: {
-                       exeNames: [...new Set([...existingMatcher.exeNames, exeName])],
-                       windowTitles: [...new Set([...existingMatcher.windowTitles, contribution.cleanedWindowTitle])],
+                       exeNames: [...new Set([...existingMatcher.exeNames, ...exeNames])],
+                       windowTitles: [...new Set([...existingMatcher.windowTitles, ...windowTitles])],
                        status: "verified",
                        verificationMethod: "manual",
                        revision,
@@ -76,8 +100,8 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
                : await transaction.applicationMatcher.create({
                     data: {
                        knownGameId: game.id,
-                       exeNames: [exeName],
-                       windowTitles: [contribution.cleanedWindowTitle],
+                       exeNames,
+                       windowTitles,
                        platform: contribution.platform,
                        status: "verified",
                        verificationMethod: "manual",

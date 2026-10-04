@@ -1,11 +1,10 @@
 import type { HMediaKind } from "@huginnjs/shared";
 
-import HuginnCheckbox from "@components/HuginnCheckbox";
 import HuginnSlider from "@components/input/HuginnSlider";
 import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
-import { useClient } from "@stores/clientStore";
+import { HuginnCheckbox } from "@huginn/frontend-shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useMemo } from "react";

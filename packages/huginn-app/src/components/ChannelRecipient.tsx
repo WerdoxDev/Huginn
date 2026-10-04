@@ -2,6 +2,7 @@ import type { Snowflake } from "@huginnjs/shared";
 
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
@@ -11,7 +12,6 @@ import { type MouseEvent, useState } from "react";
 import type { AppUser } from "@/types";
 
 import ActivityPreview from "./ActivityPreview";
-import LoadingIcon from "./LoadingIcon";
 import Tooltip from "./tooltip/Tooltip";
 import UserAvatar from "./UserAvatar";
 
@@ -72,7 +72,7 @@ export default function ChannelRecipient(props: { channelId: Snowflake; isOwner:
          </div>
          {state?.status === "pending" && state?.variables?.recipients.some((x) => x === props.recipient.id) ? (
             <div className="absolute top-3.5 right-2 bottom-3.5 flex shrink-0 items-center justify-center">
-               <LoadingIcon className="size-7" />
+               <HuginnLoadingIcon className="size-7" />
             </div>
          ) : (
             props.isOwner && (

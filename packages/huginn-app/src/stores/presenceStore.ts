@@ -199,7 +199,8 @@ export function detectKnownApplication(applications: ApplicationInfo[], catalog:
       | undefined;
 
    for (const application of applications) {
-      const exeName = application.exePath?.split(/[/\\]+/).pop();
+      const exePathParts = application.exePath?.split(/[/\\]+/).filter(Boolean);
+      const exeNames = exePathParts ? [exePathParts.at(-1), exePathParts.length > 1 ? exePathParts.slice(-2).join("/") : undefined] : [];
       const windowTitle = cleanApplicationTitle(application.windowTitle);
 
       for (const matcher of catalog.matchers) {
@@ -208,13 +209,18 @@ export function detectKnownApplication(applications: ApplicationInfo[], catalog:
          const game = games.get(matcher.knownGameId);
          if (!game) continue;
 
-         const exeMatches = exeName !== undefined && matcher.exeNames.includes(exeName);
+         const exeMatchScore = matcher.exeNames.reduce((score, matcherExeName) => {
+            const normalizedMatcherExeName = matcherExeName.replaceAll("\\", "/");
+            const candidateIndex = exeNames.indexOf(normalizedMatcherExeName);
+            return Math.max(score, candidateIndex === 1 ? 2 : candidateIndex === 0 ? 1 : 0);
+         }, 0);
+         const exeMatches = exeMatchScore > 0;
          const knownTitles = [game.canonicalName, ...game.aliases, ...matcher.windowTitles].map(cleanApplicationTitle);
          const titleMatches = knownTitles.includes(windowTitle);
          const commandLineMatches = matcher.commandLinePatterns.every((pattern) => application.cmdLine?.includes(pattern) === true);
 
          if ((exeMatches || titleMatches) && commandLineMatches) {
-            const score = matcher.commandLinePatterns.length + Number(exeMatches) + Number(titleMatches) + Number(matcher.platform === platform);
+            const score = matcher.commandLinePatterns.length + exeMatchScore + Number(titleMatches) + Number(matcher.platform === platform);
 
             if (!bestMatch || score > bestMatch.score) {
                bestMatch = { detected: application, known: { matcher, game }, score };

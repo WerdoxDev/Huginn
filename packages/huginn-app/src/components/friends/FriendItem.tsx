@@ -1,10 +1,10 @@
 import type { Snowflake } from "@huginnjs/shared";
 
 import ActivityPreview from "@components/ActivityPreview";
-import LoadingIcon from "@components/LoadingIcon";
 import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
+import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { RelationshipType } from "@huginnjs/shared";
 import { PRESENCE_STATUS_MAP } from "@lib/utils";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -77,7 +77,7 @@ export default function FriendItem(props: {
          </div>
          {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-               <LoadingIcon className="size-10" />
+               <HuginnLoadingIcon className="size-10" />
             </div>
          )}
          <div className="flex shrink-0 items-center gap-x-2.5">

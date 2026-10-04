@@ -563,6 +563,8 @@ export type APIGetStaffIGDBGamesResult = {
 
 export type APIPostAcceptGameContributionJSONBody = {
    igdbId: number;
+   exeNames: string[];
+   windowTitles: string[];
 };
 
 export type APIPostAcceptGameContributionResult = {
