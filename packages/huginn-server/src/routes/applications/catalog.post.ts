@@ -1,9 +1,11 @@
-import { invalidBody, verifyJwt } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
+import { invalidBody, singleError, verifyJwt } from "@huginn/backend-shared";
+import { prisma, selectContribution } from "@huginn/backend-shared/database";
 import { logger } from "@huginn/backend-shared/logger";
-import { CDNRoutes, cleanApplicationTitle, getFileHash, toArrayBuffer, type APIPostKnownApplicationResult } from "@huginnjs/shared";
+import { CDNRoutes, cleanApplicationTitle, Errors, getFileHash, toArrayBuffer, type APIPostApplicationCatalogResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterContribution } from "#utils/helpers";
 import { cdnUpload } from "#utils/server-request";
 
 const schema = t.Object({
@@ -15,12 +17,24 @@ const schema = t.Object({
 });
 
 export const postKnownApplication = new Elysia().use(verifyJwt()).post(
-   "/api/applications/known",
+   "/api/applications/catalog",
    async ({ body, status, tokenPayload }) => {
       const cleanedWindowTitle = cleanApplicationTitle(body.windowTitle);
       if (!cleanedWindowTitle) return invalidBody(status);
 
-      const contribution = await prisma.contribution.create({
+      const existingContribution = await prisma.contribution.findFirst({
+         where: {
+            OR: [{ windowTitle: body.windowTitle }, { cleanedWindowTitle: cleanedWindowTitle }, { exePath: body.exePath }],
+            contributorId: BigInt(tokenPayload.id),
+         },
+         select: { id: true },
+      });
+
+      if (existingContribution) {
+         return singleError(Errors.duplicateContribution(), status);
+      }
+
+      let contribution = await prisma.contribution.create({
          data: {
             windowTitle: body.windowTitle,
             cleanedWindowTitle,
@@ -30,7 +44,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
             contributorId: BigInt(tokenPayload.id),
             status: "pending",
          },
-         select: { id: true },
+         select: selectContribution,
       });
 
       if (body.icon) {
@@ -41,16 +55,20 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
             await cdnUpload(CDNRoutes.uploadApplicationIcon(contribution.id), {
                files: [{ data, name: iconHash }],
             });
-            await prisma.contribution.update({
+            contribution = await prisma.contribution.update({
                where: { id: contribution.id },
                data: { iconHash },
+               select: selectContribution,
             });
          } catch (error) {
             logger.warn({ error, contributionId: contribution.id }, "failed to store a contribution icon");
          }
       }
 
-      const json: APIPostKnownApplicationResult = { contributionId: contribution.id };
+      const gatewayContribution = filterContribution(contribution);
+      if (gatewayContribution) dispatchToTopic(tokenPayload.id, "application_contribution_add", gatewayContribution);
+
+      const json: APIPostApplicationCatalogResult = { contributionId: contribution.id };
       return status("Accepted", json);
    },
    { body: schema },

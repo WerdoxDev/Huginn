@@ -1,11 +1,20 @@
-import type { APIPostAcceptGameContributionResult } from "@huginnjs/shared";
-
 import { notFound } from "@huginn/backend-shared";
-import { nextApplicationCatalogRevision, prisma, prismaBase, Prisma, selectApplicationMatcher, selectKnownGame } from "@huginn/backend-shared/database";
+import {
+   nextApplicationCatalogRevision,
+   prisma,
+   prismaBase,
+   Prisma,
+   selectApplicationMatcher,
+   selectContribution,
+   selectKnownGame,
+} from "@huginn/backend-shared/database";
+import { CDNRoutes, type APIPostAcceptGameContributionResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
-import { filterApplicationMatcher, filterKnownGame } from "#utils/helpers";
+import { dispatchToTopic } from "#utils/gateway-utils";
+import { filterApplicationMatcher, filterContribution, filterKnownGame } from "#utils/helpers";
 import { getIGDBGame } from "#utils/igdb";
+import { cdnFetch, cdnUpload } from "#utils/server-request";
 import { verifyStaff } from "#utils/staff";
 
 const paramsSchema = t.Object({ contributionId: t.Numeric({ minimum: 1 }) });
@@ -14,6 +23,7 @@ const bodySchema = t.Object({
    igdbId: t.Number({ minimum: 1 }),
    exeNames: matcherValuesSchema,
    windowTitles: matcherValuesSchema,
+   commandLinePatterns: matcherValuesSchema,
 });
 
 function normalizeMatcherValues(values: string[]) {
@@ -29,11 +39,12 @@ function isValidExeName(value: string) {
    return parts.length <= 2 && parts.every((part) => part.length > 0 && part !== "." && part !== "..");
 }
 
-export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
+export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).post(
    "/api/staff/game-contributions/:contributionId/accept",
    async ({ params: { contributionId }, body, status }) => {
       const exeNames = normalizeExeNames(body.exeNames);
       const windowTitles = normalizeMatcherValues(body.windowTitles);
+      const commandLinePatterns = normalizeMatcherValues(body.commandLinePatterns);
       if (exeNames.some((exeName) => !isValidExeName(exeName))) {
          return status("Bad Request", { message: "Executable names may include at most one parent folder." });
       }
@@ -43,7 +54,7 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
 
       const pendingContribution = await prisma.contribution.findUnique({
          where: { id: contributionId },
-         select: { id: true, status: true },
+         select: { id: true, status: true, iconHash: true },
       });
       if (!pendingContribution) return notFound(status);
       if (pendingContribution.status !== "pending") {
@@ -53,6 +64,10 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
       const selectedGame = await getIGDBGame(body.igdbId);
       if (!selectedGame) return notFound(status);
 
+      const contributionIcon = pendingContribution.iconHash
+         ? await cdnFetch(CDNRoutes.applicationIcon(pendingContribution.id, pendingContribution.iconHash))
+         : undefined;
+
       const canonicalName = selectedGame.name;
       const aliases = [
          ...(selectedGame.alternative_names ?? []).map((alternative) => alternative.name),
@@ -60,24 +75,30 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
       ].filter((name, index, names) => name !== canonicalName && names.indexOf(name) === index);
 
       const result = await prismaBase.$transaction(
-         async (transaction) => {
-            const contribution = await transaction.contribution.findUnique({ where: { id: contributionId } });
+         async (tx) => {
+            const contribution = await tx.contribution.findUnique({ where: { id: contributionId } });
             if (!contribution || contribution.status !== "pending") return null;
 
-            const revision = await nextApplicationCatalogRevision(transaction);
-            const existingGame = await transaction.knownGame.findUnique({ where: { igdbId: selectedGame.id } });
+            const revision = await nextApplicationCatalogRevision(tx);
+            const existingGame = await tx.knownGame.findUnique({ where: { igdbId: selectedGame.id } });
             const game = existingGame
-               ? await transaction.knownGame.update({
+               ? await tx.knownGame.update({
                     where: { id: existingGame.id },
-                    data: { canonicalName, aliases, revision, deletedAt: null },
+                    data: { canonicalName, aliases, iconHash: contribution.iconHash ?? existingGame.iconHash, revision, deletedAt: null },
                     select: selectKnownGame,
                  })
-               : await transaction.knownGame.create({
-                    data: { igdbId: selectedGame.id, canonicalName, aliases, revision },
+               : await tx.knownGame.create({
+                    data: { igdbId: selectedGame.id, canonicalName, aliases, iconHash: contribution.iconHash, revision },
                     select: selectKnownGame,
                  });
 
-            const existingMatcher = await transaction.applicationMatcher.findFirst({
+            if (contribution.iconHash && contributionIcon) {
+               await cdnUpload(CDNRoutes.uploadApplicationIcon(game.id), {
+                  files: [{ data: contributionIcon, name: contribution.iconHash }],
+               });
+            }
+
+            const existingMatcher = await tx.applicationMatcher.findFirst({
                where: {
                   knownGameId: game.id,
                   platform: contribution.platform,
@@ -85,11 +106,12 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
                },
             });
             const matcher = existingMatcher
-               ? await transaction.applicationMatcher.update({
+               ? await tx.applicationMatcher.update({
                     where: { id: existingMatcher.id },
                     data: {
                        exeNames: [...new Set([...existingMatcher.exeNames, ...exeNames])],
                        windowTitles: [...new Set([...existingMatcher.windowTitles, ...windowTitles])],
+                       commandLinePatterns: [...new Set([...existingMatcher.commandLinePatterns, ...commandLinePatterns])],
                        status: "verified",
                        verificationMethod: "manual",
                        revision,
@@ -97,36 +119,42 @@ export const postAcceptGameContribution = new Elysia().use(verifyStaff()).post(
                     },
                     select: selectApplicationMatcher,
                  })
-               : await transaction.applicationMatcher.create({
+               : await tx.applicationMatcher.create({
                     data: {
                        knownGameId: game.id,
                        exeNames,
                        windowTitles,
+                       commandLinePatterns,
                        platform: contribution.platform,
                        status: "verified",
                        verificationMethod: "manual",
                        contributorId: contribution.contributorId,
-                       commandLinePatterns: [],
                        revision,
                     },
                     select: selectApplicationMatcher,
                  });
 
-            await transaction.contribution.update({
+            const updatedContribution = await tx.contribution.update({
                where: { id: contribution.id },
                data: {
                   status: "accepted",
                   knownGameId: game.id,
                   applicationMatcherId: matcher.id,
                },
+               select: selectContribution,
             });
 
-            return { game, matcher };
+            return { contribution: updatedContribution, game, matcher };
          },
          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
 
       if (!result) return status("Conflict", { message: "This contribution has already been reviewed." });
+
+      const gatewayContribution = filterContribution(result.contribution);
+      if (gatewayContribution) {
+         dispatchToTopic(gatewayContribution.contributorId, "application_contribution_update", gatewayContribution);
+      }
 
       const json: APIPostAcceptGameContributionResult = {
          game: filterKnownGame(result.game),

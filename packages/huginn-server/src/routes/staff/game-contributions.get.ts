@@ -1,6 +1,5 @@
-import type { APIGetStaffGameContributionsResult, APIStaffGameContribution } from "@huginnjs/shared";
-
 import { prisma } from "@huginn/backend-shared/database";
+import { CDNRoutes, type APIGetStaffGameContributionsResult, type APIStaffGameContribution } from "@huginnjs/shared";
 import Elysia from "elysia";
 
 import { env } from "#setup";
@@ -27,7 +26,7 @@ export const getStaffGameContributions = new Elysia().use(verifyStaff()).get("/a
          exeName: contribution.exePath.split(/[/\\]+/).pop() ?? contribution.exePath,
          commandLine: contribution.commandLine,
          platform: contribution.platform,
-         iconUrl: contribution.iconHash ? `${cdnRoot}/application-icons/${contribution.id}/${contribution.iconHash}.webp` : null,
+         iconUrl: contribution.iconHash ? `${cdnRoot}${CDNRoutes.applicationIcon(contribution.id, contribution.iconHash)}` : null,
          contributor: contribution.contributor
             ? {
                  ...contribution.contributor,

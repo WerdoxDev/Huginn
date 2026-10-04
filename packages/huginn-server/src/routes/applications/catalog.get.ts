@@ -1,34 +1,29 @@
 import { verifyJwt } from "@huginn/backend-shared";
-import { getApplicationCatalogRevision, Prisma, prismaBase, selectApplicationMatcher, selectKnownGame } from "@huginn/backend-shared/database/index";
-import { type APIGetKnownApplicationsResult } from "@huginnjs/shared";
+import { getApplicationCatalogRevision, Prisma, prismaBase, selectKnownGame, selectMatcherWithGame } from "@huginn/backend-shared/database";
+import { type APIGetApplicationCatalogResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { filterApplicationMatcher, filterKnownGame } from "#utils/helpers";
 
-const querySchema = t.Object({ cursor: t.Optional(t.String({ pattern: "^[0-9]+$" })) });
-
-const selectMatcherWithGame = {
-   ...selectApplicationMatcher,
-   knownGame: { select: { ...selectKnownGame, deletedAt: true } },
-} satisfies Prisma.ApplicationMatcherSelect;
+const querySchema = t.Object({ cursor: t.Optional(t.String()) });
 
 export const getKnownApplications = new Elysia().use(verifyJwt()).get(
-   "/api/applications/known",
+   "/api/applications/catalog",
    async ({ status, query: { cursor } }) => {
       const requestedCursor = cursor === undefined ? undefined : BigInt(cursor);
 
       const json = await prismaBase.$transaction(
-         async (transaction): Promise<APIGetKnownApplicationsResult> => {
-            const revision = await getApplicationCatalogRevision(transaction);
+         async (tx): Promise<APIGetApplicationCatalogResult> => {
+            const revision = await getApplicationCatalogRevision(tx);
             const full = requestedCursor === undefined || requestedCursor > revision;
 
             if (full) {
                const [games, matchers] = await Promise.all([
-                  transaction.knownGame.findMany({
+                  tx.knownGame.findMany({
                      where: { deletedAt: null },
                      select: selectKnownGame,
                   }),
-                  transaction.applicationMatcher.findMany({
+                  tx.applicationMatcher.findMany({
                      where: {
                         status: "verified",
                         deletedAt: null,
@@ -49,11 +44,11 @@ export const getKnownApplications = new Elysia().use(verifyJwt()).get(
             }
 
             const [changedGames, changedMatchers] = await Promise.all([
-               transaction.knownGame.findMany({
+               tx.knownGame.findMany({
                   where: { revision: { gt: requestedCursor, lte: revision } },
                   select: { ...selectKnownGame, deletedAt: true },
                }),
-               transaction.applicationMatcher.findMany({
+               tx.applicationMatcher.findMany({
                   where: { revision: { gt: requestedCursor, lte: revision } },
                   select: { ...selectMatcherWithGame, deletedAt: true },
                }),

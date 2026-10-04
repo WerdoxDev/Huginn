@@ -27,6 +27,7 @@ export const deleteStaffKnownGame = new Elysia().use(verifyStaff()).delete(
                where: { id: game.id },
                data: { deletedAt, revision },
             });
+            await tx.contribution.deleteMany({ where: { knownGameId: game.id } });
             return true;
          },
          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
