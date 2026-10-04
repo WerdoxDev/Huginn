@@ -6,8 +6,8 @@ import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
 
-import { postApplicationIcon } from "#routes/application-icons/[applicationId!].post";
-import { getApplicationIcon } from "#routes/application-icons/[applicationId!]/[iconHash].get";
+import { postApplicationIcon } from "#routes/application-icons/[id].post";
+import { getApplicationIcon } from "#routes/application-icons/[id]/[iconHash].get";
 import { postMessageAttachment } from "#routes/attachments/[channelId]/[messageId].post";
 import { getMessageAttachment } from "#routes/attachments/[channelId]/[messageId]/[filename].get";
 import { postUserAvatar } from "#routes/avatars/[userId].post";
@@ -71,8 +71,6 @@ export const app = new Elysia({ normalize: "typebox" })
    })
 
    // Uncached routes
-   .use(getApplicationIcon)
-   .use(postApplicationIcon)
    .use(getMessageAttachment)
    .use(postMessageAttachment)
    .use(getIndex)
@@ -83,7 +81,7 @@ export const app = new Elysia({ normalize: "typebox" })
       if (request.method !== "GET") return;
 
       const isExternal = /^\/cdn\/external(?:\/|$)/i.test(url.pathname);
-      const isImmutable = /^\/cdn\/(?:avatars|channel-icons|banners|channel-backgrounds|emoji)(?:\/|$)/i.test(url.pathname);
+      const isImmutable = /^\/cdn\/(?:avatars|channel-icons|banners|channel-backgrounds|application-icons|emoji)(?:\/|$)/i.test(url.pathname);
       if (!isExternal && !isImmutable) return;
 
       set.headers["Vary"] = "Accept-Encoding";
@@ -95,6 +93,8 @@ export const app = new Elysia({ normalize: "typebox" })
    .use(postUserBanner)
    .use(getChannelIcon)
    .use(postChannelIcon)
+   .use(getApplicationIcon)
+   .use(postApplicationIcon)
    .use(getEmoji)
    .use(postChannelBackground)
    .use(getChannelBackground)
