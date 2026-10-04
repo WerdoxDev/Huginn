@@ -212,11 +212,19 @@ export const Routes = {
 
    /**
     * Route for
-    * - GET  "/applications/known"
-    * - POST "/applications/known"
+    * - GET  "/applications/catalog"
+    * - POST "/applications/catalog"
     */
-   knownApplications() {
-      return "/applications/known" as const;
+   applicationCatalog() {
+      return "/applications/catalog" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET "/applications/contributions/@me"
+    */
+   applicationContributions() {
+      return "/applications/contributions/@me" as const;
    },
 
    /**
@@ -249,6 +257,14 @@ export const Routes = {
     */
    staffAcceptGameContribution(contributionId: number): `/staff/game-contributions/${number}/accept` {
       return `/staff/game-contributions/${contributionId}/accept`;
+   },
+
+   /**
+    * Route for:
+    * - POST "/staff/game-contributions/{contribution.id}/reject"
+    */
+   staffRejectGameContribution(contributionId: number): `/staff/game-contributions/${number}/reject` {
+      return `/staff/game-contributions/${contributionId}/reject`;
    },
 
    /**
@@ -341,8 +357,12 @@ export const CDNRoutes = {
       return `/attachments/${channelId}/${messageId}`;
    },
 
-   uploadApplicationIcon(applicationId?: number): `/application-icons/${string}` | `/application-icons` {
-      return applicationId ? `/application-icons/${applicationId}` : "/application-icons";
+   uploadApplicationIcon(id: number | string): `/application-icons/${string}` {
+      return `/application-icons/${id}`;
+   },
+
+   applicationIcon(id: number | string, iconHash: string): `/application-icons/${string}/${string}.webp` {
+      return `/application-icons/${id}/${iconHash}.webp`;
    },
 
    uploadChannelBackground(scope: Snowflake | "global", userId: Snowflake): `/channel-backgrounds/${string}/${string}` {

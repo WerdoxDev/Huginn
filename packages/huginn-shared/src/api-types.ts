@@ -479,6 +479,7 @@ export type APIKnownGame = {
    igdbId: number;
    canonicalName: string;
    aliases: string[];
+   iconHash: string | null;
    createdAt: Date | string;
    updatedAt: Date | string | null;
 };
@@ -497,7 +498,7 @@ export type APIApplicationMatcher = {
    contributorId?: Snowflake;
 };
 
-export type APIGetKnownApplicationsResult = {
+export type APIGetApplicationCatalogResult = {
    cursor: string;
    full: boolean;
    games: APIKnownGame[];
@@ -508,10 +509,9 @@ export type APIGetKnownApplicationsResult = {
 
 export type APIPostApplicationIconJSONBody = {
    icon: string;
-   applicationId?: number;
 };
 
-export type APIPostKnownApplicationJSONBody = {
+export type APIPostApplicationCatalogJSONBody = {
    windowTitle: string;
    exePath: string;
    commandLine?: string;
@@ -521,11 +521,9 @@ export type APIPostKnownApplicationJSONBody = {
 
 export type APIPostApplicationIconResult = string;
 
-export type APIPostKnownApplicationResult = {
+export type APIPostApplicationCatalogResult = {
    contributionId: number;
 };
-
-export type APIStaffUser = Pick<APIUser, "id" | "username" | "displayName" | "avatar" | "flags">;
 
 export type APIStaffGameContribution = {
    id: number;
@@ -573,6 +571,7 @@ export type APIPostAcceptGameContributionJSONBody = {
    igdbId: number;
    exeNames: string[];
    windowTitles: string[];
+   commandLinePatterns: string[];
 };
 
 export type APIPostAcceptGameContributionResult = {
@@ -638,3 +637,19 @@ export type APIGetGifCategoriesResult = {
 
 export type APIGetTrendingGifsResult = APIGif[];
 export type APIGetSearchGifsResult = APIGif[];
+
+export type APIContribution = {
+   id: number;
+   contributorId: Snowflake;
+   knownGameId: number | null;
+   windowTitle: string;
+   cleanedWindowTitle: string;
+   exePath: string;
+   commandLine: string | null;
+   platform: string;
+   iconHash: string | null;
+   createdAt: Date | string;
+   status: "pending" | "accepted" | "rejected";
+};
+
+export type APIGetUserContributionsResult = APIContribution[];

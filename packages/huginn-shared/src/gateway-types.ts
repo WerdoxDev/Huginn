@@ -1,6 +1,7 @@
 import type {
    Activity,
    APIChannelUser,
+   APIContribution,
    APIEmoji,
    APIMessage,
    APIReadStateWithoutUser,
@@ -66,6 +67,8 @@ export type GatewayWebsocketEvents = {
    session_update: GatewaySessionUpdateData;
    message_reaction_add: GatewayMessageReactionAddData;
    message_reaction_remove: GatewayMessageReactionRemoveData;
+   application_contribution_add: GatewayApplicationContributionAddData;
+   application_contribution_update: GatewayApplicationContributionUpdateData;
 };
 
 export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefined = undefined> = Event extends undefined
@@ -282,3 +285,6 @@ export type GatewayMessageReactionRemoveData = {
    messageId: Snowflake;
    emoji: APIEmoji;
 };
+
+export type GatewayApplicationContributionAddData = APIContribution;
+export type GatewayApplicationContributionUpdateData = APIContribution;

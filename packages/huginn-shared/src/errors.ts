@@ -75,6 +75,7 @@ export enum JsonCode {
    INVALID_URL_PROTOCOL = 2009,
    HOST_NOT_ALLOWED = 2010,
    UNSUPPORTED_CONTENT_TYPE = 2011,
+   DUPLICATE_CONTRIBUTION = 2012,
    USERNAME_NOT_FOUND = 3001,
    RELATION_SELF_REQUEST = 3002,
    RELATION_EXISTS = 3003,
@@ -263,5 +264,8 @@ export const Errors = {
    },
    unsupportedContentType(): [string, JsonCode] {
       return ["Unsupported content type", JsonCode.UNSUPPORTED_CONTENT_TYPE];
+   },
+   duplicateContribution(): [string, JsonCode] {
+      return ["Duplicate contribution", JsonCode.DUPLICATE_CONTRIBUTION];
    },
 };
