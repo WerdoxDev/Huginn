@@ -1,7 +1,6 @@
 import { HuginnIcon, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { useTheme } from "@stores/themeStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import clsx from "clsx";
 import { useEffect, useState, type SubmitEvent } from "react";
 
 import { getStaffMe } from "@/lib/api";
@@ -69,26 +68,19 @@ function LoginComponent() {
                placeholder="Paste token"
                message={{ status: error ? "error" : "none", text: error ? `Token verification failed: ${error}` : "" }}
             >
-               <HuginnInput.Label className="mb-2">Staff token</HuginnInput.Label>
-               <HuginnInput.Wrapper
-                  className={clsx(
-                     "ring-1 transition-shadow duration-150",
-                     error ? "ring-negative-300 focus-within:ring-negative-300" : "ring-primary-700 focus-within:ring-primary-500",
-                  )}
-               >
-                  <HuginnInput.Input className="font-ubuntu text-sm" autoComplete="off" aria-invalid={Boolean(error)} />
+               <HuginnInput.Label>Staff token</HuginnInput.Label>
+               <HuginnInput.Wrapper>
+                  <HuginnInput.Input className="font-ubuntu" />
                </HuginnInput.Wrapper>
             </HuginnInput>
             <HuginnLoadingButton
                type="submit"
                color="primary"
                isLoading={checking}
-               loadingLabel="Verify token"
                disabled={checking || !tokenInput.trim()}
                className="mt-5 h-10 w-full gap-2 px-4 font-medium disabled:text-white/50"
                iconClassName="size-5"
             >
-               <IconRiShieldKeyholeFill className="size-5" />
                Verify token
             </HuginnLoadingButton>
          </form>

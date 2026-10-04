@@ -233,13 +233,7 @@ export default function KnownGamesPanel() {
                      <HuginnButton color="surface" className="h-10 w-full" disabled={deleting} onClick={() => setGameToDelete(undefined)}>
                         Cancel
                      </HuginnButton>
-                     <HuginnLoadingButton
-                        color="negative"
-                        className="h-10 w-full"
-                        isLoading={deleting}
-                        loadingLabel="Delete game"
-                        onClick={() => void handleDelete()}
-                     >
+                     <HuginnLoadingButton color="negative" className="h-10 w-full" isLoading={true} onClick={() => void handleDelete()}>
                         Delete game
                      </HuginnLoadingButton>
                   </DialogActions>
