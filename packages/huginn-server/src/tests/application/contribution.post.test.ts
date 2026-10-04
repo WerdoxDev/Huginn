@@ -10,22 +10,29 @@ describe("POST /api/applications/catalog", () => {
    test("queues every submission as a separate pending contribution", async () => {
       const [user] = await createTestUsers(1);
       const { ws } = await getReadyWebSocket(user);
-      const body = {
+      const body1 = {
          windowTitle: "Test Game™",
          exePath: "/games/test-game/game.exe",
          commandLine: "game.exe --test",
          platform: "windows",
       };
 
+      const body2 = {
+         windowTitle: "Test Game2™",
+         exePath: "/games/test-game/game2.exe",
+         commandLine: "game.exe --test",
+         platform: "windows",
+      };
+
       const contributionAdded = new Promise<APIContribution>((resolve) => {
          ws.onmessage = (event) => {
-            if (testIsDispatch(event.data, "application_contribution_add")) resolve(JSON.parse(event.data).d);
+            if (testIsDispatch(event.data, "application_contribution_add")) resolve(event.data.d);
          };
       });
 
-      const first = (await testHandler("/api/applications/catalog", authHeader(user.accessToken), "POST", body)) as APIPostApplicationCatalogResult;
+      const first = (await testHandler("/api/applications/catalog", authHeader(user.accessToken), "POST", body1)) as APIPostApplicationCatalogResult;
       const firstGatewayContribution = await contributionAdded;
-      const second = (await testHandler("/api/applications/catalog", authHeader(user.accessToken), "POST", body)) as APIPostApplicationCatalogResult;
+      const second = (await testHandler("/api/applications/catalog", authHeader(user.accessToken), "POST", body2)) as APIPostApplicationCatalogResult;
 
       try {
          expect(first.contributionId).not.toBe(second.contributionId);
@@ -38,7 +45,9 @@ describe("POST /api/applications/catalog", () => {
          });
          expect(contributions).toHaveLength(2);
          expect(contributions.every((contribution) => contribution.status === "pending")).toBeTrue();
-         expect(contributions.every((contribution) => contribution.cleanedWindowTitle === "Test Game")).toBeTrue();
+         expect(
+            contributions.every((contribution) => contribution.cleanedWindowTitle === "Test Game" || contribution.cleanedWindowTitle === "Test Game2"),
+         ).toBeTrue();
 
          const userContributions = (await testHandler(
             "/api/applications/contributions/@me",

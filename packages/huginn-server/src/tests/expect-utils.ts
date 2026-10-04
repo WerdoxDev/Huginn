@@ -1,5 +1,4 @@
 import {
-   type ActiveSession,
    type Activity,
    type APIEmbed,
    type APIThumbnail,
