@@ -1,4 +1,4 @@
-import HuginnTab from "@components/HuginnTab";
+import { HuginnTab } from "@huginn/frontend-shared";
 import { useState } from "react";
 
 import EmojiPickerPanel from "./EmojiPickerPanel";

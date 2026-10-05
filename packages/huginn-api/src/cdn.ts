@@ -23,6 +23,10 @@ export class CDN {
       return this.dynamicMakeURL(`/channel-icons/${id}/${hash}`, hash, options);
    }
 
+   public applicationIcon(id: Snowflake | number, hash: string, options?: Readonly<ImageURLOptions>): string {
+      return this.makeURL(`/application-icons/${id}/${hash}`, options);
+   }
+
    public emoji(id: string): string {
       return this.makeURL(`/emoji/${id}`, { format: "svg" });
    }

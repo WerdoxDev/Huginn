@@ -1,10 +1,11 @@
 import {
    Routes,
-   type APIGetKnownApplicationsResult,
+   type APIGetApplicationCatalogResult,
+   type APIGetUserContributionsResult,
    type APIPostApplicationIconJSONBody,
    type APIPostApplicationIconResult,
-   type APIPostKnownApplicationJSONBody,
-   type APIPostKnownApplicationResult,
+   type APIPostApplicationCatalogJSONBody,
+   type APIPostApplicationCatalogResult,
 } from "@huginnjs/shared";
 
 import type { REST } from "../rest";
@@ -16,18 +17,22 @@ export class ApplicationAPI {
       this.rest = rest;
    }
 
-   public async getKnown(cursor?: string): Promise<APIGetKnownApplicationsResult> {
-      return this.rest.get(Routes.knownApplications(), {
+   public async getCatalog(cursor?: string): Promise<APIGetApplicationCatalogResult> {
+      return this.rest.get(Routes.applicationCatalog(), {
          auth: true,
          query: cursor ? new URLSearchParams({ cursor }) : undefined,
-      }) as Promise<APIGetKnownApplicationsResult>;
+      }) as Promise<APIGetApplicationCatalogResult>;
    }
 
-   public async submitKnown(body: APIPostKnownApplicationJSONBody): Promise<APIPostKnownApplicationResult> {
-      return this.rest.post(Routes.knownApplications(), {
+   public async contribute(body: APIPostApplicationCatalogJSONBody): Promise<APIPostApplicationCatalogResult> {
+      return this.rest.post(Routes.applicationCatalog(), {
          auth: true,
          body,
-      }) as Promise<APIPostKnownApplicationResult>;
+      }) as Promise<APIPostApplicationCatalogResult>;
+   }
+
+   public async getContributions(): Promise<APIGetUserContributionsResult> {
+      return this.rest.get(Routes.applicationContributions(), { auth: true }) as Promise<APIGetUserContributionsResult>;
    }
 
    public async uploadIcon(body: APIPostApplicationIconJSONBody): Promise<APIPostApplicationIconResult> {

@@ -170,9 +170,6 @@ importers:
       '@base-ui/react':
         specifier: ^1.7.0
         version: 1.7.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@capacitor-community/camera-preview':
-        specifier: ^8.0.1
-        version: 8.0.1(@capacitor/core@8.5.0)
       '@capacitor/android':
         specifier: ^8.5.0
         version: 8.5.0(@capacitor/core@8.5.0)
@@ -1792,12 +1789,6 @@ packages:
 
   '@canvas/image-data@1.1.0':
     resolution: {integrity: sha512-QdObRRjRbcXGmM1tmJ+MrHcaz1MftF2+W7YI+MsphnsCrmtyfS0d5qJbk0MeSbUeyM/jCb0hmnkXPsy026L7dA==}
-
-  '@capacitor-community/camera-preview@8.0.1':
-    resolution: {integrity: sha512-pEBB+FKXoISMiorn9nKvyd9DPkalopckYxKlHuRBhC6cBLOxgLPnjj9nQO9TYOnWI5nuh973QRZtgN4sOe5Pyw==}
-    engines: {node: '>=18.0.0', npm: '>=9.0.0'}
-    peerDependencies:
-      '@capacitor/core': '>=8.0.2'
 
   '@capacitor/android@8.5.0':
     resolution: {integrity: sha512-Rb3prJeQiTp0pQhSSOReJuG9VgibOGMG4ECs+UhMwr6TCCHZ3NCZO811bDA0HxD0xrT/gCrJAsY5yfEATu84JQ==}
@@ -13157,10 +13148,6 @@ snapshots:
       css-tree: 3.2.1
 
   '@canvas/image-data@1.1.0': {}
-
-  '@capacitor-community/camera-preview@8.0.1(@capacitor/core@8.5.0)':
-    dependencies:
-      '@capacitor/core': 8.5.0
 
   '@capacitor/android@8.5.0(@capacitor/core@8.5.0)':
     dependencies:

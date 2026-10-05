@@ -18,6 +18,7 @@ export { default as HuginnLabel } from "./components/HuginnLabel";
 export type { HuginnLabelProps } from "./components/HuginnLabel";
 export { default as HuginnLoadingIcon } from "./components/HuginnLoadingIcon";
 export type { HuginnLoadingIconProps } from "./components/HuginnLoadingIcon";
+export { default as HuginnTab } from "./components/HuginnTab";
 export { default as ModalCloseButton } from "./components/ModalCloseButton";
 export type { ModalCloseButtonProps } from "./components/ModalCloseButton";
 export { default as StatusMessage } from "./components/StatusMessage";

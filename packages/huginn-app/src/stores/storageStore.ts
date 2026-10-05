@@ -70,7 +70,7 @@ export function initStorageStoreClient() {
    const client = clientStore.getState().client;
 
    const unlisten = client?.gateway.listen("ready", async () => {
-      await updateKnownApplications();
+      await updateApplicationCatalog();
    });
 
    return () => {
@@ -78,31 +78,31 @@ export function initStorageStoreClient() {
    };
 }
 
-let knownApplicationsSync: Promise<void> | undefined;
+let applicationCatalogSync: Promise<void> | undefined;
 
-export async function updateKnownApplications() {
-   if (knownApplicationsSync) return knownApplicationsSync;
+export async function updateApplicationCatalog() {
+   if (applicationCatalogSync) return applicationCatalogSync;
 
-   knownApplicationsSync = syncKnownApplications().finally(() => {
-      knownApplicationsSync = undefined;
+   applicationCatalogSync = syncApplicationCatalog().finally(() => {
+      applicationCatalogSync = undefined;
    });
 
-   return knownApplicationsSync;
+   return applicationCatalogSync;
 }
 
-async function syncKnownApplications() {
+async function syncApplicationCatalog() {
    const client = clientStore.getState().client;
 
    if (!client) {
       return;
    }
 
-   const value = await storage.loadFile("known-applications");
+   const value = await storage.loadFile("application-catalog");
    const cached = value.data;
    const hasCurrentSchema = Array.isArray(cached.games) && Array.isArray(cached.matchers) && typeof cached.cursor === "string";
-   const result = await client.applications.getKnown(hasCurrentSchema && cached.cursor ? cached.cursor : undefined);
+   const result = await client.applications.getCatalog(hasCurrentSchema && cached.cursor ? cached.cursor : undefined);
 
-   await store.getState().setValue("known-applications", applyApplicationCatalogUpdate(hasCurrentSchema ? cached : undefined, result));
+   await store.getState().setValue("application-catalog", applyApplicationCatalogUpdate(hasCurrentSchema ? cached : undefined, result));
 }
 
 function registerChangeHandlers() {

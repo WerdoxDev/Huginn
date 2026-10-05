@@ -1,7 +1,6 @@
 import ColorPicker from "@components/ColorPicker";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
-import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import Tooltip from "@components/tooltip/Tooltip";
 import { MessageProvider } from "@contexts/MessageProvider";
@@ -16,6 +15,7 @@ import {
    HuginnDialogPanel,
    HuginnDialogTitle,
    HuginnLabel,
+   HuginnTab,
    HuginnLoadingButton,
 } from "@huginn/frontend-shared";
 import { MessageType, type BackgroundStyle, type Snowflake } from "@huginnjs/shared";

@@ -23,6 +23,7 @@ declare global {
   const IconMingcuteCheckCircleFill: typeof import('~icons/mingcute/check-circle-fill.jsx').default
   const IconMingcuteChromeFill: typeof import('~icons/mingcute/chrome-fill.jsx').default
   const IconMingcuteCloseFill: typeof import('~icons/mingcute/close-fill.jsx').default
+  const IconMingcuteDelete3Fill: typeof import('~icons/mingcute/delete3-fill.jsx').default
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx').default
   const IconMingcuteDownload3Fill: typeof import('~icons/mingcute/download3-fill.jsx').default
   const IconMingcuteExitFill: typeof import('~icons/mingcute/exit-fill.jsx').default

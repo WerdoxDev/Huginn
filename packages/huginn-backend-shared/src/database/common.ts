@@ -206,6 +206,7 @@ export const selectKnownGame = {
    igdbId: true,
    canonicalName: true,
    aliases: true,
+   iconHash: true,
    createdAt: true,
    updatedAt: true,
 } satisfies Prisma.KnownGameSelect;
@@ -223,3 +224,23 @@ export const selectApplicationMatcher = {
    createdAt: true,
    updatedAt: true,
 } satisfies Prisma.ApplicationMatcherSelect;
+
+export const selectMatcherWithGame = {
+   ...selectApplicationMatcher,
+   knownGame: { select: { ...selectKnownGame, deletedAt: true } },
+} satisfies Prisma.ApplicationMatcherSelect;
+
+export const selectContribution = {
+   id: true,
+   contributorId: true,
+   knownGameId: true,
+   applicationMatcherId: true,
+   platform: true,
+   status: true,
+   exePath: true,
+   commandLine: true,
+   cleanedWindowTitle: true,
+   iconHash: true,
+   windowTitle: true,
+   createdAt: true,
+} satisfies Prisma.ContributionSelect;

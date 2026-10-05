@@ -86,6 +86,12 @@ export const getChannelsOptions = defineQuery(
    { initialData: () => getInitialChannels() },
 );
 
+export const getApplicationContributionsOptions = defineQuery(
+   "application-contributions",
+   () => ["@me"],
+   async () => await getClient().applications.getContributions(),
+);
+
 export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
    return infiniteQueryOptions({
       queryKey: ["messages", channelId],

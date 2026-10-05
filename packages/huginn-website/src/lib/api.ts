@@ -1,4 +1,10 @@
-import type { APIGetStaffGameContributionsResult, APIGetStaffIGDBGamesResult, APIPostAcceptGameContributionResult, APIStaffUser } from "@huginnjs/shared";
+import type {
+   APIGetStaffGameContributionsResult,
+   APIGetStaffIGDBGamesResult,
+   APIGetStaffKnownGamesResult,
+   APIPostAcceptGameContributionResult,
+   APIPublicUser,
+} from "@huginnjs/shared";
 
 const serverAddress = (import.meta.env.VITE_API_HOSTNAME ?? "https://midgard.huginn.dev").replace(/\/$/, "");
 const apiRoot = `${serverAddress}/api`;
@@ -6,7 +12,10 @@ const staffRoutes = {
    me: "/staff/@me",
    contributions: "/staff/game-contributions",
    igdbGames: "/staff/igdb-games",
+   knownGames: "/staff/known-games",
    acceptContribution: (id: number) => `/staff/game-contributions/${id}/accept`,
+   deleteKnownGame: (id: number) => `/staff/known-games/${id}`,
+   rejectContribution: (id: number) => `/staff/game-contributions/${id}/reject`,
 } as const;
 
 export class StaffAPIError extends Error {
@@ -40,15 +49,21 @@ async function staffRequest<T>(route: string, token: string, init: RequestInit =
       throw new StaffAPIError(message, response.status);
    }
 
+   if (response.status === 204) return undefined as T;
+
    return (await response.json()) as T;
 }
 
 export function getStaffMe(token: string) {
-   return staffRequest<APIStaffUser>(staffRoutes.me, token);
+   return staffRequest<APIPublicUser>(staffRoutes.me, token);
 }
 
 export function getGameContributions(token: string) {
    return staffRequest<APIGetStaffGameContributionsResult>(staffRoutes.contributions, token);
+}
+
+export function getKnownGames(token: string) {
+   return staffRequest<APIGetStaffKnownGamesResult>(staffRoutes.knownGames, token);
 }
 
 export function searchIGDB(token: string, query: string, signal?: AbortSignal) {
@@ -60,5 +75,17 @@ export function acceptGameContribution(token: string, contributionId: number, bo
    return staffRequest<APIPostAcceptGameContributionResult>(staffRoutes.acceptContribution(contributionId), token, {
       method: "POST",
       body: JSON.stringify(body),
+   });
+}
+
+export function rejectGameContribution(token: string, contributionId: number) {
+   return staffRequest<undefined>(staffRoutes.rejectContribution(contributionId), token, {
+      method: "POST",
+   });
+}
+
+export function deleteKnownGame(token: string, gameId: number) {
+   return staffRequest<undefined>(staffRoutes.deleteKnownGame(gameId), token, {
+      method: "DELETE",
    });
 }

@@ -64,6 +64,15 @@ describe("channelIcon()", () => {
    });
 });
 
+describe("applicationIcon()", () => {
+   it("should resolve an application icon CDN url", async () => {
+      const client = new HuginnClient({ cdn: { url: "https://test.com" } });
+
+      const url = client.cdn.applicationIcon(123, "icon-hash");
+      expect(url).toBe("https://test.com/application-icons/123/icon-hash.webp");
+   });
+});
+
 describe("emoji()", () => {
    it("should resolve a CDN emoji request url", async () => {
       const client = new HuginnClient({ cdn: { url: "https://test.com" } });

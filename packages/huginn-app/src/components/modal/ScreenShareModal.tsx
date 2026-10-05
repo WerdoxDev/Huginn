@@ -1,10 +1,9 @@
 import DisplaySourcePreview from "@components/DisplaySourcePreview";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
-import HuginnTab from "@components/HuginnTab";
 import HuginnSlider from "@components/input/HuginnSlider";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
-import { HuginnCheckbox, HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { HuginnCheckbox, HuginnDialogPanel, HuginnLoadingIcon, HuginnTab } from "@huginn/frontend-shared";
 import { analytics, CONSTANTS, recordSpanError } from "@huginnjs/shared";
 import { SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import { VoiceClient } from "@lib/voice/voice-client";

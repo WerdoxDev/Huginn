@@ -15,10 +15,9 @@ describe("POST /api/applications/icon", () => {
 
       await testHandler("/api/applications/icon", authHeader(user.accessToken), "POST", {
          icon: iconData,
-         applicationId: undefined,
       } as APIPostApplicationIconJSONBody);
 
-      const cdnIconData = await resolveImage(new URL(`/cdn/application-icons/${iconHash}.webp`, env.CDN_LOCAL_URL!).toString());
+      const cdnIconData = await resolveImage(new URL(`/cdn/application-icons/${user.id}/${iconHash}.webp`, env.CDN_LOCAL_URL!).toString());
       expect(cdnIconData).toBeDefined();
    });
 });

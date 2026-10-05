@@ -2,16 +2,19 @@ import { prisma } from "@huginn/backend-shared/database";
 import {
    selectApplicationMatcher,
    selectChannelDefaults,
+   selectContribution,
    selectKnownGame,
    selectAllMessage,
    type ApplicationMatcherPayload,
    type ChannelPayload,
+   type ContributionPayload,
    type KnownGamePayload,
    type MessagePayload,
 } from "@huginn/backend-shared/database/common";
 import { logger } from "@huginn/backend-shared/logger";
 import {
    analytics,
+   type APIContribution,
    type APIMessage,
    type APIMessageCall,
    type APIMessageReference,
@@ -164,7 +167,7 @@ export function filterChannel<T extends ChannelPayload<{ select: typeof selectCh
 }
 
 export function filterKnownGame<T extends KnownGamePayload<{ select: typeof selectKnownGame }>>(knownGame: T) {
-   return pick(knownGame, ["id", "igdbId", "canonicalName", "aliases", "createdAt", "updatedAt"]);
+   return pick(knownGame, ["id", "igdbId", "canonicalName", "aliases", "iconHash", "createdAt", "updatedAt"]);
 }
 
 export function filterApplicationMatcher<T extends ApplicationMatcherPayload<{ select: typeof selectApplicationMatcher }>>(matcher: T) {
@@ -184,6 +187,26 @@ export function filterApplicationMatcher<T extends ApplicationMatcherPayload<{ s
       ...(matcher.contributorId !== null && {
          contributorId: String(matcher.contributorId),
       }),
+   };
+}
+
+export function filterContribution<T extends ContributionPayload<{ select: typeof selectContribution }>>(contribution: T): APIContribution | null {
+   if (contribution.contributorId === null) return null;
+
+   return {
+      ...pick(contribution, [
+         "id",
+         "knownGameId",
+         "windowTitle",
+         "cleanedWindowTitle",
+         "exePath",
+         "commandLine",
+         "platform",
+         "iconHash",
+         "createdAt",
+         "status",
+      ]),
+      contributorId: String(contribution.contributorId),
    };
 }
 

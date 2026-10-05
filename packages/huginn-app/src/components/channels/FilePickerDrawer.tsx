@@ -1,13 +1,12 @@
 import { Drawer } from "@base-ui/react";
 import { Capacitor } from "@capacitor/core";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
-import HuginnTab from "@components/HuginnTab";
 import PickerMessage from "@components/PickerMessage";
 import { useClearQueryData } from "@hooks/useClearQueryData";
 import { useIsInView } from "@hooks/useIsInView";
 import { useLookup } from "@hooks/useLookup";
 import { useNativePermissionModal } from "@hooks/useNativePermissionModal";
-import { HuginnButton, HuginnLabel, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnLabel, HuginnLoadingIcon, HuginnTab } from "@huginn/frontend-shared";
 import { Files, type FileItem } from "@lib/capacitor/files-plugin";
 import {
    Gallery,
@@ -25,8 +24,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import { createPortal } from "react-dom";
 
 import type { AppAttachment, AttachmentInput } from "@/types";
-
-import CameraPreview from "./CameraPreview";
 
 export default function FilePickerDrawer(props: {
    attachments: AppAttachment[];
@@ -460,7 +457,7 @@ function MediaPickerPanel(props: {
                   onScroll={handleScroll}
                >
                   <div className="relative grid w-full grid-cols-3 content-start items-start gap-2">
-                     <CameraPreview />
+                     {/*<CameraPreview />*/}
                      {mediaResult?.pages
                         .flatMap((x) => x.media)
                         .map((media) => (

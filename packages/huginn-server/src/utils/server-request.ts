@@ -35,6 +35,19 @@ export async function cdnUpload<T>(fullRoute: RouteLike, options: RequestData = 
    })) as Promise<T>;
 }
 
+export async function cdnFetch(fullRoute: RouteLike): Promise<ArrayBuffer> {
+   if (!env.CDN_LOCAL_URL) {
+      throw new Error("CDN Root was not configured");
+   }
+
+   return (await request({
+      root: env.CDN_LOCAL_URL,
+      method: "GET",
+      fullRoute,
+      throw: true,
+   })) as ArrayBuffer;
+}
+
 export async function serverFetch<T>(url: string, method: RequestMethod, options: RequestData & { throw?: boolean }) {
    const fullUrl = new URL(url);
    return (await request({

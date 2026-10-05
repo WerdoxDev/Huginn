@@ -1,6 +1,6 @@
-import type { APIGetKnownApplicationsResult } from "@huginnjs/shared";
+import type { APIGetApplicationCatalogResult } from "@huginnjs/shared";
 
-function persistedCatalog(result: APIGetKnownApplicationsResult): APIGetKnownApplicationsResult {
+function persistedCatalog(result: APIGetApplicationCatalogResult): APIGetApplicationCatalogResult {
    return {
       cursor: result.cursor,
       full: true,
@@ -12,9 +12,9 @@ function persistedCatalog(result: APIGetKnownApplicationsResult): APIGetKnownApp
 }
 
 export function applyApplicationCatalogUpdate(
-   cached: APIGetKnownApplicationsResult | undefined,
-   result: APIGetKnownApplicationsResult,
-): APIGetKnownApplicationsResult {
+   cached: APIGetApplicationCatalogResult | undefined,
+   result: APIGetApplicationCatalogResult,
+): APIGetApplicationCatalogResult {
    if (!cached || result.full) return persistedCatalog(result);
 
    const games = new Map(cached.games.map((game) => [game.id, game]));

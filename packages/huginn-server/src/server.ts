@@ -13,9 +13,10 @@ import { Octokit } from "octokit";
 import { Resend } from "resend";
 
 import { getAllReleases } from "#routes/all-releases.get";
+import { getKnownApplications } from "#routes/applications/catalog.get";
+import { postKnownApplication } from "#routes/applications/catalog.post";
+import { getMeContribution } from "#routes/applications/contributions/@me.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
-import { getKnownApplications } from "#routes/applications/known.get";
-import { postKnownApplication } from "#routes/applications/known.post";
 import { getGoogleCallback } from "#routes/auth/callback/google.get";
 import { getGoogle } from "#routes/auth/google.get";
 import { postLogin } from "#routes/auth/login.post";
@@ -51,8 +52,11 @@ import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
-import { postAcceptGameContribution } from "#routes/staff/game-contributions/[contributionId]/accept.post";
+import { postStaffAcceptGameContribution } from "#routes/staff/game-contributions/[contributionId]/accept.post";
+import { postStaffRejectGameContribution } from "#routes/staff/game-contributions/[contributionId]/reject.post";
 import { getStaffIGDBGames } from "#routes/staff/igdb-games.get";
+import { getStaffKnownGames } from "#routes/staff/known-games.get";
+import { deleteStaffKnownGame } from "#routes/staff/known-games/[gameId].delete";
 import { getStaffMe } from "#routes/staff/me.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
@@ -207,12 +211,16 @@ export const app = new Elysia({
    .use(postApplicationIcon)
    .use(postKnownApplication)
    .use(getKnownApplications)
+   .use(getMeContribution)
 
    // staff
    .use(getStaffMe)
    .use(getStaffGameContributions)
    .use(getStaffIGDBGames)
-   .use(postAcceptGameContribution)
+   .use(getStaffKnownGames)
+   .use(deleteStaffKnownGame)
+   .use(postStaffAcceptGameContribution)
+   .use(postStaffRejectGameContribution)
 
    // misc
    .use(getAllReleases)
