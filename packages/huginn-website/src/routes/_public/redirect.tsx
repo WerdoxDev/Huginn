@@ -1,3 +1,4 @@
+import { HuginnIcon } from "@huginn/frontend-shared";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
@@ -63,15 +64,16 @@ function RedirectComponent() {
    }, []);
 
    return (
-      <div className="flex h-full w-full">
+      <div className="flex flex-1">
          <div className="flex w-full items-center justify-center">
             <div className="flex h-max flex-col items-center justify-center gap-y-5">
-               <img src={icon} className="text-text size-32 animate-pulse drop-shadow-[0px_0px_50px_#EBEBD3]" />
+               <HuginnIcon className="size-32 animate-pulse drop-shadow-[0px_0px_50px_#EBEBD3]" thickOutlined />
+               {/*<img src={icon} className="text-text size-32 animate-pulse drop-shadow-[0px_0px_50px_#EBEBD3]" />*/}
                <div className="text-center">
                   <div className="text-text flex items-center justify-center gap-x-2 text-2xl font-bold">
                      <span>{title}</span>
                      {showSuccess ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="text-primary-700 size-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="text-primary-500 size-8">
                            <g fill="none" fillRule="evenodd">
                               <path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
                               <path
@@ -94,9 +96,9 @@ function RedirectComponent() {
                      ) : null}
                   </div>
                   {showSuccess ? (
-                     <div className="text-text/80 mt-2 max-w-lg text-lg">
+                     <div className="text-text/80 mx-2 mt-2 max-w-xl text-lg lg:mx-0">
                         <span>You can return to the application and safely close this window. If you are not redirected automatically, Please click</span>{" "}
-                        <a ref={linkRef} className="text-primary-700 underline">
+                        <a ref={linkRef} className="text-primary-500 underline">
                            here
                         </a>
                      </div>
