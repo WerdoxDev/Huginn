@@ -17,7 +17,7 @@ export const postApplicationIcon = new Elysia().use(verifyJwt("cdn")).post(
 
       const { name } = extractFileInfo(file.name);
 
-      const transformedFile = await transformImage(file, { format: "webp", width: 32, height: 32 });
+      const transformedFile = await transformImage(file, { format: "webp", width: 128, height: 128 });
 
       await storage.writeFile("application-icons", id, `${name}.webp`, transformedFile);
 
