@@ -23,7 +23,7 @@ import {
 
 import type { GatewayOptions } from "./types";
 
-import { type HuginnClient } from ".";
+import { CONSTANTS, type HuginnClient } from ".";
 import { defaultClientOptions } from "./utils";
 import { SharedWebsocket } from "./websocket";
 
@@ -51,6 +51,7 @@ export class Gateway extends SharedWebsocket<Events> {
    public socket?: WebSocket;
    public sessionId?: Snowflake;
    private heartbeatInterval?: ReturnType<typeof setInterval>;
+   private heartbeatAckTimeout?: ReturnType<typeof setTimeout>;
    private reconnectTimeout?: ReturnType<typeof setTimeout>;
    private connectionPromise?: Promise<boolean>;
    private sequence?: number;
@@ -162,6 +163,8 @@ export class Gateway extends SharedWebsocket<Events> {
          span.setAttributes(this.getDefaultAttributes());
 
          this.intentionalClose = true;
+         this.stopHeartbeat();
+         this.clearReconnectTimeout();
          this.socket?.close(GatewayCode.INTENTIONAL_CLOSE);
       });
    }
@@ -201,7 +204,7 @@ export class Gateway extends SharedWebsocket<Events> {
       });
    }
 
-   private onClose(e: CloseEvent) {
+   private onClose(e: Pick<CloseEvent, "code" | "reason">) {
       analytics.startActiveSpan("apiGateway.onClose", (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -250,6 +253,9 @@ export class Gateway extends SharedWebsocket<Events> {
          const data: GatewayPayload = JSON.parse(e.data);
 
          switch (data.op) {
+            case GatewayOperations.HEARTBEAT_ACK:
+               this.clearHeartbeatAckTimeout();
+               break;
             case GatewayOperations.HELLO: {
                await this.handleHello(data);
                break;
@@ -464,16 +470,6 @@ export class Gateway extends SharedWebsocket<Events> {
       });
    }
 
-   private async waitForVoiceServerUpdate(): Promise<string> {
-      const result = await this.waitForAnyEvents(["voice_server_update", "disconnected", "reset"]);
-      if (result.event === "disconnected" || result.event === "reset") {
-         throw new Error("Disconnected while waiting for voice server update");
-      }
-
-      const data = result.data as GatewayVoiceServerUpdateData;
-      return data.token;
-   }
-
    private async waitForVoiceStateUpdate(targetChannelId: Snowflake | null): Promise<GatewayVoiceState> {
       const result = await this.waitForAnyEventUntil(["voice_state_update", "disconnected", "reset"], (event, data) => {
          if (event === "disconnected" || event === "reset") return true;
@@ -493,6 +489,19 @@ export class Gateway extends SharedWebsocket<Events> {
    private startHeartbeat(interval: number) {
       this.stopHeartbeat();
       this.heartbeatInterval = setInterval(() => {
+         const socket = this.socket;
+         if (!socket || this.intentionalClose) return;
+
+         // Further heartbeats must not extend an outstanding ACK deadline.
+         if (this.heartbeatAckTimeout === undefined) {
+            this.heartbeatAckTimeout = setTimeout(() => {
+               if (this.socket !== socket || this.intentionalClose) return;
+
+               // Recover locally even when the old socket never emits close.
+               this.onClose({ code: GatewayCode.SESSION_TIMEOUT, reason: "Heartbeat ACK timed out" });
+               socket.close(GatewayCode.SESSION_TIMEOUT, "Heartbeat ACK timed out");
+            }, CONSTANTS.HEARTBEAT_ACK_TIMEOUT_MS);
+         }
          this.send({ op: GatewayOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
@@ -500,6 +509,12 @@ export class Gateway extends SharedWebsocket<Events> {
    private stopHeartbeat() {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = undefined;
+      this.clearHeartbeatAckTimeout();
+   }
+
+   private clearHeartbeatAckTimeout(): void {
+      clearTimeout(this.heartbeatAckTimeout);
+      this.heartbeatAckTimeout = undefined;
    }
 
    // ============================================================
@@ -550,6 +565,7 @@ export class Gateway extends SharedWebsocket<Events> {
     * This is called when we determine that the session is invalid and we need to reset everything, including sequence and session ID.
     */
    public reset(): void {
+      this.stopHeartbeat();
       this.sequence = undefined;
       this.sessionId = undefined;
       this.setStatus("idle");
