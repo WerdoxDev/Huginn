@@ -15,10 +15,10 @@ import {
    type PresenceUser,
    type UserPresence,
    VoiceSignallingError,
-   changeUrlBase,
    omit,
    toDataUrl,
 } from "@huginnjs/shared";
+import { changeCdnUrlBase } from "@lib/instances";
 import { clientStore } from "@stores/clientStoreState";
 import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 import { Children, isValidElement } from "react";
@@ -155,19 +155,19 @@ export function convertToAppUserProfile(profile: APIUserProfile): AppUserProfile
 }
 
 export function convertToAppPresence(presence: UserPresence): AppPresence {
-   const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
+   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().hostnames.cdn}/cdn`;
    const activities = presence.activities.map((x) => ({
       ...x,
-      iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined,
+      iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
    }));
    return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
 
 export function convertToAppSession(session: GatewaySession): GatewaySession {
-   const cdn = `${clientStore.getState().hostnames.cdn}/cdn`;
+   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().hostnames.cdn}/cdn`;
    const activities = session.activities.map((x) => ({
       ...x,
-      iconUrl: x.iconUrl ? changeUrlBase(x.iconUrl, cdn) : undefined,
+      iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
    }));
    return { ...session, activities };
 }
@@ -334,4 +334,4 @@ export async function getAudioCovertArt(blob: Blob) {
    if (!coverImage) return undefined;
 
    return toDataUrl(coverImage?.data, "image/jpeg");
-}
+}

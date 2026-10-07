@@ -3,7 +3,8 @@ import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { CDNRoutes, changeUrlBase, CONSTANTS, constrainImageSize } from "@huginnjs/shared";
+import { CDNRoutes, CONSTANTS, constrainImageSize } from "@huginnjs/shared";
+import { changeCdnUrlBase } from "@lib/instances";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
@@ -24,7 +25,7 @@ export default function EmbedElement(props: {
       () => props.embedType === "gifv" || (props.description === undefined && props.title === undefined && (props.thumbnail || props.video)),
       [props.embedType, props.description, props.title, props.thumbnail, props.video],
    );
-   const { hostnames } = useClientStore();
+   const { hostnames, urls } = useClientStore();
 
    const dimensions = useMemo(
       () =>
@@ -38,13 +39,13 @@ export default function EmbedElement(props: {
    );
 
    const thumbnailUrl = useMemo(
-      () => (props.thumbnail?.url ? changeUrlBase(CDNRoutes.getExternal(props.thumbnail.url), `${hostnames.cdn}/cdn`) : undefined),
-      [props.thumbnail, hostnames.cdn],
+      () => (props.thumbnail?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.thumbnail.url), urls?.cdn ?? `${hostnames.cdn}/cdn`) : undefined),
+      [props.thumbnail, hostnames.cdn, urls?.cdn],
    );
 
    const videoUrl = useMemo(
-      () => (props.video?.url ? changeUrlBase(CDNRoutes.getExternal(props.video.url), `${hostnames.cdn}/cdn`) : undefined),
-      [props.video, hostnames.cdn],
+      () => (props.video?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.video.url), urls?.cdn ?? `${hostnames.cdn}/cdn`) : undefined),
+      [props.video, hostnames.cdn, urls?.cdn],
    );
 
    function handleGifContextMenu(e: MouseEvent<HTMLVideoElement>) {
@@ -142,4 +143,4 @@ export default function EmbedElement(props: {
          </div>
       </div>
    );
-}
+}
