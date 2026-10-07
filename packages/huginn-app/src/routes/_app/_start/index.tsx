@@ -4,8 +4,7 @@ import { useConnect } from "@hooks/useConnect";
 import { useCountdown } from "@hooks/useCountdown";
 import { useUpdater } from "@hooks/useUpdater";
 import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
-import { initializeClient, setHostnamesFromExternal, setHostnamesFromSettings, useClient } from "@stores/clientStore";
-import { useStorage } from "@stores/storageStore";
+import { selectStartupInstanceAddress, useClient } from "@stores/clientStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { animate, createScope } from "animejs";
@@ -13,7 +12,7 @@ import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, useReducer, useRef } from "react";
 
-type Step = "none" | "fetch_hostnames" | "check_update" | "initialize" | "update" | "welcome";
+type Step = "none" | "discover_instance" | "check_update" | "initialize" | "update" | "welcome";
 
 type State = {
    current: Step;
@@ -51,7 +50,6 @@ export const Route = createFileRoute("/_app/_start/")({
 function IndexComponent() {
    const huginnWindow = useHuginnWindow();
    const client = useClient();
-   const settings = useStorage("settings");
    // const search = Route.useSearch();
 
    const posthog = usePostHog();
@@ -97,9 +95,8 @@ function IndexComponent() {
       let description = "An unexpected error occurred while starting Huginn. You can try again in a moment.";
 
       switch (state.current) {
-         case "fetch_hostnames":
-            description =
-               "We either couldn't reach the specified external hostname or the response was invalid. Please check your settings and internet connection, or try again.";
+         case "discover_instance":
+            description = "None of this instance's access addresses could connect. Check the addresses or your internet connection, then retry.";
             break;
          case "check_update":
             description = "We couldn't check for updates. You can retry, or continue using the current version.";
@@ -150,8 +147,8 @@ function IndexComponent() {
       dispatch({ type: "SET", step: "check_update", text: "Checking for updates..." });
    }
 
-   function setFetchHostnames() {
-      dispatch({ type: "SET", step: "fetch_hostnames", text: "Fetching external hostnames..." });
+   function setDiscoverInstance() {
+      dispatch({ type: "SET", step: "discover_instance", text: "Connecting to instance..." });
    }
 
    async function setInitialize() {
@@ -161,8 +158,8 @@ function IndexComponent() {
    async function retry() {
       posthog.capture("start:retry_button_click", { state: state.current });
 
-      if (state.current === "fetch_hostnames") {
-         setFetchHostnames();
+      if (state.current === "discover_instance") {
+         setDiscoverInstance();
       } else if (state.current === "check_update") {
          setCheckUpdate();
       } else if (state.current === "initialize") {
@@ -189,39 +186,21 @@ function IndexComponent() {
       async function decideState() {
          switch (state.current) {
             case "none": {
-               const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-               if (activePreset?.hostnameSource === "external") {
-                  setFetchHostnames();
-               } else if (huginnWindow.environment === "desktop" || huginnWindow.environment === "android") {
-                  setCheckUpdate();
-               } else {
-                  setHostnamesFromSettings();
-                  await initializeClient();
-                  await setInitialize();
-               }
+               setDiscoverInstance();
                break;
             }
 
-            case "fetch_hostnames":
-               const result = await setHostnamesFromExternal();
-               if (!result.success) {
-                  dispatch({ type: "FAIL", error: result.status });
-               } else {
-                  await initializeClient();
-
-                  if (huginnWindow.environment !== "desktop" && huginnWindow.environment !== "android") {
-                     await setInitialize();
-                  } else {
-                     setCheckUpdate();
-                  }
+            case "discover_instance":
+               try {
+                  await selectStartupInstanceAddress();
+                  if (huginnWindow.environment === "desktop" || huginnWindow.environment === "android") setCheckUpdate();
+                  else await setInitialize();
+               } catch (cause) {
+                  dispatch({ type: "FAIL", error: cause instanceof Error ? cause.message : "Connection failed" });
                }
                break;
 
             case "check_update":
-               if (!client) {
-                  setHostnamesFromSettings();
-                  await initializeClient();
-               }
                await checkAndDownload();
                break;
             case "initialize":
@@ -296,7 +275,7 @@ function IndexComponent() {
                      {(state.current === "check_update" ||
                         state.current === "update" ||
                         state.current === "initialize" ||
-                        state.current === "fetch_hostnames") &&
+                        state.current === "discover_instance") &&
                         progress === 0 && <HuginnLoadingIcon className="size-6" />}
                   </div>
                </div>

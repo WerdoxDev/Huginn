@@ -1,9 +1,11 @@
 import type { HMediaKind, Snowflake } from "@huginnjs/shared";
 
 import type { AppSettings, VoicePreference } from "@/types";
+import { storageDefaults } from "../../../shared/storage-defaults";
 
 export function makeSettings(overrides: Partial<AppSettings> = {}): AppSettings {
    return {
+      ...storageDefaults.settings,
       hostnamePresets: [],
       activePresetName: "default",
       theme: "dark" as AppSettings["theme"],

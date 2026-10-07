@@ -12,6 +12,7 @@ const initialStore = () => ({
       cdn: "",
       voice: "",
    },
+   urls: undefined as import("@/types").InstanceUrls | undefined,
    voiceStatus: undefined as VoiceStatus | undefined,
    gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
@@ -35,6 +36,7 @@ syncZustandStore(clientStore, {
    name: "clientStore",
    partialize: (state) => ({
       hostnames: state.hostnames,
+      urls: state.urls,
       voiceStatus: state.voiceStatus,
       gatewayStatus: state.gatewayStatus,
       readyData: state.readyData,

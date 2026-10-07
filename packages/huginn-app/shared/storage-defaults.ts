@@ -1,6 +1,6 @@
 import { CONSTANTS } from "@huginnjs/shared";
 
-import type { HostnamePreset, StorageMap } from "../src/types";
+import type { StorageMap } from "../src/types";
 
 const env = typeof window === "undefined" ? process.env : import.meta.env;
 
@@ -11,33 +11,16 @@ const localVoiceHostname = env.VITE_PUBLIC_LOCAL_VOICE_HOSTNAME;
 
 export const storageDefaults: StorageMap = {
    settings: {
-      hostnamePresets: [
-         {
-            name: "Default",
-            hostnameSource: "manual",
-            apiHostname: "https://midgard.huginn.dev",
-            cdnHostname: "https://midgard.huginn.dev",
-            voiceHostname: "https://midgard.huginn.dev",
-            posthogHostname: "https://e.huginn.dev",
-            otelHostname: "https://otlp.huginn.dev",
-            externalHostnamesUrl: "",
-         },
-         ...(isDev
-            ? [
-                 {
-                    name: "Local",
-                    hostnameSource: "manual",
-                    apiHostname: localApiHostname ?? "https://midgard.huginn.dev",
-                    cdnHostname: localCdnHostname ?? "https://midgard.huginn.dev",
-                    voiceHostname: localVoiceHostname ?? "https://midgard.huginn.dev",
-                    posthogHostname: "https://e.huginn.dev",
-                    otelHostname: "https://otlp.huginn.dev",
-                    externalHostnamesUrl: "",
-                 } as HostnamePreset,
-              ]
-            : []),
-      ],
-      activePresetName: "Default",
+      currentInstanceId: "default",
+      currentAccessAddress: "https://midgard.huginn.dev",
+      currentUrls: {
+         api: "https://midgard.huginn.dev/api",
+         gateway: "wss://midgard.huginn.dev/gateway",
+         cdn: "https://midgard.huginn.dev/cdn",
+         voice: "wss://midgard.huginn.dev/voice",
+         posthog: "https://e.huginn.dev",
+         otlp: "https://otlp.huginn.dev",
+      },
       theme: "pine-green",
       isChannelSidebarOpen: true,
       inputDeviceId: "",
@@ -60,6 +43,26 @@ export const storageDefaults: StorageMap = {
       isVoiceMuted: false,
       isNotificationsEnabled: true,
    },
+   instances: [
+      { id: "default", name: "Default", accessAddresses: ["https://midgard.huginn.dev"] },
+      ...(isDev
+         ? [
+              {
+                 id: "local",
+                 name: "Local",
+                 accessAddresses: [localApiHostname ?? "http://localhost:3004"],
+                 endpointOverrides: {
+                    [localApiHostname ?? "http://localhost:3004"]: {
+                       api: `${localApiHostname ?? "http://localhost:3004"}/api`,
+                       gateway: `${(localApiHostname ?? "http://localhost:3004").replace(/^http/, "ws")}/gateway`,
+                       cdn: `${localCdnHostname ?? "http://localhost:3002"}/cdn`,
+                       voice: `${(localVoiceHostname ?? "http://localhost:3003").replace(/^http/, "ws")}/voice`,
+                    },
+                 },
+              },
+           ]
+         : []),
+   ],
    keybinds: [
       { type: "toggle_deafen", combination: [], isEnabled: true },
       { type: "toggle_mute", combination: [], isEnabled: true },

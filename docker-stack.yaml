@@ -39,6 +39,7 @@ services:
          - ALLOWED_ORIGINS=http://localhost:5173/,https://app.huginn.dev/,https://dev.huginn.dev/,https://huginn.dev
          - CDN_LOCAL_URL=http://cdn:3002/cdn
          - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
+         - INSTANCE_ID=midgard
          - OTEL_SERVICE_NAME=server
       secrets:
          - backend_secrets

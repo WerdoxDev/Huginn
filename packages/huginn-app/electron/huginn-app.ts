@@ -77,8 +77,9 @@ export class HuginnApp {
    async initAnalytics() {
       const { data: settings } = await this.storage.loadFile("settings");
       const { data: info } = await this.storage.loadFile("client-info");
-      const posthogHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.posthogHostname;
-      const otelHostname = settings.hostnamePresets.find((x) => x.name === settings.activePresetName)?.otelHostname;
+      const legacyPreset = settings.hostnamePresets?.find((preset) => preset.name === settings.activePresetName);
+      const posthogHostname = legacyPreset?.posthogHostname || settings.currentUrls.posthog;
+      const otelHostname = legacyPreset?.otelHostname || settings.currentUrls.otlp;
 
       initAnalytics(
          new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {

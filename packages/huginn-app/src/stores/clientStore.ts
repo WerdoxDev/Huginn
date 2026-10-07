@@ -1,13 +1,14 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { HuginnClient } from "@huginnjs/api";
-import { analytics, type APIPublicUser, error, type GatewayReadyData, recordSpanError, type Snowflake } from "@huginnjs/shared";
+import { analytics, type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
+import { fetchInstanceUrls, probeInstanceUrls, tryAccessAddresses } from "@lib/instances";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { useStore } from "zustand";
 
-import type { Environment } from "@/types";
+import type { Environment, InstanceUrls } from "@/types";
 
 import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
@@ -15,55 +16,42 @@ import { windowStore } from "./windowStore";
 
 const store = clientStore;
 
-export type ExternalHostnameStatus = "network_error" | "invalid_response" | "success";
-export type ExternalHostnameResult = {
-   success: boolean;
-   status: ExternalHostnameStatus;
-};
-
-export async function setHostnamesFromExternal(): Promise<ExternalHostnameResult> {
-   return analytics.startActiveSpan("clientStore.setHostnamesFromExternal", async (span) => {
-      try {
-         const settings = storageStore.getState().getCachedValue("settings");
-         const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-         let response: Response | undefined;
-
-         span.setAttributes({
-            "presets.count": settings.hostnamePresets?.length ?? 0,
-            "presets.active_preset_name": settings.activePresetName ?? "",
-            "active_preset.has_external_hostnames_url": !!activePreset?.externalHostnamesUrl,
-         });
-
-         if (!activePreset) {
-            return { success: false, status: "invalid_response" } as ExternalHostnameResult;
-         }
-
-         response = await fetch(activePreset.externalHostnamesUrl, { cache: "no-cache" });
-         const json = response.headers.get("content-type")?.includes("application/json") ? await response?.json() : undefined;
-         if (!response?.ok || !json || !json?.api || !json?.cdn || !json?.voice) {
-            error("app:client-store", "invalid response fetching external hostnames", response);
-            return { success: false, status: "invalid_response" } as ExternalHostnameResult;
-         }
-
-         store.setState({ hostnames: { api: json.api, cdn: json.cdn, voice: json.voice } });
-         return { success: true, status: "success" } as ExternalHostnameResult;
-      } catch (e) {
-         recordSpanError(e);
-         return { success: false, status: "network_error" } as ExternalHostnameResult;
-      }
+function setClientUrls(urls: InstanceUrls) {
+   store.setState({
+      urls,
+      hostnames: {
+         api: new URL(urls.api).origin,
+         cdn: new URL(urls.cdn).origin,
+         voice: new URL(urls.voice).origin,
+      },
    });
 }
 
 export function setHostnamesFromSettings() {
-   const settings = storageStore.getState().getCachedValue("settings");
-   const activePreset = (settings.hostnamePresets ?? []).find((p) => p.name === settings.activePresetName);
-   store.setState({
-      hostnames: {
-         api: activePreset?.apiHostname ?? "",
-         cdn: activePreset?.cdnHostname ?? "",
-         voice: activePreset?.voiceHostname ?? "",
-      },
+   setClientUrls(storageStore.getState().getCachedValue("settings").currentUrls);
+}
+
+export async function selectStartupInstanceAddress(): Promise<void> {
+   const storage = storageStore.getState();
+   const settings = storage.getCachedValue("settings");
+   const instances = storage.getCachedValue("instances");
+   const instance = instances.find((item) => item.id === settings.currentInstanceId);
+   if (!instance) throw new Error("Selected instance was not found");
+
+   const { address, value } = await tryAccessAddresses(instance, settings.currentAccessAddress, async (address) => {
+      const discovery = await fetchInstanceUrls(address, instance);
+      await probeInstanceUrls(discovery.urls);
+      setClientUrls(discovery.urls);
+      await initializeClient();
+      return discovery;
    });
+   await storage.setValue("settings", { ...settings, currentAccessAddress: address, currentUrls: value.urls });
+   if (value.serverId && instance.serverId !== value.serverId) {
+      await storage.setValue(
+         "instances",
+         instances.map((item) => (item.id === instance.id ? { ...item, serverId: value.serverId } : item)),
+      );
+   }
 }
 
 function updateUsersFromReadyData(d: GatewayReadyData) {
@@ -127,10 +115,10 @@ export async function initializeClient() {
    const osVersion = osInfo?.version ?? deviceInfo?.osVersion ?? undefined;
 
    const client = new HuginnClient({
-      rest: { api: `${thisStore.hostnames.api}/api` },
-      cdn: { url: `${thisStore.hostnames.cdn}/cdn` },
+      rest: { api: thisStore.urls!.api },
+      cdn: { url: thisStore.urls!.cdn },
       gateway: {
-         url: `${thisStore.hostnames.api}/gateway`,
+         url: thisStore.urls!.gateway,
          intents: 0,
          properties: {
             browser: ENV_TO_BROWSER_MAP[huginnWindowStore.environment],
@@ -149,7 +137,7 @@ export async function initializeClient() {
       },
       voice: {
          class: VoiceBridge,
-         url: `${thisStore.hostnames.voice}/voice`,
+         url: thisStore.urls!.voice,
          createSocket(url) {
             return new WebSocket(url);
          },
@@ -160,18 +148,28 @@ export async function initializeClient() {
 
    if (window.opener) return;
 
-   await client?.connect();
+   let connected = false;
+   try {
+      connected = await client.connect();
+   } catch {
+      // A failed handshake is another startup address failure.
+   }
+   if (!connected) {
+      client.gateway.close();
+      store.setState({ client: undefined });
+      throw new Error("Gateway connection failed");
+   }
 
    thisStore = store.getState();
 
    const updateRoute = osInfo?.platform ? NODE_PLATFORM_TO_UPDATE_ROUTE[osInfo.platform] : undefined;
    if (window.electronAPI && thisStore.hostnames.api && updateRoute) {
-      const url = `${thisStore.hostnames.api}/api/update/${updateRoute}`;
+      const url = `${thisStore.urls!.api}/update/${updateRoute}`;
       window.electronAPI.setUpdateUrl(url);
    }
 
    if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
-      const url = `${thisStore.hostnames.api}/api/update/android`;
+      const url = `${thisStore.urls!.api}/update/android`;
       console.log(url, import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL);
       if (import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) {
          store.setState({ androidUpdateUrl: import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL });
