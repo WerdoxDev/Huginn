@@ -25,6 +25,7 @@ export const postKnownApplication = new Elysia().use(verifyJwt()).post(
       const existingContribution = await prisma.contribution.findFirst({
          where: {
             OR: [{ windowTitle: body.windowTitle }, { cleanedWindowTitle: cleanedWindowTitle }, { exePath: body.exePath }],
+            status: { notIn: ["rejected"] },
             contributorId: BigInt(tokenPayload.id),
          },
          select: { id: true },
