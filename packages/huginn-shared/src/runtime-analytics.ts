@@ -16,50 +16,55 @@ type Options = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: strin
 export class RuntimeAnalytics extends Analytics {
    private readonly client: PostHog;
    private readonly options: Options;
+   private readonly sdk: NodeSDK;
+   private readonly logRecordProcessors: BatchLogRecordProcessor[];
+   private readonly spanProcessors: BatchSpanProcessor[];
+   private readonly pinoInstrumentation: PinoInstrumentation;
 
    public constructor(posthogApiKey: string, options: Options) {
       super();
       this.options = options;
       this.client = new PostHog(posthogApiKey, { host: options.posthogHost ?? "https://eu.i.posthog.com" });
 
-      const sdk = new NodeSDK({
+      this.logRecordProcessors = [
+         new BatchLogRecordProcessor({
+            exporter: new OTLPLogExporter({
+               url: options.otlpLogUrl,
+            }),
+         }),
+         new BatchLogRecordProcessor({
+            exporter: new OTLPLogExporter({
+               url: `${options.posthogHost}/i/v1/logs`,
+               headers: {
+                  Authorization: `Bearer ${posthogApiKey}`,
+               },
+            }),
+         }),
+      ];
+      this.spanProcessors = [
+         new BatchSpanProcessor(
+            new OTLPTraceExporter({
+               url: options.otlpTraceUrl,
+            }),
+         ),
+         new BatchSpanProcessor(
+            new OTLPTraceExporter({
+               url: `${options.posthogHost}/i/v1/traces`,
+               headers: {
+                  Authorization: `Bearer ${posthogApiKey}`,
+               },
+            }),
+         ),
+      ];
+      this.pinoInstrumentation = new PinoInstrumentation();
+      this.sdk = new NodeSDK({
          resource: resourceFromAttributes({ "service.name": options.serviceName, "client.id": options.clientId }),
-
-         logRecordProcessors: [
-            new BatchLogRecordProcessor({
-               exporter: new OTLPLogExporter({
-                  url: options.otlpLogUrl,
-               }),
-            }),
-            new BatchLogRecordProcessor({
-               exporter: new OTLPLogExporter({
-                  url: `${options.posthogHost}/i/v1/logs`,
-                  headers: {
-                     Authorization: `Bearer ${posthogApiKey}`,
-                  },
-               }),
-            }),
-            // new SimpleLogRecordProcessor(new ConsoleLogRecordExporter()),
-         ],
-         spanProcessors: [
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: options.otlpTraceUrl,
-               }),
-            ),
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: `${options.posthogHost}/i/v1/traces`,
-                  headers: {
-                     Authorization: `Bearer ${posthogApiKey}`,
-                  },
-               }),
-            ),
-         ],
-         instrumentations: [new PinoInstrumentation()],
+         logRecordProcessors: this.logRecordProcessors,
+         spanProcessors: this.spanProcessors,
+         instrumentations: [this.pinoInstrumentation],
       });
 
-      sdk.start();
+      this.sdk.start();
    }
 
    startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
@@ -136,5 +141,25 @@ export class RuntimeAnalytics extends Analytics {
       const carrier: { traceparent?: string } = {};
       propagation.inject(context.active(), carrier);
       return carrier.traceparent;
+   }
+
+   public async flush(): Promise<void> {
+      await Promise.all([
+         this.client.flush(),
+         ...this.logRecordProcessors.map((processor) => processor.forceFlush()),
+         ...this.spanProcessors.map((processor) => processor.forceFlush()),
+      ]);
+   }
+
+   public async shutdown(): Promise<void> {
+      this.pinoInstrumentation.disable();
+      try {
+         await Promise.all([this.client.shutdown(), this.sdk.shutdown()]);
+      } finally {
+         logs.disable();
+         trace.disable();
+         context.disable();
+         propagation.disable();
+      }
    }
 }

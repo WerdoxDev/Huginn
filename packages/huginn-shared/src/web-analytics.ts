@@ -1,6 +1,6 @@
 import { context, propagation, ROOT_CONTEXT, trace, type Span, type Tracer } from "@opentelemetry/api";
 import { logs, type Logger } from "@opentelemetry/api-logs";
-import posthog, { type CaptureResult } from "posthog-js";
+import { PostHog, type CaptureResult } from "posthog-js";
 
 import type { LogLevel } from "./analytics";
 
@@ -8,6 +8,20 @@ import { Analytics, logLevelToSeverityNumber } from "./analytics";
 import { setupWebInstrumentation } from "./web-instrumentation";
 
 const PRIVATE_POSTHOG_PERSON_PROPERTIES: readonly string[] = ["username", "displayName", "display_name", "email", "$name", "$email"];
+
+let activePostHog = new PostHog();
+const posthogProxyTarget = activePostHog;
+
+export const posthogClient: PostHog = new Proxy(posthogProxyTarget, {
+   get(_, property) {
+      const value = activePostHog[property as keyof PostHog];
+      return typeof value === "function" ? value.bind(activePostHog) : value;
+   },
+   set(_, property, value) {
+      Reflect.set(activePostHog, property, value);
+      return true;
+   },
+});
 
 type Options = {
    posthogHost: string;
@@ -21,13 +35,16 @@ type Options = {
 
 export class WebAnalytics extends Analytics {
    private readonly options: Options;
+   private readonly instrumentation: ReturnType<typeof setupWebInstrumentation>;
+   private readonly client: PostHog;
    private tracer: Tracer;
    private logger: Logger;
 
    public constructor(posthogApiKey: string, options: Options) {
       super();
       this.options = options;
-      posthog.init(posthogApiKey, {
+      this.client = new PostHog();
+      this.client.init(posthogApiKey, {
          api_host: options.posthogHost,
          ui_host: "https://eu.posthog.com",
          defaults: "2026-01-30",
@@ -72,8 +89,7 @@ export class WebAnalytics extends Analytics {
          capture_performance: true,
          error_tracking: { captureExtensionExceptions: true },
       });
-
-      setupWebInstrumentation(
+      this.instrumentation = setupWebInstrumentation(
          {
             serviceName: options.serviceName,
             otlpTraceUrl: options.otlpTraceUrl,
@@ -84,12 +100,13 @@ export class WebAnalytics extends Analytics {
             clientId: options.clientId,
          },
          (span) => {
-            span.setAttribute("distinct_id", posthog.get_distinct_id());
+            span.setAttribute("distinct_id", this.client.get_distinct_id());
          },
       );
 
       this.tracer = trace.getTracer(options.serviceName, options.serviceVersion);
       this.logger = logs.getLogger(options.serviceName, options.serviceVersion);
+      activePostHog = this.client;
    }
 
    public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void {
@@ -104,7 +121,7 @@ export class WebAnalytics extends Analytics {
          severityText: options.level.toUpperCase(),
          attributes: {
             ...mergedAttributes,
-            distinct_id: posthog.get_distinct_id(),
+            distinct_id: this.client.get_distinct_id(),
             ...(spanContext && {
                trace_id: spanContext.traceId,
                span_id: spanContext.spanId,
@@ -126,14 +143,14 @@ export class WebAnalytics extends Analytics {
       const privateProperties = new Set(PRIVATE_POSTHOG_PERSON_PROPERTIES);
       const safeProperties = Object.fromEntries(Object.entries(properties ?? {}).filter(([key]) => !privateProperties.has(key)));
 
-      posthog.identify(id, safeProperties);
-      posthog.unsetPersonProperties([...PRIVATE_POSTHOG_PERSON_PROPERTIES]);
+      this.client.identify(id, safeProperties);
+      this.client.unsetPersonProperties([...PRIVATE_POSTHOG_PERSON_PROPERTIES]);
    }
 
    startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
    startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
    startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
-      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, distinct_id: posthog.get_distinct_id() } }, (span: Span) => {
+      return this.tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes, distinct_id: this.client.get_distinct_id() } }, (span: Span) => {
          let result: T | Promise<T>;
 
          try {
@@ -176,6 +193,14 @@ export class WebAnalytics extends Analytics {
    }
 
    public reset(): void {
-      posthog.reset(true);
+      this.client.reset(true);
+   }
+
+   public async flush(): Promise<void> {
+      await this.instrumentation.forceFlush();
+   }
+
+   public async shutdown(): Promise<void> {
+      await Promise.all([this.client.shutdown(), this.instrumentation.shutdown()]);
    }
 }

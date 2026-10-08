@@ -1,5 +1,4 @@
-import type { Span } from "@opentelemetry/api";
-
+import { context, propagation, trace, type Span } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
 import { ZoneContextManager } from "@opentelemetry/context-zone";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
@@ -24,7 +23,7 @@ export function setupWebInstrumentation(
       clientId?: string;
    },
    requestHook: (span: Span) => void,
-): void {
+): { forceFlush: () => Promise<void>; shutdown: () => Promise<void> } {
    const logProvider = new LoggerProvider({
       processors: [
          new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }),
@@ -64,7 +63,7 @@ export function setupWebInstrumentation(
       contextManager: new ZoneContextManager(),
    });
 
-   registerInstrumentations({
+   const unregisterInstrumentations = registerInstrumentations({
       instrumentations: [
          new FetchInstrumentation({
             // Selects which backend servers are allowed to receive trace headers for linking traces across services.
@@ -83,4 +82,21 @@ export function setupWebInstrumentation(
          }),
       ],
    });
+
+   return {
+      forceFlush: async () => {
+         await Promise.all([logProvider.forceFlush(), provider.forceFlush()]);
+      },
+      shutdown: async () => {
+         unregisterInstrumentations();
+         try {
+            await Promise.all([logProvider.shutdown(), provider.shutdown()]);
+         } finally {
+            logs.disable();
+            trace.disable();
+            context.disable();
+            propagation.disable();
+         }
+      },
+   };
 }
