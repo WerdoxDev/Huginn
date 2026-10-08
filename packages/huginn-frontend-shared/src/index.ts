@@ -25,6 +25,8 @@ export { default as StatusMessage } from "./components/StatusMessage";
 export type { StatusMessageProps } from "./components/StatusMessage";
 export { default as HuginnInput } from "./components/input/HuginnInput";
 export type { HuginnInputProps } from "./components/input/HuginnInput";
+export { default as HuginnTextArea } from "./components/input/HuginnTextArea";
+export type { HuginnTextAreaProps } from "./components/input/HuginnTextArea";
 export { default as HuginnDialogTitle } from "./components/dialog/HuginnDialogTitle";
 export { default as HuginnToggle } from "./components/input/HuginnToggle";
 export { default as HuginnCheckbox } from "./components/input/HuginnToggle";
