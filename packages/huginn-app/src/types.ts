@@ -292,8 +292,8 @@ export type InstanceProfile = {
    id: string;
    name: string;
    accessAddresses: string[];
+   preferredAddress?: string;
    serverId?: string;
-   legacyExternalUrl?: string;
    endpointOverrides?: Record<string, Partial<InstanceUrls>>;
 };
 

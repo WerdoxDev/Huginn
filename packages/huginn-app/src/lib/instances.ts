@@ -53,6 +53,7 @@ export function switchInstanceTokens(fromId: string, toId: string): void {
       if (value) localStorage.setItem(key, value);
       else localStorage.removeItem(key);
    }
+   console.log(current, next, saved);
 }
 
 export async function tryAccessAddresses<T>(
@@ -107,40 +108,16 @@ export async function fetchInstanceUrls(address: string, instance: InstanceProfi
       response = await fetch(`${normalized}/api/instance`, { cache: "no-store", signal: AbortSignal.timeout(7000) });
    } catch (cause) {
       if (manual?.api && manual.gateway) return { urls: validateInstanceUrls({ ...defaultInstanceUrls(normalized), ...manual }) };
-      if (!instance.legacyExternalUrl || new URL(instance.legacyExternalUrl).origin !== normalized) throw cause;
-      return await fetchLegacyInstanceUrls(instance.legacyExternalUrl, normalized, instance);
+      throw cause;
    }
    if (!response.ok) {
       if (manual?.api && manual.gateway) return { urls: validateInstanceUrls({ ...defaultInstanceUrls(normalized), ...manual }) };
-      if (instance.legacyExternalUrl && new URL(instance.legacyExternalUrl).origin === normalized) {
-         return await fetchLegacyInstanceUrls(instance.legacyExternalUrl, normalized, instance);
-      }
       throw new Error(`Instance discovery returned ${response.status}`);
    }
    const body = await response.json();
    if (!body || typeof body.instanceId !== "string" || !body.instanceId) throw new Error("Missing instance ID");
    if (instance.serverId && instance.serverId !== body.instanceId) throw new Error("This address belongs to a different instance");
    return { serverId: body.instanceId, urls: validateInstanceUrls({ ...body.urls, ...manual }) };
-}
-
-async function fetchLegacyInstanceUrls(configUrl: string, address: string, instance: InstanceProfile): Promise<{ urls: InstanceUrls }> {
-   const response = await fetch(configUrl, { cache: "no-store", signal: AbortSignal.timeout(7000) });
-   if (!response.ok) throw new Error(`Legacy discovery returned ${response.status}`);
-   const body = await response.json();
-   if (!body?.api || !body?.cdn || !body?.voice) throw new Error("Invalid legacy discovery response");
-   const api = normalizeAccessAddress(body.api);
-   const cdn = normalizeAccessAddress(body.cdn);
-   const voice = normalizeAccessAddress(body.voice);
-   return {
-      urls: validateInstanceUrls({
-         ...defaultInstanceUrls(address),
-         api: `${api}/api`,
-         gateway: `${api.replace(/^http/, "ws")}/gateway`,
-         cdn: `${cdn}/cdn`,
-         voice: `${voice.replace(/^http/, "ws")}/voice`,
-         ...instance.endpointOverrides?.[address],
-      }),
-   };
 }
 
 export async function probeInstanceUrls(urls: InstanceUrls): Promise<void> {

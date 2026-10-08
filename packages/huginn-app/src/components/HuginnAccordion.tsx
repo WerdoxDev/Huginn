@@ -9,7 +9,7 @@ function Panel({ className, ...props }: Accordion.Panel.Props) {
    return (
       <Accordion.Panel
          className={clsx(
-            "h-[var(--accordion-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0",
+            "h-(--accordion-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0",
             className,
          )}
          {...props}
