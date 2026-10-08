@@ -22,23 +22,29 @@ const store = createStore(
    ),
 );
 
+export function clearUserStore() {
+   store.setState({ user: undefined, tokenPayload: undefined });
+}
+
+function updateUserStore(user: APIUser, token?: string) {
+   store.getState().setUser(user);
+   store.setState({
+      tokenPayload: token ? (jose.decodeJwt(token) as UserTokenPayload) : undefined,
+   });
+}
+
 export function initUserStore() {
    const client = clientStore.getState().client;
    if (!client) {
       return;
    }
 
-   const unlisten = client.gateway.listen("ready", () => {
-      store.setState({
-         tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined,
-      });
+   const unlisten = client.gateway.listen("ready", (data) => {
+      updateUserStore(data.user, client.tokenHandler.token);
    });
 
    const unlisten2 = client.gateway.listen("user_update", (d) => {
-      store.getState().setUser(d);
-      store.setState({
-         tokenPayload: client?.tokenHandler.token ? (jose.decodeJwt(client?.tokenHandler.token) as UserTokenPayload) : undefined,
-      });
+      updateUserStore(d, client.tokenHandler.token);
    });
 
    return () => {
@@ -52,5 +58,4 @@ export function useThisUser() {
 }
 
 syncZustandStore(store, { name: "userStore", partialize: (state) => ({ user: state.user, tokenPayload: state.tokenPayload }) });
-
 export const userStore = store;
