@@ -13,6 +13,7 @@ import type {
 
 import {
    analytics,
+   CONSTANTS,
    convertToMediaKind,
    EventEmitter,
    recordSpanError,
@@ -314,6 +315,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    private async fetchTurnCredentials(): Promise<RTCIceServer[] | undefined> {
       return await analytics.startActiveSpan("apiVoiceTransport.fetchTurnCredentials", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
+         const controller = new AbortController();
+         const timeout = setTimeout(() => controller.abort(new Error("TURN credential request timed out")), CONSTANTS.TURN_CREDENTIAL_TIMEOUT_MS);
 
          try {
             const id = typeof window === "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
@@ -326,15 +329,19 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
             const data = { ttl: 86400 };
             const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
+               signal: controller.signal,
                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                body: JSON.stringify(data),
                method: "POST",
             });
+            if (!response.ok) throw new Error(`TURN credential request failed: ${response.status}`);
             const json = await response.json();
             return json.iceServers;
          } catch (e) {
             recordSpanError(e);
             return undefined;
+         } finally {
+            clearTimeout(timeout);
          }
       });
    }

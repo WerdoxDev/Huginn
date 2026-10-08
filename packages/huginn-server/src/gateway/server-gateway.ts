@@ -40,7 +40,14 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    public voiceTokenExpiresAt: Map<Snowflake, number> = new Map();
 
    public constructor() {
-      super({ sessionDeleteTimeout: 1000 * 60, workerId: WorkerID.GATEWAY, sessionSentMessagesLimit: 20 }, ClientSession);
+      super(
+         {
+            sessionDeleteTimeout: CONSTANTS.GATEWAY_SESSION_DELETE_TIMEOUT_MS,
+            workerId: WorkerID.GATEWAY,
+            sessionSentMessagesLimit: CONSTANTS.WEBSOCKET_SESSION_SENT_MESSAGES_LIMIT,
+         },
+         ClientSession,
+      );
    }
 
    public onOpen(session: ClientSession) {

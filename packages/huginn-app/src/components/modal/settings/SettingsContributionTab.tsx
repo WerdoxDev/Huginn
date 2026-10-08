@@ -77,6 +77,7 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
       const application = data?.find((x) => x.processId === Number(selectedApplication?.value));
       if (!application?.exePath) return;
 
+      // Huginn easter egg.
       if (application.processId === huginnWindow.processId) {
          updateModals({ info: { isOpen: true, title: "WHAT?!", text: <img src={huginnInHuginnUrl} />, status: "info" } });
          return;

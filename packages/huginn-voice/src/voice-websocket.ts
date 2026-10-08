@@ -35,7 +35,14 @@ import { ClientSession } from "./client-session";
 
 export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload> {
    public constructor() {
-      super({ workerId: WorkerID.VOICE, sessionDeleteTimeout: 1000 * 30, sessionSentMessagesLimit: 20 }, ClientSession);
+      super(
+         {
+            workerId: WorkerID.VOICE,
+            sessionDeleteTimeout: CONSTANTS.VOICE_SESSION_DELETE_TIMEOUT_MS,
+            sessionSentMessagesLimit: CONSTANTS.WEBSOCKET_SESSION_SENT_MESSAGES_LIMIT,
+         },
+         ClientSession,
+      );
    }
 
    public onOpen(session: ClientSession) {

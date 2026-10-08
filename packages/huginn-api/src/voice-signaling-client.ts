@@ -2,6 +2,7 @@ import type { DtlsParameters, RtpCapabilities, RtpParameters } from "mediasoup-c
 
 import {
    analytics,
+   CONSTANTS,
    GatewayCode,
    recordSpanError,
    VoiceOperations,
@@ -46,6 +47,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    private intentionalClose = false;
 
    private heartbeatInterval?: ReturnType<typeof setInterval>;
+   private heartbeatAckTimeout?: ReturnType<typeof setTimeout>;
    private reconnectTimeout?: ReturnType<typeof setTimeout>;
 
    private sequence?: number;
@@ -147,7 +149,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
       });
    }
 
-   private onClose(e: CloseEvent): void {
+   private onClose(e: Pick<CloseEvent, "code" | "reason">): void {
       analytics.startActiveSpan("apiVoiceSignaling.onClose", (span) => {
          span.setAttributes({
             ...this.getDefaultAttributes(),
@@ -201,8 +203,9 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    private scheduleReconnect(shouldReacquireToken: boolean = false): void {
       this.clearReconnectTimeout();
 
-      this.reconnectTimeout = setTimeout(async () => {
-         await this.attemptReconnect(shouldReacquireToken);
+      this.reconnectTimeout = setTimeout(() => {
+         // Token reacquisition can time out; its owner handles leaving voice.
+         void this.attemptReconnect(shouldReacquireToken).catch(recordSpanError);
       }, 2000);
    }
 
@@ -248,6 +251,9 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
          const data: VoicePayload = JSON.parse(e.data);
 
          switch (data.op) {
+            case VoiceOperations.HEARTBEAT_ACK:
+               this.clearHeartbeatAckTimeout();
+               break;
             case VoiceOperations.HELLO:
                this.handleHello(data.d);
                break;
@@ -370,6 +376,20 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    private startHeartbeat(interval: number) {
       this.stopHeartbeat();
       this.heartbeatInterval = setInterval(() => {
+         const socket = this.socket;
+         if (!socket || this.intentionalClose) return;
+
+         // Further heartbeats must not extend an outstanding ACK deadline.
+         if (this.heartbeatAckTimeout === undefined) {
+            this.heartbeatAckTimeout = setTimeout(() => {
+               if (this.socket !== socket || this.intentionalClose) return;
+
+               // Detach before closing so late events cannot affect recovery.
+               this.socket = undefined;
+               this.onClose({ code: GatewayCode.SESSION_TIMEOUT, reason: "Heartbeat ACK timed out" });
+               socket.close(GatewayCode.SESSION_TIMEOUT, "Heartbeat ACK timed out");
+            }, CONSTANTS.HEARTBEAT_ACK_TIMEOUT_MS);
+         }
          this.send({ op: VoiceOperations.HEARTBEAT, d: this.sequence });
       }, interval);
    }
@@ -377,6 +397,12 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
    private stopHeartbeat() {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = undefined;
+      this.clearHeartbeatAckTimeout();
+   }
+
+   private clearHeartbeatAckTimeout(): void {
+      clearTimeout(this.heartbeatAckTimeout);
+      this.heartbeatAckTimeout = undefined;
    }
 
    private setStatus(newStatus: SignalingClientStatus) {

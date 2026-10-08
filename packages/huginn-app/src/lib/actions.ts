@@ -3,7 +3,7 @@ import * as semver from "semver-ts";
 
 import { storageDefaults } from "../../shared/storage-defaults";
 
-export type ActionType = "reset_settings_advanced_presets" | "reset_settings_theme";
+export type ActionType = "reset_settings_advanced_presets" | "reset_settings_theme" | "reset_settings";
 type Action = {
    version: string;
    action: ActionType;
@@ -12,6 +12,7 @@ type Action = {
 export const pendingActions: Action[] = [
    { version: "0.72.0", action: "reset_settings_advanced_presets" },
    { version: "0.79.0", action: "reset_settings_theme" },
+   { version: "0.91.0", action: "reset_settings" },
 ];
 
 export const actions: Record<ActionType, () => void | Promise<void>> = {
@@ -34,6 +35,13 @@ export const actions: Record<ActionType, () => void | Promise<void>> = {
 
       settings.theme = defaultSettings.theme;
       await store.setValue("settings", settings);
+   },
+   reset_settings: async () => {
+      const store = storageStore.getState();
+
+      const defaultSettings = { ...storageDefaults.settings };
+
+      await store.setValue("settings", defaultSettings);
    },
 };
 

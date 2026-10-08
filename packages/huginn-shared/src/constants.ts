@@ -18,6 +18,9 @@ export const CONSTANTS = {
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
    HEARTBEAT_INTERVAL: 40000,
    HEARTBEAT_TOLERANCE: 15000,
+   GATEWAY_SESSION_DELETE_TIMEOUT_MS: 60_000,
+   VOICE_SESSION_DELETE_TIMEOUT_MS: 60_000,
+   WEBSOCKET_SESSION_SENT_MESSAGES_LIMIT: 20,
    ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif", "svg"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,
@@ -68,7 +71,9 @@ export const CONSTANTS = {
       /^::1$/,
       /^\[::1\]$/,
    ] as RegExp[],
-   // OAUTH_SENSITIVE_REAUTH_WINDOW: 1000, // 1 second
+   HEARTBEAT_ACK_TIMEOUT_MS: 15_000,
+   VOICE_TOKEN_TIMEOUT_MS: 15_000,
+   TURN_CREDENTIAL_TIMEOUT_MS: 10_000,
 };
 
 export const DEFAULT_SERVER_SETTINGS: UserSettings = {

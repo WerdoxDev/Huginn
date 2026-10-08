@@ -17,6 +17,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
    private voice: V;
    public voiceState: VoiceState;
    private voiceToken: VoiceToken | null = null;
+   private pendingVoiceTokenRequests = new Set<() => void>();
 
    private isConnecting = false;
    private hasWorthyVoiceState = false;
@@ -70,8 +71,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
       this.voice.signaling.on("reacquire_token", async (d) => {
          try {
-            await this.voiceState.resendGatewayVoiceState();
-            const token = await this.waitForVoiceToken();
+            const token = await this.waitForVoiceToken(() => this.voiceState.resendGatewayVoiceState());
             if (!token) throw new Error("Couldn't get a token for voice");
 
             d.callback(token);
@@ -147,16 +147,46 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       });
    }
 
-   private async waitForVoiceToken(): Promise<string> {
-      if (this.voiceToken && Date.now() - this.voiceToken.updatedAt < CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS) {
-         return this.voiceToken.token;
-      }
-
-      return await new Promise<string>((r) => {
-         const unlisten = this.listen("voice_token_updated", (d) => {
+   private async waitForVoiceToken(updateVoiceState: () => Promise<void>, token?: string): Promise<string> {
+      return await new Promise<string>((resolve, reject) => {
+         let receivedToken =
+            token ?? (this.voiceToken && Date.now() - this.voiceToken.updatedAt < CONSTANTS.VOICE_TOKEN_EXPIRE_TIME_MS ? this.voiceToken.token : undefined);
+         let stateUpdated = false;
+         let settled = false;
+         const cleanup = () => {
+            settled = true;
+            clearTimeout(timeout);
             unlisten();
-            r(d.token);
+            this.pendingVoiceTokenRequests.delete(cancel);
+         };
+         const fail = (error: unknown) => {
+            if (settled) return;
+            cleanup();
+            reject(error);
+         };
+         const finish = () => {
+            if (settled || !stateUpdated || !receivedToken) return;
+            cleanup();
+            resolve(receivedToken);
+         };
+         const cancel = () => fail(new Error("Voice token request cancelled"));
+         const timeout = setTimeout(() => fail(new Error("Voice token request timed out")), CONSTANTS.VOICE_TOKEN_TIMEOUT_MS);
+         const unlisten = this.listen("voice_token_updated", (d) => {
+            receivedToken = token ?? d.token;
+            finish();
          });
+         this.pendingVoiceTokenRequests.add(cancel);
+
+         // Start the deadline before requesting state: its confirmation may
+         // never arrive either. Subscribe first so an early token is not lost.
+         void Promise.resolve()
+            .then(() => {
+               if (!settled) return updateVoiceState();
+            })
+            .then(() => {
+               stateUpdated = true;
+               finish();
+            }, fail);
       });
    }
 
@@ -190,8 +220,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
                   this.voice.signaling.close();
                }
 
-               await this.voiceState.updateGatewayVoiceState({ channelId, guildId }, false);
-               const voiceToken = token ?? (await this.waitForVoiceToken());
+               const voiceToken = await this.waitForVoiceToken(() => this.voiceState.updateGatewayVoiceState({ channelId, guildId }, false), token);
 
                if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
@@ -221,6 +250,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
          span.setAttributes(this.getDefaultAttributes());
 
          this.voice.signaling.close();
+         for (const cancel of this.pendingVoiceTokenRequests) cancel();
          this.voiceToken = null;
          this.isConnecting = false;
 
