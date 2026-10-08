@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.2...api@v0.45.0) (2026-10-08)
+
+
+### Features
+
+* **api:** use new cursor instead of date known application delta updates ([5d363e7](https://github.com/WerdoxDev/Huginn/commit/5d363e7ef0e9f3bb1eb31c6b18158c11d4d47bbb))
+
 ## [0.44.2](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.1...api@v0.44.2) (2026-09-18)
 
 
