@@ -2,7 +2,6 @@ import { prisma } from "@huginn/backend-shared/database";
 import { CDNRoutes, type APIGetStaffGameContributionsResult, type APIStaffGameContribution } from "@huginnjs/shared";
 import Elysia from "elysia";
 
-import { env } from "#setup";
 import { verifyStaff } from "#utils/staff";
 
 export const getStaffGameContributions = new Elysia().use(verifyStaff()).get("/api/staff/game-contributions", async ({ status }) => {
@@ -15,7 +14,6 @@ export const getStaffGameContributions = new Elysia().use(verifyStaff()).get("/a
          },
       },
    });
-   const cdnRoot = env.CDN_PUBLIC_URL?.replace(/\/$/, "") ?? "";
 
    const json: APIGetStaffGameContributionsResult = {
       contributions: contributions.map((contribution): APIStaffGameContribution => ({
@@ -26,7 +24,7 @@ export const getStaffGameContributions = new Elysia().use(verifyStaff()).get("/a
          exeName: contribution.exePath.split(/[/\\]+/).pop() ?? contribution.exePath,
          commandLine: contribution.commandLine,
          platform: contribution.platform,
-         iconUrl: contribution.iconHash ? `${cdnRoot}${CDNRoutes.applicationIcon(contribution.id, contribution.iconHash)}` : null,
+         iconUrl: contribution.iconHash ? `${CDNRoutes.applicationIcon(contribution.id, contribution.iconHash)}` : null,
          contributor: contribution.contributor
             ? {
                  ...contribution.contributor,

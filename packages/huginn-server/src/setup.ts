@@ -4,7 +4,6 @@ import { cleanEnv, port, str } from "envalid";
 
 export const env = cleanEnv(process.env, {
    CDN_LOCAL_URL: str(),
-   CDN_PUBLIC_URL: str({ default: undefined }),
    INSTANCE_ID: str({ default: undefined }),
    INSTANCE_URLS_BY_HOST: str({ default: undefined }),
    SERVER_HOST: str(),
