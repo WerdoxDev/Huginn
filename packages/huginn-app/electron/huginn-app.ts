@@ -1,4 +1,4 @@
-import { analytics, analyticsShim, initAnalytics } from "@huginnjs/shared";
+import { analytics, analyticsShim, reinitializeAnalytics } from "@huginnjs/shared";
 import { RuntimeAnalytics } from "@huginnjs/shared/runtime-analytics";
 import { Tray, app, Menu, ipcMain, nativeImage, session } from "electron";
 import updater from "electron-updater";
@@ -15,6 +15,7 @@ export class HuginnApp {
    private mainWindow?: MainWindow;
    private tray?: Tray;
    private allowedToRun: boolean;
+   private analyticsReinitialization = Promise.resolve();
 
    public constructor(allowedToRun: boolean) {
       this.allowedToRun = allowedToRun;
@@ -75,20 +76,24 @@ export class HuginnApp {
    }
 
    async initAnalytics() {
+      const reinitialize = this.analyticsReinitialization.catch(() => {}).then(async () => await this.reinitializeAnalytics());
+      this.analyticsReinitialization = reinitialize;
+      await reinitialize;
+   }
+
+   private async reinitializeAnalytics() {
       const { data: settings } = await this.storage.loadFile("settings");
       const { data: info } = await this.storage.loadFile("client-info");
-      const legacyPreset = settings.hostnamePresets?.find((preset) => preset.name === settings.activePresetName);
-      const posthogHostname = legacyPreset?.posthogHostname || settings.currentUrls.posthog;
-      const otelHostname = legacyPreset?.otelHostname || settings.currentUrls.otlp;
 
-      initAnalytics(
-         new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
-            serviceName: "app-electron",
-            posthogHost: posthogHostname,
-            otlpTraceUrl: `${otelHostname}/v1/traces`,
-            otlpLogUrl: `${otelHostname}/v1/logs`,
-            clientId: info.id,
-         }),
+      await reinitializeAnalytics(
+         () =>
+            new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
+               serviceName: "app-electron",
+               posthogHost: settings.currentUrls.posthog,
+               otlpTraceUrl: `${settings.currentUrls.otlp}/v1/traces`,
+               otlpLogUrl: `${settings.currentUrls.otlp}/v1/logs`,
+               clientId: info.id,
+            }),
       );
 
       this.storage.adapter.setAnalytics(analytics);
@@ -151,6 +156,9 @@ export class HuginnApp {
    private registerAppEvents() {
       ipcMain.handle("app:set-proxy", async (_, useSystemProxy: boolean) => {
          await this.applyProxySettings(useSystemProxy);
+      });
+      ipcMain.handle("app:reinitialize-analytics", async () => {
+         await this.initAnalytics();
       });
    }
 }

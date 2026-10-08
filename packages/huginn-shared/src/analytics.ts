@@ -1,4 +1,4 @@
-import { SpanStatusCode, type Span } from "@opentelemetry/api";
+import { INVALID_SPAN_CONTEXT, SpanStatusCode, trace, type Span } from "@opentelemetry/api";
 import { SeverityNumber } from "@opentelemetry/api-logs";
 
 export type LogLevel = "info" | "warn" | "error" | "debug" | "fatal" | "trace";
@@ -13,6 +13,8 @@ export abstract class Analytics {
    abstract log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void;
    abstract identify(id: string, properties?: Record<string, any>): void;
    abstract reset(): void;
+   abstract flush(): Promise<void>;
+   abstract shutdown(): Promise<void>;
    // abstract startActiveSpan<F extends (span: Span) => unknown>(name: string, fn: F): ReturnType<F> | Promise<ReturnType<F>>;
    abstract startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
    abstract startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
@@ -26,15 +28,10 @@ class AnalyticsShim extends Analytics {
    log() {}
    identify() {}
    reset() {}
+   async flush() {}
+   async shutdown() {}
    startActiveSpan(_name: string, fn: (span: Span) => any) {
-      const spanShim = {
-         setAttribute: () => {},
-         setAttributes: () => {},
-         recordException: () => {},
-         setStatus: () => {},
-         end: () => {},
-      };
-      return fn(spanShim as unknown as Span);
+      return fn(trace.wrapSpanContext(INVALID_SPAN_CONTEXT));
    }
    withTry(span: Span, fn: (span: Span) => any) {
       return fn(span);
@@ -53,9 +50,41 @@ class AnalyticsShim extends Analytics {
 export const analyticsShim: Analytics = new AnalyticsShim();
 
 let impl: Analytics;
+let lifecycle = Promise.resolve();
 
 export function initAnalytics(instance: Analytics): void {
    impl = instance;
+}
+
+export function reinitializeAnalytics(createInstance: () => Analytics): Promise<void> {
+   const reinitialize = lifecycle
+      .catch(() => {})
+      .then(async () => {
+         const previous = impl;
+         const defaultAttributes = previous?.defaultAttributes ?? {};
+         impl = analyticsShim;
+
+         if (previous && previous !== analyticsShim) {
+            try {
+               await previous.flush();
+            } catch (error) {
+               console.error("Failed to flush analytics before reinitializing", error);
+            }
+
+            try {
+               await previous.shutdown();
+            } catch (error) {
+               console.error("Failed to shut down analytics before reinitializing", error);
+            }
+         }
+
+         const next = createInstance();
+         next.setDefaultAttributes(defaultAttributes);
+         impl = next;
+      });
+
+   lifecycle = reinitialize;
+   return reinitialize;
 }
 
 export const analytics: Analytics = new Proxy({} as Analytics, {

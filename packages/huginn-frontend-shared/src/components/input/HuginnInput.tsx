@@ -138,7 +138,8 @@ function Wrapper({ children, className, headless }: { className?: string; headle
       <div
          className={clsx(
             className,
-            !headless && "bg-surface-alt focus-within:ring-primary-700 flex w-full items-center rounded-md focus-within:ring-1",
+            !headless && "bg-surface-alt flex w-full items-center rounded-md",
+            inputContext.message.status === "none" && "focus-within:ring-primary-700 focus-within:ring-1",
             !["none", "default"].includes(inputContext.message.status) && ["ring", statusRingColors[inputContext.message.status]],
          )}
       >

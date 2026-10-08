@@ -41,6 +41,7 @@ services:
          - CDN_PUBLIC_URL=https://midgard.huginn.dev/cdn
          - INSTANCE_ID=midgard
          - OTEL_SERVICE_NAME=server
+         - 'INSTANCE_URLS_BY_HOST={"midgard.huginn.dev":{"origin":"https://midgard.huginn.dev", "posthog":"https://e.huginn.dev", "otlp": "https://otlp.huginn.dev"},"huginn.werdox.com":{"origin":"https://huginn.werdox.com", "posthog": "https://e-huginn.werdox.com", "otlp": "https://otlp-huginn.werdox.com"}}'
       secrets:
          - backend_secrets
       networks:

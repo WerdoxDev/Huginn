@@ -6,6 +6,7 @@ import { useClient } from "@stores/clientStore";
 import { clientStore } from "@stores/clientStoreState";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
+import { clearUserStore } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -170,6 +171,7 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
       });
       client?.voice.signaling.close();
       client?.gateway.close();
+      clearUserStore();
       clientStore.setState({ client: undefined, isInitialized: false, readyData: undefined, readyCount: 0 });
       updateModals({ settings: { isOpen: false } });
       await navigate({ to: "/", replace: true });

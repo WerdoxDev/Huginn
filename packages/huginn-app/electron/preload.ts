@@ -110,6 +110,7 @@ export const electronAPI = {
 
    // App
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),
+   reinitializeAnalytics: () => ipcRenderer.invoke("app:reinitialize-analytics") as Promise<void>,
 
    // Media
    downloadMedia: (url: string, filename: string) => ipcRenderer.invoke("media:download", { url, filename }),

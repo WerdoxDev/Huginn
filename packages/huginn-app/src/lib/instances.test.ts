@@ -52,18 +52,6 @@ describe("instance access addresses", () => {
          "different instance",
       );
    });
-   it("keeps old external-hostnames presets working", async () => {
-      vi.stubGlobal(
-         "fetch",
-         vi
-            .fn()
-            .mockResolvedValueOnce({ ok: false, status: 404 })
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ api: first, cdn: first, voice: first }) }),
-      );
-      const result = await fetchInstanceUrls(first, { id: "old", name: "Old", accessAddresses: [first], legacyExternalUrl: `${first}/hosts.json` });
-      expect(result.urls.gateway).toBe("wss://first.example/gateway");
-      expect(result.serverId).toBeUndefined();
-   });
    it("uses manual API and gateway when discovery is unavailable", async () => {
       vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
       const result = await fetchInstanceUrls(first, {

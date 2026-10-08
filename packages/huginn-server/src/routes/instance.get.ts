@@ -21,7 +21,7 @@ export const getInstance = new Elysia().get("/api/instance", ({ request, status 
    const socketOrigin = origin.replace(/^http/, "ws");
    const { origin: _configuredOrigin, ...overrides } = configured[host] ?? {};
    return {
-      instanceId: env.INSTANCE_ID ?? env.CDN_PUBLIC_URL ?? "huginn",
+      instanceId: env.INSTANCE_ID ?? "huginn",
       urls: {
          api: `${origin}/api`,
          gateway: `${socketOrigin}/gateway`,
