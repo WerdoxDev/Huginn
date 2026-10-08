@@ -2,6 +2,7 @@ import "./index.css";
 import "highlight.js/styles/atom-one-dark.css";
 import { LiveUpdate } from "@capawesome/capacitor-live-update";
 import { analytics } from "@huginnjs/shared";
+import { posthogClient } from "@huginnjs/shared/web-analytics";
 import { runPendingActions } from "@lib/actions";
 import { SplashScreen } from "@lib/capacitor/splash-screen";
 import { initAnalytics } from "@lib/web-analytics";
@@ -10,7 +11,6 @@ import { initStorageStoreEarly } from "@stores/storageStore";
 import { ThemeProvider } from "@stores/themeStore";
 import { initWindowStore, windowStore } from "@stores/windowStore";
 import { RouterProvider } from "@tanstack/react-router";
-import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { createRoot } from "react-dom/client";
 
@@ -73,7 +73,7 @@ if (windowStore.getState().environment === "android") {
 
 await initStorageStoreEarly();
 await runPendingActions();
-initAnalytics();
+await initAnalytics();
 
 if (__IS_CAPACITOR__) {
    await SplashScreen.hide();
@@ -86,7 +86,7 @@ declare module "@tanstack/react-router" {
 }
 
 createRoot(document.getElementById("root")!).render(
-   <PostHogProvider client={posthog}>
+   <PostHogProvider client={posthogClient}>
       <ThemeProvider>
          <RouterProvider router={router} />
       </ThemeProvider>

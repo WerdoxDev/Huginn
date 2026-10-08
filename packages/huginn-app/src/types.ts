@@ -268,17 +268,6 @@ export type AudioSource = {
    processId: number;
 };
 
-export type HostnamePreset = {
-   name: string;
-   hostnameSource: "manual" | "external";
-   apiHostname: string;
-   cdnHostname: string;
-   voiceHostname: string;
-   posthogHostname: string;
-   otelHostname: string;
-   externalHostnamesUrl: string;
-};
-
 export type InstanceUrls = {
    api: string;
    gateway: string;
@@ -298,8 +287,6 @@ export type InstanceProfile = {
 };
 
 export type AppSettings = {
-   hostnamePresets?: HostnamePreset[];
-   activePresetName?: string;
    currentInstanceId: string;
    currentAccessAddress: string;
    currentUrls: InstanceUrls;

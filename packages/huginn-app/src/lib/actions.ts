@@ -13,6 +13,7 @@ export const pendingActions: Action[] = [
    { version: "0.72.0", action: "reset_settings_advanced_presets" },
    { version: "0.79.0", action: "reset_settings_theme" },
    { version: "0.91.0", action: "reset_settings" },
+   { version: "0.91.1", action: "reset_settings" },
 ];
 
 export const actions: Record<ActionType, () => void | Promise<void>> = {

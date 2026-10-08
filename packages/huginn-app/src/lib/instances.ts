@@ -115,6 +115,7 @@ export async function fetchInstanceUrls(address: string, instance: InstanceProfi
       throw new Error(`Instance discovery returned ${response.status}`);
    }
    const body = await response.json();
+   console.log(instance.serverId, body.instanceId);
    if (!body || typeof body.instanceId !== "string" || !body.instanceId) throw new Error("Missing instance ID");
    if (instance.serverId && instance.serverId !== body.instanceId) throw new Error("This address belongs to a different instance");
    return { serverId: body.instanceId, urls: validateInstanceUrls({ ...body.urls, ...manual }) };
