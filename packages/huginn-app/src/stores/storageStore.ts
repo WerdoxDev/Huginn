@@ -1,10 +1,11 @@
 import { analyticsShim } from "@huginnjs/shared";
 import { applyApplicationCatalogUpdate } from "@lib/application-catalog";
+import { defaultInstanceUrls, normalizeAccessAddress } from "@lib/instances";
 import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore, useStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import type { AppSettings, StorageMap, FileType } from "@/types";
+import type { AppSettings, InstanceProfile, StorageMap, FileType } from "@/types";
 
 import { BridgeStorage } from "../../shared/bridge-storage";
 import { LocalStorage } from "../../shared/local-storage";
@@ -47,7 +48,7 @@ const store = createStore(
 );
 
 export async function initStorageStoreEarly() {
-   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "pinned-channels"];
+   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "instances", "pinned-channels"];
    const cache = {} as StorageMap;
 
    await storage.mergeNewProperties();
@@ -59,6 +60,46 @@ export async function initStorageStoreEarly() {
       if (value.success) {
          (cache[key] as StorageMap[FileType]) = value.data;
       }
+   }
+
+   if (cache.settings.hostnamePresets?.length) {
+      const presets = cache.settings.hostnamePresets;
+      const instances: InstanceProfile[] = presets.map((preset, index) => {
+         const external = preset.hostnameSource === "external" && !!preset.externalHostnamesUrl;
+         const source = (external ? preset.externalHostnamesUrl : preset.apiHostname) || cache.settings.currentAccessAddress;
+         const address = normalizeAccessAddress(new URL(source).origin);
+         const defaults = defaultInstanceUrls(address);
+         return {
+            id: `preset-${index}`,
+            name: preset.name,
+            accessAddresses: [address],
+            ...(external && { legacyExternalUrl: preset.externalHostnamesUrl }),
+            endpointOverrides: {
+               [address]: {
+                  ...(external
+                     ? {}
+                     : {
+                          api: `${preset.apiHostname || address}/api`,
+                          gateway: `${(preset.apiHostname || address).replace(/^http/, "ws")}/gateway`,
+                          cdn: `${preset.cdnHostname || address}/cdn`,
+                          voice: `${(preset.voiceHostname || address).replace(/^http/, "ws")}/voice`,
+                       }),
+                  posthog: preset.posthogHostname || defaults.posthog,
+                  otlp: preset.otelHostname || defaults.otlp,
+               },
+            },
+         };
+      });
+      const selected = presets.findIndex((preset) => preset.name === cache.settings.activePresetName);
+      const current = instances[selected < 0 ? 0 : selected];
+      cache.instances = instances;
+      cache.settings.currentInstanceId = current.id;
+      cache.settings.currentAccessAddress = current.accessAddresses[0];
+      cache.settings.currentUrls = { ...defaultInstanceUrls(current.accessAddresses[0]), ...current.endpointOverrides?.[current.accessAddresses[0]] };
+      delete cache.settings.hostnamePresets;
+      delete cache.settings.activePresetName;
+      await storage.saveFile("instances", cache.instances);
+      await storage.saveFile("settings", cache.settings);
    }
 
    store.setState({ cache: cache });

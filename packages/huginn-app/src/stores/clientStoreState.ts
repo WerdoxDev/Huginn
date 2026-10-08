@@ -1,10 +1,10 @@
 import type { HuginnClient, VoiceStatus } from "@huginnjs/api";
 import type { GatewayReadyData, GatewayStatus, UserSettings } from "@huginnjs/shared";
+import type { VoiceBridge } from "@lib/voice/voice-bridge";
+
 import { syncZustandStore } from "@lib/sync-zustand";
 import { createStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
-
-import type { VoiceBridge } from "@lib/voice/voice-bridge";
 
 const initialStore = () => ({
    hostnames: {
@@ -12,6 +12,7 @@ const initialStore = () => ({
       cdn: "",
       voice: "",
    },
+   urls: undefined as import("@/types").InstanceUrls | undefined,
    voiceStatus: undefined as VoiceStatus | undefined,
    gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
@@ -35,6 +36,7 @@ syncZustandStore(clientStore, {
    name: "clientStore",
    partialize: (state) => ({
       hostnames: state.hostnames,
+      urls: state.urls,
       voiceStatus: state.voiceStatus,
       gatewayStatus: state.gatewayStatus,
       readyData: state.readyData,

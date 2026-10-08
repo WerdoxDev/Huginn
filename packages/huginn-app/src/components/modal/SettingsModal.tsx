@@ -16,7 +16,7 @@ import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
-import SettingsAdvancedTab from "./settings/SettingsAdvancedTab";
+import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsContributionTab from "./settings/SettingsContributionTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
@@ -59,10 +59,10 @@ const tabs: SettingsTabType[] = [
          },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
          {
-            name: "advanced",
-            text: "Advanced",
+            name: "instances",
+            text: "Instances",
             icon: <IconMingcuteServerFill />,
-            component: SettingsAdvancedTab,
+            component: SettingsInstancesTab,
          },
       ],
    },

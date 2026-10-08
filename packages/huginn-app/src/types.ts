@@ -279,9 +279,30 @@ export type HostnamePreset = {
    externalHostnamesUrl: string;
 };
 
+export type InstanceUrls = {
+   api: string;
+   gateway: string;
+   cdn: string;
+   voice: string;
+   posthog: string;
+   otlp: string;
+};
+
+export type InstanceProfile = {
+   id: string;
+   name: string;
+   accessAddresses: string[];
+   preferredAddress?: string;
+   serverId?: string;
+   endpointOverrides?: Record<string, Partial<InstanceUrls>>;
+};
+
 export type AppSettings = {
-   hostnamePresets: HostnamePreset[];
-   activePresetName: string;
+   hostnamePresets?: HostnamePreset[];
+   activePresetName?: string;
+   currentInstanceId: string;
+   currentAccessAddress: string;
+   currentUrls: InstanceUrls;
    theme: ThemeType;
    isChannelSidebarOpen: boolean;
    inputDeviceId: string;
@@ -323,6 +344,7 @@ export type ClientInfo = {
 
 export type StorageMap = {
    settings: AppSettings;
+   instances: InstanceProfile[];
    keybinds: Keybind[];
    "application-catalog": APIGetApplicationCatalogResult;
    "custom-applications": CustomApplication[];

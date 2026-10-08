@@ -186,7 +186,7 @@ public class MessagingService extends FirebaseMessagingService {
             return null;
         }
 
-        return cdnHostname.replaceAll("/+$", "") + "/cdn/" + pathname.replaceFirst("^/+", "");
+        return cdnHostname.replaceAll("/+$", "") + "/" + pathname.replaceFirst("^/+", "");
     }
 
     private Bitmap loadBitmap(String imageUrl) {

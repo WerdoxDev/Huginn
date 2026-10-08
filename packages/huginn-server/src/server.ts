@@ -49,6 +49,7 @@ import { getGifCategories } from "#routes/gifs/categories.get";
 import { getSearchGifs } from "#routes/gifs/search.get";
 import { getTrendingGifs } from "#routes/gifs/trending.get";
 import { getLatestRelease } from "#routes/latest-release.get";
+import { getInstance } from "#routes/instance.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
@@ -225,6 +226,7 @@ export const app = new Elysia({
    // misc
    .use(getAllReleases)
    .use(getLatestRelease)
+   .use(getInstance)
    .use(getOnlineUsers)
    .use(postUniqueUsername)
    .use(getDesktopUpdate)

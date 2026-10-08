@@ -6,7 +6,8 @@ import VoicePlayer from "@components/VoicePlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
 import { hasFlag, MessageFlags } from "@huginnjs/api";
-import { changeUrlBase, CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
+import { CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
+import { changeCdnUrlBase } from "@lib/instances";
 import { getSizeText } from "@lib/utils";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -31,8 +32,8 @@ export default function AttachmentElement(props: {
    );
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
-   const { hostnames } = useClientStore();
-   const basedUrl = useMemo(() => changeUrlBase(props.url, `${hostnames.cdn ?? ""}/cdn`), [props.url, hostnames.cdn]);
+   const { hostnames, urls } = useClientStore();
+   const basedUrl = useMemo(() => changeCdnUrlBase(props.url, urls?.cdn ?? `${hostnames.cdn ?? ""}/cdn`), [props.url, hostnames.cdn, urls?.cdn]);
 
    const isImage = isImageMediaType(props.contentType);
    const isVideo = isVideoMediaType(props.contentType);

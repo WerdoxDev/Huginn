@@ -33,6 +33,7 @@ export default defineConfig({
                   { text: "Authentication", link: "/guide/authentication" },
                   { text: "Gateway & events", link: "/guide/gateway-events" },
                   { text: "Voice & media", link: "/guide/voice" },
+                  { text: "Instance access addresses", link: "/guide/instances" },
                ],
             },
             {

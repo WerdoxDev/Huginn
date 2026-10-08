@@ -22,8 +22,10 @@ export const actions: Record<ActionType, () => void | Promise<void>> = {
 
       const defaultSettings = { ...storageDefaults.settings };
 
-      settings.hostnamePresets = defaultSettings.hostnamePresets;
-      settings.activePresetName = defaultSettings.activePresetName;
+      settings.currentInstanceId = defaultSettings.currentInstanceId;
+      settings.currentAccessAddress = defaultSettings.currentAccessAddress;
+      settings.currentUrls = defaultSettings.currentUrls;
+      await store.setValue("instances", storageDefaults.instances);
 
       await store.setValue("settings", settings);
    },
