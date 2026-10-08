@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.91.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.91.0...app@v0.91.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* **app:** force app release ([f967eb4](https://github.com/WerdoxDev/Huginn/commit/f967eb41644247216a5e3f3755c3f134da363898))
+
 ## [0.91.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.90.1...app@v0.91.0) (2026-10-08)
 
 
