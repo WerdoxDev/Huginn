@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.32.0...backend-shared@v0.33.0) (2026-10-08)
+
+
+### Features
+
+* **backend-shared:** bunch of schema changes for new application contribution system ([a95e5aa](https://github.com/WerdoxDev/Huginn/commit/a95e5aa16e8248031bf16681781404cd9b07e33b))
+* **backend-shared:** new stuff for fetching user contributions ([3d6c4a3](https://github.com/WerdoxDev/Huginn/commit/3d6c4a3c9fdd974dc9701fc938d08ff10432676c))
+
 ## [0.32.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.31.2...backend-shared@v0.32.0) (2026-09-16)
 
 

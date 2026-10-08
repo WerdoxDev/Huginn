@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.0...native-addon@v0.8.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* **native-addon:** linux missing include ([ca6821d](https://github.com/WerdoxDev/Huginn/commit/ca6821d99ae74ea37a8c2c1bc5932aa8faa7ba6b))
+
 ## [0.8.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.7.0...native-addon@v0.8.0) (2026-09-16)
 
 

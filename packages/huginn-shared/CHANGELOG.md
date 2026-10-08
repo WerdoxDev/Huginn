@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.46.0...shared@v0.47.0) (2026-10-08)
+
+
+### Features
+
+* **shared:** new routes and types ([01745c7](https://github.com/WerdoxDev/Huginn/commit/01745c71a8f96da1693b951afa211771f2eb2928))
+* **shared:** new types, some web instrumentation fixes + new constants ([77b114d](https://github.com/WerdoxDev/Huginn/commit/77b114d554f64800c51a32d1b14de6b972229f81))
+
+
+### Bug Fixes
+
+* **app:** bunch of import fixes ([449a634](https://github.com/WerdoxDev/Huginn/commit/449a63469c9ccd51af1a87d4e5ac4d33cee5cde8))
+
 ## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.45.0...shared@v0.46.0) (2026-09-16)
 
 

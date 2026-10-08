@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.91.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.90.1...app@v0.91.0) (2026-10-08)
+
+
+### Features
+
+* add instance discovery and startup address failover ([7fcabf6](https://github.com/WerdoxDev/Huginn/commit/7fcabf67e1172c37f4c6db6a5dd52ca948b881e0))
+* add shared frontend UI package ([e9de2f5](https://github.com/WerdoxDev/Huginn/commit/e9de2f58d3344c41a302e3d7bdb92da2b6ec204a))
+* **app:** handle new game contribution/detection system ([8f4e8e6](https://github.com/WerdoxDev/Huginn/commit/8f4e8e6926859fa5a572d61fa5040dcfbe3a1d21))
+* **app:** more informative contribution page + handling new user contributions list ([60bc810](https://github.com/WerdoxDev/Huginn/commit/60bc810eb0389bc8f58e768039799fcd2730b4a8))
+* **app:** slightly better call indicator for mobile view ([fdebb23](https://github.com/WerdoxDev/Huginn/commit/fdebb23e76ac9b087ddaaa36cea2a6b99983aa9f))
+* **app:** use new shared components from frontend-shared ([19b656b](https://github.com/WerdoxDev/Huginn/commit/19b656b85bcb722ddc2a75e7f816e815be13c1e3))
+* **app:** very WIP broken mobile camera implementation on file picker ([2c5c9e2](https://github.com/WerdoxDev/Huginn/commit/2c5c9e2ffcc65092ec232fb5f4b70156736e86fe))
+* store instances and discover endpoints at startup ([7027a40](https://github.com/WerdoxDev/Huginn/commit/7027a409977209f881b3aa5600dc2ffe94a577c6))
+
+
+### Bug Fixes
+
+* **app:** bunch of import fixes ([449a634](https://github.com/WerdoxDev/Huginn/commit/449a63469c9ccd51af1a87d4e5ac4d33cee5cde8))
+* **app:** bunch of import fixes ([9139093](https://github.com/WerdoxDev/Huginn/commit/91390932334515b5dbd69d04f307071060499275))
+* **app:** remove duplicate components ([d2d569c](https://github.com/WerdoxDev/Huginn/commit/d2d569c7561a614c8f518657ac863418efc572e0))
+* **app:** remove the broken capacitor plugin ([a12bb43](https://github.com/WerdoxDev/Huginn/commit/a12bb433206d0ac1a07b9772045b01ecf8cc156d))
+* **app:** update the instances tab ui + modified flag ([61a48fe](https://github.com/WerdoxDev/Huginn/commit/61a48fe7190fc875717819172ca5ac9e66942527))
+
 ## [0.90.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.90.0...app@v0.90.1) (2026-09-18)
 
 

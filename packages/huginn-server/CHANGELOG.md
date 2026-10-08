@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.53.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.52.1...server@v0.53.0) (2026-10-08)
+
+
+### Features
+
+* **server:** add a whole new suite of routes for staff members + new application contribution submission system ([9e305cf](https://github.com/WerdoxDev/Huginn/commit/9e305cfa3c22c98c36c34b020faec03f752b2ca0))
+* **server:** new routes for rejecting and deleting contributions/known games + gateway events for user contributions ([a686156](https://github.com/WerdoxDev/Huginn/commit/a686156debe1e284d9314b752daf083640e18c2d))
+* store instances and discover endpoints at startup ([7027a40](https://github.com/WerdoxDev/Huginn/commit/7027a409977209f881b3aa5600dc2ffe94a577c6))
+
+
+### Bug Fixes
+
+* **app:** bunch of import fixes ([449a634](https://github.com/WerdoxDev/Huginn/commit/449a63469c9ccd51af1a87d4e5ac4d33cee5cde8))
+* **server:** small test fixes (wip) ([b5b8ef0](https://github.com/WerdoxDev/Huginn/commit/b5b8ef0f3d2e3281f8bdb1e851f92ff23c12e4dc))
+
 ## [0.52.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.52.0...server@v0.52.1) (2026-09-18)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.24.0...cdn@v0.25.0) (2026-10-08)
+
+
+### Features
+
+* **cdn:** unified application icons route ([0f6ad0a](https://github.com/WerdoxDev/Huginn/commit/0f6ad0a546d97be5cd1dc510b83362aaacecc0be))
+
 ## [0.24.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.23.0...cdn@v0.24.0) (2026-08-24)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/WerdoxDev/Huginn/compare/assets@v0.5.1...assets@v0.6.0) (2026-10-08)
+
+
+### Features
+
+* **assets:** move icons to huginn-assets in favour of new frontend-shared handling icons/palettes ([ea61ef9](https://github.com/WerdoxDev/Huginn/commit/ea61ef9e8769b453522b373e6c79b0a809b822ba))
+
 ## [0.5.1](https://github.com/WerdoxDev/Huginn/compare/assets@v0.5.0...assets@v0.5.1) (2026-08-19)
 
 
