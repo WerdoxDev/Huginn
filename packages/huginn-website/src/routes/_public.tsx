@@ -32,21 +32,25 @@ function PublicComponent() {
                <div className="pl-3 text-2xl font-bold">Huginn</div>
             </Link>
 
-            <button className="ml-auto lg:hidden" onClick={toggleMenu} type="button">
-               <IconMaterialSymbolsMenu className="size-8" />
-            </button>
+            <div className="ml-auto flex items-center gap-x-4 lg:gap-x-6">
+               <div className="hidden gap-x-10 lg:flex">
+                  <HeaderButton link="/" text="Home" />
+                  <HeaderButton link="https://huginn.dev/docs" text="Docs" anchor />
+                  <HeaderButton link="/about" text="About" />
+                  <HeaderButton link="/download" text="Download" />
+               </div>
 
-            <div className="ml-auto hidden gap-x-10 lg:flex">
-               <HeaderButton link="/" text="Home" />
-               <HeaderButton link="https://huginn.dev/docs" text="Docs" anchor />
-               <HeaderButton link="/about" text="About" />
-               <HeaderButton link="/download" text="Download" />
+               <div className="bg-text/30 hidden h-8 w-0.5 lg:block" />
 
-               <div className="bg-text/30 w-0.5" />
+               <ThemeChanger />
 
-               <a href="https://github.com/WerdoxDev/Huginn" target="_blank" rel="noreferrer">
+               <a className="hidden lg:block" href="https://github.com/WerdoxDev/Huginn" target="_blank" rel="noreferrer">
                   <IconBiGithub className="size-8 transition-all hover:shadow-md" />
                </a>
+
+               <button className="lg:hidden" onClick={toggleMenu} type="button">
+                  <IconMaterialSymbolsMenu className="size-8" />
+               </button>
             </div>
          </div>
 
@@ -81,8 +85,6 @@ function PublicComponent() {
 
          <div className="flex min-h-0 flex-1 flex-col">
             <Outlet />
-
-            <ThemeChanger className="fixed right-5 bottom-5 z-20" />
 
             <div className="border-surface-deep bg-surface-alt relative flex shrink-0 flex-col border-t bg-linear-to-t px-5 py-3 lg:flex-row lg:px-12">
                <div className="ml-7 hidden lg:block">
