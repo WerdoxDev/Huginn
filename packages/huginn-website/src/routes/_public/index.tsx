@@ -84,7 +84,7 @@ function IndexComponent() {
 
    return (
       <>
-         <div className="relative flex h-screen w-full items-center justify-center">
+         <div className="relative flex min-h-dvh w-full items-center justify-center pt-28 pb-24">
             <div className="flex flex-col items-center lg:flex-row lg:space-x-7">
                <div className="w-full px-4 lg:w-96 lg:px-0">
                   <div className="flex flex-col items-center justify-center lg:flex-row lg:justify-start">
@@ -118,8 +118,8 @@ function IndexComponent() {
                   </div>
                </div>
 
-               <div className="bg-surface-alt mx-4 mt-6 h-max rounded-2xl p-1 lg:mx-0 lg:mt-0">
-                  <canvas ref={canvasRef} className="w-full lg:w-140" width={500} height={320} id="intro" />
+               <div className="bg-surface-alt mx-4 mt-6 h-max w-[calc(100%-2rem)] rounded-2xl p-1 lg:mx-0 lg:mt-0 lg:w-auto">
+                  <canvas ref={canvasRef} className="block h-auto w-full lg:w-140" width={500} height={320} id="intro" />
                </div>
             </div>
 
