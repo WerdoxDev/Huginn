@@ -1,5 +1,4 @@
 import Feature from "@components/Feature";
-import { useIsMobile } from "@hooks/useIsMobile";
 import { HuginnButton, HuginnIcon } from "@huginn/frontend-shared";
 import { Rive } from "@rive-app/canvas";
 import { useTheme } from "@stores/themeStore";
@@ -24,7 +23,6 @@ function IndexComponent() {
    const [onlineCount, setOnlineCount] = useState("0");
    const canvasRef = useRef<HTMLCanvasElement | null>(null);
    const { themeType } = useTheme();
-   const isMobile = useIsMobile();
    const PlatformIcon = getPlatformIcon();
 
    useEffect(() => {
@@ -102,7 +100,7 @@ function IndexComponent() {
                   <p className="mx-2 mt-8 text-center text-2xl lg:mx-0 lg:text-left">A fast, customizable chat app with a touch of Norse mythology.</p>
 
                   <div className="mt-8 flex w-full flex-col gap-y-2">
-                     <Link to="/download" className="hidden w-full lg:block">
+                     <Link to="/download" className="w-full">
                         <HuginnButton color="primary" className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
                            <div className="text-xl font-bold">DOWNLOAD HUGINN</div>
                            <PlatformIcon className="size-6" />
@@ -110,7 +108,7 @@ function IndexComponent() {
                      </Link>
 
                      <a href="https://huginn.dev/app" className="w-full">
-                        <HuginnButton color={isMobile ? "primary" : "surface-alt"} className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
+                        <HuginnButton color={"surface-alt"} className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
                            <div className="text-xl">OPEN IN BROWSER</div>
                            <IconMingcuteChromeFill className="size-6" />
                         </HuginnButton>
