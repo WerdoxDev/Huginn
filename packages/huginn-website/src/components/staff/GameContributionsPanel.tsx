@@ -16,7 +16,7 @@ import {
 import clsx from "clsx";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { StaffAPIError, acceptGameContribution, getGameContributions, rejectGameContribution, searchIGDB } from "@/lib/api";
+import { StaffAPIError, acceptGameContribution, getContributionIconUrl, getGameContributions, rejectGameContribution, searchIGDB } from "@/lib/api";
 import { clearStaffToken } from "@/lib/auth";
 
 function formatDate(value: Date | string) {
@@ -347,7 +347,11 @@ export default function GameContributionsPanel() {
                   <div className="scroll-thin flex min-h-0 flex-col gap-y-3 overflow-auto p-3 pr-1">
                      <div className="bg-surface flex items-center gap-4 rounded-lg p-3">
                         {selectedContribution.iconUrl ? (
-                           <img src={selectedContribution.iconUrl} alt="Submitted application" className="size-16 rounded-lg object-cover" />
+                           <img
+                              src={getContributionIconUrl(selectedContribution.iconUrl)}
+                              alt="Submitted application"
+                              className="size-16 rounded-lg object-cover"
+                           />
                         ) : (
                            <div className="bg-surface-deep text-text/30 flex size-16 shrink-0 items-center justify-center rounded-lg">
                               <IconMingcuteGame2Fill className="size-8" />

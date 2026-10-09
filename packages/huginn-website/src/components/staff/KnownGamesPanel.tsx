@@ -25,10 +25,10 @@ export default function KnownGamesPanel() {
    const { token } = useStaffSession();
    const [games, setGames] = useState<APIStaffKnownGame[]>([]);
    const [query, setQuery] = useState("");
-   const [loading, setLoading] = useState(false);
+   const [isLoading, setLoading] = useState(false);
    const [loadError, setLoadError] = useState("");
    const [gameToDelete, setGameToDelete] = useState<APIStaffKnownGame>();
-   const [deleting, setDeleting] = useState(false);
+   const [isDeleting, setDeleting] = useState(false);
    const [deleteError, setDeleteError] = useState("");
 
    const filteredGames = useMemo(() => {
@@ -121,10 +121,10 @@ export default function KnownGamesPanel() {
                      color="surface-deep"
                      className="flex size-10 shrink-0 items-center justify-center"
                      aria-label="Refresh known games"
-                     disabled={loading}
+                     disabled={isLoading}
                      onClick={() => void loadGames(token)}
                   >
-                     {loading ? <HuginnLoadingIcon className="size-5" /> : <IconMingcuteRefresh2Fill className="size-5" />}
+                     {isLoading ? <HuginnLoadingIcon className="size-5" /> : <IconMingcuteRefresh2Fill className="size-5" />}
                   </HuginnButton>
                </div>
 
@@ -185,20 +185,20 @@ export default function KnownGamesPanel() {
                         </article>
                      ))}
 
-                     {!loading && games.length === 0 && !loadError ? (
+                     {!isLoading && games.length === 0 && !loadError ? (
                         <div className="text-text/40 flex min-h-64 flex-col items-center justify-center gap-2 px-6 text-center">
                            <IconMingcuteGame2Fill className="size-8" />
                            <div>No known games in the catalog.</div>
                         </div>
                      ) : null}
-                     {!loading && games.length > 0 && filteredGames.length === 0 ? (
+                     {!isLoading && games.length > 0 && filteredGames.length === 0 ? (
                         <div className="text-text/40 flex min-h-64 flex-col items-center justify-center gap-2 px-6 text-center">
                            <IconMingcuteSearch2Fill className="size-8" />
                            <div>No known games match “{query.trim()}”.</div>
                         </div>
                      ) : null}
                   </div>
-                  {loading ? (
+                  {isLoading ? (
                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40" aria-live="polite" aria-label="Loading known games">
                         <HuginnLoadingIcon className="text-primary-500 size-10" />
                      </div>
@@ -210,13 +210,13 @@ export default function KnownGamesPanel() {
          <HuginnDialog
             open={gameToDelete !== undefined}
             onOpenChange={(open) => {
-               if (!open && !deleting) setGameToDelete(undefined);
+               if (!open && !isDeleting) setGameToDelete(undefined);
             }}
          >
             <HuginnDialog.Backdrop />
             <HuginnDialog.Viewport>
                <HuginnDialogPanel className="max-w-md">
-                  <ModalCloseButton disabled={deleting} onClick={() => setGameToDelete(undefined)} iconClassName="size-5" />
+                  <ModalCloseButton disabled={isDeleting} onClick={() => setGameToDelete(undefined)} iconClassName="size-5" />
                   <DialogBody>
                      <HuginnDialog.Title>Delete known game</HuginnDialog.Title>
                      <div className="text-text/70">
@@ -230,10 +230,10 @@ export default function KnownGamesPanel() {
                      ) : null}
                   </DialogBody>
                   <DialogActions>
-                     <HuginnButton color="surface" className="h-10 w-full" disabled={deleting} onClick={() => setGameToDelete(undefined)}>
+                     <HuginnButton color="surface" className="h-10 w-full" disabled={isDeleting} onClick={() => setGameToDelete(undefined)}>
                         Cancel
                      </HuginnButton>
-                     <HuginnLoadingButton color="negative" className="h-10 w-full" isLoading={true} onClick={() => void handleDelete()}>
+                     <HuginnLoadingButton color="negative" className="h-10 w-full" isLoading={isDeleting} onClick={() => void handleDelete()}>
                         Delete game
                      </HuginnLoadingButton>
                   </DialogActions>

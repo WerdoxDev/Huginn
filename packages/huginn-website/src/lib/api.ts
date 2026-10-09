@@ -1,12 +1,14 @@
-import type {
-   APIGetStaffGameContributionsResult,
-   APIGetStaffIGDBGamesResult,
-   APIGetStaffKnownGamesResult,
-   APIPostAcceptGameContributionResult,
-   APIPublicUser,
+import {
+   CDNRoutes,
+   type APIGetStaffGameContributionsResult,
+   type APIGetStaffIGDBGamesResult,
+   type APIGetStaffKnownGamesResult,
+   type APIPostAcceptGameContributionResult,
+   type APIPublicUser,
 } from "@huginnjs/shared";
 
-const serverAddress = (import.meta.env.VITE_API_HOSTNAME ?? "https://midgard.huginn.dev").replace(/\/$/, "");
+const serverAddress = (import.meta.env.VITE_SERVER_ADDRESS ?? "https://midgard.huginn.dev").replace(/\/$/, "");
+const cdnAddress = (import.meta.env.VITE_CDN_ADDRESS ?? "https://midgard.huginn.dev").replace(/\/$/, "");
 const apiRoot = `${serverAddress}/api`;
 const staffRoutes = {
    me: "/staff/@me",
@@ -88,4 +90,8 @@ export function deleteKnownGame(token: string, gameId: number) {
    return staffRequest<undefined>(staffRoutes.deleteKnownGame(gameId), token, {
       method: "DELETE",
    });
+}
+
+export function getContributionIconUrl(iconUrl: string) {
+   return `${cdnAddress}/cdn${iconUrl}`;
 }
