@@ -15,7 +15,30 @@ import {
    serial,
    primaryKey,
    pgEnum,
+   uuid,
 } from "drizzle-orm/pg-core";
+
+export const authSession = pgTable(
+   "AuthSession",
+   {
+      id: uuid().primaryKey().notNull(),
+      userId: bigint({ mode: "bigint" }).notNull(),
+      refreshTokenHash: text().notNull(),
+      authType: text().notNull(),
+      authenticatedAt: timestamp({ precision: 3, mode: "date" }).notNull(),
+      userAgent: text(),
+      deviceName: text(),
+      createdAt: timestamp({ precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+      lastSeenAt: timestamp({ precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+      expiresAt: timestamp({ precision: 3, mode: "date" }).notNull(),
+      revokedAt: timestamp({ precision: 3, mode: "date" }),
+   },
+   (table) => [
+      uniqueIndex("AuthSession_refreshTokenHash_key").on(table.refreshTokenHash),
+      index("AuthSession_userId_revokedAt_expiresAt_idx").on(table.userId, table.revokedAt, table.expiresAt),
+      foreignKey({ columns: [table.userId], foreignColumns: [user.id], name: "AuthSession_userId_fkey" }).onUpdate("cascade").onDelete("cascade"),
+   ],
+);
 
 export const identityProvider = pgTable(
    "IdentityProvider",
@@ -27,7 +50,6 @@ export const identityProvider = pgTable(
       userId: bigint({ mode: "bigint" }),
       completed: boolean().notNull(),
       providerType: text().notNull(),
-      refreshToken: text().notNull(),
    },
    (table) => [
       uniqueIndex("IdentityProvider_providerType_providerUserId_key").on(table.providerType, table.providerUserId),

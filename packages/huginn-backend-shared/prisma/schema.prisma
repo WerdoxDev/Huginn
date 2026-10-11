@@ -33,6 +33,7 @@ model User {
   relationships        Relationship[]       @relation("relation_owner")
   relatedRelationships Relationship[]       @relation("relation_user")
   identityProvider     IdentityProvider[]
+  authSessions         AuthSession[]
   readStates           ReadState[]
   participatedCalls    Call[]               @relation("participated_calls")
   settings             Settings?
@@ -61,11 +62,28 @@ model IdentityProvider {
   userId         BigInt?
   completed      Boolean
   providerType   String
-  refreshToken   String
 
   user User? @relation(fields: [userId], references: [id])
 
   @@unique([providerType, providerUserId])
+}
+
+model AuthSession {
+  id               String    @id @db.Uuid
+  userId           BigInt
+  refreshTokenHash String    @unique
+  authType         String
+  authenticatedAt  DateTime
+  userAgent        String?
+  deviceName       String?
+  createdAt        DateTime  @default(now())
+  lastSeenAt       DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
 }
 
 model Channel {

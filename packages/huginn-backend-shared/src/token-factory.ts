@@ -2,6 +2,8 @@ import type { OAuthTokenPayload, Snowflake, UserRefreshTokenPayload, UserTokenPa
 
 import * as jose from "jose";
 
+import { prisma } from "#database";
+
 export const ACCESS_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET ?? "");
 export const REFRESH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET ?? "");
 export const OAUTH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.OAUTH_TOKEN_SECRET ?? "");
@@ -26,7 +28,6 @@ const tokenSecrets: Record<TokenType, Uint8Array<ArrayBufferLike>> = {
    oauth: OAUTH_TOKEN_SECRET_ENCODED,
    voice: VOICE_TOKEN_SECRET_ENCODED,
 };
-const invalidatedTokens: string[] = [];
 
 export function createToken<Type extends TokenType>(type: Type, payload: TokenPayload<Type>, expirationTime?: string): Promise<string> {
    let token = new jose.SignJWT({ ...payload }).setProtectedHeader({ alg: "HS256" }).setIssuedAt();
@@ -42,12 +43,24 @@ export function createToken<Type extends TokenType>(type: Type, payload: TokenPa
 
 export async function verifyToken<Type extends TokenType>(type: Type, token: string) {
    try {
-      if (isTokenInvalid(token)) {
-         return { valid: false, payload: null };
-      }
-
       const secret = tokenSecrets[type];
       const jwt = await jose.jwtVerify<TokenPayload<Type>>(token, secret);
+
+      if (type === "user-access") {
+         const payload = jwt.payload as UserTokenPayload;
+         if (!payload.sessionId || !payload.id) return { valid: false, payload: null };
+         const session = await prisma.authSession.findFirst({
+            where: { id: payload.sessionId, userId: BigInt(payload.id), revokedAt: null, expiresAt: { gt: new Date() } },
+            select: { id: true, lastSeenAt: true },
+         });
+         if (!session) return { valid: false, payload: null };
+         if (Date.now() - session.lastSeenAt.getTime() > 60 * 60 * 1000) {
+            await prisma.authSession.updateMany({
+               where: { id: session.id, lastSeenAt: { lt: new Date(Date.now() - 60 * 60 * 1000) } },
+               data: { lastSeenAt: new Date() },
+            });
+         }
+      }
 
       // if (!("id" in jwt.payload) && !("providerId" in jwt.payload)) {
       //    return { valid: false, payload: null };
@@ -60,12 +73,3 @@ export async function verifyToken<Type extends TokenType>(type: Type, token: str
    }
 }
 
-export function invalidateToken(token: string) {
-   if (!invalidatedTokens.includes(token)) {
-      invalidatedTokens.push(token);
-   }
-}
-
-export function isTokenInvalid(token: string) {
-   return invalidatedTokens.includes(token);
-}
