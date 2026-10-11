@@ -1,7 +1,5 @@
-import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
-   CONSTANTS,
    type APIUser,
    type ChannelType,
    type GatewayWebsocketEvents,
@@ -18,6 +16,8 @@ import {
    snowflake,
    omitArray,
 } from "@huginnjs/shared";
+
+import { createAuthSession } from "#utils/auth-session";
 
 import { gateway } from "#server";
 import { env } from "#setup";
@@ -211,16 +211,7 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const accessToken = await createToken(
-            "user-access",
-            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
-            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-         );
-         const refreshToken = await createToken(
-            "user-refresh",
-            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
-            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-         );
+         const { token: accessToken, refreshToken } = await createAuthSession(x.id.toString(), "password", "Huginn test client");
 
          removeUserLater(x);
 

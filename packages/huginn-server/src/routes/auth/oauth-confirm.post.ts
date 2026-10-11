@@ -1,7 +1,6 @@
-import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
-   CONSTANTS,
    type APIPostOAuthConfirmResult,
    CDNRoutes,
    Errors,
@@ -12,6 +11,8 @@ import {
    type OAuthType,
 } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
+
+import { createAuthSession } from "#utils/auth-session";
 
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
@@ -25,7 +26,7 @@ const schema = t.Object({
 
 export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
    "/api/auth/oauth-confirm",
-   async ({ body, status, tokenPayload }) => {
+   async ({ body, status, tokenPayload, request }) => {
       const identityProvider = await prisma.identityProvider.findUnique({
          where: { id: BigInt(tokenPayload.providerId) },
       });
@@ -82,18 +83,11 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          select: { providerType: true },
       });
 
-      const lastAuthenticatedAt = Date.now();
-      const accessToken = await createToken(
-         "user-access",
-         { id: user.id, authType: result.providerType as OAuthType, lastAuthenticatedAt },
-         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-      );
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
+      const tokens = await createAuthSession(user.id, result.providerType as OAuthType, request.headers.get("user-agent") ?? undefined);
 
       const json: APIPostOAuthConfirmResult = {
          ...user,
-         token: accessToken,
-         refreshToken: refreshToken,
+         ...tokens,
       };
       return status("Created", json);
    },

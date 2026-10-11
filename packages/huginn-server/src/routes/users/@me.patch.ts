@@ -1,4 +1,4 @@
-import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
 import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginnjs/shared";
@@ -149,30 +149,14 @@ export const patchMe = new Elysia()
             });
          }
 
-         const lastAuthenticatedAt = Date.now();
-         const accessToken = await createToken(
-            "user-access",
-            { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-         );
-         const refreshToken = await createToken(
-            "user-refresh",
-            { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-         );
-
          // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
          dispatchToTopic(tokenPayload.id, "user_update", {
             ...updatedUser,
-            token: accessToken,
-            refreshToken,
          });
          gateway.presenceManager.updateUserPresence(tokenPayload.id, { user: updatedUser });
 
          const json: APIPatchCurrentUserResult = {
             ...updatedUser,
-            token: accessToken,
-            refreshToken,
             pendingEmail: pendingEmailVerification?.email,
          };
          return status("OK", json);

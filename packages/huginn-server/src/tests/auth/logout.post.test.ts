@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import { authHeader, createTestUsers } from "#tests/utils";
 
 describe("POST /auth/logout", () => {
-   test.skip("should invalidate the user's token", async () => {
+   test("should invalidate the user's token", async () => {
       const [user] = await createTestUsers(1);
       const token = user.accessToken;
 

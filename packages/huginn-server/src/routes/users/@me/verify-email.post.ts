@@ -1,7 +1,9 @@
-import { createToken, singleError } from "@huginn/backend-shared";
+import { singleError } from "@huginn/backend-shared";
 import { prisma, selectPrivateUser } from "@huginn/backend-shared/database/index";
-import { CONSTANTS, Errors, type APIPostVerifyEmailResult } from "@huginnjs/shared";
+import { Errors, type APIPostVerifyEmailResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
+
+import { createAuthSession } from "#utils/auth-session";
 
 const schema = t.Object({
    code: t.String(),
@@ -10,7 +12,7 @@ const schema = t.Object({
 
 export const postVerifyEmail = new Elysia().post(
    "/api/users/@me/verify-email",
-   async ({ body, status }) => {
+   async ({ body, status, request }) => {
       const emailVerification = await prisma.emailVerification.findFirst({ where: { email: body.email } });
 
       if (!emailVerification || emailVerification.expiresAt.getTime() < Date.now()) {
@@ -36,14 +38,11 @@ export const postVerifyEmail = new Elysia().post(
       await prisma.emailVerification.delete({ where: { id: BigInt(emailVerification.id) } });
 
       if (emailVerification.purpose === "registration") {
-         const lastAuthenticatedAt = Date.now();
-         const accessToken = await createToken("user-access", { id: userId, authType: "password", lastAuthenticatedAt }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
-         const refreshToken = await createToken("user-refresh", { id: userId, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
+         const tokens = await createAuthSession(userId, "password", request.headers.get("user-agent") ?? undefined);
 
          const json: APIPostVerifyEmailResult = {
             ...updatedUser,
-            token: accessToken,
-            refreshToken,
+            ...tokens,
          };
          return status("OK", json);
       }

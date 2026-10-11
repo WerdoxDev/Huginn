@@ -1,7 +1,8 @@
-import { createToken, unauthorized, verifyToken } from "@huginn/backend-shared";
-import { prisma } from "@huginn/backend-shared/database";
-import { CONSTANTS, type APIPostRefreshTokenResult } from "@huginnjs/shared";
+import { unauthorized, verifyToken } from "@huginn/backend-shared";
+import { type APIPostRefreshTokenResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
+
+import { rotateAuthSession } from "#utils/auth-session";
 
 const schema = t.Object({ refreshToken: t.String() });
 
@@ -10,32 +11,12 @@ export const postRefreshToken = new Elysia().post(
    async ({ body, status }) => {
       const { valid, payload } = await verifyToken("user-refresh", body.refreshToken);
 
-      if (!valid || !payload) {
+      if (!valid || !payload?.sessionId || !payload.tokenId) {
          return unauthorized(status);
       }
-
-      const user = await prisma.user.getById(payload.id, { select: { id: true } });
-
-      const accessToken = await createToken(
-         "user-access",
-         {
-            id: user.id,
-            authType: payload.authType,
-            lastAuthenticatedAt: payload.lastAuthenticatedAt,
-         },
-         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-      );
-      const refreshToken = await createToken(
-         "user-refresh",
-         {
-            id: user.id,
-            authType: payload.authType,
-            lastAuthenticatedAt: payload.lastAuthenticatedAt,
-         },
-         CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-      );
-
-      const json: APIPostRefreshTokenResult = { token: accessToken, refreshToken };
+      const tokens = await rotateAuthSession(payload.sessionId, payload.id, body.refreshToken, payload.authType, payload.lastAuthenticatedAt);
+      if (!tokens) return unauthorized(status);
+      const json: APIPostRefreshTokenResult = tokens;
       return status("OK", json);
    },
    { body: schema },

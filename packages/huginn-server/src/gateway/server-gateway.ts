@@ -39,6 +39,21 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    public voiceManager: VoiceManager = new VoiceManager();
    public voiceTokenExpiresAt: Map<Snowflake, number> = new Map();
 
+   public revokeAuthSession(authSessionId: string) {
+      for (const session of this.sessions.values()) {
+         if (session.authSessionId === authSessionId) session.peer.close(GatewayCode.INVALID_SESSION, "SESSION_REVOKED");
+      }
+   }
+
+   private async isAuthSessionActive(session: ClientSession): Promise<boolean> {
+      if (!session.authenticated) return true;
+      if (!session.authSessionId) return false;
+      return !!(await prisma.authSession.findFirst({
+         where: { id: session.authSessionId, userId: BigInt(session.user!.id), revokedAt: null, expiresAt: { gt: new Date() } },
+         select: { id: true },
+      }));
+   }
+
    public constructor() {
       super(
          {
@@ -111,6 +126,10 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
    public async onMessage(session: ClientSession, data: GatewayPayload) {
       // To skip trace
       if (data.op === GatewayOperations.HEARTBEAT) {
+         if (!(await this.isAuthSessionActive(session))) {
+            session.peer.close(GatewayCode.INVALID_SESSION, "SESSION_REVOKED");
+            return;
+         }
          this.handleHeartbeat(session, data.d as GatewayHeartbeatData);
          return;
       }
@@ -123,6 +142,10 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
          });
 
          try {
+            if (!(await this.isAuthSessionActive(session))) {
+               session.peer.close(GatewayCode.INVALID_SESSION, "SESSION_REVOKED");
+               return;
+            }
             let needsAuthentication = false;
 
             switch (data.op) {
@@ -199,6 +222,15 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             }
 
             await session.initialize(user, { ...data.properties });
+            session.authSessionId = payload.sessionId;
+            const updatedSession = await prisma.authSession.updateMany({
+               where: { id: payload.sessionId, userId: BigInt(user.id), revokedAt: null },
+               data: { deviceName: `${data.properties.device || data.properties.browser} on ${data.properties.os}`.slice(0, 128), lastSeenAt: new Date() },
+            });
+            if (!updatedSession.count) {
+               session.peer.close(GatewayCode.INVALID_SESSION, "SESSION_REVOKED");
+               return;
+            }
 
             // Relationships
             const userRelationships = await prisma.relationship.getUserRelationships(user.id, {
@@ -272,6 +304,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             span.setAttribute("resume.result", !!result);
 
             if (!result) return;
+            result.oldSession.authSessionId = payload.sessionId;
 
             const resumedData: GatewayPayload = {
                t: "resumed",

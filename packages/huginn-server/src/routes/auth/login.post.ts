@@ -1,4 +1,4 @@
-import { createToken, globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
@@ -6,11 +6,12 @@ import { DBErrorType } from "@huginn/backend-shared/types";
 import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { createAuthSession } from "#utils/auth-session";
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 
 export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
-   async ({ body, status, global }) => {
+   async ({ body, status, global, request }) => {
       if (!body.email && !body.username) {
          return invalidBody(status);
       }
@@ -47,12 +48,8 @@ export const postLogin = new Elysia().use(globalPlugin).post(
          return status("Accepted", json);
       }
 
-      const lastAuthenticatedAt = Date.now();
-
-      const accessToken = await createToken("user-access", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
-
-      const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      const tokens = await createAuthSession(user.id, "password", request.headers.get("user-agent") ?? undefined);
+      const json: APIPostLoginResult = { ...user, ...tokens };
       return status(200, json);
    },
    {

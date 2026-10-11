@@ -5,6 +5,7 @@ import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
 import { cdnUpload, serverFetch } from "#utils/server-request";
+import { createAuthSession } from "#utils/auth-session";
 
 const querySchema = t.Object({
    code: t.Optional(t.String()),
@@ -26,7 +27,6 @@ type GoogleOAuth2Response =
    | {
         access_token: string;
         expires_in: number;
-        refresh_token: string;
         scope: string;
         token_type: string;
         id_token: string;
@@ -44,7 +44,7 @@ type GoogleUserResponse = {
 
 export const getGoogleCallback = new Elysia().get(
    "/api/auth/callback/google",
-   async ({ cookie: { oauth }, status, query: { code, error, state }, redirect }) => {
+   async ({ cookie: { oauth }, status, query: { code, error, state }, redirect, request }) => {
       if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
@@ -94,15 +94,10 @@ export const getGoogleCallback = new Elysia().get(
 
          // Identity provider exists and is completed
          if (identityProvider?.completed && identityProvider?.userId) {
-            const accessToken = await createToken(
-               "user-access",
-               { id: identityProvider.userId.toString(), authType: "google", lastAuthenticatedAt: Date.now() },
-               CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-            );
-            const refreshToken = await createToken(
-               "user-refresh",
-               { id: identityProvider.userId.toString(), authType: "google", lastAuthenticatedAt: Date.now() },
-               CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
+            const { token: accessToken, refreshToken } = await createAuthSession(
+               identityProvider.userId.toString(),
+               "google",
+               request.headers.get("user-agent") ?? undefined,
             );
 
             const redirectUrl = new URL(redirect_url);
@@ -119,7 +114,6 @@ export const getGoogleCallback = new Elysia().get(
                id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
                providerType: "google",
                providerUserId: googleUser.id,
-               refreshToken: response.refresh_token,
                completed: false,
             },
             update: {},

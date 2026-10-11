@@ -18,8 +18,8 @@ describe("GET /users/@me/auth-methods", () => {
       const incompleteId = snowflake.generate(WorkerID.TESTING);
       await prisma.identityProvider.createMany({
          data: [
-            { id: googleId, userId: user.id, providerType: "google", providerUserId: `google-${user.id}`, refreshToken: "", completed: true },
-            { id: incompleteId, userId: user.id, providerType: "github", providerUserId: `github-${user.id}`, refreshToken: "", completed: false },
+            { id: googleId, userId: user.id, providerType: "google", providerUserId: `google-${user.id}`, completed: true },
+            { id: incompleteId, userId: user.id, providerType: "github", providerUserId: `github-${user.id}`, completed: false },
          ],
       });
 

@@ -47,12 +47,10 @@ export const getGoogle = new Elysia().get(
       authEndpoint.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
       authEndpoint.searchParams.set("redirect_uri", `${host}/api/auth/callback/google`);
       authEndpoint.searchParams.set("response_type", "code");
-      authEndpoint.searchParams.set("prompt", "consent");
       authEndpoint.searchParams.set("state", state);
       authEndpoint.searchParams.set("code_challenge", codeChallenge);
       authEndpoint.searchParams.set("code_challenge_method", "S256");
       authEndpoint.searchParams.set("scope", "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid");
-      authEndpoint.searchParams.set("access_type", "offline");
 
       return redirect(authEndpoint.toString(), 302);
    },

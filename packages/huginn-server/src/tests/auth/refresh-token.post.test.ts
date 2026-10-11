@@ -22,5 +22,7 @@ describe("POST /auth/refresh-token", () => {
 
       expect(result.token).toBeDefined();
       expect(result.refreshToken).toBeDefined();
+      expect(result.refreshToken).not.toBe(refreshToken);
+      expect(testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken })).rejects.toThrow("Unauthorized");
    });
 });
