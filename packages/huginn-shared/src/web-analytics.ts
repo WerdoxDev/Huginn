@@ -101,6 +101,10 @@ export class WebAnalytics extends Analytics {
          },
          (span) => {
             span.setAttribute("distinct_id", this.client.get_distinct_id());
+            const userId: unknown = this.defaultAttributes["user.id"];
+            if (typeof userId === "string") {
+               span.setAttribute("user.id", userId);
+            }
          },
       );
 
