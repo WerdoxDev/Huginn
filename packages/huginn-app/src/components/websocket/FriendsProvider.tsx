@@ -1,9 +1,9 @@
 import type { GatewayRelationshipCreateData, Snowflake } from "@huginnjs/shared";
 
 import { RelationshipType } from "@huginnjs/shared";
-import { persister } from "@lib/queries";
+import { getInitialRelationships, persister } from "@lib/queries";
 import { convertToAppRelationship } from "@lib/utils";
-import { useClient, useClientStore } from "@stores/clientStore";
+import { useClient } from "@stores/clientStore";
 import { useReadStates } from "@stores/readStateStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
@@ -14,29 +14,29 @@ import type { AppRelationship } from "@/types";
 export default function FriendsProvider(props: { children?: ReactNode }) {
    const client = useClient();
    const queryClient = useQueryClient();
-   const api = useClientStore();
    const { setFriendsNotificationsCount } = useReadStates();
 
    function onRelationshipCreated(d: GatewayRelationshipCreateData) {
-      const friends = queryClient.getQueryData<AppRelationship[]>(["relationships"]);
-      if (!friends) return;
+      const relationship = convertToAppRelationship(d);
+      const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (friends) =>
+         produce(friends ?? getInitialRelationships() ?? [], (draft) => {
+            const changedIndex = draft.findIndex((x) => x.id === d.id);
+            if (changedIndex !== -1) {
+               draft[changedIndex] = relationship;
+            } else {
+               draft.push(relationship);
+            }
+         }),
+      );
 
-      const newFriends = produce(friends, (draft) => {
-         const changedIndex = draft.findIndex((x) => x.id === d.id && x.type !== d.type);
-         if (changedIndex !== -1) {
-            draft[changedIndex].type = d.type;
-         } else {
-            draft.push(convertToAppRelationship(d));
-         }
-      });
-
-      queryClient.setQueryData<AppRelationship[]>(["relationships"], newFriends);
       persister.persistQueryByKey(["relationships"], queryClient);
       setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
    }
 
    function onRelationshipDeleted(userId: Snowflake) {
-      const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (old) => old?.filter((x) => x.userId !== userId));
+      const newFriends = queryClient.setQueryData<AppRelationship[]>(["relationships"], (old) =>
+         (old ?? getInitialRelationships() ?? []).filter((x) => x.userId !== userId),
+      );
       persister.persistQueryByKey(["relationships"], queryClient);
       setFriendsNotificationsCount(newFriends?.filter((x) => x.type === RelationshipType.PENDING_INCOMING).length ?? 0);
    }

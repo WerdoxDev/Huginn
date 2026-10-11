@@ -185,13 +185,13 @@ export async function initializeClient() {
          store.setState({ readyData: d, userSettings: d.userSettings });
 
          updateUsersFromReadyData(d);
+         queryClient.setQueryData(["relationships"], getInitialRelationships());
 
          store.setState((state) => ({ readyCount: state.readyCount + 1 }));
          if (store.getState().readyCount === 1) return;
 
          // queries need to be reinitialized when client receives ready again which means a complete reset.
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
-         queryClient.setQueryData(["relationships"], getInitialRelationships());
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
       }),
    );

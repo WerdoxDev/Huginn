@@ -36,6 +36,10 @@ export const queryClient = new QueryClient({
    },
 });
 
+// Gateway events update this query even when no Friends screen is mounted.
+// Keep its cache for the authenticated session so those events always have a base to update.
+queryClient.setQueryDefaults(["relationships"], { gcTime: Infinity });
+
 const stopBroadcast = broadcastQueryClient({
    queryClient,
    broadcastChannel: `tanstack-query:${hostId}`,
