@@ -121,6 +121,7 @@ export const userExtension = Prisma.defineExtension({
             password?: string | null;
             email: string;
             avatar?: string | null;
+            emailVerifiedAt?: Date;
          }) {
             return analytics.startActiveSpan("db.user.createOne", async (span) => {
                span.setAttributes({
@@ -144,6 +145,7 @@ export const userExtension = Prisma.defineExtension({
                         password: passwordHash,
                         avatar: options.avatar,
                         email: options.email,
+                        emailVerifiedAt: options.emailVerifiedAt,
                         flags: UserFlags.NONE,
                         system: false,
                      },

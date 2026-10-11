@@ -57,13 +57,15 @@ model EmailVerification {
 
 model IdentityProvider {
   id             BigInt  @id
-  providerUserId String  @unique
+  providerUserId String
   userId         BigInt?
   completed      Boolean
   providerType   String
   refreshToken   String
 
   user User? @relation(fields: [userId], references: [id])
+
+  @@unique([providerType, providerUserId])
 }
 
 model Channel {

@@ -30,7 +30,7 @@ export const identityProvider = pgTable(
       refreshToken: text().notNull(),
    },
    (table) => [
-      uniqueIndex("IdentityProvider_providerUserId_key").using("btree", table.providerUserId.asc().nullsLast().op("text_ops")),
+      uniqueIndex("IdentityProvider_providerType_providerUserId_key").on(table.providerType, table.providerUserId),
       foreignKey({
          columns: [table.userId],
          foreignColumns: [user.id],
