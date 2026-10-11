@@ -1,12 +1,10 @@
 import {
    type APIPostOAuthConfirmJSONBody,
    type APIPostOAuthConfirmResult,
-   generateRandomString,
    type OAuthFlow,
    type OAuthType,
    Routes,
 } from "@huginnjs/shared";
-import { base64 } from "@scure/base";
 
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
@@ -32,8 +30,6 @@ export class OAuthAPI {
       if (type === "google") {
          const url = new URL("/api/auth/google", this.rest.options?.api);
 
-         const state = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
-         url.searchParams.set("state", state);
          url.searchParams.set("flow", flow);
          url.searchParams.set("redirect_url", redirectUrl);
 
