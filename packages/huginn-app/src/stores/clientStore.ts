@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { HuginnClient } from "@huginnjs/api";
-import { analytics, type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
+import { type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
 import { fetchInstanceUrls, probeInstanceUrls, tryAccessAddresses } from "@lib/instances";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";

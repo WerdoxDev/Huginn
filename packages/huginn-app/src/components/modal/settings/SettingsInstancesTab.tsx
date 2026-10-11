@@ -250,7 +250,7 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                         ))}
                      </HuginnSelect.ItemsWrapper>
                   </HuginnSelect.List>
-                  <p className="text-text/70 mt-1 text-sm">Huginn tries the preferred address first, then the others during startup.</p>
+                  <div className="text-text/70 mt-1 text-sm">Huginn tries the preferred address first, then the others during startup.</div>
                </HuginnSelect>
                <HuginnAccordion>
                   <HuginnAccordion.Item value="advanced" className="bg-surface-alt rounded-lg p-3">
@@ -291,11 +291,7 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                      </HuginnAccordion.Panel>
                   </HuginnAccordion.Item>
                </HuginnAccordion>
-               {error && (
-                  <p role="alert" className="text-negative-300 text-sm">
-                     {error}
-                  </p>
-               )}
+               {error && <div className="text-negative-300 text-sm">{error}</div>}
                <div className="flex flex-col gap-2 lg:flex-row">
                   {isModified && (
                      <div className="flex w-full gap-2 lg:w-auto">
