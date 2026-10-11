@@ -86,16 +86,24 @@ const NODE_PLATFORM_TO_OS: Record<string, string> = {
    linux: "linux",
 };
 
-const NAVIGATOR_PLATFORM_TO_OS: Record<string, string> = {
-   MacIntel: "macos",
-   Win32: "windows",
-   "Linux x86_64": "linux",
-};
-
 const NODE_PLATFORM_TO_UPDATE_ROUTE: Record<string, string | undefined> = {
    win32: "windows",
    linux: "linux",
 };
+
+function getBrowserOs() {
+   const userAgent = navigator.userAgent;
+   const platform = navigator.platform;
+
+   if (/Android/i.test(userAgent)) return "android";
+   if (/iPad|iPhone|iPod/i.test(userAgent) || (platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+   if (/CrOS/i.test(userAgent)) return "chromeos";
+   if (/Windows|Win32/i.test(`${userAgent} ${platform}`)) return "windows";
+   if (/Macintosh|Mac OS X|MacIntel/i.test(`${userAgent} ${platform}`)) return "macos";
+   if (/Linux/i.test(`${userAgent} ${platform}`)) return "linux";
+
+   return "unknown";
+}
 
 function getChromeVersion() {
    var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -110,7 +118,7 @@ export async function initializeClient() {
 
    const osInfo = huginnWindowStore.environment === "desktop" ? await window.electronAPI.getOsInfo() : undefined;
    const deviceInfo = Capacitor.getPlatform() === "android" ? await Device.getInfo() : undefined;
-   const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : (NAVIGATOR_PLATFORM_TO_OS[navigator.platform] ?? "unknown");
+   const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : getBrowserOs();
    const arch = osInfo?.arch ?? undefined;
    const chromeVersion = osInfo?.chromeVersion ?? getChromeVersion()?.toString() ?? undefined;
    const electronVersion = osInfo?.electronVersion ?? undefined;
