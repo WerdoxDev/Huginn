@@ -73,6 +73,14 @@ export const Routes = {
       return "/users/@me/auth-methods" as const;
    },
 
+   devices() {
+      return "/users/@me/devices" as const;
+   },
+
+   device(id: string) {
+      return `/users/@me/devices/${encodeURIComponent(id)}` as const;
+   },
+
    /**
     * Route for:
     * - POST '/users/@me/channels'

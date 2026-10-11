@@ -9,7 +9,6 @@ import type {
    APIUser,
    DirectChannel,
    PresenceStatus,
-   Tokens,
    UserPresence,
    UserSettings,
 } from "./api-types";
@@ -198,7 +197,7 @@ export type GatewayDMChannelDeleteData = Omit<DirectChannel, "recipients">;
 export type GatewayDMChannelUpdateData = DirectChannel;
 export type GatewayDMChannelRecipientAddData = { user: APIChannelUser; channelId: Snowflake };
 export type GatewayDMCannelRecipientRemoveData = { user: APIChannelUser; channelId: Snowflake };
-export type GatewayUserUpdateData = APIUser & Tokens;
+export type GatewayUserUpdateData = APIUser;
 export type GatewayPresenceUpdateData = UserPresence;
 
 export type GatewayTypingStartData = {

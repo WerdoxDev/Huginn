@@ -10,12 +10,15 @@ export type AuthType = "password" | OAuthType;
 
 export type UserTokenPayload = {
    id: Snowflake;
+   sessionId: string;
    authType: AuthType;
    lastAuthenticatedAt: number;
 };
 
 export type UserRefreshTokenPayload = {
    id: Snowflake;
+   sessionId: string;
+   tokenId: string;
    authType: AuthType;
    lastAuthenticatedAt: number;
 };
@@ -82,6 +85,16 @@ export type APIGetAuthMethodsResult = {
    password: { configured: boolean };
    providers: { type: OAuthType; connected: boolean; available: boolean }[];
 };
+export type APIDevice = {
+   id: string;
+   userAgent: string | null;
+   deviceName: string | null;
+   authType: AuthType;
+   createdAt: string;
+   lastSeenAt: string;
+   current: boolean;
+};
+export type APIGetDevicesResult = APIDevice[];
 
 export type APIPostRefreshTokenJSONBody = {
    refreshToken: string;
@@ -125,7 +138,7 @@ export type APIPostOAuthConfirmJSONBody = {
 
 export type APIPostLoginResult = APIUser & (Tokens | { pendingEmail: string });
 export type APIPostRegisterResult = APIUser & { pendingEmail?: string };
-export type APIPatchCurrentUserResult = APIUser & Tokens & { pendingEmail?: string };
+export type APIPatchCurrentUserResult = APIUser & { pendingEmail?: string };
 export type APIPostOAuthConfirmResult = APIUser & Tokens;
 
 export type APIPostUniqueUsernameJSONBody = {
