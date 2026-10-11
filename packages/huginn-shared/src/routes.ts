@@ -69,6 +69,10 @@ export const Routes = {
       return `/users/${id}` as const;
    },
 
+   authMethods() {
+      return "/users/@me/auth-methods" as const;
+   },
+
    /**
     * Route for:
     * - POST '/users/@me/channels'

@@ -78,6 +78,10 @@ export type Tokens = {
 
 export type APIGetCurrentUserResult = APIUser;
 export type APIGetUserByIdResult = APIPublicUser;
+export type APIGetAuthMethodsResult = {
+   password: { configured: boolean };
+   providers: { type: OAuthType; connected: boolean; available: boolean }[];
+};
 
 export type APIPostRefreshTokenJSONBody = {
    refreshToken: string;
