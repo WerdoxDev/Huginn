@@ -1,4 +1,5 @@
 import {
+   type APIGetAuthMethodsResult,
    type APIGetCurrentUserResult,
    type APIGetProfileResult,
    type APIGetUserByIdResult,
@@ -32,6 +33,10 @@ export class UserAPI {
 
    public async getCurrent(): Promise<APIGetCurrentUserResult> {
       return this.rest.get(Routes.user("@me"), { auth: true }) as Promise<APIGetCurrentUserResult>;
+   }
+
+   public async getAuthMethods(): Promise<APIGetAuthMethodsResult> {
+      return this.rest.get(Routes.authMethods(), { auth: true }) as Promise<APIGetAuthMethodsResult>;
    }
 
    public async edit(body: APIPatchCurrentUserJSONBody): Promise<APIPatchCurrentUserResult> {
