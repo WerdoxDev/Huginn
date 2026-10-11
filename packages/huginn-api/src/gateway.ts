@@ -4,7 +4,6 @@ import type {
    GatewayStatus,
    GatewayUpdatePresenceData,
    GatewayUpdateVoiceStateData,
-   GatewayVoiceServerUpdateData,
    GatewayVoiceState,
    GatewayVoiceStateFlags,
    Snowflake,
