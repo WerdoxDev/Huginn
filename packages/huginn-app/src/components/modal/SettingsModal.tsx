@@ -17,6 +17,7 @@ import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsConnectedAccountsTab from "./settings/SettingsConnectedAccountsTab";
+import SettingsDevicesTab from "./settings/SettingsDevicesTab";
 import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsContributionTab from "./settings/SettingsContributionTab";
@@ -45,6 +46,13 @@ const tabs: SettingsTabType[] = [
             auth: true,
             icon: <IconMingcuteLink2Fill />,
             component: SettingsConnectedAccountsTab,
+         },
+         {
+            name: "devices",
+            text: "Devices",
+            auth: true,
+            icon: <IconMingcuteMonitorFill />,
+            component: SettingsDevicesTab,
          },
       ],
    },

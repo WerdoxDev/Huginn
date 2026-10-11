@@ -13,6 +13,7 @@ import type { Environment, InstanceUrls } from "@/types";
 
 import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
+import { clearUserStore } from "./userStore";
 import { windowStore } from "./windowStore";
 
 const store = clientStore;
@@ -151,6 +152,13 @@ export async function initializeClient() {
       },
    });
 
+   client.tokenHandler.onChange((token, refreshToken) => {
+      if (token) localStorage.setItem("access-token", token);
+      else localStorage.removeItem("access-token");
+      if (refreshToken) localStorage.setItem("refresh-token", refreshToken);
+      else localStorage.removeItem("refresh-token");
+   });
+
    store.setState({ client });
 
    if (window.opener) return;
@@ -243,6 +251,15 @@ export async function initializeClient() {
    );
 
    unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.setState({ gatewayStatus: status })));
+   unlisteners.push(
+      thisStore.client?.gateway.listen("session_revoked", async () => {
+         if (!localStorage.getItem("refresh-token")) return;
+         await client.logout();
+         clearUserStore();
+         const { router } = await import("@/router");
+         await router.navigate({ to: "/login", replace: true });
+      }),
+   );
    unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.setState({ voiceStatus: status })));
    store.setState({ gatewayStatus: thisStore.client?.gateway.status, voiceStatus: thisStore.client?.voice.status });
 
