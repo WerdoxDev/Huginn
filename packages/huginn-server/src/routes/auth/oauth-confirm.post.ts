@@ -33,6 +33,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
       if (!identityProvider) {
          return unauthorized(status);
       }
+      if (identityProvider.providerUserId !== tokenPayload.providerUserId || identityProvider.completed) return unauthorized(status);
 
       const formError = createErrorFactory(Errors.invalidFormBody());
 
@@ -68,6 +69,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
 
       const user = await prisma.user.createOne({
          email: tokenPayload.email,
+         emailVerifiedAt: new Date(),
          username: body.username,
          displayName: body.displayName,
          avatar: avatarHash,
@@ -75,7 +77,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
       });
 
       const result = await prisma.identityProvider.update({
-         where: { providerUserId: tokenPayload.providerUserId },
+         where: { id: BigInt(tokenPayload.providerId) },
          data: { userId: BigInt(user.id), completed: true },
          select: { providerType: true },
       });

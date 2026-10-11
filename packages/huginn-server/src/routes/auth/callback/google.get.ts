@@ -14,6 +14,7 @@ const querySchema = t.Object({
 const cookieSchema = t.Cookie({
    oauth: t.Object({
       state: t.String(),
+      codeVerifier: t.String(),
       flow: t.Union([t.Literal("browser"), t.Literal("desktop")]),
       origin: t.String(),
       redirect_url: t.String(),
@@ -49,7 +50,8 @@ export const getGoogleCallback = new Elysia().get(
       }
 
       const cookieValue = (typeof oauth.value === "string" ? JSON.parse(oauth.value) : oauth.value) as typeof oauth.value;
-      const { flow, state: cookie_state, redirect_url, origin } = cookieValue;
+      if (!cookieValue) return forbidden(status);
+      const { flow, state: cookie_state, codeVerifier, redirect_url, origin } = cookieValue;
 
       if (cookie_state !== state || !state) {
          // consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
@@ -63,6 +65,7 @@ export const getGoogleCallback = new Elysia().get(
             client_secret: env.GOOGLE_CLIENT_SECRET,
             code: code,
             grant_type: "authorization_code",
+            code_verifier: codeVerifier,
             redirect_uri: `${origin}/api/auth/callback/google`,
          });
 
@@ -83,8 +86,10 @@ export const getGoogleCallback = new Elysia().get(
             token: response.access_token,
          });
 
+         if (!googleUser.id || !googleUser.email || !googleUser.verified_email) return forbidden(status);
+
          const identityProvider = await prisma.identityProvider.findUnique({
-            where: { providerUserId: googleUser.id },
+            where: { providerType_providerUserId: { providerType: "google", providerUserId: googleUser.id } },
          });
 
          // Identity provider exists and is completed
@@ -100,19 +105,16 @@ export const getGoogleCallback = new Elysia().get(
                CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
             );
 
-            const searchParam = new URLSearchParams({
-               flow,
-               access_token: accessToken,
-               refresh_token: refreshToken,
-            });
-            const redirectUrl = `${redirect_url}?${searchParam.toString()}`;
-
+            const redirectUrl = new URL(redirect_url);
+            redirectUrl.searchParams.set("flow", flow);
+            redirectUrl.searchParams.set("access_token", accessToken);
+            redirectUrl.searchParams.set("refresh_token", refreshToken);
             return redirect(redirectUrl.toString(), 302);
          }
 
          // Does not exist or is not completed
          const upsertedIdentityProvider = await prisma.identityProvider.upsert({
-            where: { providerUserId: googleUser.id },
+            where: { providerType_providerUserId: { providerType: "google", providerUserId: googleUser.id } },
             create: {
                id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
                providerType: "google",
@@ -149,15 +151,15 @@ export const getGoogleCallback = new Elysia().get(
             CONSTANTS.OAUTH_TOKEN_EXPIRE_TIME,
          );
 
-         const searchParam = new URLSearchParams({ flow, oauth_token: token });
-         const redirectUrl = `${redirect_url}?${searchParam.toString()}`;
-
+         const redirectUrl = new URL(redirect_url);
+         redirectUrl.searchParams.set("flow", flow);
+         redirectUrl.searchParams.set("oauth_token", token);
          return redirect(redirectUrl.toString(), 302);
       }
 
       // User clicked "Cancel"
       if (error === "access_denied") {
-         const redirectUrl = new URL(`${redirect_url}/redirect.html`);
+         const redirectUrl = new URL(redirect_url);
          redirectUrl.searchParams.set("flow", flow);
          redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
 

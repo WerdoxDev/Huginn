@@ -1,6 +1,4 @@
 import { testHandler } from "@huginn/backend-shared";
-import { generateRandomString } from "@huginnjs/shared";
-import { base64 } from "@scure/base";
 import { describe, expect, test } from "bun:test";
 
 describe("GET /auth/google", () => {
@@ -9,42 +7,28 @@ describe("GET /auth/google", () => {
       expect(result).rejects.toThrow("Invalid Form Body");
    });
 
-   test("should return 'Forbidden' when state is not valid or the timestamp is expired or redirect_url is not allowed", async () => {
+   test("rejects a redirect whose origin is not allowed, even if its URL contains an allowed origin", async () => {
       const result = testHandler(
-         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: "123", flow: "browser" }).toString()}`,
+         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://invalid.com/?next=https://app.huginn.dev/", flow: "browser" }).toString()}`,
          {},
          "GET",
       );
       expect(result).rejects.toThrow("Forbidden");
-
-      const state = base64.encode(new TextEncoder().encode(`${Date.now() - 6 * 60 * 1000}:${generateRandomString(16)}`));
-      const result2 = testHandler(
-         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,
-         {},
-         "GET",
-      );
-      expect(result2).rejects.toThrow("Forbidden");
-
-      const state2 = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
-      const result3 = testHandler(
-         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://invalid.com", state: state2, flow: "browser" }).toString()}`,
-         {},
-         "GET",
-      );
-      expect(result3).rejects.toThrow("Forbidden");
    });
 
-   test("should return a valid google oauth2 url when the request is successful", async () => {
-      const state = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
-
+   test("uses server-generated state and PKCE for an allowed redirect", async () => {
       const result = (await testHandler(
-         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", state: state, flow: "browser" }).toString()}`,
+         `/api/auth/google?${new URLSearchParams({ redirect_url: "https://app.huginn.dev/", flow: "browser" }).toString()}`,
          {},
          "GET",
          true,
       )) as Response;
 
       expect(result.status).toBe(302);
-      expect(result.headers.get("location")).toInclude("https://accounts.google.com/o/oauth2");
+      const location = new URL(result.headers.get("location")!);
+      expect(location.origin).toBe("https://accounts.google.com");
+      expect(location.searchParams.get("state")?.length).toBeGreaterThan(32);
+      expect(location.searchParams.get("code_challenge_method")).toBe("S256");
+      expect(location.searchParams.get("code_challenge")?.length).toBeGreaterThan(32);
    });
 });
