@@ -198,6 +198,7 @@ export class WebAnalytics extends Analytics {
 
    public reset(): void {
       this.client.reset(true);
+      this.setDefaultAttributes({});
    }
 
    public async flush(): Promise<void> {
