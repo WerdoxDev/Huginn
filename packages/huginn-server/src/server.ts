@@ -63,6 +63,7 @@ import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
 import { getDesktopUpdate } from "#routes/update/desktop";
 import { getMe } from "#routes/users/@me.get";
+import { getAuthMethods } from "#routes/users/@me/auth-methods.get";
 import { patchMe } from "#routes/users/@me.patch";
 import { getUserChannels } from "#routes/users/@me/channels.get";
 import { postUserChannel } from "#routes/users/@me/channels.post";
@@ -165,6 +166,7 @@ export const app = new Elysia({
    .use(postUserRelationship)
    .use(getUser)
    .use(getMe)
+   .use(getAuthMethods)
    .use(patchMe)
    .use(patchUserSettings)
    .use(deleteUserRelationship)
