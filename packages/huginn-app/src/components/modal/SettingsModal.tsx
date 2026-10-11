@@ -16,6 +16,7 @@ import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
+import SettingsConnectedAccountsTab from "./settings/SettingsConnectedAccountsTab";
 import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsContributionTab from "./settings/SettingsContributionTab";
@@ -37,6 +38,13 @@ const tabs: SettingsTabType[] = [
             auth: true,
             icon: <IconMingcuteUser3Fill />,
             component: SettingsProfileTab,
+         },
+         {
+            name: "connected-accounts",
+            text: "Connected Accounts",
+            auth: true,
+            icon: <IconMingcuteLink2Fill />,
+            component: SettingsConnectedAccountsTab,
          },
       ],
    },
