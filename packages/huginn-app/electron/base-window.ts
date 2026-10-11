@@ -19,8 +19,6 @@ export abstract class BaseWindow {
 
          this._window.loadFile(filePath, { hash: `/${startPath}` });
       }
-
-      this.registerEvents?.(this._window);
    }
 
    public registerEvents?(window: BrowserWindow): void;
@@ -29,5 +27,3 @@ export abstract class BaseWindow {
       return this._window;
    }
 }
-
-

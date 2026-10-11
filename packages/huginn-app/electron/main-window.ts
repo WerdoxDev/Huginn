@@ -13,6 +13,7 @@ import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
 import { ScreenManager } from "./screen-manager";
 import { isLinux, isWindows } from "./utils";
+import { ElectronWebSocket } from "./websocket";
 
 const { autoUpdater } = electronUpdater;
 
@@ -22,6 +23,7 @@ export class MainWindow extends BaseWindow {
    private screenManager: ScreenManager = new ScreenManager();
    private loopbackCapture: LoopbackCapture | undefined;
    private nativeCaptureOptions?: { captureId: string; width: number; height: number; frameRate: number };
+   private websocket: ElectronWebSocket = new ElectronWebSocket();
 
    public constructor() {
       super("main", {
@@ -41,10 +43,13 @@ export class MainWindow extends BaseWindow {
          },
          show: false,
       });
+
+      this.registerEvents(this.window);
    }
 
    public override registerEvents(window: BrowserWindow): void {
       keybindsController.registerEvents(window);
+      this.websocket.registerEvents(window);
 
       this.registerElectronWindowEvents(window);
       this.registerWindowEvents(window);
