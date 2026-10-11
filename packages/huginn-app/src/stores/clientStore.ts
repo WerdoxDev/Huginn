@@ -193,6 +193,7 @@ export async function initializeClient() {
          // queries need to be reinitialized when client receives ready again which means a complete reset.
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
+         await queryClient.invalidateQueries({ queryKey: ["application-contributions", "@me"], exact: true, refetchType: "all" });
       }),
    );
 
