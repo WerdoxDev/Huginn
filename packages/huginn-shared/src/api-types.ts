@@ -10,14 +10,14 @@ export type AuthType = "password" | OAuthType;
 
 export type UserTokenPayload = {
    id: Snowflake;
-   sessionId: string;
+   sessionId: Snowflake;
    authType: AuthType;
    lastAuthenticatedAt: number;
 };
 
 export type UserRefreshTokenPayload = {
    id: Snowflake;
-   sessionId: string;
+   sessionId: Snowflake;
    tokenId: string;
    authType: AuthType;
    lastAuthenticatedAt: number;

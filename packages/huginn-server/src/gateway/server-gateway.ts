@@ -49,7 +49,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       if (!session.authenticated) return true;
       if (!session.authSessionId) return false;
       return !!(await prisma.authSession.findFirst({
-         where: { id: session.authSessionId, userId: BigInt(session.user!.id), revokedAt: null, expiresAt: { gt: new Date() } },
+         where: { id: BigInt(session.authSessionId), userId: BigInt(session.user!.id), revokedAt: null, expiresAt: { gt: new Date() } },
          select: { id: true },
       }));
    }
@@ -224,7 +224,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             await session.initialize(user, { ...data.properties });
             session.authSessionId = payload.sessionId;
             const updatedSession = await prisma.authSession.updateMany({
-               where: { id: payload.sessionId, userId: BigInt(user.id), revokedAt: null },
+               where: { id: BigInt(payload.sessionId), userId: BigInt(user.id), revokedAt: null },
                data: { deviceName: `${data.properties.device || data.properties.browser} on ${data.properties.os}`.slice(0, 128), lastSeenAt: new Date() },
             });
             if (!updatedSession.count) {

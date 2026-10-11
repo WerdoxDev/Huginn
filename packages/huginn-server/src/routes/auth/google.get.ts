@@ -5,7 +5,6 @@ import { createHash, randomBytes } from "node:crypto";
 import { env } from "#setup";
 
 const querySchema = t.Object({
-   state: t.Optional(t.String()), // Accepted for older app builds; the server generates the state used with Google.
    flow: t.Union([t.Literal("browser"), t.Literal("desktop")]),
    redirect_url: t.String(),
 });
@@ -25,12 +24,7 @@ export const getGoogle = new Elysia().get(
       }
 
       const allowedOrigins = env.ALLOWED_ORIGINS.split(",").map((value) => new URL(value.trim()).origin);
-      if (
-         !["http:", "https:"].includes(destination.protocol) ||
-         !allowedOrigins.includes(destination.origin) ||
-         destination.username ||
-         destination.password
-      ) {
+      if (!["http:", "https:"].includes(destination.protocol) || !allowedOrigins.includes(destination.origin) || destination.username || destination.password) {
          return forbidden(status);
       }
 

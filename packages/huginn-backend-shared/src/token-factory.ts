@@ -50,7 +50,7 @@ export async function verifyToken<Type extends TokenType>(type: Type, token: str
          const payload = jwt.payload as UserTokenPayload;
          if (!payload.sessionId || !payload.id) return { valid: false, payload: null };
          const session = await prisma.authSession.findFirst({
-            where: { id: payload.sessionId, userId: BigInt(payload.id), revokedAt: null, expiresAt: { gt: new Date() } },
+            where: { id: BigInt(payload.sessionId), userId: BigInt(payload.id), revokedAt: null, expiresAt: { gt: new Date() } },
             select: { id: true, lastSeenAt: true },
          });
          if (!session) return { valid: false, payload: null };
@@ -72,4 +72,3 @@ export async function verifyToken<Type extends TokenType>(type: Type, token: str
       return { valid: false, payload: null };
    }
 }
-

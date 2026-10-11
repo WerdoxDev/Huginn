@@ -5,7 +5,7 @@ import Elysia from "elysia";
 import { gateway } from "#server";
 
 export const postLogout = new Elysia().use(verifyJwt()).post("/api/auth/logout", async ({ status, tokenPayload }) => {
-   await prisma.authSession.updateMany({ where: { id: tokenPayload.sessionId, userId: BigInt(tokenPayload.id) }, data: { revokedAt: new Date() } });
+   await prisma.authSession.revokeSession(tokenPayload.sessionId, tokenPayload.id);
    gateway.revokeAuthSession(tokenPayload.sessionId);
    return status("No Content");
 });

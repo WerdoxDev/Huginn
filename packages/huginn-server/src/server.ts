@@ -48,8 +48,8 @@ import { ws } from "#routes/gateway";
 import { getGifCategories } from "#routes/gifs/categories.get";
 import { getSearchGifs } from "#routes/gifs/search.get";
 import { getTrendingGifs } from "#routes/gifs/trending.get";
-import { getLatestRelease } from "#routes/latest-release.get";
 import { getInstance } from "#routes/instance.get";
+import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
@@ -63,10 +63,12 @@ import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
 import { getDesktopUpdate } from "#routes/update/desktop";
 import { getMe } from "#routes/users/@me.get";
-import { getAuthMethods } from "#routes/users/@me/auth-methods.get";
 import { patchMe } from "#routes/users/@me.patch";
+import { getAuthMethods } from "#routes/users/@me/auth-methods.get";
 import { getUserChannels } from "#routes/users/@me/channels.get";
 import { postUserChannel } from "#routes/users/@me/channels.post";
+import { getUserDevices } from "#routes/users/@me/devices.get";
+import { deleteUserDevice } from "#routes/users/@me/devices/[sessionId]].delete";
 import { getUserRelationships } from "#routes/users/@me/relationships.get";
 import { postUserRelationship } from "#routes/users/@me/relationships.post";
 import { deleteUserRelationship } from "#routes/users/@me/relationships/[userId].delete";
@@ -175,6 +177,8 @@ export const app = new Elysia({
    .use(postVerifyEmail)
    .use(postResendVerificationEmail)
    .use(getUserProfile)
+   .use(getUserDevices)
+   .use(deleteUserDevice)
 
    // channel
    .use(postChannelMessage)
