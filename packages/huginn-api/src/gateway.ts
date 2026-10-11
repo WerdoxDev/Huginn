@@ -36,6 +36,7 @@ type AuthenticationResult = {
 type Events = {
    reconnected: undefined;
    reset: undefined;
+   session_revoked: undefined;
    message: GatewayPayload;
    send: GatewayPayload;
    connected: undefined;
@@ -232,6 +233,11 @@ export class Gateway extends SharedWebsocket<Events> {
          } else {
             this.setStatus("disconnected");
             this.emit("disconnected", e.code);
+         }
+
+         if (e.reason === "SESSION_REVOKED") {
+            this.intentionalClose = true;
+            this.emit("session_revoked", undefined);
          }
 
          // Don't reconnect if it was intentionally closed

@@ -1,5 +1,6 @@
 import {
    type APIGetAuthMethodsResult,
+   type APIGetDevicesResult,
    type APIGetCurrentUserResult,
    type APIGetProfileResult,
    type APIGetUserByIdResult,
@@ -37,6 +38,14 @@ export class UserAPI {
 
    public async getAuthMethods(): Promise<APIGetAuthMethodsResult> {
       return this.rest.get(Routes.authMethods(), { auth: true }) as Promise<APIGetAuthMethodsResult>;
+   }
+
+   public async getDevices(): Promise<APIGetDevicesResult> {
+      return this.rest.get(Routes.devices(), { auth: true }) as Promise<APIGetDevicesResult>;
+   }
+
+   public async logoutDevice(id: string): Promise<void> {
+      await this.rest.delete(Routes.device(id), { auth: true });
    }
 
    public async edit(body: APIPatchCurrentUserJSONBody): Promise<APIPatchCurrentUserResult> {
