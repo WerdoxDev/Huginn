@@ -87,8 +87,8 @@ export default function KnownGamesPanel() {
       <div className="flex h-full min-h-0 flex-col">
          <div className="border-surface bg-surface-deep flex h-16 shrink-0 items-center border-b-2 px-5">
             <div>
-               <h1 className="text-lg font-bold text-white">Known games</h1>
-               <p className="text-text/70 text-xs">Browse and remove games from the application catalog</p>
+               <div className="text-lg font-bold text-white">Known games</div>
+               <div className="text-text/70 text-xs">Browse and remove games from the application catalog</div>
             </div>
          </div>
 
@@ -96,8 +96,8 @@ export default function KnownGamesPanel() {
             <section className="bg-surface-alt mx-auto flex min-h-full w-full max-w-6xl flex-col overflow-hidden rounded-xl">
                <div className="flex flex-wrap items-center gap-3 p-3">
                   <div>
-                     <h2 className="font-semibold text-white">Game catalog</h2>
-                     <p className="text-text/70 text-xs">{query.trim() ? `${filteredGames.length} of ${games.length}` : games.length} games</p>
+                     <div className="font-semibold text-white">Game catalog</div>
+                     <div className="text-text/70 text-xs">{query.trim() ? `${filteredGames.length} of ${games.length}` : games.length} games</div>
                   </div>
                   <HuginnInput
                      placeholder="Search known games"
@@ -144,10 +144,10 @@ export default function KnownGamesPanel() {
                                     <h3 className="text-base font-semibold text-white">{game.canonicalName}</h3>
                                     <span className="text-text/50 text-xs">IGDB #{game.igdbId}</span>
                                  </div>
-                                 <p className="text-text/60 mt-1 text-xs">
+                                 <div className="text-text/60 mt-1 text-xs">
                                     Added {formatDate(game.createdAt)} · {game.matchers.length} {game.matchers.length === 1 ? "matcher" : "matchers"}
-                                 </p>
-                                 {game.aliases.length ? <p className="text-text/70 mt-2 text-sm">Aliases: {game.aliases.join(", ")}</p> : null}
+                                 </div>
+                                 {game.aliases.length ? <div className="text-text/70 mt-2 text-sm">Aliases: {game.aliases.join(", ")}</div> : null}
                               </div>
                               <HuginnButton
                                  type="button"

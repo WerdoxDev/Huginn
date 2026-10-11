@@ -219,8 +219,8 @@ export default function GameContributionsPanel() {
       <div className="flex h-full min-h-0 flex-col">
          <div className="border-surface bg-surface-deep flex h-16 shrink-0 items-center border-b-2 px-5">
             <div>
-               <h1 className="text-lg font-bold text-white">Game contributions</h1>
-               <p className="text-text/70 text-xs">Review client submissions and connect them to IGDB</p>
+               <div className="text-lg font-bold text-white">Game contributions</div>
+               <div className="text-text/70 text-xs">Review client submissions and connect them to IGDB</div>
             </div>
          </div>
 
@@ -229,10 +229,10 @@ export default function GameContributionsPanel() {
                <div className="p-3">
                   <div className="mb-3 flex items-center">
                      <div>
-                        <h2 className="font-semibold text-white">Pending queue</h2>
-                        <p className="text-text/70 text-xs">
+                        <div className="font-semibold text-white">Pending queue</div>
+                        <div className="text-text/70 text-xs">
                            {queueQuery.trim() ? `${filteredContributions.length} of ${contributions.length}` : contributions.length} contributions
-                        </p>
+                        </div>
                      </div>
                      <button
                         type="button"
@@ -330,8 +330,8 @@ export default function GameContributionsPanel() {
             <section className="bg-surface-alt flex h-full min-h-128 min-w-[min(100%,20rem)] flex-[0.9_1_20rem] flex-col overflow-hidden rounded-xl">
                <div className="flex items-center gap-3 px-3 py-3">
                   <div>
-                     <h2 className="font-semibold text-white">Contribution data</h2>
-                     <p className="text-text/70 text-xs">Everything sent by the client</p>
+                     <div className="font-semibold text-white">Contribution data</div>
+                     <div className="text-text/70 text-xs">Everything sent by the client</div>
                   </div>
                   <HuginnLoadingButton
                      color="negative"
@@ -448,8 +448,8 @@ export default function GameContributionsPanel() {
 
             <section className="bg-surface-alt flex h-full min-h-128 min-w-[min(100%,24rem)] flex-[1.35_1_24rem] flex-col overflow-hidden rounded-xl">
                <div className="p-3">
-                  <h2 className="font-semibold text-white">IGDB candidates</h2>
-                  <p className="text-text/70 mb-3 text-xs">Search and assign the corresponding game</p>
+                  <div className="font-semibold text-white">IGDB candidates</div>
+                  <div className="text-text/70 mb-3 text-xs">Search and assign the corresponding game</div>
                   <HuginnInput
                      placeholder="Search IGDB"
                      value={searchQuery}
