@@ -250,6 +250,16 @@ async function getProcessIconBase64(processId: number): Promise<string | null> {
    const exeIdentifier = normalizeApplicationIdentifier(exePath);
    if (exeIdentifier) identifiers.add(exeIdentifier);
 
+   // Flatpak apps can launch child processes whose window class and executable differ from the desktop entry.
+   const environ = await readFile(`/proc/${processId}/environ`).catch(() => undefined);
+   const flatpakId = environ
+      ?.toString("utf8")
+      .split("\0")
+      .find((entry) => entry.startsWith("FLATPAK_ID="))
+      ?.slice("FLATPAK_ID=".length);
+   const flatpakIdentifier = normalizeApplicationIdentifier(flatpakId);
+   if (flatpakIdentifier) identifiers.add(flatpakIdentifier);
+
    const desktopIconIndex = await (desktopIconIndexPromise ??= createDesktopIconIndex());
    for (const identifier of identifiers) {
       const icon = desktopIconIndex.get(identifier);
