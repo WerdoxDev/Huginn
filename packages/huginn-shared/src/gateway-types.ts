@@ -131,8 +131,9 @@ export type GatewayIdentifyData = {
 
 export type GatewayIdentifyProperties = {
    os: string;
-   browser: string;
+   library?: string;
    device?: string;
+   client?: string;
    clientVersion?: string;
    osVersion?: string;
    osArch?: string;

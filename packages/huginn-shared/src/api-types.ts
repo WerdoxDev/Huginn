@@ -89,6 +89,9 @@ export type APIDevice = {
    id: string;
    userAgent: string | null;
    deviceName: string | null;
+   clientName: string | null;
+   clientOs: string | null;
+   ipAddress: string | null;
    authType: AuthType;
    createdAt: string;
    lastSeenAt: string;
