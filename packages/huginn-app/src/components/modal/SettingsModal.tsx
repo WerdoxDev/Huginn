@@ -16,11 +16,11 @@ import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
+import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsConnectedAccountsTab from "./settings/SettingsConnectedAccountsTab";
+import SettingsContributionTab from "./settings/SettingsContributionTab";
 import SettingsDevicesTab from "./settings/SettingsDevicesTab";
 import SettingsInstancesTab from "./settings/SettingsInstancesTab";
-import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
-import SettingsContributionTab from "./settings/SettingsContributionTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
@@ -232,7 +232,7 @@ function SettingsTabs() {
    const client = useClient();
 
    return (
-      <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-52">
+      <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-56">
          {tabs
             .filter((x) => client?.gateway.status === "authenticated" || !x.auth)
             .map((tab, i) => (

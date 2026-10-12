@@ -1,11 +1,13 @@
 import type { APIDevice } from "@huginnjs/shared";
 
 import { useLogout } from "@hooks/useLogout";
-import { HuginnButton } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import clsx from "clsx";
+import moment from "moment";
 import { useEffect } from "react";
 
 export default function SettingsDevicesTab() {
@@ -23,7 +25,10 @@ export default function SettingsDevicesTab() {
       refetch,
    } = useQuery({
       queryKey: devicesQueryKey,
-      queryFn: () => client!.users.getDevices(),
+      queryFn: async () => {
+         await new Promise((resolve) => setTimeout(resolve, 5000));
+         return client!.users.getDevices();
+      },
       enabled: !!client && !!user,
       staleTime: 5 * 60 * 1000,
       refetchOnMount: true,
@@ -77,58 +82,86 @@ export default function SettingsDevicesTab() {
       },
    });
 
+   function confirmSignOut(device: APIDevice) {
+      if (removeMutation.isPending) return;
+      updateModals({
+         info: {
+            isOpen: true,
+            status: "info",
+            title: "Sign out device?",
+            text: device.current
+               ? "This will sign you out on this device."
+               : `This will sign out ${device.deviceName ?? device.clientName ?? "this device"} from your account.`,
+            action: {
+               confirm: {
+                  text: "Sign out",
+                  callback: () => {
+                     updateModals({ info: { isOpen: false } });
+                     removeMutation.mutate(device);
+                  },
+               },
+               cancel: {
+                  text: "Cancel",
+                  callback: () => updateModals({ info: { isOpen: false } }),
+               },
+            },
+         },
+      });
+   }
+
    return (
-      <div className="text-text w-full max-w-xl space-y-4 pr-4">
-         <p className="text-text/70 text-sm">Devices with an active sign-in to your account.</p>
-         {!devices && !isDevicesError && <p className="text-text/70 text-sm">Loading devices…</p>}
-         {devices?.map((device) => (
-            <div key={device.id} className="bg-surface-alt flex items-center justify-between gap-4 rounded-lg p-4">
-               <div className="min-w-0">
-                  <p className="font-medium">
-                     {device.current
-                        ? `This device · ${device.deviceName ?? deviceName(device.userAgent)}`
-                        : (device.deviceName ?? deviceName(device.userAgent))}
-                  </p>
-                  <p className="text-text/70 truncate text-xs" title={device.userAgent ?? undefined}>
-                     {device.userAgent ?? "Device details unavailable"}
-                  </p>
-                  <p className="text-text/70 mt-1 text-xs">
-                     Signed in with {device.authType === "password" ? "password" : device.authType === "google" ? "Google" : "GitHub"} on{" "}
-                     {new Date(device.createdAt).toLocaleString()}
-                     {" · "}Last active {new Date(device.lastSeenAt).toLocaleString()}
-                  </p>
+      <div className="flex w-full flex-col items-center">
+         <div className="flex w-full max-w-xl flex-col gap-y-4">
+            <div className="text-text/70">Devices with an active sign-in to your account.</div>
+            {!devices && !isDevicesError && (
+               <div className="flex items-center justify-center gap-x-2">
+                  <div className="text-text">Loading devices…</div>
+                  <HuginnLoadingIcon className="size-6" />
                </div>
-               <HuginnButton color="surface" disabled={removeMutation.isPending} onClick={() => removeMutation.mutate(device)}>
-                  {removeMutation.isPending && removeMutation.variables?.id === device.id ? "Signing out…" : "Sign out"}
-               </HuginnButton>
-            </div>
-         ))}
-         {devices?.length === 0 && <p className="text-text/70 text-sm">No active devices found.</p>}
+            )}
+            {devices?.map((device) => (
+               <div
+                  key={device.id}
+                  className={clsx("bg-surface-alt flex items-center gap-x-4 rounded-lg p-4", device.current && "ring-primary-700 ring-2")}
+               >
+                  {device.clientOs === "linux" ? (
+                     <IconMingcuteLinuxFill className="text-text size-8 shrink-0" />
+                  ) : device.clientOs === "windows" ? (
+                     <IconMingcuteWindowsFill className="text-text size-8 shrink-0" />
+                  ) : device.clientOs === "android" ? (
+                     <IconMingcuteAndroidFill className="text-text size-8 shrink-0" />
+                  ) : (
+                     <IconMingcuteQuestion2Fill className="text-text size-8 shrink-0" />
+                  )}
+                  <div className="flex flex-col gap-y-1">
+                     <div className="flex gap-x-2">
+                        <div className="text-text font-medium">
+                           {device.clientName ?? "Unknown"} - {device.clientOs ?? "Unknown"} - "{device.deviceName ?? "Unknown"}"
+                        </div>
+                        {device.current && (
+                           <div className="bg-primary-700 flex items-center justify-center rounded px-1.5 text-xs font-bold text-white uppercase">
+                              Your Device
+                           </div>
+                        )}
+                     </div>
+
+                     <div className="text-text/70 text-sm">
+                        Last active <span className="text-text/80">{moment(device.lastSeenAt).format("MM.DD.YYYY [at] h:mm A")}</span> (
+                        {moment(device.lastSeenAt).fromNow()})
+                     </div>
+                  </div>
+                  <HuginnButton
+                     color="negative"
+                     className="ml-auto shrink-0 px-2 py-1"
+                     disabled={removeMutation.isPending}
+                     onClick={() => confirmSignOut(device)}
+                  >
+                     {removeMutation.isPending && removeMutation.variables?.id === device.id ? "Signing out…" : "Sign out"}
+                  </HuginnButton>
+               </div>
+            ))}
+            {devices?.length === 0 && <div className="text-text/70 text-sm">No active devices found.</div>}
+         </div>
       </div>
    );
-}
-
-function deviceName(userAgent: string | null): string {
-   if (!userAgent) return "Unknown device";
-   const platform = /Android/i.test(userAgent)
-      ? "Android"
-      : /iPhone|iPad/i.test(userAgent)
-        ? "iOS"
-        : /Windows/i.test(userAgent)
-          ? "Windows"
-          : /Mac OS X|Macintosh/i.test(userAgent)
-            ? "macOS"
-            : /Linux/i.test(userAgent)
-              ? "Linux"
-              : "Unknown platform";
-   const app = /Electron/i.test(userAgent)
-      ? "Huginn Desktop"
-      : /Chrome/i.test(userAgent)
-        ? "Chrome"
-        : /Firefox/i.test(userAgent)
-          ? "Firefox"
-          : /Safari/i.test(userAgent)
-            ? "Safari"
-            : "Browser";
-   return `${app} on ${platform}`;
 }

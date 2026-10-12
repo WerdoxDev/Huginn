@@ -12,8 +12,9 @@ export function useLogout() {
 
    const logoutMutation = useHuginnMutation({
       async mutationFn() {
+         const reset = client?.gateway.waitForAnyEvents(["reset"]);
          await client?.logout();
-         await client?.gateway.waitForAnyEvents(["reset"]);
+         await reset;
          await client?.gateway.connect();
       },
    });

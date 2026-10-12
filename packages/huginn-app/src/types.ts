@@ -594,6 +594,7 @@ export type ApplicationInfo = ProcessInfo & { icon: string | null; displayName: 
 export type OsInfo = {
    platform: string;
    arch: string;
+   hostname: string;
    version: string;
    chromeVersion: string;
    electronVersion: string;

@@ -131,11 +131,11 @@ export async function initializeClient() {
          url: thisStore.urls!.gateway,
          intents: 0,
          properties: {
-            browser: ENV_TO_BROWSER_MAP[huginnWindowStore.environment],
             os: platform,
             osVersion: osVersion,
             osArch: arch,
-            device: deviceInfo?.model ?? ENV_TO_BROWSER_MAP[huginnWindowStore.environment] ?? undefined,
+            device: osInfo?.hostname ?? deviceInfo?.model ?? undefined,
+            client: ENV_TO_BROWSER_MAP[huginnWindowStore.environment] ?? undefined,
             browserUserAgent: navigator.userAgent,
             browserVersion: chromeVersion,
             electronVersion: electronVersion,

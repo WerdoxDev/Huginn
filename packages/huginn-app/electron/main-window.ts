@@ -4,6 +4,7 @@ import log from "electron-log";
 import electronUpdater, { CancellationToken } from "electron-updater";
 import loopback, { type LoopbackCapture } from "loopback-capture";
 import native from "native-addon";
+import os from "node:os";
 import path from "node:path";
 
 import type { AudioSource, DisplaySource, OsInfo } from "@/types";
@@ -309,6 +310,7 @@ export class MainWindow extends BaseWindow {
          return {
             platform: process.platform,
             arch: process.arch,
+            hostname: os.hostname(),
             version: process.getSystemVersion(),
             chromeVersion: process.versions.chrome,
             electronVersion: process.versions.electron,
