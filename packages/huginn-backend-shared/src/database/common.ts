@@ -253,6 +253,7 @@ export const selectAuthSession = {
    clientOs: true,
    ipAddress: true,
    authType: true,
+   authProvider: true,
    createdAt: true,
    lastSeenAt: true,
 } satisfies Prisma.AuthSessionSelect;

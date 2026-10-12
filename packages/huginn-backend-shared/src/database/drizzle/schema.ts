@@ -25,6 +25,7 @@ export const authSession = pgTable(
       userId: bigint({ mode: "bigint" }).notNull(),
       refreshTokenHash: text().notNull(),
       authType: text().notNull(),
+      authProvider: text(),
       authenticatedAt: timestamp({ precision: 3, mode: "date" }).notNull(),
       userAgent: text(),
       deviceName: text(),

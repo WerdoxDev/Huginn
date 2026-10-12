@@ -10,13 +10,15 @@ export const OAUTH_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.O
 export const CDN_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.CDN_TOKEN_SECRET ?? "");
 export const VOICE_TOKEN_SECRET_ENCODED = new TextEncoder().encode(process.env.VOICE_TOKEN_SECRET ?? "");
 
-export type TokenType = "user-access" | "user-refresh" | "oauth" | "cdn" | "voice";
+export type TokenType = "user-access" | "user-refresh" | "oauth" | "oauth-link" | "cdn" | "voice";
 export type TokenPayload<Type extends TokenType> = Type extends "user-access"
    ? UserTokenPayload
    : Type extends "user-refresh"
      ? UserRefreshTokenPayload
      : Type extends "oauth"
        ? OAuthTokenPayload
+       : Type extends "oauth-link"
+         ? { userId: Snowflake; sessionId: Snowflake; purpose: "connect-google" }
        : Type extends "voice"
          ? { userId: Snowflake }
          : any;
@@ -26,6 +28,7 @@ const tokenSecrets: Record<TokenType, Uint8Array<ArrayBufferLike>> = {
    "user-refresh": REFRESH_TOKEN_SECRET_ENCODED,
    cdn: CDN_TOKEN_SECRET_ENCODED,
    oauth: OAUTH_TOKEN_SECRET_ENCODED,
+   "oauth-link": OAUTH_TOKEN_SECRET_ENCODED,
    voice: VOICE_TOKEN_SECRET_ENCODED,
 };
 

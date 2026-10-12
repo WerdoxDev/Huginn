@@ -73,6 +73,7 @@ model AuthSession {
   userId           BigInt
   refreshTokenHash String    @unique
   authType         String
+  authProvider     String?
   authenticatedAt  DateTime
   userAgent        String?
   deviceName       String?
