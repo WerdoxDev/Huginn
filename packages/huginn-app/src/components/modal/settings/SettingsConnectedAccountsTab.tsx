@@ -1,49 +1,58 @@
-import type { APIGetAuthMethodsResult, OAuthType } from "@huginnjs/shared";
+import type { OAuthType } from "@huginnjs/shared";
 
-import { HuginnButton } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
-import { useEffect, useState } from "react";
+import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 const providerNames: Record<OAuthType, string> = { google: "Google", github: "GitHub" };
 
 export default function SettingsConnectedAccountsTab() {
    const client = useClient();
-   const [methods, setMethods] = useState<APIGetAuthMethodsResult>();
-   const [error, setError] = useState(false);
-   const [retry, setRetry] = useState(0);
+   const { user } = useThisUser();
+   const { updateModals } = useModals();
+
+   const {
+      data: methods,
+      isError,
+      errorUpdatedAt,
+      refetch,
+   } = useQuery({
+      queryKey: ["auth-methods", user?.id],
+      queryFn: () => client!.users.getAuthMethods(),
+      enabled: !!client && !!user,
+      staleTime: 5 * 60 * 1000,
+      refetchOnMount: true,
+      retry: false,
+   });
 
    useEffect(() => {
-      if (!client) return;
-      let active = true;
-      client.users.getAuthMethods().then(
-         (result) => {
-            if (!active) return;
-            setMethods(result);
-            setError(false);
+      if (!isError) return;
+      updateModals({
+         info: {
+            isOpen: true,
+            status: "error",
+            title: "Could not load sign-in methods",
+            text: "Could not load your sign-in methods. Please try again.",
+            action: {
+               confirm: {
+                  text: "Try again",
+                  callback: () => {
+                     updateModals({ info: { isOpen: false } });
+                     void refetch();
+                  },
+               },
+            },
          },
-         () => {
-            if (!active) return;
-            setError(true);
-         },
-      );
-      return () => {
-         active = false;
-      };
-   }, [client, retry]);
+      });
+   }, [isError, errorUpdatedAt, refetch, updateModals]);
 
    return (
       <div className="text-text w-full max-w-xl space-y-5 pr-4">
          <p className="text-text/70 text-sm">See the ways you can sign in to this Huginn account.</p>
-         {error && (
-            <div className="bg-surface-alt rounded-lg p-4 text-sm">
-               <p>Could not load your sign-in methods.</p>
-               <HuginnButton className="mt-3 px-3 py-1.5" color="surface" onClick={() => setRetry((value) => value + 1)}>
-                  Try again
-               </HuginnButton>
-            </div>
-         )}
-         {!methods && !error && <p className="text-text/70 text-sm">Loading sign-in methods…</p>}
-         {methods && !error && (
+         {!methods && !isError && <p className="text-text/70 text-sm">Loading sign-in methods…</p>}
+         {methods && !isError && (
             <>
                <div className="bg-surface-alt rounded-lg p-4">
                   <h3 className="font-medium">Password</h3>

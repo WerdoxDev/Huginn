@@ -3,65 +3,84 @@ import type { APIDevice } from "@huginnjs/shared";
 import { useLogout } from "@hooks/useLogout";
 import { HuginnButton } from "@huginn/frontend-shared";
 import { useClient } from "@stores/clientStore";
-import { useEffect, useState } from "react";
+import { useModals } from "@stores/modalsStore";
+import { useThisUser } from "@stores/userStore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export default function SettingsDevicesTab() {
    const client = useClient();
+   const { user } = useThisUser();
    const logout = useLogout();
-   const [devices, setDevices] = useState<APIDevice[]>();
-   const [error, setError] = useState<string>();
-   const [busyId, setBusyId] = useState<string>();
-   const [retry, setRetry] = useState(0);
+   const { updateModals } = useModals();
+   const queryClient = useQueryClient();
+   const devicesQueryKey = ["devices", user?.id];
+
+   const {
+      data: devices,
+      isError: isDevicesError,
+      errorUpdatedAt,
+      refetch,
+   } = useQuery({
+      queryKey: devicesQueryKey,
+      queryFn: () => client!.users.getDevices(),
+      enabled: !!client && !!user,
+      staleTime: 5 * 60 * 1000,
+      refetchOnMount: true,
+      retry: false,
+   });
 
    useEffect(() => {
-      if (!client) return;
-      let active = true;
-      client.users.getDevices().then(
-         (result) => {
-            if (active) {
-               setDevices(result);
-               setError(undefined);
-            }
+      if (!isDevicesError) return;
+      updateModals({
+         info: {
+            isOpen: true,
+            status: "error",
+            title: "Could not load devices",
+            text: "Could not load your devices. Please try again.",
+            action: {
+               confirm: {
+                  text: "Try again",
+                  callback: () => {
+                     updateModals({ info: { isOpen: false } });
+                     void refetch();
+                  },
+               },
+            },
          },
-         () => {
-            if (active) setError("Could not load your devices.");
-         },
-      );
-      return () => {
-         active = false;
-      };
-   }, [client, retry]);
+      });
+   }, [isDevicesError, errorUpdatedAt, refetch, updateModals]);
 
-   async function remove(device: APIDevice) {
-      if (!client || busyId) return;
-      setBusyId(device.id);
-      setError(undefined);
-      try {
+   const removeMutation = useMutation({
+      mutationKey: ["logout-device"],
+      async mutationFn(device: APIDevice) {
          if (device.current) {
             await logout();
          } else {
-            await client.users.logoutDevice(device.id);
-            setDevices((current) => current?.filter((item) => item.id !== device.id));
+            await client!.users.logoutDevice(device.id);
          }
-      } catch {
-         setError("Could not sign out this device. Try again.");
-      } finally {
-         setBusyId(undefined);
-      }
-   }
+      },
+      onSuccess(_result, device) {
+         if (!device.current) {
+            queryClient.setQueryData<APIDevice[]>(devicesQueryKey, (current) => current?.filter((item) => item.id !== device.id));
+         }
+      },
+      onError() {
+         updateModals({
+            info: {
+               isOpen: true,
+               status: "error",
+               title: "Could not sign out device",
+               text: "Could not sign out this device. Please try again.",
+            },
+         });
+      },
+   });
 
    return (
       <div className="text-text w-full max-w-xl space-y-4 pr-4">
          <p className="text-text/70 text-sm">Devices with an active sign-in to your account.</p>
-         {error && (
-            <div className="bg-surface-alt rounded-lg p-4 text-sm">
-               <p>{error}</p>
-               <HuginnButton className="mt-3 px-3 py-1.5" color="surface" onClick={() => setRetry((value) => value + 1)}>
-                  Try again
-               </HuginnButton>
-            </div>
-         )}
-         {!devices && !error && <p className="text-text/70 text-sm">Loading devices…</p>}
+         {!devices && !isDevicesError && <p className="text-text/70 text-sm">Loading devices…</p>}
          {devices?.map((device) => (
             <div key={device.id} className="bg-surface-alt flex items-center justify-between gap-4 rounded-lg p-4">
                <div className="min-w-0">
@@ -79,8 +98,8 @@ export default function SettingsDevicesTab() {
                      {" · "}Last active {new Date(device.lastSeenAt).toLocaleString()}
                   </p>
                </div>
-               <HuginnButton color="surface" disabled={!!busyId} onClick={() => void remove(device)}>
-                  {busyId === device.id ? "Signing out…" : "Sign out"}
+               <HuginnButton color="surface" disabled={removeMutation.isPending} onClick={() => removeMutation.mutate(device)}>
+                  {removeMutation.isPending && removeMutation.variables?.id === device.id ? "Signing out…" : "Sign out"}
                </HuginnButton>
             </div>
          ))}
