@@ -86,7 +86,7 @@ const initialStore = () => ({
       pendingEmail: string | null;
       onSuccess?: () => Promise<void> | void;
    },
-   changePassword: { isOpen: false } as DefaultModal,
+   changePassword: { isOpen: false, removePassword: false } as DefaultModal & { removePassword: boolean },
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
    changeBackground: { isOpen: false, channelId: null } as DefaultModal & { channelId: Snowflake | null },
 });

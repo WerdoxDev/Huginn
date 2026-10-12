@@ -9,11 +9,15 @@ import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
+import { useLogout } from "@hooks/useLogout";
 import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginnjs/shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
+import { getAuthMethodsOptions } from "@lib/queries";
+import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
@@ -23,8 +27,11 @@ type EditingField = "username" | "displayName" | "email" | "password";
 
 export default function SettingsProfileTab() {
    const { user, tokenPayload } = useThisUser();
+   const client = useClient();
    const { updateModals } = useModals();
+   const logout = useLogout();
    const isOAuth = useIsOAuth();
+   const { data: authMethods, isError: authMethodsError } = useQuery(getAuthMethodsOptions(client!));
    const { openFileDialog } = useFileDialog("image");
 
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
@@ -76,7 +83,66 @@ export default function SettingsProfileTab() {
       if (field === "username") updateModals({ changeUsername: { isOpen: true } });
       else if (field === "displayName") updateModals({ changeDisplayName: { isOpen: true } });
       else if (field === "email") updateModals({ changeEmail: { isOpen: true } });
-      else if (field === "password") updateModals({ changePassword: { isOpen: true } });
+      else if (field === "password") updateModals({ changePassword: { isOpen: true, removePassword: false } });
+   }
+
+   async function handleRemovePassword() {
+      if (authMethods?.providers.every((x) => !x.connected || !x.available)) {
+         updateModals({
+            info: {
+               isOpen: true,
+               status: "error",
+               title: "Cannot remove password",
+               text: "You must have at least one connected OAuth provider to remove your password.",
+            },
+         });
+         return;
+      }
+
+      updateModals({
+         info: {
+            isOpen: true,
+            status: "info",
+            title: "Remove Password",
+            text: (
+               <div>
+                  Are you sure you want to remove your password?{" "}
+                  <span className="font-bold">You will have to sign in again using a configured OAuth provider</span>.
+               </div>
+            ),
+            action: {
+               confirm: {
+                  text: "Remove",
+                  callback: async () => {
+                     if (tokenPayload?.authType === "password") {
+                        updateModals({ info: { isOpen: false }, changePassword: { isOpen: true, removePassword: true } });
+                        return;
+                     }
+
+                     try {
+                        await mutation.mutateAsync({ newPassword: null });
+                     } catch {
+                        updateModals({
+                           info: {
+                              isOpen: true,
+                              status: "error",
+                              title: "Could not remove password",
+                              text: "Could not remove your password. Please try again.",
+                           },
+                        });
+                        return;
+                     }
+                     updateModals({ info: { isOpen: false } });
+                     await logout();
+                  },
+               },
+               cancel: {
+                  text: "Cancel",
+                  callback: () => updateModals({ info: { isOpen: false } }),
+               },
+            },
+         },
+      });
    }
 
    async function handleEditAvatar() {
@@ -391,21 +457,36 @@ export default function SettingsProfileTab() {
                      </div>
                      <ChangeButton onClick={() => handleEditField("email")} />
                   </div>
-                  {!isOAuth && (
-                     <>
-                        <div className="bg-surface my-4 h-px w-full" />
-                        <div className="flex w-full items-center justify-between gap-x-2">
-                           <div className="flex w-full flex-col items-start justify-center">
-                              <HuginnLabel className="mb-0!">Password</HuginnLabel>
-                              <div className="text-white">****</div>
-                           </div>
-                           <ChangeButton onClick={() => handleEditField("password")} />
+                  <div className="bg-surface my-4 h-px w-full" />
+                  <div className="flex w-full items-center justify-between gap-x-2">
+                     <div className="flex w-full flex-col items-start justify-center">
+                        <HuginnLabel className="mb-0!">Password</HuginnLabel>
+                        <div className="text-white">
+                           {isOAuth
+                              ? authMethods
+                                 ? authMethods.password.configured
+                                    ? "Set up"
+                                    : "Not set up"
+                                 : authMethodsError
+                                   ? "Status unavailable"
+                                   : "Checking..."
+                              : "****"}
                         </div>
-                     </>
-                  )}
+                     </div>
+                     {authMethods?.password.configured && (
+                        <HuginnButton className="h-8 px-3" color="negative" onClick={handleRemovePassword}>
+                           Remove
+                        </HuginnButton>
+                     )}
+                     <ChangeButton
+                        label={isOAuth && authMethods?.password.configured === false ? "Set" : "Change"}
+                        onClick={() => handleEditField("password")}
+                     />
+                  </div>
                   <div className="bg-surface my-4 h-px w-full" />
                   <div className="text-text/50 text-xs uppercase">
                      Auth method: <span className="font-semibold">{tokenPayload?.authType}</span>
+                     {tokenPayload?.authProvider && <span className="font-semibold"> ({tokenPayload.authProvider})</span>}
                   </div>
                </div>
             </div>
@@ -414,10 +495,10 @@ export default function SettingsProfileTab() {
    );
 }
 
-function ChangeButton(props: { onClick?: () => void }) {
+function ChangeButton(props: { onClick?: () => void; label?: string }) {
    return (
       <HuginnButton className="h-8 px-3" color="surface" onClick={props.onClick}>
-         Change
+         {props.label ?? "Change"}
       </HuginnButton>
    );
 }

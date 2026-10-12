@@ -1,7 +1,8 @@
 import type { APIDevice } from "@huginnjs/shared";
 
 import { useLogout } from "@hooks/useLogout";
-import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { HuginnLoadingButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
+import { getDevicesOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -18,22 +19,7 @@ export default function SettingsDevicesTab() {
    const queryClient = useQueryClient();
    const devicesQueryKey = ["devices", user?.id];
 
-   const {
-      data: devices,
-      isError: isDevicesError,
-      errorUpdatedAt,
-      refetch,
-   } = useQuery({
-      queryKey: devicesQueryKey,
-      queryFn: async () => {
-         await new Promise((resolve) => setTimeout(resolve, 5000));
-         return client!.users.getDevices();
-      },
-      enabled: !!client && !!user,
-      staleTime: 5 * 60 * 1000,
-      refetchOnMount: true,
-      retry: false,
-   });
+   const { data: devices, isError: isDevicesError, errorUpdatedAt, refetch } = useQuery(getDevicesOptions(client!));
 
    useEffect(() => {
       if (!isDevicesError) return;
@@ -112,7 +98,7 @@ export default function SettingsDevicesTab() {
    return (
       <div className="flex w-full flex-col items-center">
          <div className="flex w-full max-w-xl flex-col gap-y-4">
-            <div className="text-text/70">Devices with an active sign-in to your account.</div>
+            {devices && <div className="text-text/70">Devices with an active sign-in to your account.</div>}
             {!devices && !isDevicesError && (
                <div className="flex items-center justify-center gap-x-2">
                   <div className="text-text">Loading devices…</div>
@@ -149,15 +135,19 @@ export default function SettingsDevicesTab() {
                         Last active <span className="text-text/80">{moment(device.lastSeenAt).format("MM.DD.YYYY [at] h:mm A")}</span> (
                         {moment(device.lastSeenAt).fromNow()})
                      </div>
+                     <div className="text-text/70 text-sm">
+                        Signed in with {device.authProvider === "google" ? "Google" : device.authType === "password" ? "password" : "OAuth"}
+                     </div>
                   </div>
-                  <HuginnButton
+                  <HuginnLoadingButton
                      color="negative"
                      className="ml-auto shrink-0 px-2 py-1"
                      disabled={removeMutation.isPending}
+                     isLoading={removeMutation.isPending && removeMutation.variables?.id === device.id}
                      onClick={() => confirmSignOut(device)}
                   >
-                     {removeMutation.isPending && removeMutation.variables?.id === device.id ? "Signing out…" : "Sign out"}
-                  </HuginnButton>
+                     Sign out
+                  </HuginnLoadingButton>
                </div>
             ))}
             {devices?.length === 0 && <div className="text-text/70 text-sm">No active devices found.</div>}

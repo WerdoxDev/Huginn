@@ -12,7 +12,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 }));
 
 vi.mock("./useHuginnMutation", () => ({
-   useHuginnMutation: ({ mutationFn }: { mutationFn: () => Promise<void> }) => ({ mutateAsync: mutationFn }),
+   useHuginnMutation: ({ mutationFn }: { mutationFn: (options: { alreadyRevoked?: boolean }) => Promise<void> }) => ({ mutateAsync: mutationFn }),
 }));
 
 describe("useLogout", () => {
@@ -24,6 +24,7 @@ describe("useLogout", () => {
    it("navigates to login when the gateway resets during the logout request", async () => {
       let notifyReset: (() => void) | undefined;
       const gateway = {
+         isConnected: true,
          waitForAnyEvents: vi.fn(
             () =>
                new Promise<{ event: "reset"; data: undefined }>((resolve) => {
@@ -51,5 +52,52 @@ describe("useLogout", () => {
       expect(gateway.waitForAnyEvents).toHaveBeenCalledWith(["reset"]);
       expect(client.logout).toHaveBeenCalledOnce();
       expect(gateway.connect).toHaveBeenCalledOnce();
+   });
+
+   it("clears an already revoked session without another logout request or gateway reset wait", async () => {
+      const gateway = {
+         isConnected: true,
+         waitForAnyEvents: vi.fn(),
+         connect: vi.fn(),
+      };
+      const client = {
+         gateway,
+         voice: { status: "connected" },
+         voiceManager: { disconnectVoice: vi.fn().mockRejectedValue(new Error("voice already disconnected")) },
+         logout: vi.fn(),
+         clearSessionLocally: vi.fn(),
+      };
+      clientStore.setState({ client: client as unknown as ReturnType<typeof clientStore.getState>["client"] });
+      const { result } = renderHook(() => useLogout());
+
+      await result.current({ alreadyRevoked: true });
+
+      expect(client.clearSessionLocally).toHaveBeenCalledOnce();
+      expect(client.voiceManager.disconnectVoice).toHaveBeenCalledOnce();
+      expect(client.logout).not.toHaveBeenCalled();
+      expect(gateway.waitForAnyEvents).not.toHaveBeenCalled();
+      expect(gateway.connect).not.toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
+   });
+
+   it("does not wait for a gateway reset when the gateway is already disconnected", async () => {
+      const gateway = {
+         isConnected: false,
+         waitForAnyEvents: vi.fn(),
+         connect: vi.fn(),
+      };
+      const client = {
+         gateway,
+         voice: { status: "idle" },
+         logout: vi.fn(),
+      };
+      clientStore.setState({ client: client as unknown as ReturnType<typeof clientStore.getState>["client"] });
+      const { result } = renderHook(() => useLogout());
+
+      await result.current();
+
+      expect(client.logout).toHaveBeenCalledOnce();
+      expect(gateway.waitForAnyEvents).not.toHaveBeenCalled();
+      expect(gateway.connect).not.toHaveBeenCalled();
    });
 });

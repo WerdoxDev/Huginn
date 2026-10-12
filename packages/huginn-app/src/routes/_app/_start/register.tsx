@@ -1,4 +1,5 @@
-import type { APIPostRegisterJSONBody, OAuthType } from "@huginnjs/shared";
+import type { OAuthProvider } from "@huginnjs/api";
+import type { APIPostRegisterJSONBody } from "@huginnjs/shared";
 
 import LinkButton from "@components/button/LinkButton";
 import PasswordInput from "@components/input/PasswordInput";
@@ -45,11 +46,11 @@ function RegisterComponent() {
             });
          },
          async onSuccess(result, variables) {
-            // we may skip email verification.
-            if (result?.token && result?.refreshToken) {
-               await initializeClient({ navigatePath: "/channels/@me" });
-               return;
-            }
+            // // we may skip email verification.
+            // if (result?.token && result?.refreshToken) {
+            //    await initializeClient({ navigatePath: "/channels/@me" });
+            //    return;
+            // }
 
             updateModals({
                verifyEmail: {
@@ -76,8 +77,8 @@ function RegisterComponent() {
       });
    }
 
-   async function handleOAuth(type: OAuthType) {
-      const result = await startOAuth(type);
+   async function handleOAuth(provider: OAuthProvider) {
+      const result = await startOAuth(provider);
       let search: URLSearchParams | undefined;
 
       if (result?.access_token && result.refresh_token) {

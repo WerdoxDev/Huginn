@@ -5,7 +5,7 @@ import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
-import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginnjs/shared";
+import { JsonCode, type OAuthProvider, type HuginnErrorData } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";
@@ -43,7 +43,7 @@ export default function ChangeUsernameModal() {
 
    async function onError(error: HuginnErrorData) {
       if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
-         const result = await startOAuth(tokenPayload?.authType as OAuthType);
+         const result = await startOAuth(tokenPayload?.authType as OAuthProvider);
          if (result) await handleSubmit(onSubmit)();
       } else handleErrors(error);
    }

@@ -1,4 +1,4 @@
-import type { OAuthFlow, OAuthResult, OAuthType } from "@huginnjs/shared";
+import type { OAuthFlow, OAuthResult, OAuthProvider } from "@huginnjs/shared";
 
 import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
@@ -14,16 +14,15 @@ export function useOAuth() {
    const posthog = usePostHog();
    const canceled = useRef(false);
 
-   async function startOAuth(type: OAuthType) {
+   async function startOAuth(provider: OAuthProvider, linkToken?: string, openedWindow?: Window | null) {
       if (!client) return;
       canceled.current = false;
 
-      posthog.capture("oauth:oauth_flow_start", { type: type });
+      posthog.capture("oauth:oauth_flow_start", { provider });
 
+      const redirectUrl = import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
       const flow: OAuthFlow = huginnWindow.environment === "browser" ? "browser" : "desktop";
-      const redirectUrl =
-         import.meta.env.DEV && flow === "browser" ? `${window.location.origin}/redirect` : import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
-      const url = client.oauth.getOAuthURL(type, flow, `${redirectUrl}`);
+      const url = linkToken ? client.oauth.getConnectOAuthURL(provider, flow, `${redirectUrl}`, linkToken) : client.oauth.getOAuthURL(provider, flow, `${redirectUrl}`);
 
       updateModals({
          info: {
@@ -37,6 +36,7 @@ export function useOAuth() {
                   text: "Cancel",
                   callback: () => {
                      canceled.current = true;
+                     openedWindow?.close();
                      updateModals({ info: { isOpen: false } });
                   },
                },
@@ -45,7 +45,8 @@ export function useOAuth() {
       });
 
       if (huginnWindow.environment !== "desktop") {
-         window.open(url, "_blank");
+         if (openedWindow && !openedWindow.closed) openedWindow.location.href = url;
+         else window.open(url, "_blank");
       } else {
          window.electronAPI.openExternal(url);
       }
@@ -69,6 +70,8 @@ export function useOAuth() {
          const oauth_token = actualUrl.searchParams.get("oauth_token") ?? undefined;
          const access_token = actualUrl.searchParams.get("access_token") ?? undefined;
          const refresh_token = actualUrl.searchParams.get("refresh_token") ?? undefined;
+         const connected = (actualUrl.searchParams.get("connected") ?? undefined) as OAuthProvider | undefined;
+         const error = actualUrl.searchParams.get("error") ?? undefined;
          localStorage.setItem(
             "oauth-confirm",
             JSON.stringify({
@@ -76,6 +79,8 @@ export function useOAuth() {
                oauth_token,
                access_token,
                refresh_token,
+               connected,
+               error,
             } satisfies OAuthResult),
          );
 
@@ -86,13 +91,16 @@ export function useOAuth() {
          const interval = window.setInterval(() => {
             if (canceled.current === true) {
                clearInterval(interval);
+               unlisten();
                res(null);
+               return;
             }
 
             const oauth = localStorage.getItem("oauth-confirm");
             if (oauth) {
                localStorage.removeItem("oauth-confirm");
                clearInterval(interval);
+               unlisten();
                updateModals({ info: { isOpen: false } });
 
                const value = JSON.parse(oauth);

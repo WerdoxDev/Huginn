@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { HuginnClient } from "@huginnjs/api";
-import { type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
+import { analytics, type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
 import { fetchInstanceUrls, probeInstanceUrls, tryAccessAddresses } from "@lib/instances";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
@@ -17,6 +17,16 @@ import { clearUserStore } from "./userStore";
 import { windowStore } from "./windowStore";
 
 const store = clientStore;
+
+async function handleRevokedSession(): Promise<void> {
+   localStorage.removeItem("refresh-token");
+   localStorage.removeItem("access-token");
+   store.getState().client?.clearSessionLocally();
+   clearUserStore();
+   analytics.reset();
+   const { router } = await import("@/router");
+   await router.navigate({ to: "/login", replace: true });
+}
 
 function setClientUrls(urls: InstanceUrls) {
    store.setState({
@@ -217,6 +227,8 @@ export async function initializeClient() {
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
          await queryClient.invalidateQueries({ queryKey: ["application-contributions", "@me"], exact: true, refetchType: "all" });
+         await queryClient.invalidateQueries({ queryKey: ["auth-methods"] });
+         await queryClient.invalidateQueries({ queryKey: ["devices"] });
       }),
    );
 
@@ -259,15 +271,7 @@ export async function initializeClient() {
    );
 
    unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.setState({ gatewayStatus: status })));
-   unlisteners.push(
-      thisStore.client?.gateway.listen("session_revoked", async () => {
-         if (!localStorage.getItem("refresh-token")) return;
-         await client.logout();
-         clearUserStore();
-         const { router } = await import("@/router");
-         await router.navigate({ to: "/login", replace: true });
-      }),
-   );
+   unlisteners.push(thisStore.client?.gateway.listen("session_revoked", handleRevokedSession));
    unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.setState({ voiceStatus: status })));
    store.setState({ gatewayStatus: thisStore.client?.gateway.status, voiceStatus: thisStore.client?.voice.status });
 

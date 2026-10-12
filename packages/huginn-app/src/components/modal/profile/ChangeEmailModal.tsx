@@ -4,7 +4,7 @@ import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useOAuth } from "@hooks/useOAuth";
 import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
-import { JsonCode, type OAuthType, type HuginnErrorData } from "@huginnjs/shared";
+import { JsonCode, type OAuthProvider, type HuginnErrorData } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 
@@ -39,7 +39,7 @@ export default function ChangeEmailModal() {
 
    async function onError(error: HuginnErrorData) {
       if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
-         const result = await startOAuth(tokenPayload?.authType as OAuthType);
+         const result = await startOAuth(tokenPayload?.authType as OAuthProvider);
          if (result) await handleSubmit(onSubmit)();
       } else handleErrors(error);
       return true;

@@ -1,4 +1,4 @@
-import type { APIPostLoginJSONBody, OAuthType } from "@huginnjs/shared";
+import type { APIPostLoginJSONBody, OAuthProvider } from "@huginnjs/shared";
 
 import LinkButton from "@components/button/LinkButton";
 import PasswordInput from "@components/input/PasswordInput";
@@ -73,7 +73,7 @@ function LoginComponent() {
       });
    }
 
-   async function handleOAuth(type: OAuthType) {
+   async function handleOAuth(type: OAuthProvider) {
       const result = await startOAuth(type);
       let search: { access_token: string; refresh_token: string } | { oauth_token: string } | undefined;
 
