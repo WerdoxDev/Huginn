@@ -195,7 +195,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
       return await analytics.startActiveSpan("gateway.handleIdentify", async (span) => {
          span.setAttributes({
             ...session.getDefaultAttributes(),
-            "params.properties.browser": data.properties.browser,
+            "params.properties.client": data.properties.client,
             "params.properties.os": data.properties.os,
             "params.properties.device": data.properties.device,
          });
@@ -225,7 +225,13 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             session.authSessionId = payload.sessionId;
             const updatedSession = await prisma.authSession.updateMany({
                where: { id: BigInt(payload.sessionId), userId: BigInt(user.id), revokedAt: null },
-               data: { deviceName: `${data.properties.device || data.properties.browser} on ${data.properties.os}`.slice(0, 128), lastSeenAt: new Date() },
+               data: {
+                  deviceName: data.properties.device,
+                  lastSeenAt: new Date(),
+                  clientOs: data.properties.os,
+                  clientName: data.properties.client,
+                  ipAddress: session.peer.remoteAddress,
+               },
             });
             if (!updatedSession.count) {
                session.peer.close(GatewayCode.INVALID_SESSION, "SESSION_REVOKED");
