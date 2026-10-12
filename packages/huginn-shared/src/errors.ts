@@ -127,6 +127,9 @@ export enum VoiceSignallingError {
 
 export enum OAuthCode {
    CANCELLED = "CANCELLED",
+   ACCOUNT_ALREADY_CONNECTED = "ACCOUNT_ALREADY_CONNECTED",
+   PROVIDER_ALREADY_CONNECTED = "PROVIDER_ALREADY_CONNECTED",
+   LINK_EXPIRED = "LINK_EXPIRED",
 }
 
 // Detailed errors that happen to a normal user
@@ -167,6 +170,15 @@ export const Fields = {
 
 // Mostly api related errors. Users will very rarely see these
 export const Errors = {
+   oauthProviderAlreadyConnected(): [string, JsonCode] {
+      return ["This provider is already connected", JsonCode.NONE];
+   },
+   oauthProviderNotConnected(): [string, JsonCode] {
+      return ["This provider is not connected", JsonCode.NONE];
+   },
+   cannotRemoveLastAuthMethod(): [string, JsonCode] {
+      return ["Cannot remove the last sign-in method", JsonCode.NONE];
+   },
    unauthorized(): [string, JsonCode] {
       return ["Unauthorized", JsonCode.NONE];
    },

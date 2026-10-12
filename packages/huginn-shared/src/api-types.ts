@@ -6,12 +6,13 @@ export type LoginCredentials = APIPostLoginJSONBody;
 export type RegisterUser = APIPostRegisterJSONBody;
 
 export type DirectChannel = APIDMChannel | APIGroupDMChannel;
-export type AuthType = "password" | OAuthType;
+export type AuthType = "password" | "oauth";
 
 export type UserTokenPayload = {
    id: Snowflake;
    sessionId: Snowflake;
    authType: AuthType;
+   authProvider?: OAuthProvider;
    lastAuthenticatedAt: number;
 };
 
@@ -20,6 +21,7 @@ export type UserRefreshTokenPayload = {
    sessionId: Snowflake;
    tokenId: string;
    authType: AuthType;
+   authProvider?: OAuthProvider;
    lastAuthenticatedAt: number;
 };
 
@@ -83,8 +85,9 @@ export type APIGetCurrentUserResult = APIUser;
 export type APIGetUserByIdResult = APIPublicUser;
 export type APIGetAuthMethodsResult = {
    password: { configured: boolean };
-   providers: { type: OAuthType; connected: boolean; available: boolean }[];
+   providers: { type: OAuthProvider; connected: boolean; available: boolean }[];
 };
+export type APIPostConnectOAuthProviderResult = { linkToken: string };
 export type APIDevice = {
    id: string;
    userAgent: string | null;
@@ -93,6 +96,7 @@ export type APIDevice = {
    clientOs: string | null;
    ipAddress: string | null;
    authType: AuthType;
+   authProvider: OAuthProvider | null;
    createdAt: string;
    lastSeenAt: string;
    current: boolean;
@@ -130,7 +134,7 @@ export type APIPatchCurrentUserJSONBody = {
    accentColor?: string | null;
    bio?: string | null;
    password?: string;
-   newPassword?: string;
+   newPassword?: string | null;
 };
 
 export type APIPostOAuthConfirmJSONBody = {
@@ -470,13 +474,15 @@ export type Activity = {
 
 // export type ActivityWithoutSessionId = Omit<Activity, "sessionId">;
 
-export type OAuthType = "google" | "github";
+export type OAuthProvider = "google" | "github";
 export type OAuthFlow = "browser" | "desktop";
 export type OAuthResult = {
    flow: OAuthFlow;
    access_token?: string;
    refresh_token?: string;
    oauth_token?: string;
+   connected?: OAuthProvider;
+   error?: string;
 };
 
 export type APIReadState = {

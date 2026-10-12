@@ -1,3 +1,4 @@
+import type { OAuthProvider } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export type RouteLike = `/${string}`;
@@ -73,12 +74,20 @@ export const Routes = {
       return "/users/@me/auth-methods" as const;
    },
 
+   authMethod(provider: OAuthProvider): `/users/@me/auth-methods/${OAuthProvider}` {
+      return `/users/@me/auth-methods/${provider}`;
+   },
+
+   connectAuthMethod(provider: OAuthProvider): `/users/@me/auth-methods/${OAuthProvider}/connect` {
+      return `/users/@me/auth-methods/${provider}/connect`;
+   },
+
    devices() {
       return "/users/@me/devices" as const;
    },
 
-   device(id: string) {
-      return `/users/@me/devices/${encodeURIComponent(id)}` as const;
+   device(id: Snowflake): `/users/@me/devices/${string}` {
+      return `/users/@me/devices/${id}` as const;
    },
 
    /**
