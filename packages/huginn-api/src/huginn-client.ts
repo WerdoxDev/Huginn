@@ -217,6 +217,10 @@ export class HuginnClient<V extends Voice = Voice> {
       this.gateway.close();
    }
 
+   public clearSessionLocally(): void {
+      this.cleanup();
+   }
+
    public async login(credentials: LoginCredentials): Promise<APIPostLoginResult> {
       const result = await this.auth.login(credentials);
 
@@ -240,7 +244,7 @@ export class HuginnClient<V extends Voice = Voice> {
       } catch {
          console.warn("logout failed but session was cleared anyway");
       } finally {
-         this.cleanup();
+         this.clearSessionLocally();
       }
    }
 

@@ -1,5 +1,6 @@
 import {
    type APIGetAuthMethodsResult,
+   type APIPostConnectOAuthProviderResult,
    type APIGetDevicesResult,
    type APIGetCurrentUserResult,
    type APIGetProfileResult,
@@ -10,6 +11,7 @@ import {
    type APIPatchUserSettingsResult,
    type APIPostVerifyEmailJSONBody,
    type APIPostVerifyEmailResult,
+   type OAuthProvider,
    Routes,
    type Snowflake,
    resolveImage,
@@ -38,6 +40,14 @@ export class UserAPI {
 
    public async getAuthMethods(): Promise<APIGetAuthMethodsResult> {
       return this.rest.get(Routes.authMethods(), { auth: true }) as Promise<APIGetAuthMethodsResult>;
+   }
+
+   public async connectOAuthProvider(provider: OAuthProvider): Promise<APIPostConnectOAuthProviderResult> {
+      return this.rest.post(Routes.connectAuthMethod(provider), { auth: true }) as Promise<APIPostConnectOAuthProviderResult>;
+   }
+
+   public async disconnectOAuthProvider(provider: OAuthProvider): Promise<void> {
+      await this.rest.delete(Routes.authMethod(provider), { auth: true });
    }
 
    public async getDevices(): Promise<APIGetDevicesResult> {

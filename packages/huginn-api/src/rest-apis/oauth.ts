@@ -1,10 +1,4 @@
-import {
-   type APIPostOAuthConfirmJSONBody,
-   type APIPostOAuthConfirmResult,
-   type OAuthFlow,
-   type OAuthType,
-   Routes,
-} from "@huginnjs/shared";
+import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, type OAuthFlow, type OAuthProvider, Routes } from "@huginnjs/shared";
 
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
@@ -26,7 +20,7 @@ export class OAuthAPI {
       }) as Promise<APIPostOAuthConfirmResult>;
    }
 
-   public getOAuthURL(type: OAuthType, flow: OAuthFlow, redirectUrl: string): string {
+   public getOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string): string {
       if (type === "google") {
          const url = new URL("/api/auth/google", this.rest.options?.api);
 
@@ -37,5 +31,11 @@ export class OAuthAPI {
       }
 
       return "";
+   }
+
+   public getConnectOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string, linkToken: string): string {
+      const url = new URL(this.getOAuthURL(type, flow, redirectUrl));
+      url.searchParams.set("link_token", linkToken);
+      return url.toString();
    }
 }

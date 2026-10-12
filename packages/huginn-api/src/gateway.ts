@@ -388,7 +388,7 @@ export class Gateway extends SharedWebsocket<Events> {
          span.setAttributes({
             ...this.getDefaultAttributes(),
             "params.status": options.status,
-            "params.activities_count": options.activities.length,
+            "params.activities_count": options.activities?.length ?? "null",
          });
 
          if (this.status !== "authenticated") return;
@@ -578,10 +578,7 @@ export class Gateway extends SharedWebsocket<Events> {
    }
 
    private shouldReset(closeCode: number): boolean {
-      return (
-         this.intentionalClose || closeCode === GatewayCode.INVALID_SESSION || closeCode === GatewayCode.AUTHENTICATION_FAILED
-         // closeCode === GatewayCode.SWITCHING_CONNECTION
-      );
+      return this.intentionalClose || closeCode === GatewayCode.INVALID_SESSION || closeCode === GatewayCode.AUTHENTICATION_FAILED;
    }
 
    // ============================================================
