@@ -19,18 +19,20 @@ export default function ThemeChanger(props: { className?: string }) {
    }
 
    return (
-      <div className={clsx("w-fit", props.className)}>
+      <div className={clsx("relative w-fit", props.className)}>
          <button
             onClick={toggleMenu}
-            className="shadow-4xl bg-surface-deep z-30 cursor-pointer rounded-full p-4 shadow-md transition-all outline-none hover:shadow-lg"
+            className="bg-surface hover:bg-surface-alt flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors outline-none"
             type="button"
+            aria-label="Choose theme"
+            aria-expanded={isOpen}
          >
-            <IconMaterialSymbolsBrush className="text-primary-500 size-7" />
+            <IconMaterialSymbolsBrush className="text-primary-500 size-6" />
          </button>
 
          <div
             className={clsx(
-               "bg-surface-deep absolute right-20 bottom-0 grid w-max grid-cols-2 gap-3 rounded-lg p-3 transition-all duration-250",
+               "bg-surface-deep absolute top-full right-0 z-40 mt-3 grid w-max origin-top-right grid-cols-2 gap-3 rounded-lg p-3 shadow-xl transition-all duration-250",
                isOpen ? "scale-100 opacity-100" : "pointer-events-none scale-90 opacity-0",
             )}
          >

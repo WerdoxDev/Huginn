@@ -1,5 +1,4 @@
 import Feature from "@components/Feature";
-import { useIsMobile } from "@hooks/useIsMobile";
 import { HuginnButton, HuginnIcon } from "@huginn/frontend-shared";
 import { Rive } from "@rive-app/canvas";
 import { useTheme } from "@stores/themeStore";
@@ -24,7 +23,6 @@ function IndexComponent() {
    const [onlineCount, setOnlineCount] = useState("0");
    const canvasRef = useRef<HTMLCanvasElement | null>(null);
    const { themeType } = useTheme();
-   const isMobile = useIsMobile();
    const PlatformIcon = getPlatformIcon();
 
    useEffect(() => {
@@ -84,7 +82,7 @@ function IndexComponent() {
 
    return (
       <>
-         <div className="relative flex h-screen w-full items-center justify-center">
+         <div className="relative flex min-h-dvh w-full items-center justify-center pt-28 pb-24">
             <div className="flex flex-col items-center lg:flex-row lg:space-x-7">
                <div className="w-full px-4 lg:w-96 lg:px-0">
                   <div className="flex flex-col items-center justify-center lg:flex-row lg:justify-start">
@@ -102,7 +100,7 @@ function IndexComponent() {
                   <p className="mx-2 mt-8 text-center text-2xl lg:mx-0 lg:text-left">A fast, customizable chat app with a touch of Norse mythology.</p>
 
                   <div className="mt-8 flex w-full flex-col gap-y-2">
-                     <Link to="/download" className="hidden w-full lg:block">
+                     <Link to="/download" className="w-full">
                         <HuginnButton color="primary" className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
                            <div className="text-xl font-bold">DOWNLOAD HUGINN</div>
                            <PlatformIcon className="size-6" />
@@ -110,7 +108,7 @@ function IndexComponent() {
                      </Link>
 
                      <a href="https://huginn.dev/app" className="w-full">
-                        <HuginnButton color={isMobile ? "primary" : "surface-alt"} className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
+                        <HuginnButton color={"surface-alt"} className="flex h-12 w-full items-center justify-center gap-x-2 px-5">
                            <div className="text-xl">OPEN IN BROWSER</div>
                            <IconMingcuteChromeFill className="size-6" />
                         </HuginnButton>
@@ -118,8 +116,8 @@ function IndexComponent() {
                   </div>
                </div>
 
-               <div className="bg-surface-alt mx-4 mt-6 h-max rounded-2xl p-1 lg:mx-0 lg:mt-0">
-                  <canvas ref={canvasRef} className="w-full lg:w-140" width={500} height={320} id="intro" />
+               <div className="bg-surface-alt mx-4 mt-6 h-max w-[calc(100%-2rem)] rounded-2xl p-1 lg:mx-0 lg:mt-0 lg:w-auto">
+                  <canvas ref={canvasRef} className="block h-auto w-full lg:w-140" width={500} height={320} id="intro" />
                </div>
             </div>
 

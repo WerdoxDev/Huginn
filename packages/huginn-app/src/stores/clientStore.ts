@@ -6,6 +6,7 @@ import { fetchInstanceUrls, probeInstanceUrls, tryAccessAddresses } from "@lib/i
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
 import { VoiceBridge } from "@lib/voice/voice-bridge";
+import { WebSocketBridge } from "@lib/websocket-bridge";
 import { useStore } from "zustand";
 
 import type { Environment, InstanceUrls } from "@/types";
@@ -132,6 +133,9 @@ export async function initializeClient() {
             clientVersion: huginnWindowStore.version,
          },
          createSocket(url) {
+            if (typeof window.electronAPI !== "undefined") {
+               return new WebSocketBridge("gateway", url);
+            }
             return new WebSocket(url);
          },
       },
@@ -139,6 +143,9 @@ export async function initializeClient() {
          class: VoiceBridge,
          url: thisStore.urls!.voice,
          createSocket(url) {
+            if (typeof window.electronAPI !== "undefined") {
+               return new WebSocketBridge("voice", url);
+            }
             return new WebSocket(url);
          },
       },
@@ -185,14 +192,15 @@ export async function initializeClient() {
          store.setState({ readyData: d, userSettings: d.userSettings });
 
          updateUsersFromReadyData(d);
+         queryClient.setQueryData(["relationships"], getInitialRelationships());
 
          store.setState((state) => ({ readyCount: state.readyCount + 1 }));
          if (store.getState().readyCount === 1) return;
 
          // queries need to be reinitialized when client receives ready again which means a complete reset.
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
-         queryClient.setQueryData(["relationships"], getInitialRelationships());
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
+         await queryClient.invalidateQueries({ queryKey: ["application-contributions", "@me"], exact: true, refetchType: "all" });
       }),
    );
 

@@ -114,6 +114,30 @@ export const electronAPI = {
 
    // Media
    downloadMedia: (url: string, filename: string) => ipcRenderer.invoke("media:download", { url, filename }),
+
+   //websocket
+   connectWebSocket: (name: string, url: string) => ipcRenderer.send("ws:connect", { name, url }),
+   disconnectWebSocket: (name: string, code?: number, reason?: string) => ipcRenderer.send("ws:disconnect", { name, code, reason }),
+   websocketSend: (name: string, data: any) => ipcRenderer.send("ws:send", { name, data }),
+   onWebSocketMessage: (name: string, callback: (_event: Electron.IpcRendererEvent, data: any) => void) => {
+      ipcRenderer.on(`ws:message:${name}`, callback);
+      return () => ipcRenderer.off(`ws:message:${name}`, callback);
+   },
+   onWebSocketOpen: (name: string, callback: (_event: Electron.IpcRendererEvent) => void) => {
+      ipcRenderer.on(`ws:open:${name}`, callback);
+      return () => ipcRenderer.off(`ws:open:${name}`, callback);
+   },
+   onWebSocketClose: (name: string, callback: (_event: Electron.IpcRendererEvent, code: number, reason: string, wasClean: boolean) => void) => {
+      ipcRenderer.on(`ws:close:${name}`, callback);
+      return () => ipcRenderer.off(`ws:close:${name}`, callback);
+   },
+   onWebSocketError: (
+      name: string,
+      callback: (_event: Electron.IpcRendererEvent, message: string, details: Record<string, string | number | boolean>) => void,
+   ) => {
+      ipcRenderer.on(`ws:error:${name}`, callback);
+      return () => ipcRenderer.off(`ws:error:${name}`, callback);
+   },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

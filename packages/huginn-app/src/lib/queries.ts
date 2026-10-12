@@ -36,6 +36,12 @@ export const queryClient = new QueryClient({
    },
 });
 
+// Keep gateway-updated session lists in memory while their screens are unmounted.
+// Their query data is cleared when returning to the unauthenticated start route.
+queryClient.setQueryDefaults(["relationships"], { gcTime: Infinity });
+queryClient.setQueryDefaults(["channels", "@me"], { gcTime: Infinity });
+queryClient.setQueryDefaults(["application-contributions", "@me"], { gcTime: Infinity });
+
 const stopBroadcast = broadcastQueryClient({
    queryClient,
    broadcastChannel: `tanstack-query:${hostId}`,

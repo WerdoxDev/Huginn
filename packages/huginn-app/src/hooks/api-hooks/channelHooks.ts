@@ -43,7 +43,7 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
    const navigate = useNavigate();
    const { updateModals } = useModals();
 
-   function tryMutate() {
+   async function tryMutate() {
       if (!channelId) return;
       if (channelType === ChannelType.GROUP_DM) {
          updateModals({
@@ -75,6 +75,10 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
             },
          });
       } else {
+         if (currentChannel?.id === channelId) {
+            await navigate({ to: "/channels/@me", replace: true });
+         }
+
          mutation.mutate(channelId);
       }
    }
