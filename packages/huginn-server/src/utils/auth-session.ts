@@ -1,13 +1,13 @@
 import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { analytics, CONSTANTS, snowflake, WorkerID, type AuthType, type Snowflake, type Tokens } from "@huginnjs/shared";
+import { analytics, CONSTANTS, snowflake, WorkerID, type AuthType, type OAuthProvider, type Snowflake, type Tokens } from "@huginnjs/shared";
 import { randomUUID } from "node:crypto";
 
 export function hashRefreshToken(token: string): string {
    return new Bun.CryptoHasher("sha256").update(token).digest("hex");
 }
 
-export async function createAuthSession(userId: Snowflake, authType: AuthType, userAgent?: string): Promise<Tokens> {
+export async function createAuthSession(userId: Snowflake, authType: AuthType, authProvider?: OAuthProvider, userAgent?: string): Promise<Tokens> {
    return analytics.startActiveSpan("db.authSession.createAuthSession", async (span) => {
       span.setAttributes({
          "query.user.id": userId.toString(),
@@ -16,7 +16,7 @@ export async function createAuthSession(userId: Snowflake, authType: AuthType, u
 
       const sessionId = snowflake.generate(WorkerID.AUTH);
       const lastAuthenticatedAt = Date.now();
-      const payload = { id: userId, sessionId: sessionId.toString(), authType, lastAuthenticatedAt };
+      const payload = { id: userId, sessionId: sessionId.toString(), authType, authProvider, lastAuthenticatedAt };
       const [token, refreshToken] = await Promise.all([
          createToken("user-access", payload, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME),
          createToken("user-refresh", { ...payload, tokenId: randomUUID() }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME),
@@ -33,6 +33,7 @@ export async function createAuthSession(userId: Snowflake, authType: AuthType, u
             userId: BigInt(userId),
             refreshTokenHash: hashRefreshToken(refreshToken),
             authType,
+            authProvider: authProvider ?? null,
             authenticatedAt: new Date(lastAuthenticatedAt),
             userAgent: userAgent?.slice(0, 512) ?? null,
             expiresAt: new Date(lastAuthenticatedAt + CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME_MS),
@@ -58,7 +59,22 @@ export async function rotateAuthSession(
       });
 
       const now = new Date();
-      const payload = { id: userId, sessionId, authType, lastAuthenticatedAt };
+      const oldRefreshTokenHash = hashRefreshToken(oldRefreshToken);
+      const session = await prisma.authSession.findFirst({
+         where: {
+            id: BigInt(sessionId),
+            userId: BigInt(userId),
+            authType,
+            refreshTokenHash: oldRefreshTokenHash,
+            revokedAt: null,
+            expiresAt: { gt: now },
+         },
+         select: { authProvider: true },
+      });
+      if (!session) return null;
+
+      const authProvider = session.authProvider as OAuthProvider | null;
+      const payload = { id: userId, sessionId, authType, authProvider: authProvider ?? undefined, lastAuthenticatedAt };
       const [token, refreshToken] = await Promise.all([
          createToken("user-access", payload, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME),
          createToken("user-refresh", { ...payload, tokenId: randomUUID() }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME),
@@ -69,7 +85,7 @@ export async function rotateAuthSession(
             id: BigInt(sessionId),
             userId: BigInt(userId),
             authType,
-            refreshTokenHash: hashRefreshToken(oldRefreshToken),
+            refreshTokenHash: oldRefreshTokenHash,
             revokedAt: null,
             expiresAt: { gt: now },
          },

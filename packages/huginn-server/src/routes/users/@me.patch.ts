@@ -5,6 +5,7 @@ import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, g
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";
+import { env } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
@@ -28,7 +29,7 @@ const schema = t.Object({
    accentColor: t.Optional(t.Nullable(t.String())),
    bio: t.Optional(t.Nullable(t.String())),
    password: t.Optional(t.String()),
-   newPassword: t.Optional(t.String()),
+   newPassword: t.Optional(t.Nullable(t.String())),
 });
 
 export const patchMe = new Elysia()
@@ -44,10 +45,10 @@ export const patchMe = new Elysia()
          validateEmail(body.email, formError);
          validatePassword(body.newPassword, formError, "newPassword");
 
-         const sensitiveFieldChanged = body.username || body.newPassword || body.email;
+         const sensitiveFieldChanged = Boolean(body.username || body.newPassword !== undefined || body.email);
          const passwordRequired = tokenPayload.authType === "password" && sensitiveFieldChanged;
          const oauthReauthRequired =
-            (tokenPayload.authType === "github" || tokenPayload.authType === "google") &&
+            tokenPayload.authType === "oauth" &&
             sensitiveFieldChanged &&
             Date.now() - tokenPayload.lastAuthenticatedAt > CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW;
 
@@ -66,6 +67,15 @@ export const patchMe = new Elysia()
          const user = await prisma.user.getById(tokenPayload.id, {
             select: { id: true, password: true },
          });
+
+         if (body.newPassword === null) {
+            const connectedGoogle = await prisma.identityProvider.findFirst({
+               where: { userId: BigInt(tokenPayload.id), providerType: "google", completed: true },
+            });
+            if (!connectedGoogle || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+               return createHuginnError(createErrorFactory(Errors.cannotRemoveLastAuthMethod()), status, "Conflict");
+            }
+         }
 
          const databaseError = createErrorFactory(Errors.invalidFormBody());
 
@@ -122,10 +132,19 @@ export const patchMe = new Elysia()
                bannerColor: body.bannerColor,
                accentColor: body.accentColor,
                bio: body.bio,
-               newPassword: body.newPassword ? body.newPassword : undefined,
+               newPassword: body.newPassword === null ? null : body.newPassword || undefined,
             },
             { select: selectPrivateUser },
          );
+
+         if (body.newPassword === null) {
+            const revokedSessions = await prisma.authSession.updateManyAndReturn({
+               where: { userId: BigInt(tokenPayload.id), revokedAt: null },
+               data: { revokedAt: new Date() },
+               select: { id: true },
+            });
+            for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
+         }
 
          let pendingEmailVerification: EmailVerification | undefined;
          email_verification: if (body.email) {

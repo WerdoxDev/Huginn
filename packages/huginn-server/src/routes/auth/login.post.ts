@@ -48,7 +48,7 @@ export const postLogin = new Elysia().use(globalPlugin).post(
          return status("Accepted", json);
       }
 
-      const tokens = await createAuthSession(user.id, "password", request.headers.get("user-agent") ?? undefined);
+      const tokens = await createAuthSession(user.id, "password", undefined, request.headers.get("user-agent") ?? undefined);
       const json: APIPostLoginResult = { ...user, ...tokens };
       return status(200, json);
    },

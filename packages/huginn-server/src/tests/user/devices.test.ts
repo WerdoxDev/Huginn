@@ -9,7 +9,7 @@ import { createAuthSession } from "#utils/auth-session";
 describe("/users/@me/devices", () => {
    test("lists only the user's active sessions and identifies the current device", async () => {
       const [user, otherUser] = await createTestUsers(2);
-      const second = await createAuthSession(user.id.toString(), "password", "Second device");
+      const second = await createAuthSession(user.id.toString(), "password", undefined, "Second device");
 
       const devices = (await testHandler("/api/users/@me/devices", authHeader(user.accessToken), "GET")) as APIGetDevicesResult;
       expect(devices).toHaveLength(2);
@@ -25,7 +25,7 @@ describe("/users/@me/devices", () => {
 
    test("can revoke an owned device but cannot revoke another user's device", async () => {
       const [user, otherUser] = await createTestUsers(2);
-      const second = await createAuthSession(user.id.toString(), "password", "Second device");
+      const second = await createAuthSession(user.id.toString(), "password", undefined, "Second device");
       const secondDevices = (await testHandler("/api/users/@me/devices", authHeader(second.token), "GET")) as APIGetDevicesResult;
       const secondId = secondDevices.find((device) => device.current)!.id;
       const otherDevices = (await testHandler("/api/users/@me/devices", authHeader(otherUser.accessToken), "GET")) as APIGetDevicesResult;

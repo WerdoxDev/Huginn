@@ -38,7 +38,7 @@ export const postVerifyEmail = new Elysia().post(
       await prisma.emailVerification.delete({ where: { id: BigInt(emailVerification.id) } });
 
       if (emailVerification.purpose === "registration") {
-         const tokens = await createAuthSession(userId, "password", request.headers.get("user-agent") ?? undefined);
+         const tokens = await createAuthSession(userId, "password", undefined, request.headers.get("user-agent") ?? undefined);
 
          const json: APIPostVerifyEmailResult = {
             ...updatedUser,

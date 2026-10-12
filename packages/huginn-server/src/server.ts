@@ -65,6 +65,8 @@ import { getDesktopUpdate } from "#routes/update/desktop";
 import { getMe } from "#routes/users/@me.get";
 import { patchMe } from "#routes/users/@me.patch";
 import { getAuthMethods } from "#routes/users/@me/auth-methods.get";
+import { deleteAuthMethod } from "#routes/users/@me/auth-methods/[provider].delete";
+import { postConnectAuthMethod } from "#routes/users/@me/auth-methods/[provider]/connect.post";
 import { getUserChannels } from "#routes/users/@me/channels.get";
 import { postUserChannel } from "#routes/users/@me/channels.post";
 import { getUserDevices } from "#routes/users/@me/devices.get";
@@ -169,6 +171,8 @@ export const app = new Elysia({
    .use(getUser)
    .use(getMe)
    .use(getAuthMethods)
+   .use(postConnectAuthMethod)
+   .use(deleteAuthMethod)
    .use(patchMe)
    .use(patchUserSettings)
    .use(deleteUserRelationship)

@@ -4,14 +4,20 @@ import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID, toSn
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
-import { cdnUpload, serverFetch } from "#utils/server-request";
 import { createAuthSession } from "#utils/auth-session";
+import { isActiveOAuthLinkSession } from "#utils/oauth-link";
+import { cdnUpload, serverFetch } from "#utils/server-request";
 
 const querySchema = t.Object({
    code: t.Optional(t.String()),
    error: t.Optional(t.String()),
    state: t.Optional(t.String()),
+   iss: t.Optional(t.String()),
+   scope: t.Optional(t.String()),
+   authuser: t.Optional(t.String()),
+   prompt: t.Optional(t.String()),
 });
+
 const cookieSchema = t.Cookie({
    oauth: t.Object({
       state: t.String(),
@@ -19,6 +25,7 @@ const cookieSchema = t.Cookie({
       flow: t.Union([t.Literal("browser"), t.Literal("desktop")]),
       origin: t.String(),
       redirect_url: t.String(),
+      link: t.Nullable(t.Optional(t.Object({ userId: t.String(), sessionId: t.String() }))),
    }),
 });
 
@@ -51,7 +58,7 @@ export const getGoogleCallback = new Elysia().get(
 
       const cookieValue = (typeof oauth.value === "string" ? JSON.parse(oauth.value) : oauth.value) as typeof oauth.value;
       if (!cookieValue) return forbidden(status);
-      const { flow, state: cookie_state, codeVerifier, redirect_url, origin } = cookieValue;
+      const { flow, state: cookie_state, codeVerifier, redirect_url, origin, link } = cookieValue;
 
       if (cookie_state !== state || !state) {
          // consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
@@ -92,10 +99,51 @@ export const getGoogleCallback = new Elysia().get(
             where: { providerType_providerUserId: { providerType: "google", providerUserId: googleUser.id } },
          });
 
+         if (link) {
+            const redirectUrl = new URL(redirect_url);
+            redirectUrl.searchParams.delete("connected");
+            redirectUrl.searchParams.delete("error");
+            redirectUrl.searchParams.set("flow", flow);
+            const fail = (reason: OAuthCode) => {
+               redirectUrl.searchParams.set("error", reason);
+               return redirect(redirectUrl.toString(), 302);
+            };
+
+            if (!(await isActiveOAuthLinkSession(link.userId, link.sessionId))) return fail(OAuthCode.LINK_EXPIRED);
+            if (identityProvider?.completed && identityProvider.userId !== BigInt(link.userId)) return fail(OAuthCode.ACCOUNT_ALREADY_CONNECTED);
+
+            const currentProvider = await prisma.identityProvider.findFirst({
+               where: { userId: BigInt(link.userId), providerType: "google", completed: true },
+            });
+            if (currentProvider && currentProvider.providerUserId !== googleUser.id) return fail(OAuthCode.PROVIDER_ALREADY_CONNECTED);
+
+            if (!identityProvider) {
+               await prisma.identityProvider.create({
+                  data: {
+                     id: snowflake.generate(WorkerID.IDENTITY_PROVIDER),
+                     providerType: "google",
+                     providerUserId: googleUser.id,
+                     userId: BigInt(link.userId),
+                     completed: true,
+                  },
+               });
+            } else if (!identityProvider.completed) {
+               const updated = await prisma.identityProvider.updateMany({
+                  where: { id: identityProvider.id, completed: false },
+                  data: { userId: BigInt(link.userId), completed: true },
+               });
+               if (!updated.count) return fail(OAuthCode.ACCOUNT_ALREADY_CONNECTED);
+            }
+
+            redirectUrl.searchParams.set("connected", "google");
+            return redirect(redirectUrl.toString(), 302);
+         }
+
          // Identity provider exists and is completed
          if (identityProvider?.completed && identityProvider?.userId) {
             const { token: accessToken, refreshToken } = await createAuthSession(
                identityProvider.userId.toString(),
+               "oauth",
                "google",
                request.headers.get("user-agent") ?? undefined,
             );

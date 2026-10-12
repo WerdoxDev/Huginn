@@ -211,7 +211,7 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const { token: accessToken, refreshToken } = await createAuthSession(x.id.toString(), "password", "Huginn test client");
+         const { token: accessToken, refreshToken } = await createAuthSession(x.id.toString(), "password", undefined, "Huginn test client");
 
          removeUserLater(x);
 

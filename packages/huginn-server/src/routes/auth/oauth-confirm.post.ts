@@ -1,19 +1,9 @@
 import { createErrorFactory, createHuginnError, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import {
-   type APIPostOAuthConfirmResult,
-   CDNRoutes,
-   Errors,
-   WorkerID,
-   getFileHash,
-   snowflake,
-   toArrayBuffer,
-   type OAuthType,
-} from "@huginnjs/shared";
+import { type APIPostOAuthConfirmResult, CDNRoutes, Errors, WorkerID, getFileHash, snowflake, toArrayBuffer, type OAuthProvider } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { createAuthSession } from "#utils/auth-session";
-
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
 import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
@@ -83,7 +73,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          select: { providerType: true },
       });
 
-      const tokens = await createAuthSession(user.id, result.providerType as OAuthType, request.headers.get("user-agent") ?? undefined);
+      const tokens = await createAuthSession(user.id, "oauth", result.providerType as OAuthProvider, request.headers.get("user-agent") ?? undefined);
 
       const json: APIPostOAuthConfirmResult = {
          ...user,
