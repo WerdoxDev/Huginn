@@ -76,6 +76,9 @@ model AuthSession {
   authenticatedAt  DateTime
   userAgent        String?
   deviceName       String?
+  clientName       String?
+  clientOs         String?
+  ipAddress        String?
   createdAt        DateTime  @default(now())
   lastSeenAt       DateTime  @default(now())
   expiresAt        DateTime
