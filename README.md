@@ -25,6 +25,14 @@ pnpm install
 pnpm --filter @huginn/website dev
 ```
 
+To run the website and browser app on one local origin, use:
+
+```sh
+bun run dev:browser
+```
+
+Open `http://localhost:5173` for the website or `http://localhost:5173/app/` for the app. The website dev server proxies `/app/*` to the app dev server, so both pages share cookies and browser storage. Browser OAuth callbacks use `http://localhost:5173/redirect` in development.
+
 To work on the documentation, run `pnpm --filter @huginn/docs docs:dev`. Package-specific scripts and configuration are in each package's `package.json`.
 
 Huginn is licensed under [GPL-3.0](LICENSE).

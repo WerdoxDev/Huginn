@@ -19,16 +19,15 @@ export default defineConfig({
          include: [/\.[jt]sx?$/, /tsr-split/],
       }),
    ],
-   //   server: {
-   //     proxy: {
-   //       "/app": {
-   //         target: "http://localhost:5174", // your React app's local port
-   //         changeOrigin: true,
-   //         ws: true,
-   //         // rewrite: (path) => path.replace(/^\/app/, ""),
-   //       },
-   //     },
-   //   },
+   server: {
+      proxy: {
+         "/app": {
+            target: "http://localhost:5174",
+            changeOrigin: true,
+            ws: true,
+         },
+      },
+   },
    resolve: {
       alias: {
          "@": path.join(import.meta.dirname, "./src"),

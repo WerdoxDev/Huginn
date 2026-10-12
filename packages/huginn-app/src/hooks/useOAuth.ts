@@ -20,8 +20,9 @@ export function useOAuth() {
 
       posthog.capture("oauth:oauth_flow_start", { type: type });
 
-      const redirectUrl = import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
       const flow: OAuthFlow = huginnWindow.environment === "browser" ? "browser" : "desktop";
+      const redirectUrl =
+         import.meta.env.DEV && flow === "browser" ? `${window.location.origin}/redirect` : import.meta.env.VITE_PUBLIC_OAUTH_REDIRECT;
       const url = client.oauth.getOAuthURL(type, flow, `${redirectUrl}`);
 
       updateModals({
