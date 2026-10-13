@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
-import * as v8 from "node:v8";
 
 const t0 = performance.now();
 const filePath = "C:\\Users\\matin\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe";
