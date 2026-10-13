@@ -34,6 +34,7 @@ model User {
   relatedRelationships Relationship[]       @relation("relation_user")
   identityProvider     IdentityProvider[]
   authSessions         AuthSession[]
+  oauthHandoffs        OAuthHandoff[]
   readStates           ReadState[]
   participatedCalls    Call[]               @relation("participated_calls")
   settings             Settings?
@@ -66,6 +67,7 @@ model IdentityProvider {
   user User? @relation(fields: [userId], references: [id])
 
   @@unique([providerType, providerUserId])
+  @@unique([userId, providerType])
 }
 
 model AuthSession {
@@ -88,6 +90,17 @@ model AuthSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt, expiresAt])
+}
+
+model OAuthHandoff {
+  codeHash  String   @id
+  userId    BigInt
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }
 
 model Channel {
