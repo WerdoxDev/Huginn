@@ -1,4 +1,4 @@
-import { HuginnIcon } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnIcon } from "@huginn/frontend-shared";
 import { OAuthCode } from "@huginnjs/shared";
 import { useTheme } from "@stores/themeStore";
 import { createFileRoute } from "@tanstack/react-router";
@@ -14,8 +14,7 @@ type RedirectResult = {
    title: string;
    description: string;
    payload?: {
-      access_token: string | null;
-      refresh_token: string | null;
+      handoff_code: string | null;
       flow: "browser" | "desktop";
       oauth_token: string | null;
       connected: string | null;
@@ -49,6 +48,7 @@ function readRedirectResult(): RedirectResult {
    }
 
    const params = new URLSearchParams(window.location.search);
+   const originalSearch = window.location.search;
    const flow = params.get("flow");
    if (flow !== "browser" && flow !== "desktop") {
       return {
@@ -59,12 +59,11 @@ function readRedirectResult(): RedirectResult {
    }
 
    const error = params.get("error");
-   const accessToken = params.get("access_token");
-   const refreshToken = params.get("refresh_token");
+   const handoffCode = params.get("handoff_code");
    const oauthToken = params.get("oauth_token");
    const connected = params.get("connected");
 
-   if (!error && !connected && !oauthToken && !(accessToken && refreshToken)) {
+   if (!error && !connected && !oauthToken && !handoffCode) {
       return {
          kind: "invalid",
          title: "This link is incomplete",
@@ -73,14 +72,13 @@ function readRedirectResult(): RedirectResult {
    }
 
    const payload: NonNullable<RedirectResult["payload"]> = {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      handoff_code: handoffCode,
       flow,
       oauth_token: oauthToken,
       connected,
       error,
    };
-   const deepLink = "huginn://oauth-confirm" + window.location.search;
+   const deepLink = "huginn://oauth-confirm" + originalSearch;
 
    if (error) {
       const knownError = errorMessages[error.toUpperCase()];
@@ -133,6 +131,8 @@ function RedirectComponent() {
    };
 
    useEffect(() => {
+      // remove browser history
+      window.history.replaceState(window.history.state, "", window.location.pathname);
       if (result.flow === "browser") {
          storeBrowserResult();
       } else if (result.flow === "desktop") {
@@ -152,11 +152,11 @@ function RedirectComponent() {
           ? "If this window stays open, switch back to Huginn."
           : "Close this tab and start again in Huginn.";
    const actionClassName =
-      "bg-primary-700 hover:bg-primary-800 active:bg-primary-900 focus-visible:ring-primary-500 flex h-10 w-full items-center justify-center rounded-md px-4 text-base font-medium text-white transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none";
+      "flex h-10 w-full items-center justify-center rounded-md px-4 font-medium text-white transition-colors duration-150 focus-visible:outline-none";
 
    return (
-      <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-8">
-         <section aria-live="polite" className="bg-surface flex w-full max-w-96 flex-col items-center rounded-lg p-5 text-center shadow-xl">
+      <div className="flex min-h-dvh flex-1 items-center justify-center px-4 py-8">
+         <div aria-live="polite" className="bg-surface flex w-full max-w-96 flex-col items-center rounded-lg p-5 text-center shadow-xl">
             {isError || isCancelled ? (
                <div className={isError ? "bg-negative-700 rounded-full p-2.5" : "bg-surface-alt rounded-full p-2.5"}>
                   <div className={isError ? "bg-negative-500 rounded-full p-2.5" : "bg-caution-500 rounded-full p-2.5"}>
@@ -176,33 +176,37 @@ function RedirectComponent() {
                   </div>
                </div>
             ) : (
-               <HuginnIcon themeType={themeType} className="size-20 animate-pulse" outlined />
+               <HuginnIcon
+                  themeType={themeType}
+                  className="size-20 animate-pulse transition-all hover:scale-105 hover:-rotate-12 active:rotate-6"
+                  thickOutlined
+               />
             )}
 
-            <h1 className="text-text mt-4 text-2xl font-medium">{title}</h1>
-            <p className="text-text/70 mt-2 text-sm leading-5">{description}</p>
+            <div className="text-text mt-4 text-2xl font-medium">{title}</div>
+            <div className="text-text/70 mt-2 text-sm leading-5">{description}</div>
 
             {result.flow && (
                <div className="mt-5 w-full">
                   {storageFailed ? (
-                     <button type="button" onClick={storeBrowserResult} className={actionClassName}>
+                     <HuginnButton type="button" color="primary" onClick={storeBrowserResult} className={actionClassName}>
                         Try again
-                     </button>
+                     </HuginnButton>
                   ) : result.flow === "desktop" ? (
-                     <a ref={linkRef} href={result.deepLink} className={actionClassName}>
+                     <a ref={linkRef} href={result.deepLink} className={`bg-primary-700 hover:bg-primary-800 active:bg-primary-900 ${actionClassName}`}>
                         Open Huginn
                      </a>
                   ) : (
-                     <button type="button" onClick={() => window.close()} className={actionClassName}>
+                     <HuginnButton type="button" color="primary" onClick={() => window.close()} className={actionClassName}>
                         Return to Huginn
-                     </button>
+                     </HuginnButton>
                   )}
-                  <p className="text-text/70 mt-3 text-sm leading-5">{helpText}</p>
+                  <div className="text-text/70 mt-3 text-sm leading-5">{helpText}</div>
                </div>
             )}
 
-            {!result.flow && <p className="text-text/70 mt-5 text-sm leading-5">{helpText}</p>}
-         </section>
-      </main>
+            {!result.flow && <div className="text-text/70 mt-5 text-sm leading-5">{helpText}</div>}
+         </div>
+      </div>
    );
 }
