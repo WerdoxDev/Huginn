@@ -1,4 +1,4 @@
-import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, type OAuthFlow, type OAuthProvider, Routes } from "@huginnjs/shared";
+import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, type APIPostOAuthHandoffResult, type OAuthFlow, type OAuthProvider, Routes } from "@huginnjs/shared";
 
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
@@ -18,6 +18,10 @@ export class OAuthAPI {
          auth: true,
          token: identityToken,
       }) as Promise<APIPostOAuthConfirmResult>;
+   }
+
+   public async exchangeHandoff(code: string): Promise<APIPostOAuthHandoffResult> {
+      return this.rest.post(Routes.oauthHandoff(), { body: { code } }) as Promise<APIPostOAuthHandoffResult>;
    }
 
    public getOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string): string {

@@ -42,12 +42,12 @@ export class UserAPI {
       return this.rest.get(Routes.authMethods(), { auth: true }) as Promise<APIGetAuthMethodsResult>;
    }
 
-   public async connectOAuthProvider(provider: OAuthProvider): Promise<APIPostConnectOAuthProviderResult> {
-      return this.rest.post(Routes.connectAuthMethod(provider), { auth: true }) as Promise<APIPostConnectOAuthProviderResult>;
+   public async connectOAuthProvider(provider: OAuthProvider, password?: string): Promise<APIPostConnectOAuthProviderResult> {
+      return this.rest.post(Routes.connectAuthMethod(provider), { auth: true, body: { password } }) as Promise<APIPostConnectOAuthProviderResult>;
    }
 
-   public async disconnectOAuthProvider(provider: OAuthProvider): Promise<void> {
-      await this.rest.delete(Routes.authMethod(provider), { auth: true });
+   public async disconnectOAuthProvider(provider: OAuthProvider, password?: string): Promise<void> {
+      await this.rest.delete(Routes.authMethod(provider), { auth: true, body: { password } });
    }
 
    public async getDevices(): Promise<APIGetDevicesResult> {
