@@ -22,6 +22,9 @@ const GAME_FIELDS = [
    "game_localizations.name",
 ].join(",");
 
+// Main games, standalone expansions, episodes, remakes, remasters, expanded games, ports, and forks.
+const PLAYABLE_GAME_TYPES = [0, 4, 6, 8, 9, 10, 11, 12].join(",");
+
 let cachedToken: { value: string; expiresAt: number } | undefined;
 
 function escapeSearch(value: string) {
@@ -56,7 +59,9 @@ async function queryGames(body: string) {
 }
 
 export async function searchIGDBGames(query: string) {
-   return await queryGames(`fields ${GAME_FIELDS}; search "${escapeSearch(query)}"; limit 20;`);
+   return await queryGames(
+      `fields ${GAME_FIELDS}; search "${escapeSearch(query)}"; where game_type = (${PLAYABLE_GAME_TYPES}) & version_parent = null; limit 20;`,
+   );
 }
 
 export async function getIGDBGame(id: number) {

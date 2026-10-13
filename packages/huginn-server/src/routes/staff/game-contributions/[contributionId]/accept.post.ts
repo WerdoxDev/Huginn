@@ -72,7 +72,9 @@ export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).p
       const aliases = [
          ...(selectedGame.alternative_names ?? []).map((alternative) => alternative.name),
          ...(selectedGame.game_localizations ?? []).map((localization) => localization.name),
-      ].filter((name, index, names) => name !== canonicalName && names.indexOf(name) === index);
+      ]
+         .filter((name, index, names) => name !== canonicalName && names.indexOf(name) === index)
+         .filter(Boolean);
 
       const result = await prismaBase.$transaction(
          async (tx) => {
