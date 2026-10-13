@@ -58,19 +58,22 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          avatarHash = null;
       }
 
-      const user = await prisma.user.createOne({
-         email: tokenPayload.email,
-         emailVerifiedAt: new Date(),
-         username: body.username,
-         displayName: body.displayName,
-         avatar: avatarHash,
-         id: BigInt(newUserId),
-      });
+      const { user, result } = await prisma.$transaction(async (tx) => {
+         const user = await tx.user.createOne({
+            email: tokenPayload.email,
+            emailVerifiedAt: new Date(),
+            username: body.username,
+            displayName: body.displayName,
+            avatar: avatarHash,
+            id: BigInt(newUserId),
+         });
+         const result = await tx.identityProvider.update({
+            where: { id: BigInt(tokenPayload.providerId) },
+            data: { userId: BigInt(user.id), completed: true },
+            select: { providerType: true },
+         });
 
-      const result = await prisma.identityProvider.update({
-         where: { id: BigInt(tokenPayload.providerId) },
-         data: { userId: BigInt(user.id), completed: true },
-         select: { providerType: true },
+         return { user, result };
       });
 
       const tokens = await createAuthSession(user.id, "oauth", result.providerType as OAuthProvider, request.headers.get("user-agent") ?? undefined);

@@ -1,18 +1,29 @@
 import { createErrorFactory, createHuginnError, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { Errors } from "@huginnjs/shared";
+import { CONSTANTS, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";
+import { validateCorrectPassword } from "#utils/validation";
 
 export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
    "/api/users/@me/auth-methods/:provider",
-   async ({ params: { provider }, tokenPayload, status }) => {
+   async ({ params: { provider }, body, tokenPayload, status }) => {
+      if (tokenPayload.authType === "oauth" && Date.now() - tokenPayload.lastAuthenticatedAt > CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW) {
+         return status("Forbidden", createErrorFactory(Errors.requireReauthentication()).toObject());
+      }
       const userId = BigInt(tokenPayload.id);
       const user = await prisma.user.findUniqueOrThrow({
          where: { id: userId },
          select: { password: true },
       });
+      if (tokenPayload.authType === "password") {
+         const passwordError = createErrorFactory(Errors.invalidFormBody());
+         if (!body?.password) passwordError.addError("password", Fields.required());
+         else if (!user.password) passwordError.addError("password", Fields.passwordIncorrect());
+         else await validateCorrectPassword(body.password, user.password, passwordError);
+         if (passwordError.hasErrors()) return createHuginnError(passwordError, status);
+      }
       const connected = await prisma.identityProvider.findFirst({
          where: { userId, providerType: provider, completed: true },
       });
@@ -33,5 +44,8 @@ export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
       for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
       return status("No Content");
    },
-   { params: t.Object({ provider: t.Union([t.Literal("google"), t.Literal("github")]) }) },
+   {
+      params: t.Object({ provider: t.Union([t.Literal("google"), t.Literal("github")]) }),
+      body: t.Optional(t.Object({ password: t.Optional(t.String()) })),
+   },
 );

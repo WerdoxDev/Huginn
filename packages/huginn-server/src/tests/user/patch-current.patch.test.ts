@@ -1,10 +1,12 @@
-import { testHandler } from "@huginn/backend-shared";
+import { testHandler, verifyToken } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, getFileHash, resolveImage, toArrayBuffer } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 import pathe from "pathe";
 
 import { expectUserExactSchema } from "#tests/expect-utils";
 import { authHeader, createTestUsers, isCDNRunning } from "#tests/utils";
+import { createAuthSession } from "#utils/auth-session";
 
 describe("PATCH /users/@me", () => {
    test("should return 'Invalid Form Body' when body constrains are not met", async () => {
@@ -103,6 +105,41 @@ describe("PATCH /users/@me", () => {
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
       expectUserExactSchema(result, { ...user, ...edit, email: user.email, pendingEmail: edit.email, hasTokens: true });
+   });
+
+   test("changing a password revokes other password sessions but keeps the current and OAuth sessions", async () => {
+      const [user, otherUser] = await createTestUsers(2);
+      const otherPasswordSession = await createAuthSession(user.id.toString(), "password");
+      const oauthSession = await createAuthSession(user.id.toString(), "oauth", "google");
+
+      await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", {
+         newPassword: "updated-password",
+         password: user.password,
+      });
+
+      const sessions = await prisma.authSession.findMany({ where: { userId: user.id }, select: { authType: true, revokedAt: true } });
+      expect(sessions.filter((session) => session.authType === "password" && session.revokedAt !== null)).toHaveLength(1);
+      expect(sessions.filter((session) => session.authType === "password" && session.revokedAt === null)).toHaveLength(1);
+      expect(sessions.find((session) => session.authType === "oauth")?.revokedAt).toBeNull();
+      expect((await verifyToken("user-access", otherPasswordSession.token)).valid).toBe(false);
+      await expect(testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken: otherPasswordSession.refreshToken })).rejects.toThrow(
+         "Unauthorized",
+      );
+      expect((await verifyToken("user-access", user.accessToken)).valid).toBe(true);
+      expect((await verifyToken("user-access", oauthSession.token)).valid).toBe(true);
+      expect((await verifyToken("user-access", otherUser.accessToken)).valid).toBe(true);
+   });
+
+   test("changing a password from an OAuth session revokes all password sessions", async () => {
+      const [user] = await createTestUsers(1);
+      const otherPasswordSession = await createAuthSession(user.id.toString(), "password");
+      const oauthSession = await createAuthSession(user.id.toString(), "oauth", "google");
+
+      await testHandler("/api/users/@me", authHeader(oauthSession.token), "PATCH", { newPassword: "updated-password" });
+
+      expect((await verifyToken("user-access", user.accessToken)).valid).toBe(false);
+      expect((await verifyToken("user-access", otherPasswordSession.token)).valid).toBe(false);
+      expect((await verifyToken("user-access", oauthSession.token)).valid).toBe(true);
    });
 
    test.skipIf(!isCDNRunning)("should change the user's avatar when the request is successful", async () => {

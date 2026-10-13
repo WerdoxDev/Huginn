@@ -4,7 +4,7 @@ import { CDNRoutes, CONSTANTS, getFileHash, OAuthCode, snowflake, WorkerID, toSn
 import Elysia, { t } from "elysia";
 
 import { env } from "#setup";
-import { createAuthSession } from "#utils/auth-session";
+import { createOAuthHandoff } from "#utils/oauth-handoff";
 import { isActiveOAuthLinkSession } from "#utils/oauth-link";
 import { cdnUpload, serverFetch } from "#utils/server-request";
 
@@ -51,7 +51,8 @@ type GoogleUserResponse = {
 
 export const getGoogleCallback = new Elysia().get(
    "/api/auth/callback/google",
-   async ({ cookie: { oauth }, status, query: { code, error, state }, redirect, request }) => {
+   async ({ cookie: { oauth }, status, query: { code, error, state }, redirect, set }) => {
+      set.headers["Cache-Control"] = "no-store";
       if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.SESSION_PASSWORD) {
          return status("Not Implemented");
       }
@@ -101,6 +102,10 @@ export const getGoogleCallback = new Elysia().get(
 
          if (link) {
             const redirectUrl = new URL(redirect_url);
+            redirectUrl.searchParams.delete("access_token");
+            redirectUrl.searchParams.delete("refresh_token");
+            redirectUrl.searchParams.delete("handoff_code");
+            redirectUrl.searchParams.delete("oauth_token");
             redirectUrl.searchParams.delete("connected");
             redirectUrl.searchParams.delete("error");
             redirectUrl.searchParams.set("flow", flow);
@@ -141,17 +146,14 @@ export const getGoogleCallback = new Elysia().get(
 
          // Identity provider exists and is completed
          if (identityProvider?.completed && identityProvider?.userId) {
-            const { token: accessToken, refreshToken } = await createAuthSession(
-               identityProvider.userId.toString(),
-               "oauth",
-               "google",
-               request.headers.get("user-agent") ?? undefined,
-            );
+            const handoffCode = await createOAuthHandoff(identityProvider.userId.toString());
 
             const redirectUrl = new URL(redirect_url);
+            redirectUrl.searchParams.delete("access_token");
+            redirectUrl.searchParams.delete("refresh_token");
+            redirectUrl.searchParams.delete("oauth_token");
             redirectUrl.searchParams.set("flow", flow);
-            redirectUrl.searchParams.set("access_token", accessToken);
-            redirectUrl.searchParams.set("refresh_token", refreshToken);
+            redirectUrl.searchParams.set("handoff_code", handoffCode);
             return redirect(redirectUrl.toString(), 302);
          }
 
@@ -194,6 +196,10 @@ export const getGoogleCallback = new Elysia().get(
          );
 
          const redirectUrl = new URL(redirect_url);
+         redirectUrl.searchParams.delete("access_token");
+         redirectUrl.searchParams.delete("refresh_token");
+         redirectUrl.searchParams.delete("handoff_code");
+         redirectUrl.searchParams.delete("oauth_token");
          redirectUrl.searchParams.set("flow", flow);
          redirectUrl.searchParams.set("oauth_token", token);
          return redirect(redirectUrl.toString(), 302);
@@ -202,6 +208,10 @@ export const getGoogleCallback = new Elysia().get(
       // User clicked "Cancel"
       if (error === "access_denied") {
          const redirectUrl = new URL(redirect_url);
+         redirectUrl.searchParams.delete("access_token");
+         redirectUrl.searchParams.delete("refresh_token");
+         redirectUrl.searchParams.delete("handoff_code");
+         redirectUrl.searchParams.delete("oauth_token");
          redirectUrl.searchParams.set("flow", flow);
          redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
 

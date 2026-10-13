@@ -1,4 +1,4 @@
-import { forbidden, verifyToken } from "@huginn/backend-shared";
+import { createSHA265Hash, forbidden, verifyToken } from "@huginn/backend-shared";
 import { OAuthCode } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 import { createHash, randomBytes } from "node:crypto";
@@ -55,7 +55,7 @@ export const getGoogle = new Elysia().get(
 
       const state = randomBytes(32).toString("base64url");
       const codeVerifier = randomBytes(32).toString("base64url");
-      const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+      const codeChallenge = createSHA265Hash(codeVerifier, "base64url");
 
       oauth.value = { state, codeVerifier, flow, origin: host, redirect_url, link: link ?? null };
 

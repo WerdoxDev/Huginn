@@ -1,6 +1,6 @@
-import { testHandler, verifyToken } from "@huginn/backend-shared";
+import { createToken, testHandler, verifyToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { snowflake, WorkerID } from "@huginnjs/shared";
+import { CONSTANTS, snowflake, WorkerID } from "@huginnjs/shared";
 import { describe, expect, test } from "bun:test";
 
 import { authHeader, createTestUsers } from "#tests/utils";
@@ -16,7 +16,9 @@ describe("OAuth provider connections", () => {
 
    test("issues a session-bound link token and accepts it for Google authorization", async () => {
       const [user] = await createTestUsers(1);
-      const result = (await testHandler(`${route}/connect`, authHeader(user.accessToken), "POST")) as { linkToken: string };
+      await expect(testHandler(`${route}/connect`, authHeader(user.accessToken), "POST")).rejects.toThrow("Invalid Form Body");
+      await expect(testHandler(`${route}/connect`, authHeader(user.accessToken), "POST", { password: "wrong-password" })).rejects.toThrow("Invalid Form Body");
+      const result = (await testHandler(`${route}/connect`, authHeader(user.accessToken), "POST", { password: user.password })) as { linkToken: string };
       const verified = await verifyToken("oauth-link", result.linkToken);
 
       expect(verified.valid).toBe(true);
@@ -37,6 +39,48 @@ describe("OAuth provider connections", () => {
       expect(new URL(invalidResponse.headers.get("location")!).searchParams.get("error")).toBe("LINK_EXPIRED");
    });
 
+   test("requires recent OAuth authentication to connect and disconnect", async () => {
+      const [user] = await createTestUsers(1);
+      const identityId = snowflake.generate(WorkerID.TESTING);
+      try {
+         const oauthSession = await createAuthSession(user.id.toString(), "oauth", "google");
+         const fresh = await verifyToken("user-access", oauthSession.token);
+         const staleToken = await createToken(
+            "user-access",
+            { ...fresh.payload!, lastAuthenticatedAt: Date.now() - CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW - 1000 },
+            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
+         );
+
+         await expect(testHandler(`${route}/connect`, authHeader(staleToken), "POST")).rejects.toThrow("recent authentication");
+         const result = (await testHandler(`${route}/connect`, authHeader(oauthSession.token), "POST")) as { linkToken: string };
+         expect((await verifyToken("oauth-link", result.linkToken)).valid).toBe(true);
+
+         await prisma.identityProvider.create({
+            data: { id: identityId, userId: user.id, providerType: "google", providerUserId: `google-${user.id}`, completed: true },
+         });
+         await expect(testHandler(route, authHeader(staleToken), "DELETE")).rejects.toThrow("recent authentication");
+         expect(await prisma.identityProvider.findUnique({ where: { id: identityId } })).not.toBeNull();
+         await testHandler(route, authHeader(oauthSession.token), "DELETE");
+      } finally {
+         await prisma.identityProvider.deleteMany({ where: { id: identityId } });
+      }
+   });
+
+   test("expires an OAuth link when its original session is no longer fresh", async () => {
+      const [user] = await createTestUsers(1);
+      const oauthSession = await createAuthSession(user.id.toString(), "oauth", "google");
+      const payload = (await verifyToken("user-access", oauthSession.token)).payload!;
+      const link = (await testHandler(`${route}/connect`, authHeader(oauthSession.token), "POST")) as { linkToken: string };
+      const query = new URLSearchParams({ flow: "browser", redirect_url: "https://app.huginn.dev/", link_token: link.linkToken });
+
+      await prisma.authSession.update({
+         where: { id: BigInt(payload.sessionId) },
+         data: { authenticatedAt: new Date(Date.now() - CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW - 1000) },
+      });
+      const response = (await testHandler(`/api/auth/google?${query}`, {}, "GET")) as Response;
+      expect(new URL(response.headers.get("location")!).searchParams.get("error")).toBe("LINK_EXPIRED");
+   });
+
    test("does not remove the only usable sign-in method", async () => {
       const [user] = await createTestUsers(1);
       const identityId = snowflake.generate(WorkerID.TESTING);
@@ -45,14 +89,17 @@ describe("OAuth provider connections", () => {
       });
 
       try {
-         await expect(testHandler(`${route}/connect`, authHeader(user.accessToken), "POST")).rejects.toThrow("already connected");
+         await expect(testHandler(`${route}/connect`, authHeader(user.accessToken), "POST", { password: user.password })).rejects.toThrow("already connected");
 
+         const googleSession = await createAuthSession(user.id.toString(), "oauth", "google");
          await prisma.user.update({ where: { id: user.id }, data: { password: null } });
-         await expect(testHandler(route, authHeader(user.accessToken), "DELETE")).rejects.toThrow("last sign-in method");
+         await expect(testHandler(route, authHeader(googleSession.token), "DELETE")).rejects.toThrow("last sign-in method");
          expect(await prisma.identityProvider.findUnique({ where: { id: identityId } })).not.toBeNull();
 
          await prisma.user.update({ where: { id: user.id }, data: { password: await Bun.password.hash("new-password") } });
-         await testHandler(route, authHeader(user.accessToken), "DELETE");
+         await expect(testHandler(route, authHeader(user.accessToken), "DELETE")).rejects.toThrow("Invalid Form Body");
+         await expect(testHandler(route, authHeader(user.accessToken), "DELETE", { password: "wrong-password" })).rejects.toThrow("Invalid Form Body");
+         await testHandler(route, authHeader(user.accessToken), "DELETE", { password: "new-password" });
          expect(await prisma.identityProvider.findUnique({ where: { id: identityId } })).toBeNull();
       } finally {
          await prisma.identityProvider.deleteMany({ where: { id: identityId } });

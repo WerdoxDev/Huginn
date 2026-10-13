@@ -23,6 +23,7 @@ import { postLogin } from "#routes/auth/login.post";
 import { postLogout } from "#routes/auth/logout.post";
 import { postNotificationToken } from "#routes/auth/notification-token.post";
 import { postOauthConfirm } from "#routes/auth/oauth-confirm.post";
+import { postOAuthHandoff } from "#routes/auth/oauth-handoff.post";
 import { postRefreshToken } from "#routes/auth/refresh-token.post";
 import { postRegister } from "#routes/auth/register.post";
 import { getChangelog } from "#routes/changelog.get";
@@ -213,6 +214,7 @@ export const app = new Elysia({
    .use(postRegister)
    .use(postLogout)
    .use(postOauthConfirm)
+   .use(postOAuthHandoff)
    .use(postRefreshToken)
    .use(getGoogle)
    .use(getGoogleCallback)

@@ -144,6 +144,18 @@ export const patchMe = new Elysia()
                select: { id: true },
             });
             for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
+         } else if (body.newPassword) {
+            const revokedSessions = await prisma.authSession.updateManyAndReturn({
+               where: {
+                  userId: BigInt(tokenPayload.id),
+                  authType: "password",
+                  id: { not: BigInt(tokenPayload.sessionId) },
+                  revokedAt: null,
+               },
+               data: { revokedAt: new Date() },
+               select: { id: true },
+            });
+            for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
          }
 
          let pendingEmailVerification: EmailVerification | undefined;
