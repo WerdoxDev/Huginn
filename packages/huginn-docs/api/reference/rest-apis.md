@@ -138,10 +138,11 @@ Accessed through `client.oauth`.
 | Method                                 | Returns                     | Description                                                                                                 |
 | -------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `confirmOAuth(body, identityToken)`    | `APIPostOAuthConfirmResult` | Confirm OAuth using the identity token as request authorization.                                            |
+| `exchangeHandoff(code)`                | `APIPostOAuthHandoffResult` | Redeem a short-lived, single-use sign-in code for access and refresh tokens.                                 |
 | `getOAuthURL(type, flow, redirectUrl)` | `string`                    | Build an authorization URL. Currently returns a URL for `google` and an empty string for unsupported types. |
 
 ```ts
-const url = client.oauth.getOAuthURL("google", "login", `${location.origin}/auth/callback`);
+const url = client.oauth.getOAuthURL("google", "browser", `${location.origin}/redirect`);
 
 location.assign(url);
 ```
