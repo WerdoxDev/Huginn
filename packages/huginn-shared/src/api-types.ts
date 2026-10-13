@@ -108,6 +108,8 @@ export type APIPostRefreshTokenJSONBody = {
 };
 
 export type APIPostRefreshTokenResult = Tokens;
+export type APIPostOAuthHandoffJSONBody = { code: string };
+export type APIPostOAuthHandoffResult = Tokens;
 
 export type APIPostLoginJSONBody = {
    email?: string;
@@ -478,8 +480,7 @@ export type OAuthProvider = "google" | "github";
 export type OAuthFlow = "browser" | "desktop";
 export type OAuthResult = {
    flow: OAuthFlow;
-   access_token?: string;
-   refresh_token?: string;
+   handoff_code?: string;
    oauth_token?: string;
    connected?: OAuthProvider;
    error?: string;

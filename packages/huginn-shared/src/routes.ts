@@ -36,6 +36,10 @@ export const Routes = {
       return "/auth/oauth-confirm" as const;
    },
 
+   oauthHandoff() {
+      return "/auth/oauth-handoff" as const;
+   },
+
    /**
     * Route for:
     * - POST '/auth/refresh-token'
