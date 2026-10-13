@@ -43,8 +43,8 @@ export default function ChangePasswordModal() {
    }
 
    async function onError(error: HuginnErrorData) {
-      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
-         const result = await startOAuth(tokenPayload?.authType as OAuthProvider);
+      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED && tokenPayload?.authProvider) {
+         const result = await startOAuth(tokenPayload.authProvider);
          if (result) await handleSubmit(onSubmit)();
       } else handleErrors(error);
       return true;
@@ -54,7 +54,9 @@ export default function ChangePasswordModal() {
       <HuginnDialogPanel className="lg:max-w-xs">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
-               <HuginnDialogTitle title={modal.removePassword ? "Remove Password" : isOAuth && !passwordConfigured ? "Set Password" : "Change Password"} />
+               <HuginnDialogTitle
+                  title={modal.removePassword ? "Remove Password" : isOAuth && !passwordConfigured ? "Set Password" : "Change Password"}
+               />
                {isOAuth && !modal.removePassword && <CautionInfo>Password sign-in for an OAuth account isn't recommended.</CautionInfo>}
                {!modal.removePassword && (
                   <PasswordInput {...register("newPassword", { required: true })}>

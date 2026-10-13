@@ -3,6 +3,7 @@ import { useLogout } from "@hooks/useLogout";
 import { useOAuth } from "@hooks/useOAuth";
 import { HuginnLoadingButton } from "@huginn/frontend-shared";
 import { OAuthCode, type OAuthProvider } from "@huginnjs/shared";
+import { getAuthMethodsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
@@ -83,19 +84,7 @@ export default function SettingsConnectedAccountsTab() {
       });
    }
 
-   const {
-      data: methods,
-      isError,
-      errorUpdatedAt,
-      refetch,
-   } = useQuery({
-      queryKey: ["auth-methods", user?.id],
-      queryFn: () => client!.users.getAuthMethods(),
-      enabled: !!client && !!user,
-      staleTime: 5 * 60 * 1000,
-      refetchOnMount: true,
-      retry: false,
-   });
+   const { data: methods, isError, errorUpdatedAt, refetch } = useQuery(getAuthMethodsOptions(client!));
 
    useEffect(() => {
       if (!isError) return;

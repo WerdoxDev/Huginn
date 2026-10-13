@@ -5,19 +5,15 @@ import { HuginnLoadingButton, HuginnLoadingIcon } from "@huginn/frontend-shared"
 import { getDevicesOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useThisUser } from "@stores/userStore";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import moment from "moment";
 import { useEffect } from "react";
 
 export default function SettingsDevicesTab() {
    const client = useClient();
-   const { user } = useThisUser();
    const logout = useLogout();
    const { updateModals } = useModals();
-   const queryClient = useQueryClient();
-   const devicesQueryKey = ["devices", user?.id];
 
    const { data: devices, isError: isDevicesError, errorUpdatedAt, refetch } = useQuery(getDevicesOptions(client!));
 
@@ -51,9 +47,9 @@ export default function SettingsDevicesTab() {
             await client!.users.logoutDevice(device.id);
          }
       },
-      onSuccess(_result, device) {
+      async onSuccess(_result, device) {
          if (!device.current) {
-            queryClient.setQueryData<APIDevice[]>(devicesQueryKey, (current) => current?.filter((item) => item.id !== device.id));
+            refetch();
          }
       },
       onError() {
