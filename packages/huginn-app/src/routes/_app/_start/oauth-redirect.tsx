@@ -25,8 +25,6 @@ type Inputs = {
 
 const searchSchema = z.object({
    oauth_token: z.optional(z.string()),
-   access_token: z.optional(z.string()),
-   refresh_token: z.optional(z.string()),
 });
 
 export const Route = createFileRoute("/_app/_start/oauth-redirect")({
@@ -73,19 +71,11 @@ function OAuthRedirectComponent() {
 
    useEffect(() => {
       async function tryAuthorize() {
-         if (!search.access_token && !search.refresh_token && !search.oauth_token) {
+         if (!search.oauth_token) {
             await navigate({ to: "/" });
             return;
          }
-
-         if (search.access_token && search.refresh_token) {
-            localStorage.setItem("access-token", search.access_token);
-            localStorage.setItem("refresh-token", search.refresh_token);
-
-            await navigate({ to: "/" });
-         } else {
-            setShouldRender(true);
-         }
+         setShouldRender(true);
       }
 
       tryAuthorize();

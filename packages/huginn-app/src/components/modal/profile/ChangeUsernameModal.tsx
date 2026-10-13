@@ -2,10 +2,9 @@ import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
-import { useOAuth } from "@hooks/useOAuth";
+import { useRecentAuthentication } from "@hooks/useRecentAuthentication";
 import { useUniqueUsernameMessage } from "@hooks/useUniqueUsernameMessage";
 import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
-import { JsonCode, type OAuthProvider, type HuginnErrorData } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { usePostHog } from "posthog-js/react";
@@ -17,18 +16,21 @@ type Inputs = {
 };
 
 export default function ChangeUsernameModal() {
-   const { tokenPayload, user } = useThisUser();
+   const { user } = useThisUser();
    const { register, handleSubmit, formState, handleErrors, control, setFocus } = useHuginnForm<Inputs>({
       defaultValues: { username: user?.username },
    });
    const { validate } = useUniqueUsernameMessage(control, user?.username);
    const { updateModals, changeUsername: modal } = useModals();
    const posthog = usePostHog();
-   const mutation = usePatchUser(() => {
-      posthog.capture("profile:username_changed");
-      updateModals({ changeUsername: { isOpen: false } });
-   }, onError);
-   const startOAuth = useOAuth();
+   const recentAuthentication = useRecentAuthentication();
+   const mutation = usePatchUser(
+      () => {
+         posthog.capture("profile:username_changed");
+         updateModals({ changeUsername: { isOpen: false } });
+      },
+      (error) => recentAuthentication.handleMutationError(error, handleErrors),
+   );
    const isOAuth = useIsOAuth();
 
    useEffect(() => {
@@ -38,14 +40,12 @@ export default function ChangeUsernameModal() {
    }, [modal]);
 
    async function onSubmit(data: Inputs) {
-      await mutation.mutateAsync({ username: data.username, password: data.password });
-   }
-
-   async function onError(error: HuginnErrorData) {
-      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
-         const result = await startOAuth(tokenPayload?.authType as OAuthProvider);
-         if (result) await handleSubmit(onSubmit)();
-      } else handleErrors(error);
+      const body = { username: data.username, password: data.password };
+      try {
+         await recentAuthentication.run(() => mutation.mutateAsync(body), { reason: "change your username" });
+      } catch {
+         // The mutation displays server errors in the form.
+      }
    }
 
    return (

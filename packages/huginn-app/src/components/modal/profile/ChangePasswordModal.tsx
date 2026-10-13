@@ -4,11 +4,10 @@ import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useLogout } from "@hooks/useLogout";
-import { useOAuth } from "@hooks/useOAuth";
+import { useRecentAuthentication } from "@hooks/useRecentAuthentication";
 import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
-import { JsonCode, type APIGetAuthMethodsResult, type HuginnErrorData, type OAuthProvider } from "@huginnjs/shared";
+import { type APIGetAuthMethodsResult } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
-import { useThisUser } from "@stores/userStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -20,16 +19,21 @@ type Inputs = {
 export default function ChangePasswordModal() {
    const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>();
    const { updateModals, changePassword: modal } = useModals();
-   const { tokenPayload } = useThisUser();
    const isOAuth = useIsOAuth();
    const logout = useLogout();
-   const startOAuth = useOAuth();
+   const recentAuthentication = useRecentAuthentication();
    const queryClient = useQueryClient();
    const passwordConfigured = queryClient.getQueryData<APIGetAuthMethodsResult>(["auth-methods"])?.password.configured;
-   const mutation = usePatchUser(() => {
-      if (!modal.removePassword) void queryClient.invalidateQueries({ queryKey: ["auth-methods"] });
-      updateModals({ changePassword: { isOpen: false } });
-   }, onError);
+   const mutation = usePatchUser(
+      () => {
+         if (!modal.removePassword) {
+            void queryClient.invalidateQueries({ queryKey: ["auth-methods"] });
+            void queryClient.invalidateQueries({ queryKey: ["devices"] });
+         }
+         updateModals({ changePassword: { isOpen: false } });
+      },
+      (error) => recentAuthentication.handleMutationError(error, handleErrors),
+   );
 
    useEffect(() => {
       if (modal.isOpen) {
@@ -38,16 +42,17 @@ export default function ChangePasswordModal() {
    }, [modal]);
 
    async function onSubmit(data: Inputs) {
-      await mutation.mutateAsync({ newPassword: modal.removePassword ? null : data.newPassword, password: data.password });
-      if (modal.removePassword) await logout();
-   }
-
-   async function onError(error: HuginnErrorData) {
-      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED && tokenPayload?.authProvider) {
-         const result = await startOAuth(tokenPayload.authProvider);
-         if (result) await handleSubmit(onSubmit)();
-      } else handleErrors(error);
-      return true;
+      const body = { newPassword: modal.removePassword ? null : data.newPassword, password: data.password };
+      let result;
+      try {
+         result = await recentAuthentication.run(() => mutation.mutateAsync(body), {
+            reason: modal.removePassword ? "remove your password" : "set or change your password",
+         });
+      } catch {
+         // The mutation displays server errors in the form.
+         return;
+      }
+      if (result && modal.removePassword) await logout();
    }
 
    return (

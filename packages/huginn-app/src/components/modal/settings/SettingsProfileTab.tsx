@@ -10,6 +10,7 @@ import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { useIsOAuth } from "@hooks/useIsOAuth";
 import { useLogout } from "@hooks/useLogout";
+import { useRecentAuthentication } from "@hooks/useRecentAuthentication";
 import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginnjs/shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
@@ -31,6 +32,7 @@ export default function SettingsProfileTab() {
    const { updateModals } = useModals();
    const logout = useLogout();
    const isOAuth = useIsOAuth();
+   const recentAuthentication = useRecentAuthentication();
    const { data: authMethods, isError: authMethodsError } = useQuery(getAuthMethodsOptions(client!));
    const { openFileDialog } = useFileDialog("image");
 
@@ -42,7 +44,12 @@ export default function SettingsProfileTab() {
    const [pendingBanner, setPendingBanner] = useState<string | null | undefined>(undefined);
    const [showBanner, setShowBanner] = useState(() => !!user?.banner || !!user?.bannerColor);
 
-   const mutation = usePatchUser();
+   const mutation = usePatchUser(undefined, (error) =>
+      recentAuthentication.handleMutationError(error, undefined, (retryError) => {
+         updateModals({ info: { isOpen: true, status: "error", title: "Could not verify account", text: retryError.message } });
+         return true;
+      }),
+   );
 
    useEffect(() => {
       if (!isEditing && user?.bannerColor !== undefined) {
@@ -114,24 +121,29 @@ export default function SettingsProfileTab() {
                confirm: {
                   text: "Remove",
                   callback: async () => {
-                     if (tokenPayload?.authType === "password") {
+                     if (!isOAuth) {
                         updateModals({ info: { isOpen: false }, changePassword: { isOpen: true, removePassword: true } });
                         return;
                      }
 
-                     try {
-                        await mutation.mutateAsync({ newPassword: null });
-                     } catch {
+                     if (!tokenPayload?.authProvider) {
                         updateModals({
-                           info: {
-                              isOpen: true,
-                              status: "error",
-                              title: "Could not remove password",
-                              text: "Could not remove your password. Please try again.",
-                           },
+                           info: { isOpen: true, status: "error", title: "Could not verify account", text: "Sign in again and retry." },
                         });
                         return;
                      }
+
+                     try {
+                        const result = await recentAuthentication.run(() => mutation.mutateAsync({ newPassword: null }), {
+                           reason: "remove your password",
+                           authenticateIfStale: true,
+                        });
+                        if (!result) return;
+                     } catch {
+                        // The mutation displays server errors.
+                        return;
+                     }
+
                      updateModals({ info: { isOpen: false } });
                      await logout();
                   },

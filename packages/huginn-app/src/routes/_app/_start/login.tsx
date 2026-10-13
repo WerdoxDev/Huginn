@@ -75,16 +75,10 @@ function LoginComponent() {
 
    async function handleOAuth(type: OAuthProvider) {
       const result = await startOAuth(type);
-      let search: { access_token: string; refresh_token: string } | { oauth_token: string } | undefined;
-
-      if (result?.access_token && result.refresh_token) {
-         search = { access_token: result.access_token, refresh_token: result.refresh_token };
+      if (result?.handoff_code) {
+         await initializeClient({ token: client?.tokenHandler.token, refreshToken: client?.tokenHandler.refreshToken, navigatePath: "/channels/@me" });
       } else if (result?.oauth_token) {
-         search = { oauth_token: result.oauth_token };
-      }
-
-      if (result && search) {
-         await navigate({ to: `/oauth-redirect`, search: search });
+         await navigate({ to: "/oauth-redirect", search: { oauth_token: result.oauth_token } });
       }
    }
 

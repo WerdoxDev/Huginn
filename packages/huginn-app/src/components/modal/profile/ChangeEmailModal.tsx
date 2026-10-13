@@ -2,11 +2,9 @@ import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
 import { useIsOAuth } from "@hooks/useIsOAuth";
-import { useOAuth } from "@hooks/useOAuth";
+import { useRecentAuthentication } from "@hooks/useRecentAuthentication";
 import { DialogActions, DialogBody, HuginnDialogPanel, HuginnDialogTitle, HuginnInput, HuginnLoadingButton } from "@huginn/frontend-shared";
-import { JsonCode, type OAuthProvider, type HuginnErrorData } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
-import { useThisUser } from "@stores/userStore";
 
 type Inputs = {
    email: string;
@@ -14,35 +12,31 @@ type Inputs = {
 };
 
 export default function ChangeEmailModal() {
-   const { tokenPayload } = useThisUser();
    const { register, handleSubmit, formState, handleErrors, getValues } = useHuginnForm<Inputs>();
    const { updateModals } = useModals();
-   const startOAuth = useOAuth();
+   const recentAuthentication = useRecentAuthentication();
    const isOAuth = useIsOAuth();
 
-   const patchMutation = usePatchUser((result) => {
-      updateModals({
-         changeEmail: { isOpen: false },
-         verifyEmail: {
-            isOpen: true,
-            pendingEmail: result?.pendingEmail ?? getValues("email"),
-         },
-      });
-   }, onError);
+   const patchMutation = usePatchUser(
+      (result) => {
+         updateModals({
+            changeEmail: { isOpen: false },
+            verifyEmail: {
+               isOpen: true,
+               pendingEmail: result?.pendingEmail ?? getValues("email"),
+            },
+         });
+      },
+      (error) => recentAuthentication.handleMutationError(error, handleErrors),
+   );
 
    async function onSubmit(data: Inputs) {
-      await patchMutation.mutateAsync({
-         email: data.email,
-         password: data.password,
-      });
-   }
-
-   async function onError(error: HuginnErrorData) {
-      if (error.code === JsonCode.REAUTHENTICATION_REQUIRED) {
-         const result = await startOAuth(tokenPayload?.authType as OAuthProvider);
-         if (result) await handleSubmit(onSubmit)();
-      } else handleErrors(error);
-      return true;
+      const body = { email: data.email, password: data.password };
+      try {
+         await recentAuthentication.run(() => patchMutation.mutateAsync(body), { reason: "change your email" });
+      } catch {
+         // The mutation displays server errors in the form.
+      }
    }
 
    return (

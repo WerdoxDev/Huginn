@@ -79,19 +79,10 @@ function RegisterComponent() {
 
    async function handleOAuth(provider: OAuthProvider) {
       const result = await startOAuth(provider);
-      let search: URLSearchParams | undefined;
-
-      if (result?.access_token && result.refresh_token) {
-         search = new URLSearchParams({
-            access_token: result.access_token,
-            refresh_token: result.refresh_token,
-         });
+      if (result?.handoff_code) {
+         await initializeClient({ token: client?.tokenHandler.token, refreshToken: client?.tokenHandler.refreshToken, navigatePath: "/channels/@me" });
       } else if (result?.oauth_token) {
-         search = new URLSearchParams({ oauth_token: result.oauth_token });
-      }
-
-      if (result && search) {
-         await navigate({ to: `/oauth-redirect?${search!.toString()}` });
+         await navigate({ to: "/oauth-redirect", search: { oauth_token: result.oauth_token } });
       }
    }
 
