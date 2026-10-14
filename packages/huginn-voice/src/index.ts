@@ -1,5 +1,8 @@
+import { cors } from "@elysia/cors";
 import crossws from "crossws/adapters/bun";
 import Elysia from "elysia";
+
+import { getIceServers } from "#routes/ice-servers.get";
 
 import { env } from "./env";
 import { runMediasoupWorker } from "./mediasoup";
@@ -17,7 +20,7 @@ const ws = crossws({
    },
 });
 
-export const app = new Elysia().ws("/voice", {
+export const app = new Elysia().use(cors()).use(getIceServers).ws("/voice", {
    upgrade({ request, server }) {
       return ws.handleUpgrade(request, server!);
    },

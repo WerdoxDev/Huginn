@@ -35,4 +35,10 @@ Open `http://localhost:5173` for the website or `http://localhost:5173/app/` for
 
 To work on the documentation, run `pnpm --filter @huginn/docs docs:dev`. Package-specific scripts and configuration are in each package's `package.json`.
 
+## Voice relay
+
+The voice server issues ICE server credentials at the authenticated `GET /voice/ice-servers` endpoint. To use Cloudflare TURN, set `CLOUDFLARE_TURN_ID` and `CLOUDFLARE_TURN_TOKEN` in the **voice** environment (for a Docker deployment, in `backend_secrets`). Leave both unset to use direct voice connections. The client never needs a TURN provider key.
+
+Clients can enable **Force relay for calls** in Audio & Video settings. It applies to the next call and prevents a direct media connection; a call fails if the instance has no working TURN relay. This setting is local to the client. The endpoint returns standard `iceServers`, so another TURN provider can be added on the server without changing clients. Cloudflare Tunnel, if used for the web API, does not relay WebRTC media.
+
 Huginn is licensed under [GPL-3.0](LICENSE).

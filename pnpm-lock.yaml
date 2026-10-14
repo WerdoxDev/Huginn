@@ -826,6 +826,9 @@ importers:
 
   packages/huginn-voice:
     dependencies:
+      '@elysia/cors':
+        specifier: ^1.4.1
+        version: 1.4.2(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.0)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))
       '@huginn/backend-shared':
         specifier: workspace:*
         version: link:../huginn-backend-shared
