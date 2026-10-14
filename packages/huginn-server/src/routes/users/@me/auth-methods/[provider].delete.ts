@@ -4,6 +4,7 @@ import { CONSTANTS, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";
+import { env } from "#setup";
 import { validateCorrectPassword } from "#utils/validation";
 
 export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
@@ -29,8 +30,17 @@ export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
       });
       if (!connected) return createHuginnError(createErrorFactory(Errors.oauthProviderNotConnected()), status, "Not Found");
 
-      if (!user.password && provider === "google") {
-         return createHuginnError(createErrorFactory(Errors.cannotRemoveLastAuthMethod()), status, "Conflict");
+      if (!user.password) {
+         const otherProviders = await prisma.identityProvider.findMany({
+            where: { userId, providerType: { not: provider }, completed: true },
+            select: { providerType: true },
+         });
+         const hasOtherAvailableProvider = otherProviders.some(({ providerType }) =>
+            providerType === "google"
+               ? Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
+               : providerType === "github" && Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+         );
+         if (!hasOtherAvailableProvider) return createHuginnError(createErrorFactory(Errors.cannotRemoveLastAuthMethod()), status, "Conflict");
       }
 
       const [, revokedSessions] = await prisma.$transaction([

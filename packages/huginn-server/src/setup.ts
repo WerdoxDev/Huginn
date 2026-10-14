@@ -18,6 +18,8 @@ export const env = cleanEnv(process.env, {
    AWS_VERSIONS_OBJECT_KEY: str(),
    GOOGLE_CLIENT_ID: str(),
    GOOGLE_CLIENT_SECRET: str(),
+   GITHUB_CLIENT_ID: str({ default: "" }),
+   GITHUB_CLIENT_SECRET: str({ default: "" }),
    SESSION_PASSWORD: str(),
    ALLOWED_ORIGINS: str(),
    CDN_HMAC_SECRET: str(),

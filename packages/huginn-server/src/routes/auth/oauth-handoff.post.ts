@@ -10,9 +10,9 @@ export const postOAuthHandoff = new Elysia().post(
    "/api/auth/oauth-handoff",
    async ({ body, request, set, status }) => {
       set.headers["Cache-Control"] = "no-store";
-      const userId = await consumeOAuthHandoff(body.code);
-      if (!userId) return unauthorized(status);
-      const result: APIPostOAuthHandoffResult = await createAuthSession(userId, "oauth", "google", request.headers.get("user-agent") ?? undefined);
+      const handoff = await consumeOAuthHandoff(body.code);
+      if (!handoff) return unauthorized(status);
+      const result: APIPostOAuthHandoffResult = await createAuthSession(handoff.userId, "oauth", handoff.provider, request.headers.get("user-agent") ?? undefined);
       return status("OK", result);
    },
    { body: t.Object({ code: t.String() }) },

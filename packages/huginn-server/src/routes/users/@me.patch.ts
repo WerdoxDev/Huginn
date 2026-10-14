@@ -69,10 +69,16 @@ export const patchMe = new Elysia()
          });
 
          if (body.newPassword === null) {
-            const connectedGoogle = await prisma.identityProvider.findFirst({
-               where: { userId: BigInt(tokenPayload.id), providerType: "google", completed: true },
+            const providers = await prisma.identityProvider.findMany({
+               where: { userId: BigInt(tokenPayload.id), completed: true },
+               select: { providerType: true },
             });
-            if (!connectedGoogle || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+            const hasAvailableProvider = providers.some(({ providerType }) =>
+               providerType === "google"
+                  ? Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
+                  : providerType === "github" && Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+            );
+            if (!hasAvailableProvider) {
                return createHuginnError(createErrorFactory(Errors.cannotRemoveLastAuthMethod()), status, "Conflict");
             }
          }

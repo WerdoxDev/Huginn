@@ -11,7 +11,7 @@ import { createOAuthHandoff } from "#utils/oauth-handoff";
 describe("POST /auth/oauth-handoff", () => {
    test("exchanges a code for a session exactly once", async () => {
       const [user] = await createTestUsers(1);
-      const code = await createOAuthHandoff(user.id.toString());
+      const code = await createOAuthHandoff(user.id.toString(), "google");
 
       const result = (await testHandler("/api/auth/oauth-handoff", {}, "POST", { code })) as APIPostOAuthHandoffResult;
       const access = await verifyToken("user-access", result.token);
@@ -24,9 +24,17 @@ describe("POST /auth/oauth-handoff", () => {
       await expect(testHandler("/api/auth/oauth-handoff", {}, "POST", { code })).rejects.toThrow("Unauthorized");
    });
 
+   test("creates a session for the handoff provider", async () => {
+      const [user] = await createTestUsers(1);
+      const code = await createOAuthHandoff(user.id.toString(), "github");
+      const result = (await testHandler("/api/auth/oauth-handoff", {}, "POST", { code })) as APIPostOAuthHandoffResult;
+      const access = await verifyToken("user-access", result.token);
+      expect(access.payload?.authProvider).toBe("github");
+   });
+
    test("rejects expired and malformed codes", async () => {
       const [user] = await createTestUsers(1);
-      const code = await createOAuthHandoff(user.id.toString());
+      const code = await createOAuthHandoff(user.id.toString(), "google");
       const codeHash = createHash("sha256").update(code).digest("hex");
       await prisma.oAuthHandoff.update({ where: { codeHash }, data: { expiresAt: new Date(0) } });
 
@@ -36,7 +44,7 @@ describe("POST /auth/oauth-handoff", () => {
 
    test("allows only one concurrent exchange", async () => {
       const [user] = await createTestUsers(1);
-      const code = await createOAuthHandoff(user.id.toString());
+      const code = await createOAuthHandoff(user.id.toString(), "google");
       const attempts = await Promise.allSettled([
          testHandler("/api/auth/oauth-handoff", {}, "POST", { code }),
          testHandler("/api/auth/oauth-handoff", {}, "POST", { code }),

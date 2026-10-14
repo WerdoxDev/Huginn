@@ -17,7 +17,9 @@ import { getKnownApplications } from "#routes/applications/catalog.get";
 import { postKnownApplication } from "#routes/applications/catalog.post";
 import { getMeContribution } from "#routes/applications/contributions/@me.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
+import { getGitHubCallback } from "#routes/auth/callback/github.get";
 import { getGoogleCallback } from "#routes/auth/callback/google.get";
+import { getGitHub } from "#routes/auth/github.get";
 import { getGoogle } from "#routes/auth/google.get";
 import { postLogin } from "#routes/auth/login.post";
 import { postLogout } from "#routes/auth/logout.post";
@@ -218,6 +220,7 @@ export const app = new Elysia({
    .use(postRefreshToken)
    .use(getGoogle)
    .use(getGoogleCallback)
+   .use(new Elysia().use(getGitHub).use(getGitHubCallback))
    .use(postNotificationToken)
 
    // applications

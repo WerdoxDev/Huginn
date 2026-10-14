@@ -18,7 +18,14 @@ describe("GET /users/@me/auth-methods", () => {
       const incompleteId = snowflake.generate(WorkerID.TESTING);
       await prisma.identityProvider.createMany({
          data: [
-            { id: googleId, userId: user.id, providerType: "google", providerUserId: `google-${user.id}`, completed: true },
+            {
+               id: googleId,
+               userId: user.id,
+               providerType: "google",
+               providerUserId: `google-${user.id}`,
+               accountIdentifier: "google-account@example.com",
+               completed: true,
+            },
             { id: incompleteId, userId: user.id, providerType: "github", providerUserId: `github-${user.id}`, completed: false },
          ],
       });
@@ -27,7 +34,9 @@ describe("GET /users/@me/auth-methods", () => {
          const result = (await testHandler("/api/users/@me/auth-methods", authHeader(user.accessToken), "GET")) as APIGetAuthMethodsResult;
          expect(result.password.configured).toBe(true);
          expect(result.providers.find((provider) => provider.type === "google")?.connected).toBe(true);
+         expect(result.providers.find((provider) => provider.type === "google")?.accountIdentifier).toBe("google-account@example.com");
          expect(result.providers.find((provider) => provider.type === "github")?.connected).toBe(false);
+         expect(result.providers.find((provider) => provider.type === "github")?.accountIdentifier).toBeNull();
 
          await prisma.user.update({ where: { id: user.id }, data: { password: null } });
          const withoutPassword = (await testHandler("/api/users/@me/auth-methods", authHeader(user.accessToken), "GET")) as APIGetAuthMethodsResult;

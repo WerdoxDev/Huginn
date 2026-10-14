@@ -12,17 +12,22 @@ export const getAuthMethods = new Elysia().use(verifyJwt()).get("/api/users/@me/
          password: true,
          identityProvider: {
             where: { completed: true },
-            select: { providerType: true },
+            select: { providerType: true, accountIdentifier: true },
          },
       },
    });
 
-   const connected = new Set(user.identityProvider.map((identity) => identity.providerType));
+   const connected = new Map(user.identityProvider.map((identity) => [identity.providerType, identity.accountIdentifier]));
    const result: APIGetAuthMethodsResult = {
       password: { configured: user.password !== null },
       providers: [
-         { type: "google", connected: connected.has("google"), available: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) },
-         { type: "github", connected: connected.has("github"), available: false },
+         {
+            type: "google",
+            connected: connected.has("google"),
+            available: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+            accountIdentifier: connected.get("google") ?? null,
+         },
+         { type: "github", connected: connected.has("github"), available: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET), accountIdentifier: connected.get("github") ?? null },
       ],
    };
 
