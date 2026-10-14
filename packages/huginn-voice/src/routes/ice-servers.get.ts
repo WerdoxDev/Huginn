@@ -5,13 +5,10 @@ import Elysia from "elysia";
 import { env } from "#env";
 import { isIceServersResult } from "#utils/turn-credentials";
 
-export const getIceServers = new Elysia().use(verifyJwt()).get("/voice/ice-servers", async ({ status, set }) => {
-   set.headers["Cache-Control"] = "no-store";
-
+export const getIceServers = new Elysia().use(verifyJwt()).get("/voice/ice-servers", async ({ status }) => {
    const id = env.CLOUDFLARE_TURN_ID;
    const token = env.CLOUDFLARE_TURN_TOKEN;
-   if (!id && !token) return { iceServers: [] };
-   if (!id || !token) return status("Not Implemented");
+   if (!id || !token) return status("OK", { iceServers: [] });
 
    const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${encodeURIComponent(id)}/credentials/generate-ice-servers`, {
       method: "POST",
