@@ -168,6 +168,32 @@ describe("voice token deadlines", () => {
       expect(vi.getTimerCount()).toBe(0);
    });
 
+   it("keeps the first join active when another join is rejected", async () => {
+      const { voice, manager } = createVoiceManager();
+      const join = manager.connectVoice(null, "channel", "provided-token");
+      await vi.advanceTimersByTimeAsync(0);
+
+      await expect(manager.connectVoice(null, "other-channel", "provided-token")).rejects.toThrow("Already trying to connect to a voice channel");
+
+      voice.emit("status_changed", "ready");
+      await join;
+      expect(voice.signaling.connect).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+   });
+
+   it("leaves the voice channel when signaling disconnects before ready", async () => {
+      const { gateway, voice, manager } = createVoiceManager();
+      voice.signaling.connect.mockImplementationOnce(async () => {
+         manager.voiceState.confirmGatewayVoiceState({ ...manager.voiceState.gatewayVoiceState, channelId: "channel" });
+         return false;
+      });
+
+      await expect(manager.connectVoice(null, "channel", "provided-token")).rejects.toThrow("Voice signaling disconnected before the call was ready");
+      expect(voice.signaling.close).toHaveBeenCalledTimes(1);
+      expect(gateway.sendDefaultVoiceState).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+   });
+
    it("rejects a missing token and allows a subsequent join", async () => {
       const { gateway, voice, manager } = createVoiceManager();
       const join = manager.connectVoice(null, "channel");

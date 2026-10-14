@@ -1,6 +1,6 @@
 import type { Consumer, TransportOptions } from "mediasoup-client/types";
 
-import { TransportErrorCode, VoiceSignallingError, type HMediaKind } from "@huginnjs/shared";
+import { VoiceTransportErrorCode, VoiceSignallingErrorCode, type HMediaKind } from "@huginnjs/shared";
 import { FakeMediaStreamTrack } from "fake-mediastreamtrack";
 import { FakeHandler, testFakeParameters } from "mediasoup-client";
 import { http, HttpResponse } from "msw";
@@ -50,11 +50,15 @@ beforeEach(() => {
 
    // Inject the FakeHandler-backed Device factory. Replace this with whatever
    // seam VoiceTransportManager ends up exposing.
-   transport = new VoiceTransportManager(client, {
-      deviceOptions: {
-         handlerFactory: FakeHandler.createFactory(testFakeParameters),
+   transport = new VoiceTransportManager(
+      client,
+      {
+         deviceOptions: {
+            handlerFactory: FakeHandler.createFactory(testFakeParameters),
+         },
       },
-   }, "ws://localhost:3003/voice");
+      "http://localhost:3003/voice",
+   );
 });
 
 afterEach(() => {
@@ -69,7 +73,7 @@ async function createReadyTransports(): Promise<void> {
 
 describe("device and transport guards", () => {
    it("checkDevice throws when no device has been initialized", () => {
-      expect(() => transport.checkDevice()).toThrowError(expect.objectContaining({ code: TransportErrorCode.DEVICE_NOT_INITIALIZED }));
+      expect(() => transport.checkDevice()).toThrowError(expect.objectContaining({ code: VoiceTransportErrorCode.DEVICE_NOT_INITIALIZED }));
    });
 
    it("checkSendTransport throws when the device exists but the send transport does not", async () => {
@@ -144,7 +148,7 @@ describe("createSendTransport()", () => {
       await transport.initializeDevice(fakeRouterRtpCapabilities());
       await transport.createSendTransport(fakeTransportOptions());
 
-      transport.on("connect_transport", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("connect_transport", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       const track = makeTrack();
       await expect(transport.createProducer("microphone", track)).rejects.toThrow();
@@ -171,7 +175,7 @@ describe("createSendTransport()", () => {
       await transport.createSendTransport(fakeTransportOptions());
 
       transport.on("connect_transport", (payload) => payload.callback({ transportId: transport.sendTransport!.id }));
-      transport.on("create_producer", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("create_producer", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.createProducer("microphone", makeTrack())).rejects.toThrow();
    });
@@ -242,7 +246,7 @@ describe("createSendTransport()", () => {
 
       await expect(transport.createSendTransport(fakeTransportOptions())).rejects.toMatchObject({
          name: "TransportError",
-         code: TransportErrorCode.RELAY_NOT_CONFIGURED,
+         code: VoiceTransportErrorCode.RELAY_NOT_CONFIGURED,
          message: expect.stringContaining("This instance has no TURN relay configured"),
       });
       expect(spy).not.toHaveBeenCalled();
@@ -270,7 +274,7 @@ describe("createRecvTransport()", () => {
       await transport.createRecvTransport(fakeTransportOptions());
       transport.remoteProducers.set("remote-producer-1", { producerId: "remote-producer-1", userId: "user-2", kind: "microphone" });
 
-      transport.on("connect_transport", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("connect_transport", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       const params = testFakeParameters.generateConsumerRemoteParameters({ codecMimeType: "audio/opus" });
       transport.on("create_consumer", (payload) =>
@@ -347,7 +351,7 @@ describe("createRecvTransport()", () => {
       const spy = vi.spyOn(transport.device!, "createRecvTransport");
 
       await expect(transport.createRecvTransport(fakeTransportOptions())).rejects.toMatchObject({
-         code: TransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE,
+         code: VoiceTransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE,
          message: expect.stringContaining("Could not get relay credentials"),
       });
       expect(spy).not.toHaveBeenCalled();
@@ -461,7 +465,7 @@ describe("restartIce()", () => {
       await createReadyTransports();
       transport.sendTransport?.handler.emit("@connectionstatechange", "disconnected");
 
-      transport.on("restart_ice", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("restart_ice", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.restartIce("send")).rejects.toThrow();
    });
@@ -550,7 +554,7 @@ describe("closeProducer()", () => {
       expect(producer).toBeDefined();
 
       transport.offAll("close_producer");
-      transport.on("close_producer", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("close_producer", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.closeProducer("microphone")).rejects.toThrow();
       expect(producer!.closed).toBe(false);
@@ -604,7 +608,7 @@ describe("createConsumer()", () => {
       await createReadyTransports();
       transport.remoteProducers.set("remote-producer-1", { producerId: "remote-producer-1", userId: "user-2", kind: "microphone" });
 
-      transport.on("create_consumer", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("create_consumer", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.createConsumer("user-2", "microphone")).rejects.toThrow();
    });
@@ -646,7 +650,7 @@ describe("createConsumer()", () => {
             rtpParameters: params.rtpParameters,
          }),
       );
-      transport.on("resume_consumer", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("resume_consumer", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.createConsumer("user-2", "microphone")).rejects.toThrow();
    });
@@ -723,7 +727,7 @@ describe("closeConsumer()", () => {
       const consumer = await transport.createConsumer("user-2", "microphone");
 
       transport.offAll("close_consumer");
-      transport.on("close_consumer", (payload) => payload.callback({ error: VoiceSignallingError.UNKNOWN_ERROR }));
+      transport.on("close_consumer", (payload) => payload.callback({ error: VoiceSignallingErrorCode.UNKNOWN_ERROR }));
 
       await expect(transport.closeConsumer(consumer.id)).rejects.toThrow();
       expect(consumer.closed).toBe(false);
@@ -838,19 +842,19 @@ describe("applyVoiceState()", () => {
       transport.on("create_consumer", (payload) =>
          payload.producerId === "remote-audio"
             ? payload.callback({
-               consumerId: audioParams.id,
-               kind: "stream_audio",
-               producerId: payload.producerId,
-               producerUserId: "user-2",
-               rtpParameters: audioParams.rtpParameters,
-            })
+                 consumerId: audioParams.id,
+                 kind: "stream_audio",
+                 producerId: payload.producerId,
+                 producerUserId: "user-2",
+                 rtpParameters: audioParams.rtpParameters,
+              })
             : payload.callback({
-               consumerId: videoParams.id,
-               kind: "camera",
-               producerId: payload.producerId,
-               producerUserId: "user-2",
-               rtpParameters: videoParams.rtpParameters,
-            }),
+                 consumerId: videoParams.id,
+                 kind: "camera",
+                 producerId: payload.producerId,
+                 producerUserId: "user-2",
+                 rtpParameters: videoParams.rtpParameters,
+              }),
       );
       transport.on("resume_consumer", (payload) => payload.callback({ consumerId: payload.id }));
 
@@ -878,19 +882,19 @@ describe("applyVoiceState()", () => {
       transport.on("create_consumer", (payload) =>
          payload.producerId === "remote-audio"
             ? payload.callback({
-               consumerId: audioParams.id,
-               kind: "stream_audio",
-               producerId: payload.producerId,
-               producerUserId: "user-2",
-               rtpParameters: audioParams.rtpParameters,
-            })
+                 consumerId: audioParams.id,
+                 kind: "stream_audio",
+                 producerId: payload.producerId,
+                 producerUserId: "user-2",
+                 rtpParameters: audioParams.rtpParameters,
+              })
             : payload.callback({
-               consumerId: videoParams.id,
-               kind: "camera",
-               producerId: payload.producerId,
-               producerUserId: "user-2",
-               rtpParameters: videoParams.rtpParameters,
-            }),
+                 consumerId: videoParams.id,
+                 kind: "camera",
+                 producerId: payload.producerId,
+                 producerUserId: "user-2",
+                 rtpParameters: videoParams.rtpParameters,
+              }),
       );
       transport.on("resume_consumer", (payload) => payload.callback({ consumerId: payload.id }));
 

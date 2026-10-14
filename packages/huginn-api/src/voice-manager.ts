@@ -1,4 +1,4 @@
-import { analytics, type Snowflake, recordSpanError, VoiceSignallingError, EventEmitter, CONSTANTS } from "@huginnjs/shared";
+import { analytics, type Snowflake, recordSpanError, VoiceSignallingErrorCode, EventEmitter, CONSTANTS } from "@huginnjs/shared";
 
 import type { HuginnClient, Voice } from ".";
 import type { Gateway } from "./gateway";
@@ -65,7 +65,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
             d.callback(undefined);
          } catch {
-            d.callback({ error: VoiceSignallingError.WRONG_STATE });
+            d.callback({ error: VoiceSignallingErrorCode.WRONG_STATE });
          }
       });
 
@@ -190,6 +190,42 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
       });
    }
 
+   private async connectSignalingAndWaitUntilReady(token: string, channelId: Snowflake, guildId: Snowflake | null): Promise<void> {
+      let stopWaiting = () => {};
+
+      // Wait for the signaling to be ready, or fail if it errors out
+      const ready = new Promise<void>((resolve, reject) => {
+         const cleanup = () => {
+            unlistenStatus();
+            unlistenError();
+         };
+         const unlistenStatus = this.voice.listen("status_changed", (status) => {
+            if (status !== "ready") return;
+            cleanup();
+            resolve();
+         });
+         const unlistenError = this.voice.listen("connection_error", (error) => {
+            cleanup();
+            reject(error);
+         });
+         stopWaiting = cleanup;
+      });
+
+      try {
+         await Promise.all([
+            Promise.resolve(this.voice.signaling.connect(token, channelId, guildId)).then((connected) => {
+               if (!connected) throw new Error("Voice signaling disconnected before the call was ready");
+            }),
+            ready,
+         ]);
+      } catch (error) {
+         await this.disconnectVoice().catch(recordSpanError);
+         throw error;
+      } finally {
+         stopWaiting();
+      }
+   }
+
    /**
     * Connects to a voice channel.
     * @param guildId can be set to null if you are connecting to a direct channel call.
@@ -205,6 +241,7 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
             "params.has_token": !!token,
          });
 
+         let connectionStarted = false;
          try {
             if (this.gateway.status !== "authenticated") throw new Error(`Gateway is not in the correct state: ${this.gateway.status}`);
             if (this.isConnecting) throw new Error("Already trying to connect to a voice channel");
@@ -214,57 +251,19 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
             }
 
             this.isConnecting = true;
+            connectionStarted = true;
 
-            try {
-               if (this.voice.status !== "idle") {
-                  this.voice.signaling.close();
-               }
+            if (this.voice.status !== "idle") this.voice.signaling.close();
 
-               const voiceToken = await this.waitForVoiceToken(() => this.voiceState.updateGatewayVoiceState({ channelId, guildId }, false), token);
+            const voiceToken = await this.waitForVoiceToken(() => this.voiceState.updateGatewayVoiceState({ channelId, guildId }, false), token);
+            if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
-               if (!voiceToken) throw new Error("Couldn't get a token for voice");
-
-               let stopWaiting = () => {};
-               const ready = new Promise<void>((resolve, reject) => {
-                  const cleanup = () => {
-                     unlistenStatus();
-                     unlistenError();
-                  };
-                  const unlistenStatus = this.voice.listen("status_changed", (status) => {
-                     if (status !== "ready") return;
-                     cleanup();
-                     resolve();
-                  });
-                  const unlistenError = this.voice.listen("connection_error", (error) => {
-                     cleanup();
-                     reject(error);
-                  });
-                  stopWaiting = cleanup;
-               });
-
-               try {
-                  await Promise.all([
-                     Promise.resolve(this.voice.signaling.connect(voiceToken, channelId, guildId)).then((connected) => {
-                        if (!connected) throw new Error("Voice signaling disconnected before the call was ready");
-                     }),
-                     ready,
-                  ]);
-               } catch (error) {
-                  try {
-                     await this.disconnectVoice();
-                  } catch (cleanupError) {
-                     recordSpanError(cleanupError);
-                  }
-                  throw error;
-               } finally {
-                  stopWaiting();
-               }
-            } finally {
-               this.isConnecting = false;
-            }
+            await this.connectSignalingAndWaitUntilReady(voiceToken, channelId, guildId);
          } catch (e) {
             recordSpanError(e);
             throw e;
+         } finally {
+            if (connectionStarted) this.isConnecting = false;
          }
       });
    }
