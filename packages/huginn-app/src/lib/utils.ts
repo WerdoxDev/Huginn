@@ -14,7 +14,7 @@ import {
    type PresenceStatus,
    type PresenceUser,
    type UserPresence,
-   VoiceSignallingError,
+   VoiceSignallingErrorCode,
    omit,
    toDataUrl,
 } from "@huginnjs/shared";
@@ -155,7 +155,7 @@ export function convertToAppUserProfile(profile: APIUserProfile): AppUserProfile
 }
 
 export function convertToAppPresence(presence: UserPresence): AppPresence {
-   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().hostnames.cdn}/cdn`;
+   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().urls?.cdn}/cdn`;
    const activities = presence.activities.map((x) => ({
       ...x,
       iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
@@ -164,7 +164,7 @@ export function convertToAppPresence(presence: UserPresence): AppPresence {
 }
 
 export function convertToAppSession(session: GatewaySession): GatewaySession {
-   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().hostnames.cdn}/cdn`;
+   const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().urls?.cdn}/cdn`;
    const activities = session.activities.map((x) => ({
       ...x,
       iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
@@ -192,7 +192,7 @@ function isTransportError(e: unknown): e is TransportErrorLike {
 export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "audio") {
    if (isTransportError(e)) {
       switch (e.code) {
-         case VoiceSignallingError.WRONG_STATE:
+         case VoiceSignallingErrorCode.WRONG_STATE:
             return "The voice connection is in the wrong state. Please try again.";
       }
    }
@@ -334,4 +334,4 @@ export async function getAudioCovertArt(blob: Blob) {
    if (!coverImage) return undefined;
 
    return toDataUrl(coverImage?.data, "image/jpeg");
-}
+}
