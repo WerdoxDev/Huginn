@@ -85,7 +85,7 @@ export type APIGetCurrentUserResult = APIUser;
 export type APIGetUserByIdResult = APIPublicUser;
 export type APIGetAuthMethodsResult = {
    password: { configured: boolean };
-   providers: { type: OAuthProvider; connected: boolean; available: boolean }[];
+   providers: { type: OAuthProvider; connected: boolean; available: boolean; accountIdentifier: string | null }[];
 };
 export type APIPostConnectOAuthProviderResult = { linkToken: string };
 export type APIDevice = {
