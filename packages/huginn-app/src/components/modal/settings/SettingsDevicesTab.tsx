@@ -15,10 +15,10 @@ export default function SettingsDevicesTab() {
    const logout = useLogout();
    const { updateModals } = useModals();
 
-   const { data: devices, isError: isDevicesError, errorUpdatedAt, refetch } = useQuery(getDevicesOptions(client!));
+   const { data: devices, isError, errorUpdatedAt, refetch } = useQuery(getDevicesOptions(client!));
 
    useEffect(() => {
-      if (!isDevicesError) return;
+      if (!isError) return;
       updateModals({
          info: {
             isOpen: true,
@@ -36,7 +36,7 @@ export default function SettingsDevicesTab() {
             },
          },
       });
-   }, [isDevicesError, errorUpdatedAt, refetch, updateModals]);
+   }, [isError, errorUpdatedAt, refetch, updateModals]);
 
    const removeMutation = useMutation({
       mutationKey: ["logout-device"],
@@ -93,9 +93,8 @@ export default function SettingsDevicesTab() {
 
    return (
       <div className="flex w-full flex-col items-center">
-         <div className="flex w-full max-w-xl flex-col gap-y-4">
-            {devices && <div className="text-text/70">Devices with an active sign-in to your account.</div>}
-            {!devices && !isDevicesError && (
+         <div className="mt-0.5 flex w-full max-w-xl flex-col gap-y-4">
+            {!devices && !isError && (
                <div className="flex items-center justify-center gap-x-2">
                   <div className="text-text">Loading devices…</div>
                   <HuginnLoadingIcon className="size-6" />
@@ -146,8 +145,8 @@ export default function SettingsDevicesTab() {
                   </HuginnLoadingButton>
                </div>
             ))}
-            {devices?.length === 0 && <div className="text-text/70 text-sm">No active devices found.</div>}
          </div>
+         {devices?.length === 0 && <div className="text-text/70 text-sm">No active devices found.</div>}
       </div>
    );
 }

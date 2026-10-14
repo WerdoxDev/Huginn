@@ -1,4 +1,4 @@
-import type { DeepPartial, Snowflake } from "@huginnjs/shared";
+import type { DeepPartial, OAuthProvider, Snowflake } from "@huginnjs/shared";
 import type { ReactNode } from "react";
 
 import { produce } from "immer";
@@ -87,6 +87,7 @@ const initialStore = () => ({
       onSuccess?: () => Promise<void> | void;
    },
    changePassword: { isOpen: false, removePassword: false } as DefaultModal & { removePassword: boolean },
+   connectedAccountPassword: { isOpen: false } as DefaultModal & { action?: "connect" | "disconnect"; provider?: OAuthProvider },
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },
    changeBackground: { isOpen: false, channelId: null } as DefaultModal & { channelId: Snowflake | null },
 });

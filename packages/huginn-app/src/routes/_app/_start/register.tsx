@@ -102,6 +102,7 @@ function RegisterComponent() {
                <span>Google</span>
             </HuginnButton>
             <HuginnButton
+               onClick={() => handleOAuth("github")}
                type="button"
                className="border-primary-700 bg-surface-alt text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
             >

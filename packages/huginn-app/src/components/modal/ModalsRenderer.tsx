@@ -21,6 +21,7 @@ const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameMod
 const ChangeEmailModal = lazy(() => import("./profile/ChangeEmailModal"));
 const VerifyEmailModal = lazy(() => import("./profile/VerifyEmailModal"));
 const ChangePasswordModal = lazy(() => import("./profile/ChangePasswordModal"));
+const ConnectedAccountPasswordModal = lazy(() => import("./ConnectedAccountPasswordModal"));
 const UserProfileModal = lazy(() => import("./UserProfileModal"));
 
 export default function ModalsRenderer() {
@@ -42,6 +43,7 @@ export default function ModalsRenderer() {
       changeEmail,
       verifyEmail,
       changePassword,
+      connectedAccountPassword,
       userProfile,
       changeBackground,
    } = useModals();
@@ -103,6 +105,11 @@ export default function ModalsRenderer() {
                   onClose={() => updateModals({ changePassword: { isOpen: false } })}
                />
                <BaseModal
+                  renderChildren={<ConnectedAccountPasswordModal />}
+                  modal={connectedAccountPassword}
+                  onClose={() => updateModals({ connectedAccountPassword: { isOpen: false } })}
+               />
+               <BaseModal
                   renderChildren={<UserProfileModal />}
                   modal={userProfile}
                   onClose={() => updateModals({ userProfile: { isOpen: false } })}
@@ -112,10 +119,11 @@ export default function ModalsRenderer() {
          <BaseModal renderChildren={<ImageCropModal />} modal={imageCrop} onClose={() => updateModals({ imageCrop: { isOpen: false } })} />
          <BaseModal
             modal={info}
-            onClose={() =>
-               !info.action?.cancel
-                  ? (info.isClosable || info.isClosable === undefined) && updateModals({ info: { isOpen: false } })
-                  : info.action.cancel.callback()
+            onClose={
+               () =>
+                  // !info.action?.cancel
+                  (info.isClosable || info.isClosable === undefined) && updateModals({ info: { isOpen: false } })
+               // : info.action.cancel.callback()
             }
             renderChildren={<InfoModal />}
          />
