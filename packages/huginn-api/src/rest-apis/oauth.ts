@@ -25,16 +25,10 @@ export class OAuthAPI {
    }
 
    public getOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string): string {
-      if (type === "google") {
-         const url = new URL("/api/auth/google", this.rest.options?.api);
-
-         url.searchParams.set("flow", flow);
-         url.searchParams.set("redirect_url", redirectUrl);
-
-         return url.toString();
-      }
-
-      return "";
+      const url = new URL(`/api/auth/${type}`, this.rest.options?.api);
+      url.searchParams.set("flow", flow);
+      url.searchParams.set("redirect_url", redirectUrl);
+      return url.toString();
    }
 
    public getConnectOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string, linkToken: string): string {
