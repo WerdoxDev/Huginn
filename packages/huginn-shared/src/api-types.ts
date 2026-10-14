@@ -102,6 +102,7 @@ export type APIDevice = {
    current: boolean;
 };
 export type APIGetDevicesResult = APIDevice[];
+export type APIGetIceServersResult = { iceServers: RTCIceServer[] };
 
 export type APIPostRefreshTokenJSONBody = {
    refreshToken: string;
