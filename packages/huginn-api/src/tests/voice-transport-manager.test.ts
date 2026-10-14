@@ -1,6 +1,6 @@
 import type { Consumer, TransportOptions } from "mediasoup-client/types";
 
-import { VoiceSignallingError, type HMediaKind } from "@huginnjs/shared";
+import { TransportErrorCode, VoiceSignallingError, type HMediaKind } from "@huginnjs/shared";
 import { FakeMediaStreamTrack } from "fake-mediastreamtrack";
 import { FakeHandler, testFakeParameters } from "mediasoup-client";
 import { http, HttpResponse } from "msw";
@@ -29,13 +29,7 @@ function makeTrack(id = "track-1"): MediaStreamTrack {
 // ---------------------------------------------------------------------------
 // Setup
 // ---------------------------------------------------------------------------
-const TURN_ID = "test-turn-id";
-const TURN_TOKEN = "test-turn-token";
-
-// Stub the env vars used inside fetchTurnCredentials
-vi.stubEnv("VITE_PUBLIC_CLOUDFLARE_TURN_ID", TURN_ID);
-vi.stubEnv("VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN", TURN_TOKEN);
-const ICE_SERVERS_URL = `https://rtc.live.cloudflare.com/v1/turn/keys/${TURN_ID}/credentials/generate-ice-servers`;
+const ICE_SERVERS_URL = "http://localhost:3003/voice/ice-servers";
 const server = setupServer();
 
 let transport: VoiceTransportManager;
@@ -45,7 +39,7 @@ afterAll(() => server.close());
 
 beforeEach(() => {
    server.use(
-      http.post(ICE_SERVERS_URL, () => {
+      http.get(ICE_SERVERS_URL, () => {
          return HttpResponse.json({ iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }] });
       }),
    );
@@ -60,7 +54,7 @@ beforeEach(() => {
       deviceOptions: {
          handlerFactory: FakeHandler.createFactory(testFakeParameters),
       },
-   });
+   }, "ws://localhost:3003/voice");
 });
 
 afterEach(() => {
@@ -75,7 +69,7 @@ async function createReadyTransports(): Promise<void> {
 
 describe("device and transport guards", () => {
    it("checkDevice throws when no device has been initialized", () => {
-      expect(() => transport.checkDevice()).toThrow();
+      expect(() => transport.checkDevice()).toThrowError(expect.objectContaining({ code: TransportErrorCode.DEVICE_NOT_INITIALIZED }));
    });
 
    it("checkSendTransport throws when the device exists but the send transport does not", async () => {
@@ -196,8 +190,10 @@ describe("createSendTransport()", () => {
    });
 
    it("fetches turn server credentials when the send transport is created", async () => {
+      let authorization: string | null = null;
       server.use(
-         http.post(ICE_SERVERS_URL, () => {
+         http.get(ICE_SERVERS_URL, ({ request }) => {
+            authorization = request.headers.get("Authorization");
             return HttpResponse.json({ iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }] });
          }),
       );
@@ -208,12 +204,13 @@ describe("createSendTransport()", () => {
       const options = fakeTransportOptions();
       await transport.createSendTransport(options);
 
-      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }] });
+      expect(authorization).toBe("Bearer test-token");
+      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }], iceTransportPolicy: "all" });
    });
 
    it("still creates send transport when fetching turn credentials fails", async () => {
       server.use(
-         http.post(ICE_SERVERS_URL, () => {
+         http.get(ICE_SERVERS_URL, () => {
             return new HttpResponse(null, { status: 404 });
          }),
       );
@@ -224,7 +221,31 @@ describe("createSendTransport()", () => {
       const options = fakeTransportOptions();
       await transport.createSendTransport(options);
 
-      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: undefined });
+      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: undefined, iceTransportPolicy: "all" });
+   });
+
+   it("uses only relay candidates when relay is required", async () => {
+      transport.iceTransportPolicy = "relay";
+      await transport.initializeDevice(fakeRouterRtpCapabilities());
+      const spy = vi.spyOn(transport.device!, "createSendTransport");
+
+      await transport.createSendTransport(fakeTransportOptions());
+
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ iceTransportPolicy: "relay" }));
+   });
+
+   it("does not create a direct transport when the instance only provides STUN", async () => {
+      server.use(http.get(ICE_SERVERS_URL, () => HttpResponse.json({ iceServers: [{ urls: "stun:stun.example.com:3478" }] })));
+      transport.iceTransportPolicy = "relay";
+      await transport.initializeDevice(fakeRouterRtpCapabilities());
+      const spy = vi.spyOn(transport.device!, "createSendTransport");
+
+      await expect(transport.createSendTransport(fakeTransportOptions())).rejects.toMatchObject({
+         name: "TransportError",
+         code: TransportErrorCode.RELAY_NOT_CONFIGURED,
+         message: expect.stringContaining("This instance has no TURN relay configured"),
+      });
+      expect(spy).not.toHaveBeenCalled();
    });
 });
 
@@ -289,7 +310,7 @@ describe("createRecvTransport()", () => {
 
    it("fetches turn server credentials when the recv transport is created", async () => {
       server.use(
-         http.post(ICE_SERVERS_URL, () => {
+         http.get(ICE_SERVERS_URL, () => {
             return HttpResponse.json({ iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }] });
          }),
       );
@@ -300,12 +321,12 @@ describe("createRecvTransport()", () => {
       const options = fakeTransportOptions();
       await transport.createRecvTransport(options);
 
-      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }] });
+      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: [{ urls: ["turn:turn.cloudflare.com:3478"] }], iceTransportPolicy: "all" });
    });
 
    it("still creates recv transport when fetching turn credentials fails", async () => {
       server.use(
-         http.post(ICE_SERVERS_URL, () => {
+         http.get(ICE_SERVERS_URL, () => {
             return new HttpResponse(null, { status: 404 });
          }),
       );
@@ -316,7 +337,20 @@ describe("createRecvTransport()", () => {
       const options = fakeTransportOptions();
       await transport.createRecvTransport(options);
 
-      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: undefined });
+      expect(spy).toHaveBeenCalledWith({ ...options, iceServers: undefined, iceTransportPolicy: "all" });
+   });
+
+   it("does not create a receive transport when relay credentials fail", async () => {
+      server.use(http.get(ICE_SERVERS_URL, () => new HttpResponse(null, { status: 503 })));
+      transport.iceTransportPolicy = "relay";
+      await transport.initializeDevice(fakeRouterRtpCapabilities());
+      const spy = vi.spyOn(transport.device!, "createRecvTransport");
+
+      await expect(transport.createRecvTransport(fakeTransportOptions())).rejects.toMatchObject({
+         code: TransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE,
+         message: expect.stringContaining("Could not get relay credentials"),
+      });
+      expect(spy).not.toHaveBeenCalled();
    });
 });
 

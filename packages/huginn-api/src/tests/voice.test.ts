@@ -264,6 +264,20 @@ describe("connection lifecycle", () => {
 });
 
 describe("transport lifecycle", () => {
+   it("reports a failed transport setup and closes signaling", async () => {
+      const error = new Error("Voice relay unavailable");
+      const onError = vi.fn();
+      const close = vi.fn();
+      signaling.close = close;
+      voice.on("connection_error", onError);
+      vi.mocked(transport.createSendTransport).mockRejectedValueOnce(error);
+
+      signaling.emit("ready", { rtpCapabilities: testFakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] });
+
+      await vi.waitFor(() => expect(onError).toHaveBeenCalledExactlyOnceWith(error));
+      expect(close).toHaveBeenCalledTimes(1);
+   });
+
    it("cancels ice restart when signaling disconnects while transport is restarting", async () => {
       transport["setStatus"]("restarting");
 

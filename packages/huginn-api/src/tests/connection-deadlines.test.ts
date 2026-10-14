@@ -49,7 +49,7 @@ async function connectSignaling(kind: "gateway" | "voice", interval = 40_000) {
    const client =
       kind === "gateway"
          ? new Gateway(makeClient(), { createSocket })
-         : new VoiceSignalingClient(makeClient(), { createSocket, url: "wss://voice.test", class: Voice });
+         : new VoiceSignalingClient(makeClient(), { createSocket, url: "wss://voice.test", api: "https://voice.test", class: Voice });
    clients.push(client);
    const connected = client instanceof Gateway ? client.connect() : client.connect("token", "channel", null);
    const socket = sockets[0]!;
@@ -152,6 +152,22 @@ function createVoiceManager() {
 }
 
 describe("voice token deadlines", () => {
+   it("reports a transport setup failure and leaves the voice channel", async () => {
+      const { gateway, voice, manager } = createVoiceManager();
+      const join = manager.connectVoice(null, "channel", "provided-token");
+      await vi.advanceTimersByTimeAsync(0);
+      expect(voice.signaling.connect).toHaveBeenCalledTimes(1);
+      manager.voiceState.confirmGatewayVoiceState({ ...manager.voiceState.gatewayVoiceState, channelId: "channel" });
+
+      const rejected = expect(join).rejects.toThrow("Voice relay unavailable");
+      voice.emit("connection_error", new Error("Voice relay unavailable"));
+      await rejected;
+
+      expect(voice.signaling.close).toHaveBeenCalledTimes(1);
+      expect(gateway.sendDefaultVoiceState).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+   });
+
    it("rejects a missing token and allows a subsequent join", async () => {
       const { gateway, voice, manager } = createVoiceManager();
       const join = manager.connectVoice(null, "channel");
@@ -260,10 +276,32 @@ describe("voice token deadlines", () => {
 
 describe("TURN credential deadlines", () => {
    async function createTransportManager() {
-      const manager = new VoiceTransportManager(makeClient(), { deviceOptions: { handlerFactory: FakeHandler.createFactory(testFakeParameters) } });
+      const manager = new VoiceTransportManager(
+         makeClient(),
+         { deviceOptions: { handlerFactory: FakeHandler.createFactory(testFakeParameters) } },
+         "ws://localhost:3003/voice",
+      );
       await manager.initializeDevice(testFakeParameters.generateRouterRtpCapabilities());
       return manager;
    }
+
+   it("fails a forced relay join when the credential request times out", async () => {
+      vi.spyOn(globalThis, "fetch").mockImplementation(
+         (_url, init) =>
+            new Promise((_resolve, reject) => {
+               init!.signal!.addEventListener("abort", () => reject(init!.signal!.reason), { once: true });
+            }),
+      );
+      const manager = await createTransportManager();
+      manager.iceTransportPolicy = "relay";
+      const creating = manager.createSendTransport(testFakeParameters.generateTransportRemoteParameters());
+      const rejected = expect(creating).rejects.toThrow("Could not get relay credentials");
+
+      await vi.advanceTimersByTimeAsync(CONSTANTS.TURN_CREDENTIAL_TIMEOUT_MS);
+      await rejected;
+      expect(manager.sendTransport).toBeUndefined();
+      expect(vi.getTimerCount()).toBe(0);
+   });
 
    it.each(["send", "recv"] as const)("aborts a stalled fetch and still creates the %s transport", async (direction) => {
       let signal!: AbortSignal;

@@ -17,6 +17,8 @@ import {
    convertToMediaKind,
    EventEmitter,
    recordSpanError,
+   TransportErrorCode,
+   type APIGetIceServersResult,
    type ConsumerData,
    type GatewayVoiceStateFlags,
    type HMediaKind,
@@ -39,6 +41,7 @@ import * as mediasoupClient from "mediasoup-client";
 import type { TransportOptions } from "./types";
 
 import { TransportError, type HuginnClient } from ".";
+import { defaultClientOptions } from "./utils";
 
 type Events = {
    send_transport_ready: undefined;
@@ -96,6 +99,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
    public producers: Map<HMediaKind, Producer<MediasoupAppData>> = new Map();
    public consumers: Map<string, Consumer<MediasoupAppData>> = new Map();
    private options?: TransportOptions;
+   private iceServersUrl: string;
+   public iceTransportPolicy: RTCIceTransportPolicy;
 
    private pendingRemoteProducers = new Map<string, ProducerData>();
 
@@ -104,10 +109,16 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return this._status;
    }
 
-   public constructor(client: HuginnClient, options?: TransportOptions) {
+   public constructor(client: HuginnClient, options?: TransportOptions, voiceApi: string = defaultClientOptions.voice.api) {
       super();
       this.client = client;
       this.options = options;
+      this.iceTransportPolicy = options?.iceTransportPolicy ?? "all";
+
+      console.log(voiceApi);
+      const url = new URL(voiceApi);
+      url.pathname = url.pathname + `/ice-servers`;
+      this.iceServersUrl = url.toString();
    }
 
    private getDefaultAttributes() {
@@ -183,7 +194,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       device: mediasoupClient.Device;
    } {
       if (!this.device) {
-         throw new TransportError("Transport manager's device is not initialized");
+         throw new TransportError("Transport manager's device is not initialized", TransportErrorCode.DEVICE_NOT_INITIALIZED);
       }
    }
 
@@ -192,7 +203,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       sendTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.sendTransport) throw new TransportError("Transport manager's send transport is not initialized");
+      if (!this.sendTransport)
+         throw new TransportError("Transport manager's send transport is not initialized", TransportErrorCode.SEND_TRANSPORT_NOT_INITIALIZED);
    }
 
    public checkRecvTransport(): asserts this is this & {
@@ -200,7 +212,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       recvTransport: Transport<MediasoupAppData>;
    } {
       this.checkDevice();
-      if (!this.recvTransport) throw new TransportError("Transport manager's recv transport is not initialized");
+      if (!this.recvTransport)
+         throw new TransportError("Transport manager's recv transport is not initialized", TransportErrorCode.RECV_TRANSPORT_NOT_INITIALIZED);
    }
 
    public async initializeDevice(rtpCapabilities: RtpCapabilities): Promise<void> {
@@ -228,7 +241,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const iceServers = await this.fetchTurnCredentials();
-            const transport = this.device.createSendTransport({ ...options, iceServers });
+            const transport = this.device.createSendTransport({ ...options, iceServers, iceTransportPolicy: this.iceTransportPolicy });
             this.sendTransport = transport;
             this.emit("send_transport_ready", undefined);
 
@@ -284,7 +297,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const iceServers = await this.fetchTurnCredentials();
-            const finalOptions = { ...options, iceServers };
+            const finalOptions = { ...options, iceServers, iceTransportPolicy: this.iceTransportPolicy };
             const transport = this.device.createRecvTransport(finalOptions);
             this.recvTransport = transport;
             this.emit("recv_transport_ready", undefined);
@@ -316,29 +329,36 @@ export class VoiceTransportManager extends EventEmitter<Events> {
       return await analytics.startActiveSpan("apiVoiceTransport.fetchTurnCredentials", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
          const controller = new AbortController();
-         const timeout = setTimeout(() => controller.abort(new Error("TURN credential request timed out")), CONSTANTS.TURN_CREDENTIAL_TIMEOUT_MS);
+         const timeout = setTimeout(
+            () => controller.abort(new TransportError("TURN credential request timed out", TransportErrorCode.TURN_CREDENTIAL_REQUEST_TIMEOUT)),
+            CONSTANTS.TURN_CREDENTIAL_TIMEOUT_MS,
+         );
 
          try {
-            const id = typeof window === "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_ID;
-            const token = typeof window === "undefined" ? process.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN : import.meta.env.VITE_PUBLIC_CLOUDFLARE_TURN_TOKEN;
-
-            span.setAttributes({
-               "turn.has_id": !!id,
-               "turn.has_token": !!token,
-            });
-
-            const data = { ttl: 86400 };
-            const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${id}/credentials/generate-ice-servers`, {
+            const response = await fetch(this.iceServersUrl, {
+               headers: { Authorization: `Bearer ${this.client.tokenHandler.token ?? ""}` },
                signal: controller.signal,
-               headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-               body: JSON.stringify(data),
-               method: "POST",
             });
-            if (!response.ok) throw new Error(`TURN credential request failed: ${response.status}`);
-            const json = await response.json();
-            return json.iceServers;
+            if (response.status === 501) throw new TransportError("This instance has no TURN relay configured.", TransportErrorCode.RELAY_NOT_CONFIGURED);
+            if (!response.ok)
+               throw new TransportError(`ICE server request failed: ${response.statusText} (${response.status})`, TransportErrorCode.ICE_SERVER_REQUEST_FAILED);
+
+            const result = (await response.json()) as APIGetIceServersResult;
+            const iceServers = result.iceServers;
+
+            if (this.iceTransportPolicy === "relay" && (!iceServers || iceServers.length === 0)) {
+               throw new TransportError("This instance has no TURN relay configured.", TransportErrorCode.RELAY_NOT_CONFIGURED);
+            }
+
+            return iceServers;
          } catch (e) {
             recordSpanError(e);
+
+            if (this.iceTransportPolicy === "relay") {
+               if (e instanceof TransportError) throw e;
+               throw new TransportError("Could not get relay credentials.", TransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE);
+            }
+
             return undefined;
          } finally {
             clearTimeout(timeout);
@@ -362,7 +382,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
          try {
             this.checkSendTransport();
 
-            if (this.producers.has(kind)) throw new TransportError(`Producer with kind ${kind} already exists`);
+            if (this.producers.has(kind)) throw new TransportError(`Producer with kind ${kind} already exists`, TransportErrorCode.PRODUCER_ALREADY_EXISTS);
 
             const producer = await this.sendTransport.produce<MediasoupAppData>({
                codecOptions: options?.codecOptions,
@@ -396,7 +416,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new TransportError(`Producer of kind ${kind} doesn't exist`);
+            if (!producer) throw new TransportError(`Producer of kind ${kind} doesn't exist`, TransportErrorCode.PRODUCER_NOT_FOUND);
 
             const result = await new Promise<VoiceCloseProducerResult>((res) => {
                this.emit("close_producer", { id: producer.id, kind: producer.appData.mediaKind, callback: res });
@@ -432,7 +452,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkRecvTransport();
 
             const remoteProducer = this.getRemoteProducers().find((x) => x.userId === userId && x.kind === kind);
-            if (!remoteProducer) throw new TransportError(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`);
+            if (!remoteProducer)
+               throw new TransportError(`Remote producer from user ${userId} and kind of ${kind} doesn't exist`, TransportErrorCode.REMOTE_PRODUCER_NOT_FOUND);
 
             const createResult = await new Promise<VoiceConsumeResult>((res) => {
                this.emit("create_consumer", {
@@ -458,7 +479,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             // To avoid a race condition that could happen when consumer is created and right after that the producer is removed
             if (!this.remoteProducers.has(remoteProducer.producerId)) {
                consumer.close();
-               throw new TransportError(`Remote producer with id ${remoteProducer.producerId} was deleted`);
+               throw new TransportError(`Remote producer with id ${remoteProducer.producerId} was deleted`, TransportErrorCode.REMOTE_PRODUCER_DELETED);
             }
 
             this.consumers.set(consumer.id, consumer);
@@ -485,7 +506,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`, TransportErrorCode.CONSUMER_NOT_FOUND);
 
             const result = await new Promise<VoiceResumeConsumerResult>((res) => {
                this.emit("resume_consumer", { id: consumerId, callback: res });
@@ -510,7 +531,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`, TransportErrorCode.CONSUMER_NOT_FOUND);
 
             const result = await new Promise<VoicePauseConsumerResult>((res) => {
                this.emit("pause_consumer", { id: consumerId, callback: res });
@@ -538,7 +559,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
             this.checkDevice();
 
             const consumer = this.consumers.get(consumerId);
-            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`);
+            if (!consumer) throw new TransportError(`Consumer with id ${consumerId} doesn't exist`, TransportErrorCode.CONSUMER_NOT_FOUND);
 
             if (!skipSignalling) {
                const result = await new Promise<VoiceCloseConsumerResult>((res) => {
@@ -595,6 +616,8 @@ export class VoiceTransportManager extends EventEmitter<Events> {
                throw new TransportError(`Failed to restart ice server for ${direction} transport: ${result.error}`, result.error);
             }
 
+            const iceServers = await this.fetchTurnCredentials();
+            if (iceServers) await transport.updateIceServers({ iceServers });
             await transport.restartIce({ iceParameters: result.iceParameters });
          } catch (e) {
             recordSpanError(e);
@@ -665,7 +688,7 @@ export class VoiceTransportManager extends EventEmitter<Events> {
 
          try {
             const producer = this.producers.get(kind);
-            if (!producer) throw new TransportError(`No producer with kind ${kind} was found`);
+            if (!producer) throw new TransportError(`No producer with kind ${kind} was found`, TransportErrorCode.PRODUCER_NOT_FOUND);
 
             await producer.replaceTrack({ track });
             this.emit("producer_updated", { id: producer.id, kind: producer.appData.mediaKind, track });

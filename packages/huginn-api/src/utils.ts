@@ -33,7 +33,8 @@ export const defaultClientOptions = {
       },
    } as GatewayOptions,
    voice: {
-      url: "wss://midgard.huginn.dev/voice-gateway",
+      api: "https://midgard.huginn.dev/voice",
+      url: "wss://midgard.huginn.dev/voice",
       createSocket(url) {
          return new WebSocket(url);
       },

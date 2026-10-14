@@ -224,17 +224,41 @@ export class VoiceManager<V extends Voice = Voice> extends EventEmitter<Events> 
 
                if (!voiceToken) throw new Error("Couldn't get a token for voice");
 
-               await this.voice.signaling.connect(voiceToken, channelId, guildId);
-
-               // Wait for ready
-               await new Promise<void>((r) => {
-                  const unlisten = this.voice.listen("status_changed", (d) => {
-                     if (d === "ready") {
-                        unlisten();
-                        r();
-                     }
+               let stopWaiting = () => {};
+               const ready = new Promise<void>((resolve, reject) => {
+                  const cleanup = () => {
+                     unlistenStatus();
+                     unlistenError();
+                  };
+                  const unlistenStatus = this.voice.listen("status_changed", (status) => {
+                     if (status !== "ready") return;
+                     cleanup();
+                     resolve();
                   });
+                  const unlistenError = this.voice.listen("connection_error", (error) => {
+                     cleanup();
+                     reject(error);
+                  });
+                  stopWaiting = cleanup;
                });
+
+               try {
+                  await Promise.all([
+                     Promise.resolve(this.voice.signaling.connect(voiceToken, channelId, guildId)).then((connected) => {
+                        if (!connected) throw new Error("Voice signaling disconnected before the call was ready");
+                     }),
+                     ready,
+                  ]);
+               } catch (error) {
+                  try {
+                     await this.disconnectVoice();
+                  } catch (cleanupError) {
+                     recordSpanError(cleanupError);
+                  }
+                  throw error;
+               } finally {
+                  stopWaiting();
+               }
             } finally {
                this.isConnecting = false;
             }
