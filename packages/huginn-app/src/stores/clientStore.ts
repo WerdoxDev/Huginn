@@ -9,7 +9,7 @@ import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { WebSocketBridge } from "@lib/websocket-bridge";
 import { useStore } from "zustand";
 
-import type { Environment, InstanceUrls } from "@/types";
+import type { Environment } from "@/types";
 
 import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
@@ -28,19 +28,8 @@ async function handleRevokedSession(): Promise<void> {
    await router.navigate({ to: "/login", replace: true });
 }
 
-function setClientUrls(urls: InstanceUrls) {
-   store.setState({
-      urls,
-      hostnames: {
-         api: new URL(urls.api).origin,
-         cdn: new URL(urls.cdn).origin,
-         voice: new URL(urls.voice).origin,
-      },
-   });
-}
-
 export function setHostnamesFromSettings() {
-   setClientUrls(storageStore.getState().getCachedValue("settings").currentUrls);
+   store.setState({ urls: storageStore.getState().getCachedValue("settings").currentUrls });
 }
 
 export async function selectStartupInstanceAddress(): Promise<void> {
@@ -53,7 +42,7 @@ export async function selectStartupInstanceAddress(): Promise<void> {
    const { address, value } = await tryAccessAddresses(instance, settings.currentAccessAddress, async (address) => {
       const discovery = await fetchInstanceUrls(address, instance);
       await probeInstanceUrls(discovery.urls);
-      setClientUrls(discovery.urls);
+      store.setState({ urls: discovery.urls });
       await initializeClient();
       return discovery;
    });
@@ -161,6 +150,7 @@ export async function initializeClient() {
       voice: {
          class: VoiceBridge,
          url: thisStore.urls!.voice,
+         api: thisStore.urls!.voiceApi,
          createSocket(url) {
             if (typeof window.electronAPI !== "undefined") {
                return new WebSocketBridge("voice", url);
@@ -196,12 +186,12 @@ export async function initializeClient() {
    thisStore = store.getState();
 
    const updateRoute = osInfo?.platform ? NODE_PLATFORM_TO_UPDATE_ROUTE[osInfo.platform] : undefined;
-   if (window.electronAPI && thisStore.hostnames.api && updateRoute) {
+   if (window.electronAPI && thisStore.urls?.api && updateRoute) {
       const url = `${thisStore.urls!.api}/update/${updateRoute}`;
       window.electronAPI.setUpdateUrl(url);
    }
 
-   if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
+   if (huginnWindowStore.environment === "android" && thisStore.urls?.api) {
       const url = `${thisStore.urls!.api}/update/android`;
       console.log(url, import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL);
       if (import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) {

@@ -32,8 +32,8 @@ export default function AttachmentElement(props: {
    );
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
-   const { hostnames, urls } = useClientStore();
-   const basedUrl = useMemo(() => changeCdnUrlBase(props.url, urls?.cdn ?? `${hostnames.cdn ?? ""}/cdn`), [props.url, hostnames.cdn, urls?.cdn]);
+   const { urls } = useClientStore();
+   const basedUrl = useMemo(() => changeCdnUrlBase(props.url, urls!.cdn), [props.url, urls?.cdn]);
 
    const isImage = isImageMediaType(props.contentType);
    const isVideo = isVideoMediaType(props.contentType);

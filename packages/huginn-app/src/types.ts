@@ -273,6 +273,7 @@ export type InstanceUrls = {
    gateway: string;
    cdn: string;
    voice: string;
+   voiceApi: string;
    posthog: string;
    otlp: string;
 };
@@ -308,6 +309,7 @@ export type AppSettings = {
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
    useProxy: boolean;
+   forceRelay: boolean;
    isVoiceMuted: boolean;
    isVoiceDeafened: boolean;
    isNotificationsEnabled: boolean;

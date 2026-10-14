@@ -9,8 +9,10 @@ import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { PushNotifications } from "@lib/capacitor/push-notification-plugin";
 import { getMessagesOptions, queryClient } from "@lib/queries";
+import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -40,6 +42,7 @@ function ChannelWithIdComponent() {
    const isMobile = useIsMobile();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
+   const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
 
    const { resetToCenter } = useMobileMenuStore();
@@ -93,8 +96,20 @@ function ChannelWithIdComponent() {
       e.stopPropagation();
       if (!channel) return;
 
-      await client?.voiceManager.connectVoice(null, channel.id);
-      await client?.channels.ring(channel.id, null);
+      try {
+         await client?.voiceManager.connectVoice(null, channel.id);
+         await client?.channels.ring(channel.id, null);
+      } catch (error) {
+         updateModals({
+            info: {
+               isOpen: true,
+               status: "error",
+               title: "Connecting To Voice Failed",
+               text: getVoiceConnectionErrorMessage(error),
+            },
+         });
+         return;
+      }
 
       posthog.capture("channel:call_button_click");
    }

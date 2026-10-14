@@ -2,6 +2,7 @@ import { useHover } from "@hooks/useHover";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
 import { type Snowflake } from "@huginnjs/shared";
 import { VoiceClient } from "@lib/voice/voice-client";
+import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { useVoiceStore } from "@stores/voiceStore";
@@ -75,13 +76,13 @@ export default function VoiceControls(props: {
    }
 
    function handleConnect() {
-      VoiceClient.sendMessage("connect_voice", { guildId: null, channelId: props.channelId }).catch(() => {
+      VoiceClient.sendMessage("connect_voice", { guildId: null, channelId: props.channelId }).catch((error: unknown) => {
          updateModals({
             info: {
                isOpen: true,
                status: "error",
                title: "Connecting To Voice Failed",
-               text: "Make sure you have an internet connection and try again.",
+               text: getVoiceConnectionErrorMessage(error),
             },
          });
       });

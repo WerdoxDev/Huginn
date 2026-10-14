@@ -14,6 +14,7 @@ type PendingRequest = {
 };
 
 const REQUEST_TIMEOUT_MS = 15000;
+const CONNECT_VOICE_TIMEOUT_MS = 45000;
 
 export class VoiceClient {
    private static channel?: BroadcastChannel;
@@ -52,7 +53,7 @@ export class VoiceClient {
          const timeout = setTimeout(() => {
             this.pendingRequests.delete(requestId);
             reject(new Error(`Voice request '${type}' timed out`));
-         }, REQUEST_TIMEOUT_MS);
+         }, type === "connect_voice" ? CONNECT_VOICE_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
 
          this.pendingRequests.set(requestId, { type, resolve, reject, timeout });
 

@@ -76,6 +76,7 @@ export class VoiceBridge extends Voice {
 
    public constructor(client: HuginnClient, options?: Partial<VoiceOptions>) {
       super(client, options);
+      this.transport.iceTransportPolicy = storageStore.getState().getCachedValue("settings").forceRelay ? "relay" : "all";
 
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
@@ -267,6 +268,9 @@ export class VoiceBridge extends Voice {
    }
 
    private handleStorageUpdated(current: AppSettings, previous: AppSettings) {
+      if (current.forceRelay !== previous.forceRelay) {
+         this.transport.iceTransportPolicy = current.forceRelay ? "relay" : "all";
+      }
       if (this.status !== "ready") {
          return;
       }

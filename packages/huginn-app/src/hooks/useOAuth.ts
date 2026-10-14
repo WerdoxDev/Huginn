@@ -1,5 +1,4 @@
-import type { OAuthFlow, OAuthResult, OAuthProvider } from "@huginnjs/shared";
-
+import { type OAuthFlow, type OAuthResult, type OAuthProvider } from "@huginnjs/shared";
 import { listenEvent } from "@lib/event-handler";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
@@ -58,6 +57,17 @@ export function useOAuth() {
       }
 
       const result = await waitForOauth();
+      // if (result?.error === OAuthCode.EMAIL_IN_USE) {
+      //    updateModals({
+      //       info: {
+      //          isOpen: true,
+      //          status: "error",
+      //          title: "Email already in use",
+      //          text: "An account already uses this email. Sign in with your existing method, then connect Google in Settings.",
+      //       },
+      //    });
+      //    return null;
+      // }
       if (result?.handoff_code) {
          try {
             const tokens = await client.oauth.exchangeHandoff(result.handoff_code);
@@ -86,11 +96,21 @@ export function useOAuth() {
                   isOpen: true,
                   status: "error",
                   title: "Could not complete sign-in",
-                  text: "Please try signing in with Google again.",
+                  text: "You were redirected correctly but Huginn failed to sign you in. Please try again.",
                },
             });
             return null;
          }
+      } else if (result?.error) {
+         updateModals({
+            info: {
+               isOpen: true,
+               status: "error",
+               title: "Could not complete OAuth flow",
+               text: "Please refer to the error message on the redirect page for more information, or try again.",
+            },
+         });
+         return null;
       }
 
       return result;

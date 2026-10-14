@@ -24,7 +24,7 @@ export default function ConnectionStatus() {
             {gatewayStatus ? statuses[gatewayStatus].text : statuses["idle"].text}
          </span>
          {clientStore.isInitialized && gatewayStatus === "connecting" && (
-            <span className="text-text/80 text-xs font-medium uppercase">via {clientStore.hostnames.api}</span>
+            <span className="text-text/80 text-xs font-medium uppercase">via {clientStore.urls?.cdn}</span>
          )}
       </div>
    );

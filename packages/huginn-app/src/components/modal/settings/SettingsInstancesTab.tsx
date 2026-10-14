@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { InstanceProfile, InstanceUrls, SettingsTabProps } from "@/types";
 
-const urlKeys = ["api", "gateway", "cdn", "voice", "posthog", "otlp"] as const;
+const urlKeys = ["api", "gateway", "cdn", "voice", "voiceApi", "posthog", "otlp"] as const;
 
 function comparableOverrides(overrides?: Record<string, Partial<InstanceUrls>>) {
    return Object.entries(overrides ?? {})
