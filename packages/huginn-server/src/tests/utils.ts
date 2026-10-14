@@ -17,10 +17,9 @@ import {
    omitArray,
 } from "@huginnjs/shared";
 
-import { createAuthSession } from "#utils/auth-session";
-
 import { gateway } from "#server";
 import { env } from "#setup";
+import { createAuthSession } from "#utils/auth-session";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & {
@@ -95,7 +94,7 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
       d: {
          token: finalUser.accessToken,
          intents: 0,
-         properties: { os: "test", browser: "test", device: "test" },
+         properties: { os: "test", library: "test", device: "test" },
       },
    };
 
