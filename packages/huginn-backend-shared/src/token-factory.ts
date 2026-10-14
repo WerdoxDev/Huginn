@@ -18,7 +18,7 @@ export type TokenPayload<Type extends TokenType> = Type extends "user-access"
      : Type extends "oauth"
        ? OAuthTokenPayload
        : Type extends "oauth-link"
-         ? { userId: Snowflake; sessionId: Snowflake; purpose: "connect-google" }
+         ? { userId: Snowflake; sessionId: Snowflake; purpose: "connect-google" | "connect-github" }
        : Type extends "voice"
          ? { userId: Snowflake }
          : any;

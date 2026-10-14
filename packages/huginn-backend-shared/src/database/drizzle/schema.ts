@@ -47,6 +47,7 @@ export const identityProvider = pgTable(
       // You can use { mode: "bigint" } if numbers are exceeding js number limitations
       id: bigint({ mode: "bigint" }).primaryKey().notNull(),
       providerUserId: text().notNull(),
+      accountIdentifier: text(),
       // You can use { mode: "bigint" } if numbers are exceeding js number limitations
       userId: bigint({ mode: "bigint" }),
       completed: boolean().notNull(),

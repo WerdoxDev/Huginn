@@ -58,11 +58,12 @@ model EmailVerification {
 }
 
 model IdentityProvider {
-  id             BigInt  @id
-  providerUserId String
-  userId         BigInt?
-  completed      Boolean
-  providerType   String
+  id                BigInt  @id
+  providerUserId    String
+  accountIdentifier String?
+  userId            BigInt?
+  completed         Boolean
+  providerType      String
 
   user User? @relation(fields: [userId], references: [id])
 
@@ -95,6 +96,7 @@ model AuthSession {
 model OAuthHandoff {
   codeHash  String   @id
   userId    BigInt
+  providerType String @default("google")
   expiresAt DateTime
   createdAt DateTime @default(now())
 
