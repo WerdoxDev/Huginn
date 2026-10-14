@@ -61,6 +61,13 @@ export const getGoogleCallback = new Elysia().get(
       if (!cookieValue) return forbidden(status);
       const { flow, state: cookie_state, codeVerifier, redirect_url, origin, link } = cookieValue;
 
+      const redirectWith = (params: Record<string, string>) => {
+         const redirectUrl = new URL(redirect_url);
+         redirectUrl.search = new URLSearchParams({ flow, ...params }).toString();
+         return redirect(redirectUrl.toString(), 302);
+      };
+      const fail = (reason: OAuthCode) => redirectWith({ error: reason });
+
       if (cookie_state !== state || !state) {
          // consola.info("Cookie state mismatch", "cookie:", cookie_state, "state:", state);
          return forbidden(status);
@@ -101,25 +108,17 @@ export const getGoogleCallback = new Elysia().get(
          });
 
          if (link) {
-            const redirectUrl = new URL(redirect_url);
-            redirectUrl.searchParams.delete("access_token");
-            redirectUrl.searchParams.delete("refresh_token");
-            redirectUrl.searchParams.delete("handoff_code");
-            redirectUrl.searchParams.delete("oauth_token");
-            redirectUrl.searchParams.delete("connected");
-            redirectUrl.searchParams.delete("error");
-            redirectUrl.searchParams.set("flow", flow);
-            const fail = (reason: OAuthCode) => {
-               redirectUrl.searchParams.set("error", reason);
-               return redirect(redirectUrl.toString(), 302);
-            };
-
+            // link is expired
             if (!(await isActiveOAuthLinkSession(link.userId, link.sessionId))) return fail(OAuthCode.LINK_EXPIRED);
+
+            // Identity provider exists and is completed, but is connected to a different user
             if (identityProvider?.completed && identityProvider.userId !== BigInt(link.userId)) return fail(OAuthCode.ACCOUNT_ALREADY_CONNECTED);
 
             const currentProvider = await prisma.identityProvider.findFirst({
                where: { userId: BigInt(link.userId), providerType: "google", completed: true },
             });
+
+            // Provider is already connected to a different user
             if (currentProvider && currentProvider.providerUserId !== googleUser.id) return fail(OAuthCode.PROVIDER_ALREADY_CONNECTED);
 
             if (!identityProvider) {
@@ -140,21 +139,18 @@ export const getGoogleCallback = new Elysia().get(
                if (!updated.count) return fail(OAuthCode.ACCOUNT_ALREADY_CONNECTED);
             }
 
-            redirectUrl.searchParams.set("connected", "google");
-            return redirect(redirectUrl.toString(), 302);
+            return redirectWith({ connected: "google" });
          }
 
          // Identity provider exists and is completed
          if (identityProvider?.completed && identityProvider?.userId) {
             const handoffCode = await createOAuthHandoff(identityProvider.userId.toString());
+            return redirectWith({ handoff_code: handoffCode });
+         }
 
-            const redirectUrl = new URL(redirect_url);
-            redirectUrl.searchParams.delete("access_token");
-            redirectUrl.searchParams.delete("refresh_token");
-            redirectUrl.searchParams.delete("oauth_token");
-            redirectUrl.searchParams.set("flow", flow);
-            redirectUrl.searchParams.set("handoff_code", handoffCode);
-            return redirect(redirectUrl.toString(), 302);
+         // Existing user with the same email
+         if (await prisma.user.exists({ email: googleUser.email })) {
+            return fail(OAuthCode.ACCOUNT_ALREADY_CONNECTED);
          }
 
          // Does not exist or is not completed
@@ -195,27 +191,12 @@ export const getGoogleCallback = new Elysia().get(
             CONSTANTS.OAUTH_TOKEN_EXPIRE_TIME,
          );
 
-         const redirectUrl = new URL(redirect_url);
-         redirectUrl.searchParams.delete("access_token");
-         redirectUrl.searchParams.delete("refresh_token");
-         redirectUrl.searchParams.delete("handoff_code");
-         redirectUrl.searchParams.delete("oauth_token");
-         redirectUrl.searchParams.set("flow", flow);
-         redirectUrl.searchParams.set("oauth_token", token);
-         return redirect(redirectUrl.toString(), 302);
+         return redirectWith({ oauth_token: token });
       }
 
       // User clicked "Cancel"
       if (error === "access_denied") {
-         const redirectUrl = new URL(redirect_url);
-         redirectUrl.searchParams.delete("access_token");
-         redirectUrl.searchParams.delete("refresh_token");
-         redirectUrl.searchParams.delete("handoff_code");
-         redirectUrl.searchParams.delete("oauth_token");
-         redirectUrl.searchParams.set("flow", flow);
-         redirectUrl.searchParams.set("error", OAuthCode.CANCELLED);
-
-         return redirect(redirectUrl.toString(), 302);
+         return redirectWith({ error: OAuthCode.CANCELLED });
       }
       if (error || !state) {
          // consola.info("Error or no state");

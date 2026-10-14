@@ -27,6 +27,7 @@ export const getInstance = new Elysia().get("/api/instance", ({ request, status 
          gateway: `${socketOrigin}/gateway`,
          cdn: `${origin}/cdn`,
          voice: `${socketOrigin}/voice`,
+         voiceApi: `${origin}/voice`,
          posthog: env.POSTHOG_HOST,
          otlp: env.OTLP_TRACE_URL.replace(/\/v1\/traces\/?$/, "").replace(/\/$/, ""),
          ...overrides,

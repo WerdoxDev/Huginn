@@ -1,7 +1,7 @@
 import { createSHA265Hash, forbidden, verifyToken } from "@huginn/backend-shared";
 import { OAuthCode } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { env } from "#setup";
 import { isActiveOAuthLinkSession } from "#utils/oauth-link";
