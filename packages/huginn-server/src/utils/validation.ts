@@ -59,7 +59,7 @@ export async function validateCorrectPassword(inputPassword: string | undefined,
 }
 
 export function validatePassword(password: string | undefined | null, errorObject: ErrorFactory, fieldName = "password") {
-   if (password && password.length < CONSTANTS.PASSWORD_MIN_LENGTH) {
+   if (password !== undefined && password !== null && password.length < CONSTANTS.PASSWORD_MIN_LENGTH) {
       errorObject.addError(fieldName, Fields.wrongLength(CONSTANTS.PASSWORD_MIN_LENGTH));
       return false;
    }

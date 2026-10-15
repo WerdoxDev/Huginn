@@ -1,9 +1,10 @@
 import { createErrorFactory, createHuginnError, globalPlugin } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import { CONSTANTS, type APIPostRegisterResult, Errors } from "@huginnjs/shared";
+import { type APIPostRegisterResult, Errors } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { issueEmailVerificationCode } from "#utils/email-verification";
+import { sendEmailVerificationEmail } from "#utils/route-utils";
 import { validateDisplayName, validateEmail, validateEmailUnique, validatePassword, validateUsername, validateUsernameUnique } from "#utils/validation";
 
 const schema = t.Object({
@@ -40,16 +41,9 @@ export const postRegister = new Elysia().use(globalPlugin).post(
 
       const user = await prisma.user.createOne(body);
 
-      const code = generateVerificationCode();
-      await prisma.emailVerification.createOrUpdate({
-         userId: user.id,
-         email: user.email,
-         expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
-         code,
-         purpose: "registration",
-      });
+      const code = await issueEmailVerificationCode(user.id, user.email.toLowerCase(), "registration");
 
-      global.waitUntil(async () => await sendVerificationEmail(user.email, code));
+      global.waitUntil(async () => await sendEmailVerificationEmail(user.email, code));
 
       const json: APIPostRegisterResult = {
          ...user,

@@ -3,11 +3,12 @@ import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
+import { type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { createAuthSession } from "#utils/auth-session";
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { issueEmailVerificationCode } from "#utils/email-verification";
+import { sendEmailVerificationEmail } from "#utils/route-utils";
 
 export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
@@ -33,16 +34,9 @@ export const postLogin = new Elysia().use(globalPlugin).post(
       });
 
       if (!userVerificationState.emailVerifiedAt) {
-         const code = generateVerificationCode();
-         await prisma.emailVerification.createOrUpdate({
-            userId: user.id,
-            email: user.email,
-            expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
-            code,
-            purpose: "registration",
-         });
+         const code = await issueEmailVerificationCode(user.id, user.email, "registration");
 
-         global.waitUntil(async () => await sendVerificationEmail(user.email, code));
+         global.waitUntil(async () => await sendEmailVerificationEmail(user.email, code));
 
          const json: APIPostLoginResult = { ...user, pendingEmail: user.email };
          return status("Accepted", json);

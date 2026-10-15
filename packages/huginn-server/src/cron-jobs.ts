@@ -8,6 +8,7 @@ export async function startCronJobs() {
 
    await removeEmptyChannels();
    Bun.cron("@hourly", async () => await removeExpiredEmailVerifications());
+   Bun.cron("@hourly", async () => await removeExpiredPasswordResets());
 }
 
 async function removeExpiredEmailVerifications() {
@@ -16,6 +17,14 @@ async function removeExpiredEmailVerifications() {
    const result = await prisma.emailVerification.deleteMany({ where: { expiresAt: { lt: new Date() } } });
 
    cronLogger.info({ count: result.count }, "finished deleting expired email verifications");
+}
+
+async function removeExpiredPasswordResets() {
+   cronLogger.info("delete expired password resets");
+
+   const result = await prisma.passwordReset.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+
+   cronLogger.info({ count: result.count }, "finished deleting expired password resets");
 }
 
 async function removeEmptyChannels() {

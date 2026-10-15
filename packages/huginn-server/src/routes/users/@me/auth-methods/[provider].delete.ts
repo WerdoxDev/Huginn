@@ -18,6 +18,11 @@ export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
          where: { id: userId },
          select: { password: true },
       });
+      const connected = await prisma.identityProvider.findFirst({
+         where: { userId, providerType: provider, completed: true },
+      });
+      if (!connected) return createHuginnError(createErrorFactory(Errors.oauthProviderNotConnected()), status, "Not Found");
+
       if (tokenPayload.authType === "password") {
          const passwordError = createErrorFactory(Errors.invalidFormBody());
          if (!body?.password) passwordError.addError("password", Fields.required());
@@ -25,11 +30,6 @@ export const deleteAuthMethod = new Elysia().use(verifyJwt()).delete(
          else await validateCorrectPassword(body.password, user.password, passwordError);
          if (passwordError.hasErrors()) return createHuginnError(passwordError, status);
       }
-      const connected = await prisma.identityProvider.findFirst({
-         where: { userId, providerType: provider, completed: true },
-      });
-      if (!connected) return createHuginnError(createErrorFactory(Errors.oauthProviderNotConnected()), status, "Not Found");
-
       if (!user.password) {
          const otherProviders = await prisma.identityProvider.findMany({
             where: { userId, providerType: { not: provider }, completed: true },

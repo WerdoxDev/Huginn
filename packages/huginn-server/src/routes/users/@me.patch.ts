@@ -1,5 +1,5 @@
 import { createErrorFactory, createHuginnError, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
-import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
+import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
@@ -7,7 +7,8 @@ import Elysia, { t } from "elysia";
 import { gateway } from "#server";
 import { env } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { issueEmailVerificationCode } from "#utils/email-verification";
+import { sendEmailVerificationEmail } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import {
    validateCorrectPassword,
@@ -143,6 +144,10 @@ export const patchMe = new Elysia()
             { select: selectPrivateUser },
          );
 
+         if (body.newPassword !== undefined) {
+            await prisma.passwordReset.deleteMany({ where: { userId: BigInt(tokenPayload.id) } });
+         }
+
          if (body.newPassword === null) {
             const revokedSessions = await prisma.authSession.updateManyAndReturn({
                where: { userId: BigInt(tokenPayload.id), revokedAt: null },
@@ -164,25 +169,19 @@ export const patchMe = new Elysia()
             for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
          }
 
-         let pendingEmailVerification: EmailVerification | undefined;
+         let pendingEmail: string | undefined;
          email_verification: if (body.email) {
             // because we can't rate limit, we need to check the resend cooldown manually here
-            const existingVerification = await prisma.emailVerification.getByUserId(tokenPayload.id);
+            const existingVerification = await prisma.emailVerification.findUnique({ where: { userId: BigInt(tokenPayload.id) } });
             if (existingVerification && existingVerification.createdAt.getTime() > Date.now() - CONSTANTS.EMAIL_VERIFICATION_RESEND_COOLDOWN) {
                break email_verification;
             }
 
-            const expiresAt = Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW;
-            const code = generateVerificationCode();
-            pendingEmailVerification = await prisma.emailVerification.createOrUpdate({
-               userId: user.id,
-               email: body.email,
-               expiresAt,
-               code,
-               purpose: "email_change",
-            });
+            const email = body.email;
+            const code = await issueEmailVerificationCode(user.id, email, "email_change");
+            pendingEmail = email;
             global.waitUntil(async () => {
-               await sendVerificationEmail(pendingEmailVerification!.email, pendingEmailVerification!.code);
+               await sendEmailVerificationEmail(email, code);
             });
          }
 
@@ -194,7 +193,7 @@ export const patchMe = new Elysia()
 
          const json: APIPatchCurrentUserResult = {
             ...updatedUser,
-            pendingEmail: pendingEmailVerification?.email,
+            pendingEmail,
          };
          return status("OK", json);
       },
