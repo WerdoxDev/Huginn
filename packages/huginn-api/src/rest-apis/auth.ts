@@ -1,6 +1,8 @@
 import type {
    APIPostLoginJSONBody,
    APIPostLoginResult,
+   APIPostPasswordResetConfirmJSONBody,
+   APIPostPasswordResetRequestJSONBody,
    APIPostNotificationTokenJSONBody,
    APIPostRefreshTokenJSONBody,
    APIPostRefreshTokenResult,
@@ -21,6 +23,14 @@ export class AuthAPI {
 
    public async login(body: APIPostLoginJSONBody): Promise<APIPostLoginResult> {
       return this.rest.post(Routes.login(), { body }) as Promise<APIPostLoginResult>;
+   }
+
+   public async requestPasswordReset(body: APIPostPasswordResetRequestJSONBody): Promise<void> {
+      await this.rest.post(Routes.passwordResetRequest(), { body });
+   }
+
+   public async confirmPasswordReset(body: APIPostPasswordResetConfirmJSONBody, authenticated = false): Promise<void> {
+      await this.rest.post(Routes.passwordResetConfirm(), { body, auth: authenticated });
    }
 
    public async register(body: APIPostRegisterJSONBody): Promise<APIPostRegisterResult> {
