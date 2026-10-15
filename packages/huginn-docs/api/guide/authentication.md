@@ -47,6 +47,12 @@ const result = await client.register({
 
 The exact request and response shapes come from `@huginnjs/shared`.
 
+## Reset a password with an email code
+
+Request a six-digit code with `client.auth.requestPasswordReset({ email })`. The request returns the same confirmation whether or not the address belongs to an eligible account. Enter the code and a new password with `client.auth.confirmPasswordReset({ email, code, newPassword })`. Codes expire after 10 minutes and can be used once. Requests and code checks are rate limited. A reset from the sign-in screen revokes password sessions; sign in again with the new password.
+
+The same request works while signed in: pass the current account email automatically, then call `client.auth.confirmPasswordReset({ email, code, newPassword }, true)`. The access token identifies the current session, which stays signed in. Other password sessions are revoked; OAuth sessions are unaffected.
+
 ## Initialize a session
 
 `initialize()` performs the complete startup sequence:
