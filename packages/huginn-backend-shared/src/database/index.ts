@@ -7,7 +7,6 @@ import { attachmentExtension } from "./attachment";
 import { authSessionExtension } from "./authSession";
 import { channelExtension } from "./channel";
 import { contributionExtension } from "./contribution";
-import { emailVerificationExtension } from "./emailVerification";
 import { embedExtension } from "./embed";
 import { messagesExtension } from "./message";
 import { messagePinExtension } from "./messagePin";
@@ -46,7 +45,6 @@ export const prisma = prismaBase
    .$extends(embedExtension)
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
-   .$extends(emailVerificationExtension)
    .$extends(notificationTokenExtension)
    .$extends(reactionExtension)
    .$extends(contributionExtension)

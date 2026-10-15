@@ -219,7 +219,7 @@ export const emailVerification = pgTable(
          .notNull(),
       // You can use { mode: "bigint" } if numbers are exceeding js number limitations
       userId: bigint({ mode: "bigint" }).notNull(),
-      code: text().notNull(),
+      codeHash: text().notNull(),
       purpose: text().default("email_change").notNull(),
       email: text().notNull(),
    },

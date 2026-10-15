@@ -19,9 +19,9 @@ export type TokenPayload<Type extends TokenType> = Type extends "user-access"
        ? OAuthTokenPayload
        : Type extends "oauth-link"
          ? { userId: Snowflake; sessionId: Snowflake; purpose: "connect-google" | "connect-github" }
-       : Type extends "voice"
-         ? { userId: Snowflake }
-         : any;
+         : Type extends "voice"
+           ? { userId: Snowflake }
+           : any;
 
 const tokenSecrets: Record<TokenType, Uint8Array<ArrayBufferLike>> = {
    "user-access": ACCESS_TOKEN_SECRET_ENCODED,
