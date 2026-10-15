@@ -1,3 +1,4 @@
+import ResetPasswordButton from "@components/button/ResetPasswordButton";
 import PasswordInput from "@components/input/PasswordInput";
 import { providerNames, useConnectedAccountActions } from "@hooks/useConnectedAccountActions";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -26,9 +27,16 @@ export default function ConnectedAccountPasswordModal() {
       }
       try {
          if (modal.action === "connect") {
-            await connectMutation.mutateAsync({ provider: modal.provider, password, openedWindow });
+            await connectMutation.mutateAsync({
+               provider: modal.provider,
+               password,
+               openedWindow,
+            });
          } else {
-            await disconnectMutation.mutateAsync({ provider: modal.provider, password });
+            await disconnectMutation.mutateAsync({
+               provider: modal.provider,
+               password,
+            });
          }
          updateModals({ connectedAccountPassword: { isOpen: false } });
       } catch {
@@ -55,6 +63,7 @@ export default function ConnectedAccountPasswordModal() {
                      <HuginnInput.Input />
                      <PasswordInput.ToggleButton />
                   </HuginnInput.Wrapper>
+                  <ResetPasswordButton from="connectedAccountPassword" />
                </PasswordInput>
             </DialogBody>
             <DialogActions>
@@ -66,7 +75,7 @@ export default function ConnectedAccountPasswordModal() {
                >
                   Cancel
                </HuginnButton>
-               <HuginnLoadingButton type="submit" color="primary" className="h-10 w-full" isLoading={formState.isSubmitting}>
+               <HuginnLoadingButton color="primary" className="h-10 w-full" isLoading={formState.isSubmitting}>
                   {modal.action === "connect" ? "Connect" : "Disconnect"}
                </HuginnLoadingButton>
             </DialogActions>

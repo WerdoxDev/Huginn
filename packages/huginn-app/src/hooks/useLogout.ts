@@ -20,7 +20,8 @@ export function useLogout() {
             await client?.logout();
             await reset;
          } else {
-            client?.clearSessionLocally();
+            await client?.logout();
+            return;
          }
 
          await client?.gateway.connect();

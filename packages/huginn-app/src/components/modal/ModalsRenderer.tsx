@@ -20,6 +20,7 @@ const ChangeUsernameModal = lazy(() => import("./profile/ChangeUsernameModal"));
 const ChangeDisplayNameModal = lazy(() => import("./profile/ChangeDisplayNameModal"));
 const ChangeEmailModal = lazy(() => import("./profile/ChangeEmailModal"));
 const VerifyEmailModal = lazy(() => import("./profile/VerifyEmailModal"));
+const PasswordResetModal = lazy(() => import("./PasswordResetModal"));
 const ChangePasswordModal = lazy(() => import("./profile/ChangePasswordModal"));
 const ConnectedAccountPasswordModal = lazy(() => import("./ConnectedAccountPasswordModal"));
 const UserProfileModal = lazy(() => import("./UserProfileModal"));
@@ -42,6 +43,7 @@ export default function ModalsRenderer() {
       changeDisplayName,
       changeEmail,
       verifyEmail,
+      passwordReset,
       changePassword,
       connectedAccountPassword,
       userProfile,
@@ -70,6 +72,7 @@ export default function ModalsRenderer() {
             modal={verifyEmail}
             onClose={() => updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } })}
          />
+         <BaseModal renderChildren={<PasswordResetModal />} modal={passwordReset} onClose={() => updateModals({ passwordReset: { isOpen: false } })} />
          {user && (
             <>
                <BaseModal

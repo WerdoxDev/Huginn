@@ -16,9 +16,6 @@ export default function VerifyEmailModal() {
    const { verifyEmail: modal, updateModals } = useModals();
    const { register, handleSubmit, formState, handleErrors, setFocus } = useHuginnForm<Inputs>();
    const { countdown, startCountdown } = useCountdown();
-
-   const canResend = countdown === 0;
-
    const verificationMutation = useVerifyEmail(async () => {
       updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } });
       await modal.onSuccess?.();
@@ -48,12 +45,12 @@ export default function VerifyEmailModal() {
    }
 
    return (
-      <HuginnDialogPanel className="lg:max-w-xs">
+      <HuginnDialogPanel className="lg:max-w-sm">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
                <HuginnDialogTitle title={"Verify Email"} />
-               <div className="text-text/80">
-                  We've sent a verification code to <span className="text-text font-semibold">{modal.pendingEmail || "your email"}</span>
+               <div className="text-text/70">
+                  We've sent a verification code to <span className="text-text">{modal.pendingEmail || "your email"}</span>
                </div>
                <HuginnInput {...register("verificationCode", { required: false })}>
                   <HuginnInput.Label>Verification Code</HuginnInput.Label>
@@ -66,12 +63,12 @@ export default function VerifyEmailModal() {
                   type="button"
                   color="surface"
                   onClick={onResend}
-                  disabled={!canResend || verificationMutation.isPending}
+                  disabled={countdown > 0 || verificationMutation.isPending}
                   className="h-10 w-full"
                >
-                  Resend Code {!canResend && <span className="text-sm text-white/80">({countdown}s)</span>}
+                  Resend code {countdown > 0 ? `(${countdown}s)` : ""}
                </HuginnLoadingButton>
-               <HuginnLoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-52" type="submit">
+               <HuginnLoadingButton isLoading={formState.isSubmitting} color="primary" className="h-10 w-full" type="submit">
                   Verify
                </HuginnLoadingButton>
             </DialogActions>

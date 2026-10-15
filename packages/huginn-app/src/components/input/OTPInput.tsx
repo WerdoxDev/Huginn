@@ -7,12 +7,13 @@ export default function OTPInput() {
    const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
    const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
    const mockInputRef = useRef<HTMLInputElement | null>(null);
+   const hasEdited = useRef(false);
 
    useImperativeHandle(inputContext.ref, () => mockInputRef.current!);
    // Sync with react-hook-form
 
    useEffect(() => {
-      if (!mockInputRef.current) return;
+      if (!mockInputRef.current || !hasEdited.current) return;
 
       const code = digits.join("");
       const event = new Event("input", { bubbles: true });
@@ -30,6 +31,7 @@ export default function OTPInput() {
 
       const newDigits = [...digits];
       newDigits[index] = value.slice(-1);
+      hasEdited.current = true;
       setDigits(newDigits);
 
       // Auto-focus next input
@@ -45,9 +47,11 @@ export default function OTPInput() {
 
          if (digits[index]) {
             newDigits[index] = "";
+            hasEdited.current = true;
             setDigits(newDigits);
          } else if (index > 0) {
             newDigits[index - 1] = "";
+            hasEdited.current = true;
             setDigits(newDigits);
             inputRefs.current[index - 1]?.focus();
          }
@@ -70,6 +74,7 @@ export default function OTPInput() {
       for (let i = 0; i < pastedText.length; i++) {
          newDigits[i] = pastedText[i];
       }
+      hasEdited.current = true;
       setDigits(newDigits);
 
       if (pastedText.length === 6) {

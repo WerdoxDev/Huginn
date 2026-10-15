@@ -1,6 +1,7 @@
 import type { APIPostLoginJSONBody, OAuthProvider } from "@huginnjs/shared";
 
 import LinkButton from "@components/button/LinkButton";
+import ResetPasswordButton from "@components/button/ResetPasswordButton";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -28,7 +29,7 @@ function LoginComponent() {
    const navigate = useNavigate();
    const { updateModals } = useModals();
 
-   const { register, handleSubmit, handleErrors, formState } = useHuginnForm<Inputs>();
+   const { register, handleSubmit, handleErrors, formState, values } = useHuginnForm<Inputs>();
 
    const mutation = useHuginnMutation(
       {
@@ -76,7 +77,11 @@ function LoginComponent() {
    async function handleOAuth(type: OAuthProvider) {
       const result = await startOAuth(type);
       if (result?.handoff_code) {
-         await initializeClient({ token: client?.tokenHandler.token, refreshToken: client?.tokenHandler.refreshToken, navigatePath: "/channels/@me" });
+         await initializeClient({
+            token: client?.tokenHandler.token,
+            refreshToken: client?.tokenHandler.refreshToken,
+            navigatePath: "/channels/@me",
+         });
       } else if (result?.oauth_token) {
          await navigate({ to: "/oauth-redirect", search: { oauth_token: result.oauth_token } });
       }
@@ -125,9 +130,8 @@ function LoginComponent() {
                   <HuginnInput.Input />
                   <PasswordInput.ToggleButton />
                </HuginnInput.Wrapper>
+               <ResetPasswordButton suggestedEmail={values.login?.includes("@") ? values.login : undefined} />
             </PasswordInput>
-
-            {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
 
             <HuginnLoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login

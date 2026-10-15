@@ -86,6 +86,10 @@ const initialStore = () => ({
       pendingEmail: string | null;
       onSuccess?: () => Promise<void> | void;
    },
+   passwordReset: { isOpen: false, suggestedEmail: "", mode: "login" } as DefaultModal & {
+      suggestedEmail: string;
+      mode: "login" | "authenticated";
+   },
    changePassword: { isOpen: false, removePassword: false } as DefaultModal & { removePassword: boolean },
    connectedAccountPassword: { isOpen: false } as DefaultModal & { action?: "connect" | "disconnect"; provider?: OAuthProvider },
    userProfile: { isOpen: false, userId: "" } as DefaultModal & { userId: Snowflake },

@@ -1,3 +1,4 @@
+import ResetPasswordButton from "@components/button/ResetPasswordButton";
 import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -13,7 +14,7 @@ type Inputs = {
 
 export default function ChangeEmailModal() {
    const { register, handleSubmit, formState, handleErrors, getValues } = useHuginnForm<Inputs>();
-   const { updateModals } = useModals();
+   const { updateModals, changeEmail } = useModals();
    const recentAuthentication = useRecentAuthentication();
    const isOAuth = useIsOAuth();
 
@@ -40,7 +41,7 @@ export default function ChangeEmailModal() {
    }
 
    return (
-      <HuginnDialogPanel className="lg:max-w-xs">
+      <HuginnDialogPanel className="lg:max-w-sm">
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogBody>
                <HuginnDialogTitle title="Change Email" />
@@ -51,13 +52,16 @@ export default function ChangeEmailModal() {
                   </HuginnInput.Wrapper>
                </HuginnInput>
                {!isOAuth && (
-                  <PasswordInput {...register("password", { required: true })}>
-                     <HuginnInput.Label>Password</HuginnInput.Label>
-                     <HuginnInput.Wrapper>
-                        <HuginnInput.Input />
-                        <PasswordInput.ToggleButton />
-                     </HuginnInput.Wrapper>
-                  </PasswordInput>
+                  <>
+                     <PasswordInput {...register("password", { required: true })}>
+                        <HuginnInput.Label>Password</HuginnInput.Label>
+                        <HuginnInput.Wrapper>
+                           <HuginnInput.Input />
+                           <PasswordInput.ToggleButton />
+                        </HuginnInput.Wrapper>
+                        <ResetPasswordButton from="changeEmail" />
+                     </PasswordInput>
+                  </>
                )}
             </DialogBody>
             <DialogActions>
