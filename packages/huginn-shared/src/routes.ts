@@ -12,6 +12,14 @@ export const Routes = {
       return "/auth/login" as const;
    },
 
+   passwordResetRequest() {
+      return "/auth/password-reset/request" as const;
+   },
+
+   passwordResetConfirm() {
+      return "/auth/password-reset/confirm" as const;
+   },
+
    /**
     * Route for:
     * - POST '/auth/register'

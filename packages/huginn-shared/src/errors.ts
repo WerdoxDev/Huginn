@@ -84,6 +84,7 @@ export enum JsonCode {
    EMAIL_VERIFICATION_INVALID = 3006,
    EMAIL_VERIFICATION_NOT_FOUND = 3007,
    UPSTREAM_FETCH_FAILED = 3008,
+   PASSWORD_RESET_INVALID = 3009,
 }
 
 export enum GatewayCode {
@@ -273,6 +274,9 @@ export const Errors = {
    },
    emailVerificationNotFound(): [string, JsonCode] {
       return ["No pending email verification found", JsonCode.EMAIL_VERIFICATION_NOT_FOUND];
+   },
+   passwordResetInvalid(): [string, JsonCode] {
+      return ["The password reset code is invalid or expired", JsonCode.PASSWORD_RESET_INVALID];
    },
    fileTooLarge(uploadedSize: number, maxSize: number): [string, JsonCode] {
       const uploadedMB = (uploadedSize / (1024 * 1024)).toFixed(2);

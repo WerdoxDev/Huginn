@@ -118,6 +118,9 @@ export type APIPostLoginJSONBody = {
    password: string;
 };
 
+export type APIPostPasswordResetRequestJSONBody = { email: string };
+export type APIPostPasswordResetConfirmJSONBody = { email: string; code: string; newPassword: string };
+
 export type APIPostRegisterJSONBody = {
    username: string;
    displayName: string | null;

@@ -38,6 +38,7 @@ export const WorkerID = {
    MESSAGE_REFERENCE: 14,
    EMAIL_VERIFICATION: 15,
    VIDEO: 16,
+   PASSWORD_RESET: 17,
 } as const;
 
 export type WorkerID = (typeof WorkerID)[keyof typeof WorkerID];

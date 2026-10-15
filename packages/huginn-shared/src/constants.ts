@@ -44,7 +44,9 @@ export const CONSTANTS = {
    OAUTH_SENSITIVE_REAUTH_WINDOW: (60 * 60 * 1000) as number, // 1 hour
    // OAUTH_SENSITIVE_REAUTH_WINDOW: 3000,
    EMAIL_VERIFICATION_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
+   PASSWORD_RESET_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
    EMAIL_VERIFICATION_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
+   PASSWORD_RESET_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
    AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
    BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
    BIO_MAX_LENGTH: 190,
