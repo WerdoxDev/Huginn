@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.21.0](https://github.com/WerdoxDev/Huginn/compare/voice@v0.20.1...voice@v0.21.0) (2026-10-16)
+
+
+### Features
+
+* **voice:** add ice server fetch route ([8186bfa](https://github.com/WerdoxDev/Huginn/commit/8186bfad9691a1ecd380be17ecbfa09a8e44a43c))
+
+
+### Bug Fixes
+
+* **voice:** simplify ice servers endpoint ([51658cb](https://github.com/WerdoxDev/Huginn/commit/51658cbdf1264a9d3eb83983257591754d066dd4))
+
 ## [0.20.1](https://github.com/WerdoxDev/Huginn/compare/voice@v0.20.0...voice@v0.20.1) (2026-09-18)
 
 

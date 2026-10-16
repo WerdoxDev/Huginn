@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.54.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.53.0...server@v0.54.0) (2026-10-16)
+
+
+### Features
+
+* **auth:** switch device sessions to Snowflake IDs ([2f8eb72](https://github.com/WerdoxDev/Huginn/commit/2f8eb7297ee354480bd497293a1b008fc33d4c4b))
+* **server:** add github oauth + oauth utils + oauth account identifier ([4fa5456](https://github.com/WerdoxDev/Huginn/commit/4fa545648307009a56da1cae326720009860cd0e))
+* **server:** add oauth connect and disconnect routes with oauth-link token ([62cdc46](https://github.com/WerdoxDev/Huginn/commit/62cdc46776eaa3b3437a42e774a84664f0b9aec5))
+* **server:** add password and recent authentication check for connecting and disconnecting oauth providers + oauth handoff handling ([3958c63](https://github.com/WerdoxDev/Huginn/commit/3958c63dd4708c847569c4b76b01cda66b81408f))
+* **server:** add password reset funtionality + simplified email verification ([e039ab8](https://github.com/WerdoxDev/Huginn/commit/e039ab853b2d144f2fb418e46d0185d709fbea66))
+* **server:** add voiceApi to instance urls ([eb0645a](https://github.com/WerdoxDev/Huginn/commit/eb0645abac8fdfde8176609ca8a7d6ef4bdc67d4))
+* **server:** expose account sign-in methods ([fd2f31c](https://github.com/WerdoxDev/Huginn/commit/fd2f31c973c67ebe1edf1683953a566901f1ad56))
+* **server:** persist sessions and expose device revocation ([f3ae6d2](https://github.com/WerdoxDev/Huginn/commit/f3ae6d26acb7c0a7b1ec2d875dabec1ed8d98ee6))
+
+
+### Bug Fixes
+
+* **server:** better igdb search + bug with undefined alias ([879685b](https://github.com/WerdoxDev/Huginn/commit/879685b8977c37df5942c885cd90a83b4fad8186))
+* **server:** harden Google OAuth identity handling ([8e66f31](https://github.com/WerdoxDev/Huginn/commit/8e66f3129a3a2c0b7f6730a2084d7197c103ff57))
+* **server:** wrong where statement for duplicate games ([432acb7](https://github.com/WerdoxDev/Huginn/commit/432acb77bf558c44b83f53d14c7f9c7fc05aed7a))
+
 ## [0.53.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.52.1...server@v0.53.0) (2026-10-08)
 
 

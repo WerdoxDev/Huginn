@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.47.0...shared@v0.48.0) (2026-10-16)
+
+
+### Features
+
+* **auth:** switch device sessions to Snowflake IDs ([2f8eb72](https://github.com/WerdoxDev/Huginn/commit/2f8eb7297ee354480bd497293a1b008fc33d4c4b))
+* **shared:** add transport error codes ([a0110a7](https://github.com/WerdoxDev/Huginn/commit/a0110a739a348c91b00cf2e2bf0ac25041e6af99))
+* **shared:** define account sign-in method routes ([d13bcbd](https://github.com/WerdoxDev/Huginn/commit/d13bcbd78c8ebfd08185972e808954691bb10712))
+* **shared:** define device session contracts ([7ce09fa](https://github.com/WerdoxDev/Huginn/commit/7ce09fad2d0f2a114424b51ae8db54d37b97444d))
+* **shared:** new oauth related types ([48c43a2](https://github.com/WerdoxDev/Huginn/commit/48c43a2d968847f9719e121d9bb0b7a3867bd4ce))
+* **shared:** new types for oauth handoff ([587de63](https://github.com/WerdoxDev/Huginn/commit/587de631e5a21e771e98a65d11494393805de49a))
+* **shared:** new types for password resetting ([b5480cd](https://github.com/WerdoxDev/Huginn/commit/b5480cdc51c5c247a6ab8364d7d14165ecdc1e8f))
+
+
+### Bug Fixes
+
+* **shared:** increase password length requirement ([2519c22](https://github.com/WerdoxDev/Huginn/commit/2519c220aa69d6204cca682ff51441b677abbc0e))
+* **shared:** reset default attributes when analytics is reset ([863c83e](https://github.com/WerdoxDev/Huginn/commit/863c83e83a377d0ca4202d830b88ecf8ce16849c))
+* **shared:** tag browser request spans with user id ([f28d9e1](https://github.com/WerdoxDev/Huginn/commit/f28d9e15ed14e0389e6e78721fac074ae9045fd0))
+
 ## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.46.0...shared@v0.47.0) (2026-10-08)
 
 

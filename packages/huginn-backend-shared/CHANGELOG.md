@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.33.0...backend-shared@v0.34.0) (2026-10-16)
+
+
+### Features
+
+* **auth:** switch device sessions to Snowflake IDs ([2f8eb72](https://github.com/WerdoxDev/Huginn/commit/2f8eb7297ee354480bd497293a1b008fc33d4c4b))
+* **backend-shared:** add new fields in authSession + types for new oauth-link token ([f853dc3](https://github.com/WerdoxDev/Huginn/commit/f853dc3a1d2a5e72948ee703bd0a198236ebd0a7))
+* **backend-shared:** add oauth hand off code to schema ([e5ac844](https://github.com/WerdoxDev/Huginn/commit/e5ac844ae30c5f2ac61c727df9c63a781b9b2435))
+* **backend-shared:** add password reset table + simplify email verification ([8c9cf0b](https://github.com/WerdoxDev/Huginn/commit/8c9cf0b4a96189951342b8fed372ad24245d57fd))
+* **backend-shared:** add some extra properties to auth session ([4700758](https://github.com/WerdoxDev/Huginn/commit/47007588ac114b5f67a2e92391c51f7cfa77c70c))
+* **backend-shared:** model persistent auth sessions ([1a6d981](https://github.com/WerdoxDev/Huginn/commit/1a6d9814284dc7246b19a7104b7c38f2b522cb61))
+* **backend-shared:** new columns on oauth handoff and identity provider ([a235eb4](https://github.com/WerdoxDev/Huginn/commit/a235eb47aad604bd45bc7c309e3b84bdbb4dfec7))
+
+
+### Bug Fixes
+
+* **backend-shared:** add a backfill for missing accountIdentifier in latest migration ([7402d3f](https://github.com/WerdoxDev/Huginn/commit/7402d3f61ce4928adccc7bcc4d8f2120e4947b45))
+* **backend-shared:** scope provider identities by provider and id ([0b356ad](https://github.com/WerdoxDev/Huginn/commit/0b356ad290339d2663178ce5fa21849abb9115ac))
+
 ## [0.33.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.32.0...backend-shared@v0.33.0) (2026-10-08)
 
 

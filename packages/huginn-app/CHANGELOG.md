@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.92.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.91.1...app@v0.92.0) (2026-10-16)
+
+
+### Features
+
+* add local same origin browser dev mode ([aa5b3a4](https://github.com/WerdoxDev/Huginn/commit/aa5b3a45c26f9bdc4d4ea24b46df6018bb177f86))
+* **app:** add a revent authentication hook + many recent authentication checks + oauth with handoff code ([74336c9](https://github.com/WerdoxDev/Huginn/commit/74336c9e2009c6c475d2568cf391cc69da840158))
+* **app:** add electron side gateway for better reliability ([494381d](https://github.com/WerdoxDev/Huginn/commit/494381d900ec9decd4b02a41744ce68c0f807231))
+* **app:** add force turn server configuration + client store cleanup ([7182766](https://github.com/WerdoxDev/Huginn/commit/7182766822ab5238d21e24bb1f2397826c412ab5))
+* **app:** add reset password handling in all places where password is required. ([ef8c1fe](https://github.com/WerdoxDev/Huginn/commit/ef8c1fe5debdf2c118b26d14ce8d470e0b3a49b0))
+* **app:** bunch of oauth related changes + google connect/disconnect funtionality ([a8c1db6](https://github.com/WerdoxDev/Huginn/commit/a8c1db67271c239317dabf6ae9f659e70802f47a))
+* **app:** detect browser OS in gateway properties ([cc15584](https://github.com/WerdoxDev/Huginn/commit/cc15584fa082b4d978f551a5a4b7069c592227e0))
+* **app:** move all authentication into a security tab in settings ([13c22f6](https://github.com/WerdoxDev/Huginn/commit/13c22f6db9ca95e0217b3f79e13c46fef681e414))
+* **app:** much better devices tab in settings + appimage generation ([7859251](https://github.com/WerdoxDev/Huginn/commit/78592512e61c31522f01d70852757edc043429ea))
+* **app:** much better redesigned connected accounts settings tab + handle github oauth ([f9dacf4](https://github.com/WerdoxDev/Huginn/commit/f9dacf4bfb1483a037fe1cf81362976172df43c8))
+* **app:** show connected sign-in methods in settings ([f9abea9](https://github.com/WerdoxDev/Huginn/commit/f9abea9e15af60b816ea603204bf6b17361e27ac))
+* **app:** show signed-in devices and keep rotated tokens ([d515c02](https://github.com/WerdoxDev/Huginn/commit/d515c024b556a353e82ca664dfb3ecb4dee46ef7))
+
+
+### Bug Fixes
+
+* **app:** keep incoming friend requests visible in open clients ([e4afb68](https://github.com/WerdoxDev/Huginn/commit/e4afb6874fd094e6bb46c146868773d895364f87))
+* **app:** navigate home before closing the current dm ([4c11a86](https://github.com/WerdoxDev/Huginn/commit/4c11a8659894617394d33e6ebbffcb697bafea58))
+* **app:** retain gateway-updated session queries in cache ([55ca862](https://github.com/WerdoxDev/Huginn/commit/55ca8629b1288bf037c98e8f5d448b879b6ad211))
+* **app:** retain session state when updating user ([68b5fe8](https://github.com/WerdoxDev/Huginn/commit/68b5fe83a9fd7768ba12051de5eba7e959aa5cdd))
+* **app:** some small left over bug fixes ([4a457e2](https://github.com/WerdoxDev/Huginn/commit/4a457e219457fc82afde3b18249620c97da64049))
+
 ## [0.91.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.91.0...app@v0.91.1) (2026-10-08)
 
 
