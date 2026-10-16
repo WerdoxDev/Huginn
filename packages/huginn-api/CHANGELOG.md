@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.46.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.45.0...api@v0.46.0) (2026-10-16)
+
+
+### Features
+
+* **api:** add better transport errors + force turn server configuration ([df44652](https://github.com/WerdoxDev/Huginn/commit/df446523ff165a704ad949e6e1aa16a95c7b010e))
+* **api:** add oauth connect and disconnect functions ([8a492ca](https://github.com/WerdoxDev/Huginn/commit/8a492ca2e3461ab5f6cef218003ec3e919ffb19d))
+* **api:** add reset password functions ([8ef13e2](https://github.com/WerdoxDev/Huginn/commit/8ef13e2fcf27cd40ffc7df9a9bd23cede2163c91))
+* **api:** expose account sign-in methods ([93d4b27](https://github.com/WerdoxDev/Huginn/commit/93d4b2784fcd2963bb0273e483b0bc053bf2883a))
+* **api:** getOAuthURL with actual provider type ([2a97e11](https://github.com/WerdoxDev/Huginn/commit/2a97e11d205706e7c5bd645409dc47cce16aec39))
+* **api:** support device sessions and rotated tokens ([191baca](https://github.com/WerdoxDev/Huginn/commit/191baca456eb9dc6e0b6c01c814a9c688847e268))
+* **auth:** switch device sessions to Snowflake IDs ([2f8eb72](https://github.com/WerdoxDev/Huginn/commit/2f8eb7297ee354480bd497293a1b008fc33d4c4b))
+
+
+### Bug Fixes
+
+* **api:** add password to connect and disconnect oauth provider apis ([bde48c8](https://github.com/WerdoxDev/Huginn/commit/bde48c8b9a9d0b1b918de3162434a41a79a15d12))
+* **api:** scope OAuth account lookups by provider ([3a8ace9](https://github.com/WerdoxDev/Huginn/commit/3a8ace9ef5480c13697969575da41e6b8379447f))
+* **api:** simplify turn credential fetching ([3f85928](https://github.com/WerdoxDev/Huginn/commit/3f859282350f0cb7897f722376932f3e765a4673))
+
 ## [0.45.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.44.2...api@v0.45.0) (2026-10-08)
 
 

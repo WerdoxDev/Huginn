@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.2](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.1...native-addon@v0.8.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **native:** cleanup icon extraction logic ([b7df781](https://github.com/WerdoxDev/Huginn/commit/b7df78186091992a7014ab4ab63e4f1074a4ee4f))
+* **native:** resolve flatpak child process icons ([0b367ef](https://github.com/WerdoxDev/Huginn/commit/0b367efaef57fba00fc3ddfb7d9ea5d763a82b7c))
+
 ## [0.8.1](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.0...native-addon@v0.8.1) (2026-10-08)
 
 
