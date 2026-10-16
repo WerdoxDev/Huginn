@@ -57,10 +57,9 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    }, [huginnWindow.environment, settings.theme]);
 
    useEffect(() => {
-      if (huginnWindow.environment !== "android") return;
+      if (huginnWindow.environment !== "android" || !urls?.cdn) return;
 
-      console.log(urls?.cdn);
-      void PushNotifications.setCdnHostname({ hostname: urls!.cdn });
+      void PushNotifications.setCdnHostname({ hostname: urls.cdn });
    }, [urls?.cdn, huginnWindow.environment]);
 
    return props.children;
