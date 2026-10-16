@@ -1,5 +1,5 @@
-import CautionInfo from "@components/CautionInfo";
 import ResetPasswordButton from "@components/button/ResetPasswordButton";
+import CautionInfo from "@components/CautionInfo";
 import PasswordInput from "@components/input/PasswordInput";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -75,14 +75,16 @@ export default function ChangePasswordModal() {
                )}
                {!isOAuth && (
                   <>
-                     <PasswordInput {...register("password", { required: true })}>
-                        <HuginnInput.Label>Current Password</HuginnInput.Label>
-                        <HuginnInput.Wrapper>
-                           <HuginnInput.Input />
-                           <PasswordInput.ToggleButton />
-                        </HuginnInput.Wrapper>
-                     </PasswordInput>
-                     <ResetPasswordButton from="changePassword" />
+                     <div>
+                        <PasswordInput {...register("password", { required: true })}>
+                           <HuginnInput.Label>Current Password</HuginnInput.Label>
+                           <HuginnInput.Wrapper>
+                              <HuginnInput.Input />
+                              <PasswordInput.ToggleButton />
+                           </HuginnInput.Wrapper>
+                        </PasswordInput>
+                        <ResetPasswordButton from="changePassword" />
+                     </div>
                   </>
                )}
             </DialogBody>

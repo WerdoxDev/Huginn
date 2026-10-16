@@ -13,14 +13,17 @@ const mocks = vi.hoisted(() => ({
    logout: vi.fn(),
 }));
 
-vi.mock("@components/button/ImagePickerButtons", () => ({ ImagePickerDeleteButton: () => null, ImagePickerEditButton: () => null }));
-vi.mock("@components/ColorPicker", () => ({ default: () => null }));
-vi.mock("@components/MemberSince", () => ({ default: () => null }));
-vi.mock("@components/profile/ProfileComponents", () => ({ ProfileAboutMe: () => null, ProfileActivity: () => null }));
-vi.mock("@components/RoamingHuginnIcon", () => ({ default: () => null }));
-vi.mock("@components/tooltip/Tooltip", () => ({ default: () => null }));
-vi.mock("@components/UserAvatar", () => ({ default: () => null }));
-vi.mock("@components/UserBanner", () => ({ default: () => null }));
+vi.mock("@hooks/mutations/usePatchUser", () => ({ usePatchUser: () => ({ mutateAsync: mocks.mutateAsync, isPending: false }) }));
+vi.mock("@hooks/useConnectedAccountActions", () => ({
+   providerNames: { google: "Google", github: "GitHub" },
+   useConnectedAccountActions: () => ({
+      connectMutation: { mutate: vi.fn(), isPending: false },
+      disconnectMutation: { mutate: vi.fn(), isPending: false },
+   }),
+}));
+vi.mock("@hooks/useIsOAuth", () => ({ useIsOAuth: () => mocks.isOAuth }));
+vi.mock("@hooks/useLogout", () => ({ useLogout: () => mocks.logout }));
+vi.mock("@hooks/useOAuth", () => ({ useOAuth: () => mocks.startOAuth }));
 vi.mock("@huginn/frontend-shared", () => ({
    HuginnButton: ({ children, onClick, disabled }: { children: ReactNode; onClick?: () => void; disabled?: boolean }) => (
       <button onClick={onClick} disabled={disabled}>
@@ -28,29 +31,41 @@ vi.mock("@huginn/frontend-shared", () => ({
       </button>
    ),
    HuginnLabel: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+   HuginnLoadingButton: ({ children, onClick, disabled }: { children: ReactNode; onClick?: () => void; disabled?: boolean }) => (
+      <button onClick={onClick} disabled={disabled}>
+         {children}
+      </button>
+   ),
+   HuginnLoadingIcon: () => null,
 }));
-vi.mock("@hooks/mutations/usePatchUser", () => ({ usePatchUser: () => ({ mutateAsync: mocks.mutateAsync, isPending: false }) }));
-vi.mock("@hooks/useFileDialog", () => ({ useFileDialog: () => ({ openFileDialog: vi.fn() }) }));
-vi.mock("@hooks/useIsOAuth", () => ({ useIsOAuth: () => mocks.isOAuth }));
-vi.mock("@hooks/useLogout", () => ({ useLogout: () => mocks.logout }));
-vi.mock("@hooks/useOAuth", () => ({ useOAuth: () => mocks.startOAuth }));
 vi.mock("@lib/queries", () => ({ getAuthMethodsOptions: () => ({ queryKey: ["auth-methods"] }) }));
 vi.mock("@stores/clientStore", () => ({ useClient: () => ({}) }));
 vi.mock("@stores/modalsStore", () => ({ useModals: () => ({ updateModals: mocks.updateModals }) }));
 vi.mock("@stores/userStore", () => ({
    useThisUser: () => ({
-      user: { id: "user-1", username: "test", displayName: "Test", email: "test@example.com", avatar: null, banner: null, bio: null },
+      user: { email: "test@example.com" },
       tokenPayload: { authType: "oauth", authProvider: "google", lastAuthenticatedAt: mocks.lastAuthenticatedAt },
    }),
 }));
+vi.mock("@stores/windowStore", () => ({ useHuginnWindow: () => ({ environment: "browser" }) }));
 vi.mock("@tanstack/react-query", () => ({
-   useQuery: () => ({ data: { password: { configured: true }, providers: [{ type: "google", connected: true, available: true }] } }),
+   useQuery: () => ({
+      data: {
+         password: { configured: true },
+         providers: [
+            { type: "google", connected: true, available: true, accountIdentifier: "test@example.com" },
+            { type: "github", connected: false, available: true, accountIdentifier: null },
+         ],
+      },
+      isError: false,
+      refetch: vi.fn(),
+   }),
 }));
 
-import SettingsProfileTab from "./SettingsProfileTab";
+import SettingsSecurityTab from "./SettingsSecurityTab";
 
 async function confirmRemoval() {
-   render(<SettingsProfileTab />);
+   render(<SettingsSecurityTab />);
    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
    const confirmation = mocks.updateModals.mock.calls.find(([value]) => value.info?.action?.confirm)?.[0].info.action.confirm.callback;
    expect(confirmation).toBeTypeOf("function");
@@ -59,7 +74,7 @@ async function confirmRemoval() {
    });
 }
 
-describe("SettingsProfileTab password removal", () => {
+describe("SettingsSecurityTab", () => {
    beforeEach(() => {
       mocks.isOAuth = true;
       mocks.lastAuthenticatedAt = Date.now() - CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW - 1000;
@@ -68,6 +83,16 @@ describe("SettingsProfileTab password removal", () => {
       mocks.mutateAsync.mockReset();
       mocks.logout.mockReset();
       mocks.logout.mockResolvedValue(undefined);
+   });
+
+   it("shows all sign-in method groups and the current session", () => {
+      render(<SettingsSecurityTab />);
+
+      expect(screen.getAllByText("test@example.com")).toHaveLength(2);
+      expect(screen.getByText("Google")).toBeTruthy();
+      expect(screen.getByText("GitHub")).toBeTruthy();
+      expect(screen.getByText("Passkey support is coming soon.")).toBeTruthy();
+      expect(screen.getByText("Signed in with Google")).toBeTruthy();
    });
 
    it("starts OAuth reauthentication before removing a password from a stale OAuth session", async () => {

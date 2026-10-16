@@ -124,14 +124,16 @@ function LoginComponent() {
                </HuginnInput.Wrapper>
             </HuginnInput>
 
-            <PasswordInput {...register("password", { required: true })}>
-               <HuginnInput.Label>Password</HuginnInput.Label>
-               <HuginnInput.Wrapper>
-                  <HuginnInput.Input />
-                  <PasswordInput.ToggleButton />
-               </HuginnInput.Wrapper>
+            <div>
+               <PasswordInput {...register("password", { required: true })}>
+                  <HuginnInput.Label>Password</HuginnInput.Label>
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                     <PasswordInput.ToggleButton />
+                  </HuginnInput.Wrapper>
+               </PasswordInput>
                <ResetPasswordButton suggestedEmail={values.login?.includes("@") ? values.login : undefined} />
-            </PasswordInput>
+            </div>
 
             <HuginnLoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login

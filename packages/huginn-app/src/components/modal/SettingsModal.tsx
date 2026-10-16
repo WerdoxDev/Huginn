@@ -17,7 +17,6 @@ import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
-import SettingsConnectedAccountsTab from "./settings/SettingsConnectedAccountsTab";
 import SettingsContributionTab from "./settings/SettingsContributionTab";
 import SettingsDevicesTab from "./settings/SettingsDevicesTab";
 import SettingsInstancesTab from "./settings/SettingsInstancesTab";
@@ -25,6 +24,7 @@ import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
+import SettingsSecurityTab from "./settings/SettingsSecurityTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTabType[] = [
@@ -41,11 +41,11 @@ const tabs: SettingsTabType[] = [
             component: SettingsProfileTab,
          },
          {
-            name: "connected-accounts",
-            text: "Connected Accounts",
+            name: "security",
+            text: "Security",
             auth: true,
-            icon: <IconMingcuteLink2Fill />,
-            component: SettingsConnectedAccountsTab,
+            icon: <IconMingcuteKey2Fill />,
+            component: SettingsSecurityTab,
          },
          {
             name: "devices",

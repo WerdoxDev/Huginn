@@ -57,14 +57,16 @@ export default function ConnectedAccountPasswordModal() {
          >
             <DialogBody>
                <HuginnDialogTitle title={`${modal.action === "connect" ? "Connect" : "Disconnect"} ${providerNames[modal.provider ?? "google"]}`} />
-               <PasswordInput {...register("password", { required: true })}>
-                  <HuginnInput.Label>Current Password</HuginnInput.Label>
-                  <HuginnInput.Wrapper>
-                     <HuginnInput.Input />
-                     <PasswordInput.ToggleButton />
-                  </HuginnInput.Wrapper>
+               <div>
+                  <PasswordInput {...register("password", { required: true })}>
+                     <HuginnInput.Label>Current Password</HuginnInput.Label>
+                     <HuginnInput.Wrapper>
+                        <HuginnInput.Input />
+                        <PasswordInput.ToggleButton />
+                     </HuginnInput.Wrapper>
+                  </PasswordInput>
                   <ResetPasswordButton from="connectedAccountPassword" />
-               </PasswordInput>
+               </div>
             </DialogBody>
             <DialogActions>
                <HuginnButton

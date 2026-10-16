@@ -53,14 +53,16 @@ export default function ChangeEmailModal() {
                </HuginnInput>
                {!isOAuth && (
                   <>
-                     <PasswordInput {...register("password", { required: true })}>
-                        <HuginnInput.Label>Password</HuginnInput.Label>
-                        <HuginnInput.Wrapper>
-                           <HuginnInput.Input />
-                           <PasswordInput.ToggleButton />
-                        </HuginnInput.Wrapper>
+                     <div>
+                        <PasswordInput {...register("password", { required: true })}>
+                           <HuginnInput.Label>Password</HuginnInput.Label>
+                           <HuginnInput.Wrapper>
+                              <HuginnInput.Input />
+                              <PasswordInput.ToggleButton />
+                           </HuginnInput.Wrapper>
+                        </PasswordInput>
                         <ResetPasswordButton from="changeEmail" />
-                     </PasswordInput>
+                     </div>
                   </>
                )}
             </DialogBody>
