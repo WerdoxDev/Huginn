@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.92.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.0...app@v0.92.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **app:** left over deleted hostnames object from clientStore ([04da0ea](https://github.com/WerdoxDev/Huginn/commit/04da0ea7b39c2b384661710a430686ca517eeb63))
+* **app:** left over deleted hostnames object from clientStore ([8b94b08](https://github.com/WerdoxDev/Huginn/commit/8b94b0812729fab520e9c6d0e5678bc5ff8e0b5f))
+
 ## [0.92.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.91.1...app@v0.92.0) (2026-10-16)
 
 
