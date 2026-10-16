@@ -17,12 +17,17 @@ import { getKnownApplications } from "#routes/applications/catalog.get";
 import { postKnownApplication } from "#routes/applications/catalog.post";
 import { getMeContribution } from "#routes/applications/contributions/@me.get";
 import { postApplicationIcon } from "#routes/applications/icon.post";
+import { getGitHubCallback } from "#routes/auth/callback/github.get";
 import { getGoogleCallback } from "#routes/auth/callback/google.get";
+import { getGitHub } from "#routes/auth/github.get";
 import { getGoogle } from "#routes/auth/google.get";
 import { postLogin } from "#routes/auth/login.post";
 import { postLogout } from "#routes/auth/logout.post";
 import { postNotificationToken } from "#routes/auth/notification-token.post";
 import { postOauthConfirm } from "#routes/auth/oauth-confirm.post";
+import { postOAuthHandoff } from "#routes/auth/oauth-handoff.post";
+import { confirmPasswordReset } from "#routes/auth/password-reset/confirm.post";
+import { requestPasswordReset } from "#routes/auth/password-reset/request.post";
 import { postRefreshToken } from "#routes/auth/refresh-token.post";
 import { postRegister } from "#routes/auth/register.post";
 import { getChangelog } from "#routes/changelog.get";
@@ -48,8 +53,8 @@ import { ws } from "#routes/gateway";
 import { getGifCategories } from "#routes/gifs/categories.get";
 import { getSearchGifs } from "#routes/gifs/search.get";
 import { getTrendingGifs } from "#routes/gifs/trending.get";
-import { getLatestRelease } from "#routes/latest-release.get";
 import { getInstance } from "#routes/instance.get";
+import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
 import { getOnlineUsers } from "#routes/online-users.get";
 import { getStaffGameContributions } from "#routes/staff/game-contributions.get";
@@ -64,8 +69,13 @@ import { getAndroidUpdate } from "#routes/update/android.get";
 import { getDesktopUpdate } from "#routes/update/desktop";
 import { getMe } from "#routes/users/@me.get";
 import { patchMe } from "#routes/users/@me.patch";
+import { getAuthMethods } from "#routes/users/@me/auth-methods.get";
+import { deleteAuthMethod } from "#routes/users/@me/auth-methods/[provider].delete";
+import { postConnectAuthMethod } from "#routes/users/@me/auth-methods/[provider]/connect.post";
 import { getUserChannels } from "#routes/users/@me/channels.get";
 import { postUserChannel } from "#routes/users/@me/channels.post";
+import { getUserDevices } from "#routes/users/@me/devices.get";
+import { deleteUserDevice } from "#routes/users/@me/devices/[sessionId]].delete";
 import { getUserRelationships } from "#routes/users/@me/relationships.get";
 import { postUserRelationship } from "#routes/users/@me/relationships.post";
 import { deleteUserRelationship } from "#routes/users/@me/relationships/[userId].delete";
@@ -165,6 +175,9 @@ export const app = new Elysia({
    .use(postUserRelationship)
    .use(getUser)
    .use(getMe)
+   .use(getAuthMethods)
+   .use(postConnectAuthMethod)
+   .use(deleteAuthMethod)
    .use(patchMe)
    .use(patchUserSettings)
    .use(deleteUserRelationship)
@@ -173,6 +186,8 @@ export const app = new Elysia({
    .use(postVerifyEmail)
    .use(postResendVerificationEmail)
    .use(getUserProfile)
+   .use(getUserDevices)
+   .use(deleteUserDevice)
 
    // channel
    .use(postChannelMessage)
@@ -200,12 +215,16 @@ export const app = new Elysia({
 
    // auth
    .use(postLogin)
+   .use(requestPasswordReset)
+   .use(confirmPasswordReset)
    .use(postRegister)
    .use(postLogout)
    .use(postOauthConfirm)
+   .use(postOAuthHandoff)
    .use(postRefreshToken)
    .use(getGoogle)
    .use(getGoogleCallback)
+   .use(new Elysia().use(getGitHub).use(getGitHubCallback))
    .use(postNotificationToken)
 
    // applications

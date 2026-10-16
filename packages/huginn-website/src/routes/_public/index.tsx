@@ -87,17 +87,17 @@ function IndexComponent() {
                <div className="w-full px-4 lg:w-96 lg:px-0">
                   <div className="flex flex-col items-center justify-center lg:flex-row lg:justify-start">
                      <HuginnIcon className="size-24 object-contain transition-all hover:-rotate-12 active:rotate-6 lg:size-20" themeType={themeType} outlined />
-                     <p className="text-text mt-4 text-5xl font-extrabold lg:mt-0 lg:ml-4">Huginn</p>
+                     <div className="text-text mt-4 text-5xl font-extrabold lg:mt-0 lg:ml-4">Huginn</div>
                   </div>
 
                   <div className="border-primary-500 bg-surface-deep mx-auto mt-8 flex w-fit flex-row items-center gap-x-2 rounded-md border px-4 py-2 pr-6 shadow-md transition-all hover:shadow-lg">
                      <IconMingcuteGroup3Fill className="text-primary-500 size-10" />
-                     <p className="text-center text-xl font-bold lg:text-left">
+                     <div className="text-center text-xl font-bold lg:text-left">
                         <span className="text-primary-500 font-bold">{onlineCount}</span> warriors online!
-                     </p>
+                     </div>
                   </div>
 
-                  <p className="mx-2 mt-8 text-center text-2xl lg:mx-0 lg:text-left">A fast, customizable chat app with a touch of Norse mythology.</p>
+                  <div className="mx-2 mt-8 text-center text-2xl lg:mx-0 lg:text-left">A fast, customizable chat app with a touch of Norse mythology.</div>
 
                   <div className="mt-8 flex w-full flex-col gap-y-2">
                      <Link to="/download" className="w-full">

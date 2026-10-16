@@ -11,6 +11,7 @@ import { VoiceTransportManager } from "./voice-transport-manager";
 type UpdateVoiceStateResult = undefined | VoiceError;
 type Events = {
    status_changed: VoiceStatus;
+   connection_error: Error;
    ready: undefined;
    disconnected: undefined;
    reset: undefined;
@@ -38,7 +39,8 @@ export class Voice extends EventEmitter<Events> {
       this.client = client;
 
       this.signaling = new VoiceSignalingClient(client, this.options);
-      this.transport = new VoiceTransportManager(client, this.options.transportOptions);
+      console.log(this.options.api);
+      this.transport = new VoiceTransportManager(client, this.options.transportOptions, this.options.api);
       this.device = new VoiceDeviceManager(this.transport);
       this.stream = new VoiceStreamManager(this.transport);
 
@@ -84,7 +86,12 @@ export class Voice extends EventEmitter<Events> {
          }
       });
 
-      this.signaling.on("ready", async (d) => await this.handleSignalingReady(d));
+      this.signaling.on("ready", (d) => {
+         void this.handleSignalingReady(d).catch((error: unknown) => {
+            this.emit("connection_error", error instanceof Error ? error : new Error(String(error)));
+            this.signaling.close();
+         });
+      });
 
       this.signaling.on("producer_created", (d) => {
          this.transport.addRemoteProducer(d);

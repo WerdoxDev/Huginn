@@ -98,7 +98,7 @@ export const getApplicationContributionsOptions = defineQuery(
    async () => await getClient().applications.getContributions(),
 );
 
-export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, enabled = true) {
+export function getMessagesOptions(queryClient: QueryClient, client: HuginnClient, channelId: Snowflake, isEnabled = true) {
    return infiniteQueryOptions({
       queryKey: ["messages", channelId],
       initialPageParam: { before: "", after: "" },
@@ -135,7 +135,7 @@ export function getMessagesOptions(queryClient: QueryClient, client: HuginnClien
       },
       maxPages: 4,
       retry: false,
-      enabled,
+      enabled: isEnabled,
    });
 }
 
@@ -279,3 +279,23 @@ export function getSearchGifsOptions(client: HuginnClient, query: string, limit 
 export const editSettingsOptions = defineMutation("edit-settings", async (settings: APIPatchUserSettingsJSONBody) =>
    getClient().users.editSettings(settings),
 );
+
+export function getAuthMethodsOptions(client: HuginnClient, isEnabled = true) {
+   return queryOptions({
+      queryKey: ["auth-methods"],
+      queryFn: () => client!.users.getAuthMethods(),
+      enabled: isEnabled,
+      staleTime: 5 * 60 * 1000,
+      refetchOnMount: true,
+   });
+}
+export function getDevicesOptions(client: HuginnClient, isEnabled = true) {
+   return queryOptions({
+      queryKey: ["devices"],
+      queryFn: () => client!.users.getDevices(),
+      enabled: isEnabled,
+      staleTime: 5 * 60 * 1000,
+      refetchOnMount: true,
+      retry: false,
+   });
+}

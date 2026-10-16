@@ -23,6 +23,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       getValues,
       handleSubmit: hookHandleSubmit,
       register: hookRegister,
+      unregister,
       watch,
       getFieldState,
       formState,
@@ -161,6 +162,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
 
    return {
       register,
+      unregister,
       setValue,
       getValues,
       handleSubmit,

@@ -42,7 +42,7 @@ describe("userStore", () => {
 
    it("clears user data while switching instances", () => {
       userStore.getState().setUser(createTestUser({ id: "previous-user" }));
-      userStore.setState({ tokenPayload: { id: "previous-user", authType: "password", lastAuthenticatedAt: 1 } });
+      userStore.setState({ tokenPayload: { id: "previous-user", sessionId: "previous-session", authType: "password", lastAuthenticatedAt: 1 } });
 
       clearUserStore();
 

@@ -1,3 +1,4 @@
+import CautionInfo from "@components/CautionInfo";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
 import { HuginnButton, HuginnCheckbox, HuginnInput, HuginnLabel, HuginnTextArea } from "@huginn/frontend-shared";
@@ -13,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { InstanceProfile, InstanceUrls, SettingsTabProps } from "@/types";
 
-const urlKeys = ["api", "gateway", "cdn", "voice", "posthog", "otlp"] as const;
+const urlKeys = ["api", "gateway", "cdn", "voice", "voiceApi", "posthog", "otlp"] as const;
 
 function comparableOverrides(overrides?: Record<string, Partial<InstanceUrls>>) {
    return Object.entries(overrides ?? {})
@@ -250,7 +251,7 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                         ))}
                      </HuginnSelect.ItemsWrapper>
                   </HuginnSelect.List>
-                  <p className="text-text/70 mt-1 text-sm">Huginn tries the preferred address first, then the others during startup.</p>
+                  <div className="text-text/70 mt-1 text-sm">Huginn tries the preferred address first, then the others during startup.</div>
                </HuginnSelect>
                <HuginnAccordion>
                   <HuginnAccordion.Item value="advanced" className="bg-surface-alt rounded-lg p-3">
@@ -262,13 +263,10 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                      </HuginnAccordion.Header>
                      <HuginnAccordion.Panel>
                         <div className="mt-0 flex flex-col gap-5 px-1 py-2">
-                           <div className="bg-caution-900 flex items-center gap-x-2 rounded-md px-2 py-1">
-                              <IconMingcuteInformationFill className="text-caution-300 size-6 shrink-0" />
-                              <div className="text-sm text-white/80">
-                                 Overrides replace discovered URLs. If discovery is unavailable, provide at least both API and gateway URLs to connect
-                                 manually.
-                              </div>
-                           </div>
+                           <CautionInfo>
+                              Overrides replace discovered URLs. If discovery is unavailable, provide at least both API and gateway URLs to connect
+                              manually.
+                           </CautionInfo>
 
                            <div className="flex flex-col gap-1">
                               {urlKeys.map((key) => (
@@ -291,11 +289,7 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                      </HuginnAccordion.Panel>
                   </HuginnAccordion.Item>
                </HuginnAccordion>
-               {error && (
-                  <p role="alert" className="text-negative-300 text-sm">
-                     {error}
-                  </p>
-               )}
+               {error && <div className="text-negative-300 text-sm">{error}</div>}
                <div className="flex flex-col gap-2 lg:flex-row">
                   {isModified && (
                      <div className="flex w-full gap-2 lg:w-auto">

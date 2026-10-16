@@ -16,13 +16,15 @@ import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import type { AppSettings, SettingsTabType, SettingsTabProps } from "@/types";
 
 import SettingsAboutTab from "./settings/SettingsAboutTab";
-import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsAudioVideoTab from "./settings/SettingsAudioVideoTab";
 import SettingsContributionTab from "./settings/SettingsContributionTab";
+import SettingsDevicesTab from "./settings/SettingsDevicesTab";
+import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
+import SettingsSecurityTab from "./settings/SettingsSecurityTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTabType[] = [
@@ -37,6 +39,20 @@ const tabs: SettingsTabType[] = [
             auth: true,
             icon: <IconMingcuteUser3Fill />,
             component: SettingsProfileTab,
+         },
+         {
+            name: "security",
+            text: "Security",
+            auth: true,
+            icon: <IconMingcuteKey2Fill />,
+            component: SettingsSecurityTab,
+         },
+         {
+            name: "devices",
+            text: "Devices",
+            auth: true,
+            icon: <IconMingcuteMonitorFill />,
+            component: SettingsDevicesTab,
          },
       ],
    },
@@ -216,7 +232,7 @@ function SettingsTabs() {
    const client = useClient();
 
    return (
-      <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-52">
+      <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-56">
          {tabs
             .filter((x) => client?.gateway.status === "authenticated" || !x.auth)
             .map((tab, i) => (

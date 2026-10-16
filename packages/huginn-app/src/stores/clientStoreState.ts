@@ -7,11 +7,6 @@ import { createStore } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
 const initialStore = () => ({
-   hostnames: {
-      api: "",
-      cdn: "",
-      voice: "",
-   },
    urls: undefined as import("@/types").InstanceUrls | undefined,
    voiceStatus: undefined as VoiceStatus | undefined,
    gatewayStatus: undefined as GatewayStatus | undefined,
@@ -35,7 +30,6 @@ export const clientStore = createStore(
 syncZustandStore(clientStore, {
    name: "clientStore",
    partialize: (state) => ({
-      hostnames: state.hostnames,
       urls: state.urls,
       voiceStatus: state.voiceStatus,
       gatewayStatus: state.gatewayStatus,

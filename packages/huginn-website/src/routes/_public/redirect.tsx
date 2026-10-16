@@ -1,115 +1,211 @@
-import { HuginnIcon } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnIcon } from "@huginn/frontend-shared";
+import { OAuthCode } from "@huginnjs/shared";
+import { useTheme } from "@stores/themeStore";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-
-import icon from "@/assets/icon.png";
 
 export const Route = createFileRoute("/_public/redirect")({
    component: RedirectComponent,
 });
 
-function RedirectComponent() {
-   const linkRef = useRef<HTMLAnchorElement | null>(null);
+type RedirectResult = {
+   kind: "success" | "error" | "cancelled" | "invalid";
+   flow?: "browser" | "desktop";
+   title: string;
+   description: string;
+   payload?: {
+      handoff_code: string | null;
+      flow: "browser" | "desktop";
+      oauth_token: string | null;
+      connected: string | null;
+      error: string | null;
+   };
+   deepLink?: string;
+};
 
-   const [title, setTitle] = useState("");
-   const [showSuccess, setShowSuccess] = useState(true);
-   const [showError, setShowError] = useState(false);
+const errorMessages: Record<string, { title: string; description: string }> = {
+   [OAuthCode.CANCELLED]: {
+      title: "Connection cancelled",
+      description: "You cancelled the request. No changes were made. Return to Huginn whenever you're ready to try again.",
+   },
+   [OAuthCode.ACCOUNT_ALREADY_CONNECTED]: {
+      title: "Account already in use",
+      description: "This Google account is already connected to another Huginn account. Choose a different Google account and try again.",
+   },
+   [OAuthCode.PROVIDER_ALREADY_CONNECTED]: {
+      title: "Google already connected",
+      description: "A different Google account is already connected to your Huginn account. Disconnect it in Huginn before connecting this one.",
+   },
+   [OAuthCode.LINK_EXPIRED]: {
+      title: "Connection session expired",
+      description: "This account connection request has expired. Return to Huginn and start a new request.",
+   },
+};
+
+function readRedirectResult(): RedirectResult {
+   if (typeof window === "undefined") {
+      return { kind: "invalid", title: "Checking connection", description: "Reading your sign-in result…" };
+   }
+
+   const params = new URLSearchParams(window.location.search);
+   const originalSearch = window.location.search;
+   const flow = params.get("flow");
+   if (flow !== "browser" && flow !== "desktop") {
+      return {
+         kind: "invalid",
+         title: "This link is incomplete",
+         description: "The sign-in response is missing its destination. Return to Huginn and start again.",
+      };
+   }
+
+   const error = params.get("error");
+   const handoffCode = params.get("handoff_code");
+   const oauthToken = params.get("oauth_token");
+   const connected = params.get("connected");
+
+   if (!error && !connected && !oauthToken && !handoffCode) {
+      return {
+         kind: "invalid",
+         title: "This link is incomplete",
+         description: "The sign-in response is missing the information Huginn needs. Return to Huginn and start again.",
+      };
+   }
+
+   const payload: NonNullable<RedirectResult["payload"]> = {
+      handoff_code: handoffCode,
+      flow,
+      oauth_token: oauthToken,
+      connected,
+      error,
+   };
+   const deepLink = "huginn://oauth-confirm" + originalSearch;
+
+   if (error) {
+      const knownError = errorMessages[error.toUpperCase()];
+      const providerDescription = params.get("error_description")?.trim().slice(0, 240) || undefined;
+      const readableError = /^[a-z][a-z0-9_-]{0,79}$/i.test(error)
+         ? error
+              .replace(/[_-]+/g, " ")
+              .toLowerCase()
+              .replace(/^./, (letter) => letter.toUpperCase())
+         : "The provider could not complete the request";
+
+      return {
+         kind: error.toUpperCase() === OAuthCode.CANCELLED ? "cancelled" : "error",
+         flow,
+         title: knownError?.title ?? "Could not connect to Huginn",
+         description: knownError?.description ?? providerDescription ?? readableError + ". Return to Huginn and try again.",
+         payload,
+         deepLink,
+      };
+   }
+
+   return {
+      kind: "success",
+      flow,
+      title: connected === "google" ? "Google is connected" : connected ? "Account connected" : oauthToken ? "Almost there" : "Welcome back",
+      description: connected
+         ? "Your account is connected. Head back to Huginn and carry on."
+         : oauthToken
+           ? "Head back to Huginn to finish making your space your own."
+           : "Your conversations are waiting. Return to Huginn to pick up where you left off.",
+      payload,
+      deepLink,
+   };
+}
+
+function RedirectComponent() {
+   const [result] = useState(readRedirectResult);
+   const [storageFailed, setStorageFailed] = useState(false);
+   const linkRef = useRef<HTMLAnchorElement | null>(null);
+   const { themeType } = useTheme();
+
+   const storeBrowserResult = () => {
+      if (!result.payload) return;
+      try {
+         localStorage.setItem("oauth-confirm", JSON.stringify(result.payload));
+         setStorageFailed(false);
+      } catch {
+         setStorageFailed(true);
+      }
+   };
 
    useEffect(() => {
-      const params = new URLSearchParams(window.location.search);
-      const error = params.get("error");
-
-      if (error) {
-         setShowSuccess(false);
-         setShowError(true);
-         setTitle(error.toLowerCase() === "cancelled" ? "Cancelled" : "Unknown Error");
-         return;
+      // remove browser history
+      window.history.replaceState(window.history.state, "", window.location.pathname);
+      if (result.flow === "browser") {
+         storeBrowserResult();
+      } else if (result.flow === "desktop") {
+         linkRef.current?.click();
       }
+   }, [result]);
 
-      const flow = params.get("flow");
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-      const oauthToken = params.get("oauth_token");
-
-      if (flow === "browser") {
-         localStorage.setItem(
-            "oauth-confirm",
-            JSON.stringify({
-               access_token: accessToken,
-               refresh_token: refreshToken,
-               flow,
-               oauth_token: oauthToken,
-            }),
-         );
-
-         const timer = window.setInterval(() => {
-            if (!localStorage.getItem("oauth-confirm")) {
-               window.close();
-            }
-         }, 500);
-
-         return () => {
-            window.clearInterval(timer);
-         };
-      }
-
-      if (linkRef.current) {
-         linkRef.current.href = "huginn://oauth-confirm" + window.location.search;
-         linkRef.current.click();
-      }
-
-      setShowError(false);
-      setShowSuccess(true);
-      setTitle("Redirected to Huginn");
-   }, []);
+   const isError = storageFailed || result.kind === "error" || result.kind === "invalid";
+   const isCancelled = !storageFailed && result.kind === "cancelled";
+   const title = storageFailed ? "Couldn't return to Huginn" : result.title;
+   const description = storageFailed ? "Your browser blocked saving the sign-in result. Allow site storage, then try again." : result.description;
+   const helpText = storageFailed
+      ? "Keep this window open until the result reaches Huginn."
+      : result.flow === "desktop"
+        ? "If Huginn didn't open, use the button above. You can close this tab afterward."
+        : result.flow === "browser"
+          ? "If this window stays open, switch back to Huginn."
+          : "Close this tab and start again in Huginn.";
+   const actionClassName =
+      "flex h-10 w-full items-center justify-center rounded-md px-4 font-medium text-white transition-colors duration-150 focus-visible:outline-none";
 
    return (
-      <div className="flex flex-1">
-         <div className="flex w-full items-center justify-center">
-            <div className="flex h-max flex-col items-center justify-center gap-y-5">
-               <HuginnIcon className="size-32 animate-pulse drop-shadow-[0px_0px_50px_#EBEBD3]" thickOutlined />
-               {/*<img src={icon} className="text-text size-32 animate-pulse drop-shadow-[0px_0px_50px_#EBEBD3]" />*/}
-               <div className="text-center">
-                  <div className="text-text flex items-center justify-center gap-x-2 text-2xl font-bold">
-                     <span>{title}</span>
-                     {showSuccess ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="text-primary-500 size-8">
-                           <g fill="none" fillRule="evenodd">
-                              <path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                              <path
-                                 fill="currentColor"
-                                 d="M21.546 5.111a1.5 1.5 0 0 1 0 2.121L10.303 18.475a1.6 1.6 0 0 1-2.263 0L2.454 12.89a1.5 1.5 0 1 1 2.121-2.121l4.596 4.596L19.424 5.111a1.5 1.5 0 0 1 2.122 0"
-                              />
-                           </g>
-                        </svg>
-                     ) : null}
-                     {showError ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="text-negative-500 size-8">
-                           <g fill="none" fillRule="evenodd">
-                              <path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                              <path
-                                 fill="currentColor"
-                                 d="m12 14.122l5.303 5.303a1.5 1.5 0 0 0 2.122-2.122L14.12 12l5.304-5.303a1.5 1.5 0 1 0-2.122-2.121L12 9.879L6.697 4.576a1.5 1.5 0 1 0-2.122 2.12L9.88 12l-5.304 5.304a1.5 1.5 0 1 0 2.122 2.12z"
-                              />
-                           </g>
-                        </svg>
-                     ) : null}
+      <div className="flex min-h-dvh flex-1 items-center justify-center px-4 py-8">
+         <div aria-live="polite" className="bg-surface flex w-full max-w-96 flex-col items-center rounded-lg p-5 text-center shadow-xl">
+            {isError || isCancelled ? (
+               <div className={isError ? "bg-negative-700 rounded-full p-2.5" : "bg-surface-alt rounded-full p-2.5"}>
+                  <div className={isError ? "bg-negative-500 rounded-full p-2.5" : "bg-caution-500 rounded-full p-2.5"}>
+                     <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="size-7 text-white"
+                        aria-hidden="true"
+                     >
+                        <circle cx="12" cy="12" r="9" />
+                        {isCancelled ? <path d="M8 12h8" /> : <path d="M12 7v6m0 4h.01" />}
+                     </svg>
                   </div>
-                  {showSuccess ? (
-                     <div className="text-text/80 mx-2 mt-2 max-w-xl text-lg lg:mx-0">
-                        <span>You can return to the application and safely close this window. If you are not redirected automatically, Please click</span>{" "}
-                        <a ref={linkRef} className="text-primary-500 underline">
-                           here
-                        </a>
-                     </div>
-                  ) : null}
-                  {showError ? (
-                     <div className="text-text/80 mt-2 max-w-lg text-lg">
-                        <span>The authentication process was cancelled! You can safely close this window and start again in the application</span>
-                     </div>
-                  ) : null}
                </div>
-            </div>
+            ) : (
+               <HuginnIcon
+                  themeType={themeType}
+                  className="size-20 animate-pulse transition-all hover:scale-105 hover:-rotate-12 active:rotate-6"
+                  thickOutlined
+               />
+            )}
+
+            <div className="text-text mt-4 text-2xl font-medium">{title}</div>
+            <div className="text-text/70 mt-2 text-sm leading-5">{description}</div>
+
+            {result.flow && (
+               <div className="mt-5 w-full">
+                  {storageFailed ? (
+                     <HuginnButton type="button" color="primary" onClick={storeBrowserResult} className={actionClassName}>
+                        Try again
+                     </HuginnButton>
+                  ) : result.flow === "desktop" ? (
+                     <a ref={linkRef} href={result.deepLink} className={`bg-primary-700 hover:bg-primary-800 active:bg-primary-900 ${actionClassName}`}>
+                        Open Huginn
+                     </a>
+                  ) : (
+                     <HuginnButton type="button" color="primary" onClick={() => window.close()} className={actionClassName}>
+                        Return to Huginn
+                     </HuginnButton>
+                  )}
+                  <div className="text-text/70 mt-3 text-sm leading-5">{helpText}</div>
+               </div>
+            )}
+
+            {!result.flow && <div className="text-text/70 mt-5 text-sm leading-5">{helpText}</div>}
          </div>
       </div>
    );

@@ -7,6 +7,8 @@ export class TokenHandler {
    private _refreshToken?: string;
    private tokenTimeout?: ReturnType<typeof setTimeout>;
    private timeoutPromise?: Promise<boolean>;
+   private resolveTimeout?: (success: boolean) => void;
+   private changeListeners = new Set<(token?: string, refreshToken?: string) => void>();
 
    private readonly client: HuginnClient;
 
@@ -28,6 +30,8 @@ export class TokenHandler {
     */
    public set token(token: string | undefined) {
       this._token = token;
+      if (!token) this.cancelRefreshTimeout();
+      this.notifyChange();
 
       if (!token) {
          return;
@@ -60,6 +64,16 @@ export class TokenHandler {
     */
    public set refreshToken(refreshToken: string | undefined) {
       this._refreshToken = refreshToken;
+      this.notifyChange();
+   }
+
+   public onChange(listener: (token?: string, refreshToken?: string) => void): () => void {
+      this.changeListeners.add(listener);
+      return () => this.changeListeners.delete(listener);
+   }
+
+   private notifyChange() {
+      for (const listener of this.changeListeners) listener(this._token, this._refreshToken);
    }
 
    /**
@@ -72,22 +86,32 @@ export class TokenHandler {
    }
 
    private startRefreshTimeout(time: number) {
-      if (this.tokenTimeout != null) {
-         clearTimeout(this.tokenTimeout);
-      }
+      this.cancelRefreshTimeout();
 
       this.timeoutPromise = new Promise<boolean>((resolve) => {
-         this.tokenTimeout = setTimeout(async () => {
-            const newTokens = await this.client.auth.refreshToken({
-               refreshToken: this.refreshToken ?? "",
-            });
-
-            this.token = newTokens.token;
-            this.refreshToken = newTokens.refreshToken;
-
-            console.log("Got new token");
-            resolve(true);
-         }, time);
+         this.resolveTimeout = resolve;
+         this.tokenTimeout = setTimeout(
+            async () => {
+               this.resolveTimeout = undefined;
+               try {
+                  const newTokens = await this.client.auth.refreshToken({ refreshToken: this.refreshToken ?? "" });
+                  this.refreshToken = newTokens.refreshToken;
+                  this.token = newTokens.token;
+                  resolve(true);
+               } catch {
+                  resolve(false);
+               }
+            },
+            Math.max(0, time),
+         );
       });
+   }
+
+   private cancelRefreshTimeout() {
+      if (this.tokenTimeout) clearTimeout(this.tokenTimeout);
+      this.tokenTimeout = undefined;
+      this.resolveTimeout?.(false);
+      this.resolveTimeout = undefined;
+      this.timeoutPromise = undefined;
    }
 }

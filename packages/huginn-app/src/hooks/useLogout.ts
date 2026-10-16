@@ -1,6 +1,8 @@
 import { analytics } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useClient } from "@stores/clientStore";
+import { useModals } from "@stores/modalsStore";
+import { clearUserStore } from "@stores/userStore";
 import { useNavigate } from "@tanstack/react-router";
 
 import { useHuginnMutation } from "./useHuginnMutation";
@@ -9,11 +11,19 @@ export function useLogout() {
    const client = useClient();
    const navigate = useNavigate();
    const { resetScrolls } = useChannelStore();
+   const { updateModals } = useModals();
 
    const logoutMutation = useHuginnMutation({
       async mutationFn() {
-         await client?.logout();
-         await client?.gateway.waitForAnyEvents(["reset"]);
+         const reset = client?.gateway.isConnected ? client.gateway.waitForAnyEvents(["reset"]) : undefined;
+         if (reset) {
+            await client?.logout();
+            await reset;
+         } else {
+            await client?.logout();
+            return;
+         }
+
          await client?.gateway.connect();
       },
    });
@@ -23,15 +33,23 @@ export function useLogout() {
       localStorage.removeItem("access-token");
 
       if (client?.voice.status !== "idle") {
-         await client?.voiceManager.disconnectVoice();
+         try {
+            await client?.voiceManager.disconnectVoice();
+         } catch {
+            // Continue clearing the session if voice teardown fails after revocation.
+         }
       }
 
-      await logoutMutation.mutateAsync();
-      analytics.reset();
+      try {
+         await logoutMutation.mutateAsync();
+      } finally {
+         clearUserStore();
+         analytics.reset();
+         updateModals({ settings: { isOpen: false }, info: { isOpen: false } });
+         await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
 
-      await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
-
-      resetScrolls();
+         resetScrolls();
+      }
    }
 
    return logout;

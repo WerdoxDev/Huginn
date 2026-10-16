@@ -264,9 +264,25 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
 
    const noiseSuppressionCheckbox = (
       <div className="flex">
-         <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-45!">
+         <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-full max-w-xs">
             <HuginnCheckbox.Input>Noise Suppression</HuginnCheckbox.Input>
          </HuginnCheckbox>
+      </div>
+   );
+
+   const relayCheckbox = (
+      <div className="flex flex-col gap-y-2">
+         <HuginnCheckbox
+            checked={settings.forceRelay ?? false}
+            onChange={(forceRelay) => props.onChange?.({ forceRelay })}
+            className="w-full max-w-xs"
+         >
+            <HuginnCheckbox.Input>Force relay for calls</HuginnCheckbox.Input>
+         </HuginnCheckbox>
+         <div className="text-text/70 text-sm">
+            Routes voice and video through a TURN relay configured by this instance. Calls cannot connect if no relay is available. Takes effect on
+            your next call.
+         </div>
       </div>
    );
 
@@ -289,6 +305,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
          <div className="flex flex-col items-center">
             <div className="flex w-full max-w-xl flex-col gap-y-5">
                <AndroidAudioRouteSelect />
+               {relayCheckbox}
 
                {microphonePermission?.status === "granted" ? (
                   <>
@@ -410,6 +427,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
                </div>
                {thresholdSlider}
                {noiseSuppressionCheckbox}
+               {relayCheckbox}
                <div className="bg-surface-alt h-px w-full" />
                <HuginnSelect
                   disabled={cameraDeviceOptions.length === 0}

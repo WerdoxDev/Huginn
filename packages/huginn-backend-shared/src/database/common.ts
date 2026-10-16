@@ -244,3 +244,16 @@ export const selectContribution = {
    windowTitle: true,
    createdAt: true,
 } satisfies Prisma.ContributionSelect;
+
+export const selectAuthSession = {
+   id: true,
+   userAgent: true,
+   deviceName: true,
+   clientName: true,
+   clientOs: true,
+   ipAddress: true,
+   authType: true,
+   authProvider: true,
+   createdAt: true,
+   lastSeenAt: true,
+} satisfies Prisma.AuthSessionSelect;

@@ -138,3 +138,7 @@ export function hRateLimit(options: { duration?: number; max?: number }) {
       scoping: "scoped",
    });
 }
+
+export function createSHA265Hash(data: string, digest: Bun.DigestEncoding = "hex"): string {
+   return new Bun.CryptoHasher("sha256").update(data).digest(digest);
+}

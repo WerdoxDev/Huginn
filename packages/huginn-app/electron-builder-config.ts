@@ -7,6 +7,7 @@ export default {
    appId: "dev.huginn.desktop",
    electronLanguages: ["en-US"],
    compression: "maximum",
+   protocols: [{ name: "Huginn", schemes: ["huginn"] }],
 
    win: {
       target: { target: "nsis", arch: ["x64"] },
@@ -19,19 +20,28 @@ export default {
    },
 
    linux: {
-      target: { target: "pacman", arch: ["x64"] },
+      target: [
+         { target: "pacman", arch: ["x64"] },
+         { target: "AppImage", arch: ["x64"] },
+      ],
       icon: "../huginn-assets/icons/default/outline-thick/outline-thick-512.png",
       publish: {
          provider: "generic",
          url: process.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL || "https://midgard.huginn.dev/api/update/${os}",
          useMultipleRangeRequest: false,
       },
+      syncDesktopName: true,
    },
 
    pacman: {
       artifactName: "${productName}_${version}_${arch}.tar.zst",
       compression: "zstd",
       depends: ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-core", "libsecret", "wf-recorder"],
+   },
+
+   appImage: {
+      artifactName: "${productName}_${version}_${arch}.AppImage",
+      category: "Utility",
    },
 
    npmRebuild: false,

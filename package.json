@@ -3,6 +3,9 @@
    "private": "true",
    "type": "module",
    "scripts": {
+      "dev:browser": "bun run --parallel dev:browser:*",
+      "dev:browser:app": "bun run --cwd packages/huginn-app vite:dev",
+      "dev:browser:website": "bun run --cwd packages/huginn-website dev",
       "bifrost": "cd packages/huginn-bifrost && bun start",
       "server": "cd packages/huginn-server && bun start",
       "cdn": "cd packages/huginn-cdn && bun start",

@@ -1,4 +1,5 @@
-import type { APIPostRegisterJSONBody, OAuthType } from "@huginnjs/shared";
+import type { OAuthProvider } from "@huginnjs/api";
+import type { APIPostRegisterJSONBody } from "@huginnjs/shared";
 
 import LinkButton from "@components/button/LinkButton";
 import PasswordInput from "@components/input/PasswordInput";
@@ -45,11 +46,11 @@ function RegisterComponent() {
             });
          },
          async onSuccess(result, variables) {
-            // we may skip email verification.
-            if (result?.token && result?.refreshToken) {
-               await initializeClient({ navigatePath: "/channels/@me" });
-               return;
-            }
+            // // we may skip email verification.
+            // if (result?.token && result?.refreshToken) {
+            //    await initializeClient({ navigatePath: "/channels/@me" });
+            //    return;
+            // }
 
             updateModals({
                verifyEmail: {
@@ -76,21 +77,12 @@ function RegisterComponent() {
       });
    }
 
-   async function handleOAuth(type: OAuthType) {
-      const result = await startOAuth(type);
-      let search: URLSearchParams | undefined;
-
-      if (result?.access_token && result.refresh_token) {
-         search = new URLSearchParams({
-            access_token: result.access_token,
-            refresh_token: result.refresh_token,
-         });
+   async function handleOAuth(provider: OAuthProvider) {
+      const result = await startOAuth(provider);
+      if (result?.handoff_code) {
+         await initializeClient({ token: client?.tokenHandler.token, refreshToken: client?.tokenHandler.refreshToken, navigatePath: "/channels/@me" });
       } else if (result?.oauth_token) {
-         search = new URLSearchParams({ oauth_token: result.oauth_token });
-      }
-
-      if (result && search) {
-         await navigate({ to: `/oauth-redirect?${search!.toString()}` });
+         await navigate({ to: "/oauth-redirect", search: { oauth_token: result.oauth_token } });
       }
    }
 
@@ -110,6 +102,7 @@ function RegisterComponent() {
                <span>Google</span>
             </HuginnButton>
             <HuginnButton
+               onClick={() => handleOAuth("github")}
                type="button"
                className="border-primary-700 bg-surface-alt text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
             >

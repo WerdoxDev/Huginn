@@ -65,6 +65,11 @@ const FILES: Record<string, { path: string; name: string; type: string }[]> = {
          type: "application/zstd",
       },
       {
+         path: `./dist/electron/Huginn_${version}_x86_64.AppImage`,
+         name: `Huginn_${version}_x86_64.AppImage`,
+         type: "application/octet-stream",
+      },
+      {
          path: "./dist/electron/latest-linux.yml",
          name: "latest-linux.yml",
          type: "text/yaml",

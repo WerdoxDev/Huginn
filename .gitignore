@@ -60,3 +60,4 @@ generated
 .pnpm-store
 
 update-keys
+.env*

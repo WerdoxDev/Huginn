@@ -10,7 +10,7 @@ export default function DefaultChannelBackgroundSelector() {
    return (
       <div className="flex w-full flex-col">
          <HuginnLabel className="mb-1!">Default Channel Background</HuginnLabel>
-         <p className="text-text/60 mb-3 text-sm">Used in every channel that does not have its own background.</p>
+         <div className="text-text/60 mb-3 text-sm">Used in every channel that does not have its own background.</div>
          <div className="border-surface-alt bg-surface-deep/40 flex items-center gap-3 rounded-xl border p-3">
             <div
                aria-label="Default channel background preview"

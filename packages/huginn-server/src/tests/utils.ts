@@ -1,7 +1,5 @@
-import { createToken } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
 import {
-   CONSTANTS,
    type APIUser,
    type ChannelType,
    type GatewayWebsocketEvents,
@@ -21,6 +19,7 @@ import {
 
 import { gateway } from "#server";
 import { env } from "#setup";
+import { createAuthSession } from "#utils/auth-session";
 
 export const isCDNRunning = await checkCDNRunning();
 export type TestUser = Omit<APIUser, "id"> & {
@@ -95,7 +94,7 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
       d: {
          token: finalUser.accessToken,
          intents: 0,
-         properties: { os: "test", browser: "test", device: "test" },
+         properties: { os: "test", library: "test", device: "test" },
       },
    };
 
@@ -211,16 +210,7 @@ export async function createTestUsers(amount: number) {
 
    return await Promise.all(
       createdUsers.map(async (x) => {
-         const accessToken = await createToken(
-            "user-access",
-            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
-            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-         );
-         const refreshToken = await createToken(
-            "user-refresh",
-            { id: x.id.toString(), authType: "password", lastAuthenticatedAt: new Date().getTime() },
-            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-         );
+         const { token: accessToken, refreshToken } = await createAuthSession(x.id.toString(), "password", undefined, "Huginn test client");
 
          removeUserLater(x);
 

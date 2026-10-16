@@ -33,12 +33,15 @@ model User {
   relationships        Relationship[]       @relation("relation_owner")
   relatedRelationships Relationship[]       @relation("relation_user")
   identityProvider     IdentityProvider[]
+  authSessions         AuthSession[]
+  oauthHandoffs        OAuthHandoff[]
   readStates           ReadState[]
   participatedCalls    Call[]               @relation("participated_calls")
   settings             Settings?
   applicationMatchers  ApplicationMatcher[]
   contributions        Contribution[]
   emailVerifications   EmailVerification[]
+  passwordResets       PasswordReset[]
   pinnedMessages       MessagePin[]
   notificationTokens   NotificationToken[]
   reactions            Reaction[]
@@ -50,20 +53,66 @@ model EmailVerification {
   userId    BigInt   @unique
   purpose   String   @default("email_change")
   email     String
-  code      String
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model PasswordReset {
+  id        BigInt   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    BigInt   @unique
+  codeHash  String
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
 
 model IdentityProvider {
-  id             BigInt  @id
-  providerUserId String  @unique
-  userId         BigInt?
-  completed      Boolean
-  providerType   String
-  refreshToken   String
+  id                BigInt  @id
+  providerUserId    String
+  accountIdentifier String?
+  userId            BigInt?
+  completed         Boolean
+  providerType      String
 
   user User? @relation(fields: [userId], references: [id])
+
+  @@unique([providerType, providerUserId])
+  @@unique([userId, providerType])
+}
+
+model AuthSession {
+  id               BigInt    @id
+  userId           BigInt
+  refreshTokenHash String    @unique
+  authType         String
+  authProvider     String?
+  authenticatedAt  DateTime
+  userAgent        String?
+  deviceName       String?
+  clientName       String?
+  clientOs         String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  lastSeenAt       DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+}
+
+model OAuthHandoff {
+  codeHash  String   @id
+  userId    BigInt
+  providerType String @default("google")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }
 
 model Channel {

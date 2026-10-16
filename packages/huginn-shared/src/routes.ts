@@ -1,3 +1,4 @@
+import type { OAuthProvider } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export type RouteLike = `/${string}`;
@@ -9,6 +10,14 @@ export const Routes = {
     */
    login() {
       return "/auth/login" as const;
+   },
+
+   passwordResetRequest() {
+      return "/auth/password-reset/request" as const;
+   },
+
+   passwordResetConfirm() {
+      return "/auth/password-reset/confirm" as const;
    },
 
    /**
@@ -33,6 +42,10 @@ export const Routes = {
     */
    confirmOAuth() {
       return "/auth/oauth-confirm" as const;
+   },
+
+   oauthHandoff() {
+      return "/auth/oauth-handoff" as const;
    },
 
    /**
@@ -67,6 +80,26 @@ export const Routes = {
     */
    user(id: Snowflake): `/users/${string}` {
       return `/users/${id}` as const;
+   },
+
+   authMethods() {
+      return "/users/@me/auth-methods" as const;
+   },
+
+   authMethod(provider: OAuthProvider): `/users/@me/auth-methods/${OAuthProvider}` {
+      return `/users/@me/auth-methods/${provider}`;
+   },
+
+   connectAuthMethod(provider: OAuthProvider): `/users/@me/auth-methods/${OAuthProvider}/connect` {
+      return `/users/@me/auth-methods/${provider}/connect`;
+   },
+
+   devices() {
+      return "/users/@me/devices" as const;
+   },
+
+   device(id: Snowflake): `/users/@me/devices/${string}` {
+      return `/users/@me/devices/${id}` as const;
    },
 
    /**

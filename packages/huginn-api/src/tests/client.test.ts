@@ -419,11 +419,11 @@ describe("logout()", () => {
 });
 
 // ============================================================
-// clearSession()
+// clearSessionLocally()
 // ============================================================
 
-describe("clearSession()", () => {
-   it("clears tokens and the current user", async () => {
+describe("clearSessionLocally()", () => {
+   it("clears the client without sending another logout request", async () => {
       client.tokenHandler.token = "access";
       client.tokenHandler.refreshToken = "refresh";
       setGatewayUser(client, makeUser("u1"));
@@ -431,11 +431,14 @@ describe("clearSession()", () => {
       await client.initialize();
       expect(client.currentUser).toBeDefined();
 
-      client.clearSession();
+      client.clearSessionLocally();
 
       expect(client.tokenHandler.token).toBeUndefined();
       expect(client.tokenHandler.refreshToken).toBeUndefined();
       expect(client.currentUser).toBeUndefined();
+      expect(vi.mocked(client.auth.logout)).not.toHaveBeenCalled();
+      expect(vi.mocked(client.voice.signaling.close)).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(client.gateway.close)).toHaveBeenCalledTimes(1);
    });
 });
 

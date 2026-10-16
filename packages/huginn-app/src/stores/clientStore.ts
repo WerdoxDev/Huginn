@@ -9,27 +9,27 @@ import { VoiceBridge } from "@lib/voice/voice-bridge";
 import { WebSocketBridge } from "@lib/websocket-bridge";
 import { useStore } from "zustand";
 
-import type { Environment, InstanceUrls } from "@/types";
+import type { Environment } from "@/types";
 
 import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
+import { clearUserStore } from "./userStore";
 import { windowStore } from "./windowStore";
 
 const store = clientStore;
 
-function setClientUrls(urls: InstanceUrls) {
-   store.setState({
-      urls,
-      hostnames: {
-         api: new URL(urls.api).origin,
-         cdn: new URL(urls.cdn).origin,
-         voice: new URL(urls.voice).origin,
-      },
-   });
+async function handleRevokedSession(): Promise<void> {
+   localStorage.removeItem("refresh-token");
+   localStorage.removeItem("access-token");
+   store.getState().client?.clearSessionLocally();
+   clearUserStore();
+   analytics.reset();
+   const { router } = await import("@/router");
+   await router.navigate({ to: "/login", replace: true });
 }
 
 export function setHostnamesFromSettings() {
-   setClientUrls(storageStore.getState().getCachedValue("settings").currentUrls);
+   store.setState({ urls: storageStore.getState().getCachedValue("settings").currentUrls });
 }
 
 export async function selectStartupInstanceAddress(): Promise<void> {
@@ -42,7 +42,7 @@ export async function selectStartupInstanceAddress(): Promise<void> {
    const { address, value } = await tryAccessAddresses(instance, settings.currentAccessAddress, async (address) => {
       const discovery = await fetchInstanceUrls(address, instance);
       await probeInstanceUrls(discovery.urls);
-      setClientUrls(discovery.urls);
+      store.setState({ urls: discovery.urls });
       await initializeClient();
       return discovery;
    });
@@ -85,16 +85,24 @@ const NODE_PLATFORM_TO_OS: Record<string, string> = {
    linux: "linux",
 };
 
-const NAVIGATOR_PLATFORM_TO_OS: Record<string, string> = {
-   MacIntel: "macos",
-   Win32: "windows",
-   "Linux x86_64": "linux",
-};
-
 const NODE_PLATFORM_TO_UPDATE_ROUTE: Record<string, string | undefined> = {
    win32: "windows",
    linux: "linux",
 };
+
+function getBrowserOs() {
+   const userAgent = navigator.userAgent;
+   const platform = navigator.platform;
+
+   if (/Android/i.test(userAgent)) return "android";
+   if (/iPad|iPhone|iPod/i.test(userAgent) || (platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+   if (/CrOS/i.test(userAgent)) return "chromeos";
+   if (/Windows|Win32/i.test(`${userAgent} ${platform}`)) return "windows";
+   if (/Macintosh|Mac OS X|MacIntel/i.test(`${userAgent} ${platform}`)) return "macos";
+   if (/Linux/i.test(`${userAgent} ${platform}`)) return "linux";
+
+   return "unknown";
+}
 
 function getChromeVersion() {
    var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -109,7 +117,7 @@ export async function initializeClient() {
 
    const osInfo = huginnWindowStore.environment === "desktop" ? await window.electronAPI.getOsInfo() : undefined;
    const deviceInfo = Capacitor.getPlatform() === "android" ? await Device.getInfo() : undefined;
-   const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : (NAVIGATOR_PLATFORM_TO_OS[navigator.platform] ?? "unknown");
+   const platform = osInfo?.platform ? NODE_PLATFORM_TO_OS[osInfo.platform] : getBrowserOs();
    const arch = osInfo?.arch ?? undefined;
    const chromeVersion = osInfo?.chromeVersion ?? getChromeVersion()?.toString() ?? undefined;
    const electronVersion = osInfo?.electronVersion ?? undefined;
@@ -122,11 +130,11 @@ export async function initializeClient() {
          url: thisStore.urls!.gateway,
          intents: 0,
          properties: {
-            browser: ENV_TO_BROWSER_MAP[huginnWindowStore.environment],
             os: platform,
             osVersion: osVersion,
             osArch: arch,
-            device: deviceInfo?.model ?? ENV_TO_BROWSER_MAP[huginnWindowStore.environment] ?? undefined,
+            device: osInfo?.hostname ?? deviceInfo?.model ?? undefined,
+            client: ENV_TO_BROWSER_MAP[huginnWindowStore.environment] ?? undefined,
             browserUserAgent: navigator.userAgent,
             browserVersion: chromeVersion,
             electronVersion: electronVersion,
@@ -142,6 +150,7 @@ export async function initializeClient() {
       voice: {
          class: VoiceBridge,
          url: thisStore.urls!.voice,
+         api: thisStore.urls!.voiceApi,
          createSocket(url) {
             if (typeof window.electronAPI !== "undefined") {
                return new WebSocketBridge("voice", url);
@@ -149,6 +158,13 @@ export async function initializeClient() {
             return new WebSocket(url);
          },
       },
+   });
+
+   client.tokenHandler.onChange((token, refreshToken) => {
+      if (token) localStorage.setItem("access-token", token);
+      else localStorage.removeItem("access-token");
+      if (refreshToken) localStorage.setItem("refresh-token", refreshToken);
+      else localStorage.removeItem("refresh-token");
    });
 
    store.setState({ client });
@@ -170,12 +186,12 @@ export async function initializeClient() {
    thisStore = store.getState();
 
    const updateRoute = osInfo?.platform ? NODE_PLATFORM_TO_UPDATE_ROUTE[osInfo.platform] : undefined;
-   if (window.electronAPI && thisStore.hostnames.api && updateRoute) {
+   if (window.electronAPI && thisStore.urls?.api && updateRoute) {
       const url = `${thisStore.urls!.api}/update/${updateRoute}`;
       window.electronAPI.setUpdateUrl(url);
    }
 
-   if (huginnWindowStore.environment === "android" && thisStore.hostnames.api) {
+   if (huginnWindowStore.environment === "android" && thisStore.urls?.api) {
       const url = `${thisStore.urls!.api}/update/android`;
       console.log(url, import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL);
       if (import.meta.env.VITE_PUBLIC_DEV_UPDATE_PUBLISHER_URL) {
@@ -201,6 +217,8 @@ export async function initializeClient() {
          await queryClient.invalidateQueries({ queryKey: ["messages"] });
          queryClient.setQueryData(["channels", "@me"], getInitialChannels());
          await queryClient.invalidateQueries({ queryKey: ["application-contributions", "@me"], exact: true, refetchType: "all" });
+         await queryClient.invalidateQueries({ queryKey: ["auth-methods"] });
+         await queryClient.invalidateQueries({ queryKey: ["devices"] });
       }),
    );
 
@@ -243,6 +261,7 @@ export async function initializeClient() {
    );
 
    unlisteners.push(thisStore.client?.gateway.listen("status_changed", (status) => store.setState({ gatewayStatus: status })));
+   unlisteners.push(thisStore.client?.gateway.listen("session_revoked", handleRevokedSession));
    unlisteners.push(thisStore.client?.voice.listen("status_changed", (status) => store.setState({ voiceStatus: status })));
    store.setState({ gatewayStatus: thisStore.client?.gateway.status, voiceStatus: thisStore.client?.voice.status });
 

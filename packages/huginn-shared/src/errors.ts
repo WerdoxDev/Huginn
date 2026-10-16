@@ -84,6 +84,7 @@ export enum JsonCode {
    EMAIL_VERIFICATION_INVALID = 3006,
    EMAIL_VERIFICATION_NOT_FOUND = 3007,
    UPSTREAM_FETCH_FAILED = 3008,
+   PASSWORD_RESET_INVALID = 3009,
 }
 
 export enum GatewayCode {
@@ -114,7 +115,7 @@ export enum FieldCode {
    PASSWORD_INCORRECT = "PASSWORD_INCORRECT",
 }
 
-export enum VoiceSignallingError {
+export enum VoiceSignallingErrorCode {
    UNKNOWN_ERROR = 0,
    UNKNOWN_PRODUCER = 1001,
    UNKNOWN_CONSUMER = 1002,
@@ -125,8 +126,25 @@ export enum VoiceSignallingError {
    WRONG_STATE = 2003,
 }
 
+export enum VoiceTransportErrorCode {
+   DEVICE_NOT_INITIALIZED = 5001,
+   SEND_TRANSPORT_NOT_INITIALIZED = 5002,
+   RECV_TRANSPORT_NOT_INITIALIZED = 5003,
+   TURN_CREDENTIAL_REQUEST_TIMEOUT = 5004,
+   RELAY_NOT_CONFIGURED = 5005,
+   RELAY_CREDENTIALS_UNAVAILABLE = 5006,
+   PRODUCER_ALREADY_EXISTS = 5007,
+   PRODUCER_NOT_FOUND = 508,
+   REMOTE_PRODUCER_NOT_FOUND = 509,
+   REMOTE_PRODUCER_DELETED = 5010,
+   CONSUMER_NOT_FOUND = 5011,
+}
+
 export enum OAuthCode {
    CANCELLED = "CANCELLED",
+   ACCOUNT_ALREADY_CONNECTED = "ACCOUNT_ALREADY_CONNECTED",
+   PROVIDER_ALREADY_CONNECTED = "PROVIDER_ALREADY_CONNECTED",
+   LINK_EXPIRED = "LINK_EXPIRED",
 }
 
 // Detailed errors that happen to a normal user
@@ -167,6 +185,15 @@ export const Fields = {
 
 // Mostly api related errors. Users will very rarely see these
 export const Errors = {
+   oauthProviderAlreadyConnected(): [string, JsonCode] {
+      return ["This provider is already connected", JsonCode.NONE];
+   },
+   oauthProviderNotConnected(): [string, JsonCode] {
+      return ["This provider is not connected", JsonCode.NONE];
+   },
+   cannotRemoveLastAuthMethod(): [string, JsonCode] {
+      return ["Cannot remove the last sign-in method", JsonCode.NONE];
+   },
    unauthorized(): [string, JsonCode] {
       return ["Unauthorized", JsonCode.NONE];
    },
@@ -247,6 +274,9 @@ export const Errors = {
    },
    emailVerificationNotFound(): [string, JsonCode] {
       return ["No pending email verification found", JsonCode.EMAIL_VERIFICATION_NOT_FOUND];
+   },
+   passwordResetInvalid(): [string, JsonCode] {
+      return ["The password reset code is invalid or expired", JsonCode.PASSWORD_RESET_INVALID];
    },
    fileTooLarge(uploadedSize: number, maxSize: number): [string, JsonCode] {
       const uploadedMB = (uploadedSize / (1024 * 1024)).toFixed(2);

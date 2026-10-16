@@ -1,5 +1,5 @@
 import {
-   VoiceSignallingError,
+   VoiceSignallingErrorCode,
    type HMediaKind,
    type MediasoupAppData,
    type VoiceCreateTransportResult,
@@ -19,7 +19,7 @@ import { makeClient } from "./test-utils";
 
 vi.mock("../voice-device-manager", () => {
    class VoiceDeviceManager {
-      public constructor(public transport: unknown) { }
+      public constructor(public transport: unknown) {}
    }
 
    return { VoiceDeviceManager };
@@ -27,7 +27,7 @@ vi.mock("../voice-device-manager", () => {
 
 vi.mock("../voice-stream-manager", () => {
    class VoiceStreamManager {
-      public constructor(public transport: unknown) { }
+      public constructor(public transport: unknown) {}
    }
 
    return { VoiceStreamManager };
@@ -264,6 +264,20 @@ describe("connection lifecycle", () => {
 });
 
 describe("transport lifecycle", () => {
+   it("reports a failed transport setup and closes signaling", async () => {
+      const error = new Error("Voice relay unavailable");
+      const onError = vi.fn();
+      const close = vi.fn();
+      signaling.close = close;
+      voice.on("connection_error", onError);
+      vi.mocked(transport.createSendTransport).mockRejectedValueOnce(error);
+
+      signaling.emit("ready", { rtpCapabilities: testFakeParameters.generateRouterRtpCapabilities(), producers: [], consumers: [] });
+
+      await vi.waitFor(() => expect(onError).toHaveBeenCalledExactlyOnceWith(error));
+      expect(close).toHaveBeenCalledTimes(1);
+   });
+
    it("cancels ice restart when signaling disconnects while transport is restarting", async () => {
       transport["setStatus"]("restarting");
 
@@ -303,7 +317,7 @@ describe("transport lifecycle", () => {
 
    it("should throw an error when send create transport returns an error", async () => {
       vi.mocked(signaling.sendCreateTransport).mockImplementation(async (direction) => {
-         if (direction === "send") return { error: VoiceSignallingError.UNKNOWN_ERROR };
+         if (direction === "send") return { error: VoiceSignallingErrorCode.UNKNOWN_ERROR };
          else return {} as VoiceCreateTransportResult;
       });
 
@@ -312,7 +326,7 @@ describe("transport lifecycle", () => {
       ).rejects.toThrow();
 
       vi.mocked(signaling.sendCreateTransport).mockImplementation(async (direction) => {
-         if (direction === "recv") return { error: VoiceSignallingError.UNKNOWN_ERROR };
+         if (direction === "recv") return { error: VoiceSignallingErrorCode.UNKNOWN_ERROR };
          else return {} as VoiceCreateTransportResult;
       });
 

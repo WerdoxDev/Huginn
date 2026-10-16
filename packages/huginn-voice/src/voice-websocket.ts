@@ -21,7 +21,7 @@ import {
    type VoiceRestartIceData,
    type VoiceResumeConsumerData,
    type VoiceResumeData,
-   VoiceSignallingError,
+   VoiceSignallingErrorCode,
    WorkerID,
    recordSpanError,
    type VoicePauseConsumerData,
@@ -207,12 +207,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const consumer = rtcPeer?.consumers.get(data.consumerId);
 
             if (!consumer) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_CONSUMER);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_CONSUMER);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "resume_consumer_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_CONSUMER, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -238,7 +238,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "resume_consumer_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -264,12 +264,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const consumer = rtcPeer?.consumers.get(data.consumerId);
 
             if (!consumer) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_CONSUMER);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_CONSUMER);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "pause_consumer_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_CONSUMER, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -295,7 +295,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "pause_consumer_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -324,12 +324,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const transportData = rtcPeer?.transports.get(data.transportId);
 
             if (!producerPeer || !producer) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_PRODUCER);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_PRODUCER);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "consume_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_PRODUCER, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_PRODUCER, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -338,12 +338,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             }
 
             if (!transportData) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_TRANSPORT);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_TRANSPORT);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "consume_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_TRANSPORT, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -352,12 +352,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             }
 
             if (transportData.direction !== "recv") {
-               span.setAttribute("result.error", VoiceSignallingError.WRONG_TRANSPORT_DIRECTION);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.WRONG_TRANSPORT_DIRECTION);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "consume_result",
-                     d: { error: VoiceSignallingError.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -371,12 +371,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                   rtpCapabilities: data.rtpCapabilities,
                })
             ) {
-               span.setAttribute("result.error", VoiceSignallingError.ROUTER_CANT_CONSUME);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.ROUTER_CANT_CONSUME);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "consume_result",
-                     d: { error: VoiceSignallingError.ROUTER_CANT_CONSUME, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.ROUTER_CANT_CONSUME, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -440,7 +440,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "consume_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -468,12 +468,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const producerMediaKind = convertToMediaKind(data.kind);
 
             if (!producerMediaKind) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_MEDIA_KIND);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_MEDIA_KIND);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "produce_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_MEDIA_KIND, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_MEDIA_KIND, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -482,12 +482,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             }
 
             if (!transportData) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_TRANSPORT);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_TRANSPORT);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "produce_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_TRANSPORT, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -496,12 +496,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             }
 
             if (transportData.direction !== "send") {
-               span.setAttribute("result.error", VoiceSignallingError.WRONG_TRANSPORT_DIRECTION);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.WRONG_TRANSPORT_DIRECTION);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "produce_result",
-                     d: { error: VoiceSignallingError.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.WRONG_TRANSPORT_DIRECTION, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -547,7 +547,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "produce_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -573,12 +573,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const transportData = rtcPeer.transports.get(data.transportId);
 
             if (!transportData) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_TRANSPORT);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_TRANSPORT);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "connect_transport_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_TRANSPORT, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -604,7 +604,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "connect_transport_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -657,7 +657,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "create_transport_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -683,12 +683,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const transportData = rtcPeer.transports.get(data.transportId);
 
             if (!transportData) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_TRANSPORT);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_TRANSPORT);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "restart_ice_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_TRANSPORT, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_TRANSPORT, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -714,7 +714,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "restart_ice_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -740,12 +740,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const producer = rtcPeer?.producers.get(data.producerId);
 
             if (!producer) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_PRODUCER);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_PRODUCER);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "close_producer_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_PRODUCER, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_PRODUCER, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -802,7 +802,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "close_producer_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_ERROR, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_ERROR, nonce: data.nonce },
                },
                true,
                true,
@@ -828,12 +828,12 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
             const consumer = rtcPeer?.consumers.get(data.consumerId);
 
             if (!consumer) {
-               span.setAttribute("result.error", VoiceSignallingError.UNKNOWN_CONSUMER);
+               span.setAttribute("result.error", VoiceSignallingErrorCode.UNKNOWN_CONSUMER);
                session.send(
                   {
                      op: VoiceOperations.DISPATCH,
                      t: "close_consumer_result",
-                     d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+                     d: { error: VoiceSignallingErrorCode.UNKNOWN_CONSUMER, nonce: data.nonce },
                   },
                   true,
                   true,
@@ -886,7 +886,7 @@ export class VoiceWebsocket extends CommonWebsocket<ClientSession, VoicePayload>
                {
                   op: VoiceOperations.DISPATCH,
                   t: "close_consumer_result",
-                  d: { error: VoiceSignallingError.UNKNOWN_CONSUMER, nonce: data.nonce },
+                  d: { error: VoiceSignallingErrorCode.UNKNOWN_CONSUMER, nonce: data.nonce },
                },
                true,
                true,

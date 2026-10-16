@@ -14,7 +14,7 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    const { user } = useThisUser();
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
-   const { hostnames, urls, userSettings } = useClientStore();
+   const { urls, userSettings } = useClientStore();
    const previousSettings = usePrevious(settings);
    const editSettingsMutation = useEditSettings();
    const isUpdatingFromServer = useRef(false);
@@ -59,8 +59,9 @@ export default function SettingsProvider(props: { children?: ReactNode }) {
    useEffect(() => {
       if (huginnWindow.environment !== "android") return;
 
-      void PushNotifications.setCdnHostname({ hostname: urls?.cdn ?? `${hostnames.cdn}/cdn` });
-   }, [hostnames.cdn, urls?.cdn, huginnWindow.environment]);
+      console.log(urls?.cdn);
+      void PushNotifications.setCdnHostname({ hostname: urls!.cdn });
+   }, [urls?.cdn, huginnWindow.environment]);
 
    return props.children;
 }

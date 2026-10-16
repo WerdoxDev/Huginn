@@ -17,7 +17,7 @@ function AboutComponent() {
             <div className="flex items-center justify-center lg:justify-start">
                <HuginnIcon themeType={themeType} className="size-16" outlined />
                {/*<img src={`/logo/${theme.logoOutline}`} className="size-16 object-contain transition-all hover:-rotate-12 active:rotate-6" />*/}
-               <p className="text-text ml-2 text-4xl font-bold">About Huginn</p>
+               <div className="text-text ml-2 text-4xl font-bold">About Huginn</div>
             </div>
 
             <div className="bg-text/50 my-6 h-0.5 w-auto" />

@@ -9,12 +9,14 @@
 export {}
 declare global {
   const IconLetsIconsSendHorFill: typeof import('~icons/lets-icons/send-hor-fill.jsx').default
+  const IconLogosGitHubIcon: typeof import('~icons/logos/git-hub-icon.jsx').default
   const IconLogosGithubIcon: typeof import('~icons/logos/github-icon.jsx').default
   const IconLogosGoogleIcon: typeof import('~icons/logos/google-icon.jsx').default
   const IconMingcuteAddFill: typeof import('~icons/mingcute/add-fill.jsx').default
   const IconMingcuteAirplaneFill: typeof import('~icons/mingcute/airplane-fill.jsx').default
   const IconMingcuteAlertFill: typeof import('~icons/mingcute/alert-fill.jsx').default
   const IconMingcuteAlertLine: typeof import('~icons/mingcute/alert-line.jsx').default
+  const IconMingcuteAndroidFill: typeof import('~icons/mingcute/android-fill.jsx').default
   const IconMingcuteArrowLeftFill: typeof import('~icons/mingcute/arrow-left-fill.jsx').default
   const IconMingcuteArrowRightFill: typeof import('~icons/mingcute/arrow-right-fill.jsx').default
   const IconMingcuteBasketballFill: typeof import('~icons/mingcute/basketball-fill.jsx').default
@@ -53,15 +55,19 @@ declare global {
   const IconMingcuteFullscreenExitFill: typeof import('~icons/mingcute/fullscreen-exit-fill.jsx').default
   const IconMingcuteFullscreenFill: typeof import('~icons/mingcute/fullscreen-fill.jsx').default
   const IconMingcuteGame2Fill: typeof import('~icons/mingcute/game2-fill.jsx').default
+  const IconMingcuteGithubFill: typeof import('~icons/mingcute/github-fill.jsx').default
+  const IconMingcuteGoogleFill: typeof import('~icons/mingcute/google-fill.jsx').default
   const IconMingcuteGroup2Fill: typeof import('~icons/mingcute/group2-fill.jsx').default
   const IconMingcuteHat2Fill: typeof import('~icons/mingcute/hat2-fill.jsx').default
   const IconMingcuteHistoryAnticlockwiseFill: typeof import('~icons/mingcute/history-anticlockwise-fill.jsx').default
   const IconMingcuteHotkeyFill: typeof import('~icons/mingcute/hotkey-fill.jsx').default
   const IconMingcuteIdcardFill: typeof import('~icons/mingcute/idcard-fill.jsx').default
   const IconMingcuteInformationFill: typeof import('~icons/mingcute/information-fill.jsx').default
+  const IconMingcuteKey2Fill: typeof import('~icons/mingcute/key2-fill.jsx').default
   const IconMingcuteLayoutBottomOpenFill: typeof import('~icons/mingcute/layout-bottom-open-fill.jsx').default
   const IconMingcuteLeftFill: typeof import('~icons/mingcute/left-fill.jsx').default
   const IconMingcuteLink2Fill: typeof import('~icons/mingcute/link2-fill.jsx').default
+  const IconMingcuteLinuxFill: typeof import('~icons/mingcute/linux-fill.jsx').default
   const IconMingcuteLoading3Fill: typeof import('~icons/mingcute/loading3-fill.jsx').default
   const IconMingcuteLockFill: typeof import('~icons/mingcute/lock-fill.jsx').default
   const IconMingcuteLookDownFill: typeof import('~icons/mingcute/look-down-fill.jsx').default
@@ -84,6 +90,7 @@ declare global {
   const IconMingcutePic2Fill: typeof import('~icons/mingcute/pic2-fill.jsx').default
   const IconMingcutePinFill: typeof import('~icons/mingcute/pin-fill.jsx').default
   const IconMingcutePlayFill: typeof import('~icons/mingcute/play-fill.jsx').default
+  const IconMingcuteQuestion2Fill: typeof import('~icons/mingcute/question2-fill.jsx').default
   const IconMingcuteRefresh3Fill: typeof import('~icons/mingcute/refresh3-fill.jsx').default
   const IconMingcuteRefreshAnticlockwise1Line: typeof import('~icons/mingcute/refresh-anticlockwise1-line.jsx').default
   const IconMingcuteRightFill: typeof import('~icons/mingcute/right-fill.jsx').default
@@ -112,5 +119,6 @@ declare global {
   const IconMingcuteWebFill: typeof import('~icons/mingcute/web-fill.jsx').default
   const IconMingcuteWifiLine: typeof import('~icons/mingcute/wifi-line.jsx').default
   const IconMingcuteWifiOffLine: typeof import('~icons/mingcute/wifi-off-line.jsx').default
+  const IconMingcuteWindowsFill: typeof import('~icons/mingcute/windows-fill.jsx').default
   const IconSolarSledgehammerBold: typeof import('~icons/solar/sledgehammer-bold.jsx').default
 }

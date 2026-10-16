@@ -1,12 +1,14 @@
-import { createErrorFactory, createHuginnError, createToken, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
-import { prisma, type EmailVerification } from "@huginn/backend-shared/database";
+import { createErrorFactory, createHuginnError, globalPlugin, singleError, verifyJwt } from "@huginn/backend-shared";
+import { prisma } from "@huginn/backend-shared/database";
 import { selectPrivateUser } from "@huginn/backend-shared/database/common";
 import { type APIPatchCurrentUserResult, CDNRoutes, CONSTANTS, Errors, Fields, getFileHash, toArrayBuffer } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
 import { gateway } from "#server";
+import { env } from "#setup";
 import { dispatchToTopic } from "#utils/gateway-utils";
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { issueEmailVerificationCode } from "#utils/email-verification";
+import { sendEmailVerificationEmail } from "#utils/route-utils";
 import { cdnUpload } from "#utils/server-request";
 import {
    validateCorrectPassword,
@@ -28,7 +30,7 @@ const schema = t.Object({
    accentColor: t.Optional(t.Nullable(t.String())),
    bio: t.Optional(t.Nullable(t.String())),
    password: t.Optional(t.String()),
-   newPassword: t.Optional(t.String()),
+   newPassword: t.Optional(t.Nullable(t.String())),
 });
 
 export const patchMe = new Elysia()
@@ -44,10 +46,10 @@ export const patchMe = new Elysia()
          validateEmail(body.email, formError);
          validatePassword(body.newPassword, formError, "newPassword");
 
-         const sensitiveFieldChanged = body.username || body.newPassword || body.email;
+         const sensitiveFieldChanged = Boolean(body.username || body.newPassword !== undefined || body.email);
          const passwordRequired = tokenPayload.authType === "password" && sensitiveFieldChanged;
          const oauthReauthRequired =
-            (tokenPayload.authType === "github" || tokenPayload.authType === "google") &&
+            tokenPayload.authType === "oauth" &&
             sensitiveFieldChanged &&
             Date.now() - tokenPayload.lastAuthenticatedAt > CONSTANTS.OAUTH_SENSITIVE_REAUTH_WINDOW;
 
@@ -66,6 +68,21 @@ export const patchMe = new Elysia()
          const user = await prisma.user.getById(tokenPayload.id, {
             select: { id: true, password: true },
          });
+
+         if (body.newPassword === null) {
+            const providers = await prisma.identityProvider.findMany({
+               where: { userId: BigInt(tokenPayload.id), completed: true },
+               select: { providerType: true },
+            });
+            const hasAvailableProvider = providers.some(({ providerType }) =>
+               providerType === "google"
+                  ? Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
+                  : providerType === "github" && Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
+            );
+            if (!hasAvailableProvider) {
+               return createHuginnError(createErrorFactory(Errors.cannotRemoveLastAuthMethod()), status, "Conflict");
+            }
+         }
 
          const databaseError = createErrorFactory(Errors.invalidFormBody());
 
@@ -122,58 +139,61 @@ export const patchMe = new Elysia()
                bannerColor: body.bannerColor,
                accentColor: body.accentColor,
                bio: body.bio,
-               newPassword: body.newPassword ? body.newPassword : undefined,
+               newPassword: body.newPassword === null ? null : body.newPassword || undefined,
             },
             { select: selectPrivateUser },
          );
 
-         let pendingEmailVerification: EmailVerification | undefined;
+         if (body.newPassword !== undefined) {
+            await prisma.passwordReset.deleteMany({ where: { userId: BigInt(tokenPayload.id) } });
+         }
+
+         if (body.newPassword === null) {
+            const revokedSessions = await prisma.authSession.updateManyAndReturn({
+               where: { userId: BigInt(tokenPayload.id), revokedAt: null },
+               data: { revokedAt: new Date() },
+               select: { id: true },
+            });
+            for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
+         } else if (body.newPassword) {
+            const revokedSessions = await prisma.authSession.updateManyAndReturn({
+               where: {
+                  userId: BigInt(tokenPayload.id),
+                  authType: "password",
+                  id: { not: BigInt(tokenPayload.sessionId) },
+                  revokedAt: null,
+               },
+               data: { revokedAt: new Date() },
+               select: { id: true },
+            });
+            for (const session of revokedSessions) gateway.revokeAuthSession(session.id.toString());
+         }
+
+         let pendingEmail: string | undefined;
          email_verification: if (body.email) {
             // because we can't rate limit, we need to check the resend cooldown manually here
-            const existingVerification = await prisma.emailVerification.getByUserId(tokenPayload.id);
+            const existingVerification = await prisma.emailVerification.findUnique({ where: { userId: BigInt(tokenPayload.id) } });
             if (existingVerification && existingVerification.createdAt.getTime() > Date.now() - CONSTANTS.EMAIL_VERIFICATION_RESEND_COOLDOWN) {
                break email_verification;
             }
 
-            const expiresAt = Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW;
-            const code = generateVerificationCode();
-            pendingEmailVerification = await prisma.emailVerification.createOrUpdate({
-               userId: user.id,
-               email: body.email,
-               expiresAt,
-               code,
-               purpose: "email_change",
-            });
+            const email = body.email;
+            const code = await issueEmailVerificationCode(user.id, email, "email_change");
+            pendingEmail = email;
             global.waitUntil(async () => {
-               await sendVerificationEmail(pendingEmailVerification!.email, pendingEmailVerification!.code);
+               await sendEmailVerificationEmail(email, code);
             });
          }
-
-         const lastAuthenticatedAt = Date.now();
-         const accessToken = await createToken(
-            "user-access",
-            { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-         );
-         const refreshToken = await createToken(
-            "user-refresh",
-            { id: tokenPayload.id, authType: tokenPayload.authType, lastAuthenticatedAt },
-            CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME,
-         );
 
          // TODO: When guilds are a thing, this should send an update to users that are viewing that guild
          dispatchToTopic(tokenPayload.id, "user_update", {
             ...updatedUser,
-            token: accessToken,
-            refreshToken,
          });
          gateway.presenceManager.updateUserPresence(tokenPayload.id, { user: updatedUser });
 
          const json: APIPatchCurrentUserResult = {
             ...updatedUser,
-            token: accessToken,
-            refreshToken,
-            pendingEmail: pendingEmailVerification?.email,
+            pendingEmail,
          };
          return status("OK", json);
       },

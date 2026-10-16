@@ -1,5 +1,5 @@
 import { useHuginnMutation } from "@hooks/useHuginnMutation";
-import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData, omit } from "@huginnjs/shared";
+import { type APIPatchCurrentUserJSONBody, type APIPatchCurrentUserResult, type HuginnErrorData } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 
@@ -20,12 +20,7 @@ export function usePatchUser(
             if (!result || !client) return;
 
             onSuccess?.(result);
-            const data = omit(result, ["token", "refreshToken"]);
-
-            client.tokenHandler.token = result.token;
-            client.tokenHandler.refreshToken = result.refreshToken;
-
-            setUser(data);
+            setUser(result);
          },
       },
       handleErrors,

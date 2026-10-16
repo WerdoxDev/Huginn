@@ -1,5 +1,4 @@
 import {
-   CDNRoutes,
    type APIGetStaffGameContributionsResult,
    type APIGetStaffIGDBGamesResult,
    type APIGetStaffKnownGamesResult,

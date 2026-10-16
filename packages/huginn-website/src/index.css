@@ -105,6 +105,10 @@ body,
    overscroll-behavior: none;
 }
 
+.huginn-auth-screen {
+   -webkit-font-smoothing: none;
+}
+
 .staff-interface ::-webkit-scrollbar {
    @apply h-3 w-3;
 }

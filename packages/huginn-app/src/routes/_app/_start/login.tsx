@@ -1,6 +1,7 @@
-import type { APIPostLoginJSONBody, OAuthType } from "@huginnjs/shared";
+import type { APIPostLoginJSONBody, OAuthProvider } from "@huginnjs/shared";
 
 import LinkButton from "@components/button/LinkButton";
+import ResetPasswordButton from "@components/button/ResetPasswordButton";
 import PasswordInput from "@components/input/PasswordInput";
 import StartWrapper from "@components/StartWrapper";
 import { useHuginnForm } from "@hooks/useHuginnForm";
@@ -28,7 +29,7 @@ function LoginComponent() {
    const navigate = useNavigate();
    const { updateModals } = useModals();
 
-   const { register, handleSubmit, handleErrors, formState } = useHuginnForm<Inputs>();
+   const { register, handleSubmit, handleErrors, formState, values } = useHuginnForm<Inputs>();
 
    const mutation = useHuginnMutation(
       {
@@ -73,18 +74,16 @@ function LoginComponent() {
       });
    }
 
-   async function handleOAuth(type: OAuthType) {
+   async function handleOAuth(type: OAuthProvider) {
       const result = await startOAuth(type);
-      let search: { access_token: string; refresh_token: string } | { oauth_token: string } | undefined;
-
-      if (result?.access_token && result.refresh_token) {
-         search = { access_token: result.access_token, refresh_token: result.refresh_token };
+      if (result?.handoff_code) {
+         await initializeClient({
+            token: client?.tokenHandler.token,
+            refreshToken: client?.tokenHandler.refreshToken,
+            navigatePath: "/channels/@me",
+         });
       } else if (result?.oauth_token) {
-         search = { oauth_token: result.oauth_token };
-      }
-
-      if (result && search) {
-         await navigate({ to: `/oauth-redirect`, search: search });
+         await navigate({ to: "/oauth-redirect", search: { oauth_token: result.oauth_token } });
       }
    }
 
@@ -105,6 +104,7 @@ function LoginComponent() {
                <span>Google</span>
             </HuginnButton>
             <HuginnButton
+               onClick={() => handleOAuth("github")}
                type="button"
                className="border-primary-700 text-text flex w-full items-center justify-center gap-x-2 rounded-lg border-2 py-2 transition-all hover:shadow-lg"
                color="surface-alt"
@@ -124,15 +124,16 @@ function LoginComponent() {
                </HuginnInput.Wrapper>
             </HuginnInput>
 
-            <PasswordInput {...register("password", { required: true })}>
-               <HuginnInput.Label>Password</HuginnInput.Label>
-               <HuginnInput.Wrapper>
-                  <HuginnInput.Input />
-                  <PasswordInput.ToggleButton />
-               </HuginnInput.Wrapper>
-            </PasswordInput>
-
-            {/* <LinkButton className="mt-1 mb-5 text-sm">Forgot your password?</LinkButton> */}
+            <div>
+               <PasswordInput {...register("password", { required: true })}>
+                  <HuginnInput.Label>Password</HuginnInput.Label>
+                  <HuginnInput.Wrapper>
+                     <HuginnInput.Input />
+                     <PasswordInput.ToggleButton />
+                  </HuginnInput.Wrapper>
+               </PasswordInput>
+               <ResetPasswordButton suggestedEmail={values.login?.includes("@") ? values.login : undefined} />
+            </div>
 
             <HuginnLoadingButton isLoading={formState.isSubmitting} className="mt-5 h-10 w-full" color="primary" type="submit">
                Login

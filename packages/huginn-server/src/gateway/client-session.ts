@@ -6,6 +6,7 @@ import { prisma, selectRelationshipUser } from "@huginn/backend-shared/database"
 import { ChannelType, RelationshipType, WorkerID } from "@huginnjs/shared";
 
 export class ClientSession extends CommonClientSession<GatewayPayload, GatewayIdentifyProperties> {
+   public authSessionId?: Snowflake;
    public get authenticated(): boolean {
       return !!this.user && !!this.properties;
    }

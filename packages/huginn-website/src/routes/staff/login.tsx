@@ -56,8 +56,8 @@ function LoginComponent() {
             <div className="mb-5 flex items-center gap-3">
                <HuginnIcon themeType={themeType} alt="Huginn" className="size-12" outlined />
                <div>
-                  <h1 className="text-2xl font-medium text-white">Huginn staff</h1>
-                  <p className="text-text/70 text-sm">Authenticate with a Huginn access token.</p>
+                  <div className="text-2xl font-medium text-white">Huginn staff</div>
+                  <div className="text-text/70 text-sm">Authenticate with a Huginn access token.</div>
                </div>
             </div>
             <HuginnInput

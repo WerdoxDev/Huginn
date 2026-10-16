@@ -6,7 +6,7 @@ import {
    GatewayCode,
    recordSpanError,
    VoiceOperations,
-   VoiceSignallingError,
+   VoiceSignallingErrorCode,
    type HMediaKind,
    type Snowflake,
    type VoiceCloseConsumerResult,
@@ -482,7 +482,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("create_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceCreateTransportResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceCreateTransportResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -508,7 +508,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("connect_transport_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceConnectTransportResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceConnectTransportResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -535,7 +535,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("produce_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceProduceResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceProduceResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
             // throw e;
          }
       });
@@ -562,7 +562,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("close_producer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceCloseProducerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceCloseProducerResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -589,7 +589,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("consume_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceConsumeResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceConsumeResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -615,7 +615,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("resume_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceResumeConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceResumeConsumerResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -641,7 +641,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("pause_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoicePauseConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoicePauseConsumerResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -667,7 +667,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("close_consumer_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceCloseConsumerResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceCloseConsumerResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }
@@ -693,7 +693,7 @@ export class VoiceSignalingClient extends SharedWebsocket<Events> {
             return await this.waitForCommandResult("restart_ice_result", nonce);
          } catch (e) {
             recordSpanError(e);
-            return Promise.resolve<VoiceRestartIceResult>({ error: VoiceSignallingError.WRONG_STATE, nonce });
+            return Promise.resolve<VoiceRestartIceResult>({ error: VoiceSignallingErrorCode.WRONG_STATE, nonce });
          }
       });
    }

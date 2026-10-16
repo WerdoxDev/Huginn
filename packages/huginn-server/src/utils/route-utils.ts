@@ -407,11 +407,7 @@ export async function processMentions(tokens: MarkedToken[]) {
    return { userMentions, everyoneMentions, ownerMentions };
 }
 
-export function generateVerificationCode() {
-   return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
-}
-
-export async function sendVerificationEmail(receiverEmail: string, code: string) {
+export async function sendEmailVerificationEmail(receiverEmail: string, code: string) {
    if (process.env.TEST) return;
 
    await resend.emails.send({
@@ -420,6 +416,29 @@ export async function sendVerificationEmail(receiverEmail: string, code: string)
       subject: "Email Verification",
       template: { id: "email-verification", variables: { VERIFICATION_CODE: code } },
    });
+}
+
+export async function sendPasswordResetEmail(receiverEmail: string, code: string) {
+   if (process.env.TEST) return;
+
+   const result = await resend.emails.send({
+      to: receiverEmail,
+      from: "Huginn <noreply@mail.huginn.dev>",
+      subject: "Password Reset",
+      template: { id: "password-reset", variables: { RESET_CODE: code } },
+   });
+   if (result.error) throw result.error;
+}
+
+export async function sendPasswordResetConfirmationEmail(receiverEmail: string) {
+   if (process.env.TEST) return;
+   const result = await resend.emails.send({
+      to: receiverEmail,
+      from: "Huginn <noreply@mail.huginn.dev>",
+      subject: "Your Huginn password was changed",
+      template: { id: "password-reset-confirmation" },
+   });
+   if (result.error) throw result.error;
 }
 
 export async function getUserBadges(userId: Snowflake): Promise<APIBadge[]> {

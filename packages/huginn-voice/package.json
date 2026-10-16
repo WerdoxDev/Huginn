@@ -10,6 +10,7 @@
       "dev": "bun run --hot --preload ./src/setup.ts ./src/index.ts"
    },
    "dependencies": {
+      "@elysia/cors": "^1.4.1",
       "@huginn/backend-shared": "workspace:*",
       "@huginnjs/shared": "workspace:*",
       "@opentelemetry/instrumentation": "^0.221.0",

@@ -2,7 +2,7 @@ import HeaderButton from "@components/HeaderButton";
 import ThemeChanger from "@components/ThemeChanger";
 import { HuginnIcon } from "@huginn/frontend-shared";
 import { useTheme } from "@stores/themeStore";
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { type MouseEvent, useState } from "react";
 
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_public")({
 function PublicComponent() {
    const [isMenuOpen, setIsMenuOpen] = useState(false);
    const { themeType } = useTheme();
+   const isRedirect = useLocation({ select: (location) => location.pathname === "/redirect" });
 
    const toggleMenu = () => {
       setIsMenuOpen((prev) => !prev);
@@ -22,6 +23,15 @@ function PublicComponent() {
       event?.stopPropagation();
       setIsMenuOpen(false);
    };
+
+   if (isRedirect) {
+      return (
+         <div className="huginn-auth-screen bg-surface-alt text-text flex min-h-dvh flex-col">
+            <Analytics />
+            <Outlet />
+         </div>
+      );
+   }
 
    return (
       <div className="bg-surface text-text flex min-h-screen flex-col overflow-hidden">

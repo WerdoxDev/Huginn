@@ -1,12 +1,4 @@
-import {
-   type APIPostOAuthConfirmJSONBody,
-   type APIPostOAuthConfirmResult,
-   generateRandomString,
-   type OAuthFlow,
-   type OAuthType,
-   Routes,
-} from "@huginnjs/shared";
-import { base64 } from "@scure/base";
+import { type APIPostOAuthConfirmJSONBody, type APIPostOAuthConfirmResult, type APIPostOAuthHandoffResult, type OAuthFlow, type OAuthProvider, Routes } from "@huginnjs/shared";
 
 import type { Gateway } from "../gateway";
 import type { REST } from "../rest";
@@ -28,18 +20,20 @@ export class OAuthAPI {
       }) as Promise<APIPostOAuthConfirmResult>;
    }
 
-   public getOAuthURL(type: OAuthType, flow: OAuthFlow, redirectUrl: string): string {
-      if (type === "google") {
-         const url = new URL("/api/auth/google", this.rest.options?.api);
+   public async exchangeHandoff(code: string): Promise<APIPostOAuthHandoffResult> {
+      return this.rest.post(Routes.oauthHandoff(), { body: { code } }) as Promise<APIPostOAuthHandoffResult>;
+   }
 
-         const state = base64.encode(new TextEncoder().encode(`${Date.now()}:${generateRandomString(16)}`));
-         url.searchParams.set("state", state);
-         url.searchParams.set("flow", flow);
-         url.searchParams.set("redirect_url", redirectUrl);
+   public getOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string): string {
+      const url = new URL(`/api/auth/${type}`, this.rest.options?.api);
+      url.searchParams.set("flow", flow);
+      url.searchParams.set("redirect_url", redirectUrl);
+      return url.toString();
+   }
 
-         return url.toString();
-      }
-
-      return "";
+   public getConnectOAuthURL(type: OAuthProvider, flow: OAuthFlow, redirectUrl: string, linkToken: string): string {
+      const url = new URL(this.getOAuthURL(type, flow, redirectUrl));
+      url.searchParams.set("link_token", linkToken);
+      return url.toString();
    }
 }

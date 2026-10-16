@@ -5,8 +5,7 @@ import {
    MessageReferenceType,
    MessageType,
    RelationshipType,
-   VoiceSignallingError,
-   type APIDMChannel,
+   VoiceSignallingErrorCode,
    type APIMessage,
    type APIRelationshipWithoutOwner,
    type APIUserProfile,
@@ -30,11 +29,11 @@ import {
 
 describe("utils", () => {
    test("should recognize transport errors from the current and another window", () => {
-      const localError = new TransportError("Wrong voice state", VoiceSignallingError.WRONG_STATE);
+      const localError = new TransportError("Wrong voice state", VoiceSignallingErrorCode.WRONG_STATE);
       const crossWindowError = {
          name: "TransportError",
          message: "Wrong voice state",
-         code: VoiceSignallingError.WRONG_STATE,
+         code: VoiceSignallingErrorCode.WRONG_STATE,
       };
 
       expect(getMediaErrorMessage(localError, "camera")).toBe("The voice connection is in the wrong state. Please try again.");

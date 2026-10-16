@@ -8,7 +8,7 @@ import UserAvatar from "@components/UserAvatar";
 import UserBanner from "@components/UserBanner";
 import { usePatchUser } from "@hooks/mutations/usePatchUser";
 import { useFileDialog } from "@hooks/useFileDialog";
-import { useIsOAuth } from "@hooks/useIsOAuth";
+import { useRecentAuthentication } from "@hooks/useRecentAuthentication";
 import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { CONSTANTS, ActivityType, type APIPatchCurrentUserJSONBody } from "@huginnjs/shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
@@ -19,12 +19,10 @@ import { useEffect, useState } from "react";
 
 import * as palette from "@/assets/palettes.json";
 
-type EditingField = "username" | "displayName" | "email" | "password";
-
 export default function SettingsProfileTab() {
-   const { user, tokenPayload } = useThisUser();
+   const user = useThisUser().user;
    const { updateModals } = useModals();
-   const isOAuth = useIsOAuth();
+   const recentAuthentication = useRecentAuthentication();
    const { openFileDialog } = useFileDialog("image");
 
    const [bannerColor, setBannerColor] = useState(() => user?.bannerColor ?? "");
@@ -35,7 +33,12 @@ export default function SettingsProfileTab() {
    const [pendingBanner, setPendingBanner] = useState<string | null | undefined>(undefined);
    const [showBanner, setShowBanner] = useState(() => !!user?.banner || !!user?.bannerColor);
 
-   const mutation = usePatchUser();
+   const mutation = usePatchUser(undefined, (error) =>
+      recentAuthentication.handleMutationError(error, undefined, (retryError) => {
+         updateModals({ info: { isOpen: true, status: "error", title: "Could not verify account", text: retryError.message } });
+         return true;
+      }),
+   );
 
    useEffect(() => {
       if (!isEditing && user?.bannerColor !== undefined) {
@@ -72,11 +75,9 @@ export default function SettingsProfileTab() {
       setAccentColor(null);
    }
 
-   async function handleEditField(field: EditingField) {
+   async function handleEditField(field: "username" | "displayName") {
       if (field === "username") updateModals({ changeUsername: { isOpen: true } });
       else if (field === "displayName") updateModals({ changeDisplayName: { isOpen: true } });
-      else if (field === "email") updateModals({ changeEmail: { isOpen: true } });
-      else if (field === "password") updateModals({ changePassword: { isOpen: true } });
    }
 
    async function handleEditAvatar() {
@@ -383,30 +384,6 @@ export default function SettingsProfileTab() {
                      </div>
                      <ChangeButton onClick={() => handleEditField("displayName")} />
                   </div>
-                  <div className="bg-surface my-4 h-px w-full" />
-                  <div className="flex w-full items-center justify-between gap-x-2">
-                     <div className="flex w-full flex-col items-start justify-center">
-                        <HuginnLabel className="mb-0!">Email</HuginnLabel>
-                        <div className="text-white">{user?.email}</div>
-                     </div>
-                     <ChangeButton onClick={() => handleEditField("email")} />
-                  </div>
-                  {!isOAuth && (
-                     <>
-                        <div className="bg-surface my-4 h-px w-full" />
-                        <div className="flex w-full items-center justify-between gap-x-2">
-                           <div className="flex w-full flex-col items-start justify-center">
-                              <HuginnLabel className="mb-0!">Password</HuginnLabel>
-                              <div className="text-white">****</div>
-                           </div>
-                           <ChangeButton onClick={() => handleEditField("password")} />
-                        </div>
-                     </>
-                  )}
-                  <div className="bg-surface my-4 h-px w-full" />
-                  <div className="text-text/50 text-xs uppercase">
-                     Auth method: <span className="font-semibold">{tokenPayload?.authType}</span>
-                  </div>
                </div>
             </div>
          </div>
@@ -414,10 +391,10 @@ export default function SettingsProfileTab() {
    );
 }
 
-function ChangeButton(props: { onClick?: () => void }) {
+function ChangeButton(props: { onClick?: () => void; label?: string }) {
    return (
       <HuginnButton className="h-8 px-3" color="surface" onClick={props.onClick}>
-         Change
+         {props.label ?? "Change"}
       </HuginnButton>
    );
 }

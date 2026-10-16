@@ -1,18 +1,9 @@
-import { createErrorFactory, createHuginnError, createToken, unauthorized, verifyJwt } from "@huginn/backend-shared";
+import { createErrorFactory, createHuginnError, unauthorized, verifyJwt } from "@huginn/backend-shared";
 import { prisma } from "@huginn/backend-shared/database";
-import {
-   CONSTANTS,
-   type APIPostOAuthConfirmResult,
-   CDNRoutes,
-   Errors,
-   WorkerID,
-   getFileHash,
-   snowflake,
-   toArrayBuffer,
-   type OAuthType,
-} from "@huginnjs/shared";
+import { type APIPostOAuthConfirmResult, CDNRoutes, Errors, WorkerID, getFileHash, snowflake, toArrayBuffer, type OAuthProvider } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { createAuthSession } from "#utils/auth-session";
 import { cdnUpload } from "#utils/server-request";
 // import { createTokens } from "#utils/token-factory";
 import { validateDisplayName, validateUsername, validateUsernameUnique } from "#utils/validation";
@@ -25,7 +16,7 @@ const schema = t.Object({
 
 export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
    "/api/auth/oauth-confirm",
-   async ({ body, status, tokenPayload }) => {
+   async ({ body, status, tokenPayload, request }) => {
       const identityProvider = await prisma.identityProvider.findUnique({
          where: { id: BigInt(tokenPayload.providerId) },
       });
@@ -33,6 +24,7 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
       if (!identityProvider) {
          return unauthorized(status);
       }
+      if (identityProvider.providerUserId !== tokenPayload.providerUserId || identityProvider.completed) return unauthorized(status);
 
       const formError = createErrorFactory(Errors.invalidFormBody());
 
@@ -66,32 +58,29 @@ export const postOauthConfirm = new Elysia().use(verifyJwt("oauth")).post(
          avatarHash = null;
       }
 
-      const user = await prisma.user.createOne({
-         email: tokenPayload.email,
-         username: body.username,
-         displayName: body.displayName,
-         avatar: avatarHash,
-         id: BigInt(newUserId),
+      const { user, result } = await prisma.$transaction(async (tx) => {
+         const user = await tx.user.createOne({
+            email: tokenPayload.email,
+            emailVerifiedAt: new Date(),
+            username: body.username,
+            displayName: body.displayName,
+            avatar: avatarHash,
+            id: BigInt(newUserId),
+         });
+         const result = await tx.identityProvider.update({
+            where: { id: BigInt(tokenPayload.providerId) },
+            data: { userId: BigInt(user.id), completed: true },
+            select: { providerType: true },
+         });
+
+         return { user, result };
       });
 
-      const result = await prisma.identityProvider.update({
-         where: { providerUserId: tokenPayload.providerUserId },
-         data: { userId: BigInt(user.id), completed: true },
-         select: { providerType: true },
-      });
-
-      const lastAuthenticatedAt = Date.now();
-      const accessToken = await createToken(
-         "user-access",
-         { id: user.id, authType: result.providerType as OAuthType, lastAuthenticatedAt },
-         CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME,
-      );
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
+      const tokens = await createAuthSession(user.id, "oauth", result.providerType as OAuthProvider, request.headers.get("user-agent") ?? undefined);
 
       const json: APIPostOAuthConfirmResult = {
          ...user,
-         token: accessToken,
-         refreshToken: refreshToken,
+         ...tokens,
       };
       return status("Created", json);
    },

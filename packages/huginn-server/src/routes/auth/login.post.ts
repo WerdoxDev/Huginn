@@ -1,16 +1,18 @@
-import { createToken, globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
+import { globalPlugin, invalidBody, tryCatch } from "@huginn/backend-shared";
 import { createErrorFactory } from "@huginn/backend-shared";
 import { assertError } from "@huginn/backend-shared/database";
 import { prisma } from "@huginn/backend-shared/database";
 import { DBErrorType } from "@huginn/backend-shared/types";
-import { CONSTANTS, type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
+import { type APIPostLoginResult, Errors, Fields } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
-import { generateVerificationCode, sendVerificationEmail } from "#utils/route-utils";
+import { createAuthSession } from "#utils/auth-session";
+import { issueEmailVerificationCode } from "#utils/email-verification";
+import { sendEmailVerificationEmail } from "#utils/route-utils";
 
 export const postLogin = new Elysia().use(globalPlugin).post(
    "/api/auth/login",
-   async ({ body, status, global }) => {
+   async ({ body, status, global, request }) => {
       if (!body.email && !body.username) {
          return invalidBody(status);
       }
@@ -32,27 +34,16 @@ export const postLogin = new Elysia().use(globalPlugin).post(
       });
 
       if (!userVerificationState.emailVerifiedAt) {
-         const code = generateVerificationCode();
-         await prisma.emailVerification.createOrUpdate({
-            userId: user.id,
-            email: user.email,
-            expiresAt: Date.now() + CONSTANTS.EMAIL_VERIFICATION_WINDOW,
-            code,
-            purpose: "registration",
-         });
+         const code = await issueEmailVerificationCode(user.id, user.email, "registration");
 
-         global.waitUntil(async () => await sendVerificationEmail(user.email, code));
+         global.waitUntil(async () => await sendEmailVerificationEmail(user.email, code));
 
          const json: APIPostLoginResult = { ...user, pendingEmail: user.email };
          return status("Accepted", json);
       }
 
-      const lastAuthenticatedAt = Date.now();
-
-      const accessToken = await createToken("user-access", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.ACCESS_TOKEN_EXPIRE_TIME);
-      const refreshToken = await createToken("user-refresh", { id: user.id, authType: "password", lastAuthenticatedAt }, CONSTANTS.REFRESH_TOKEN_EXPIRE_TIME);
-
-      const json: APIPostLoginResult = { ...user, token: accessToken, refreshToken: refreshToken };
+      const tokens = await createAuthSession(user.id, "password", undefined, request.headers.get("user-agent") ?? undefined);
+      const json: APIPostLoginResult = { ...user, ...tokens };
       return status(200, json);
    },
    {

@@ -113,7 +113,7 @@ export const userRepo = {
          }
       });
    },
-   async createOne(options: { id?: bigint; username: string; displayName?: string | null; password?: string | null; email: string; avatar?: string | null }) {
+   async createOne(options: { id?: bigint; username: string; displayName?: string | null; password?: string | null; email: string; avatar?: string | null; emailVerifiedAt?: Date }) {
       return analytics.startActiveSpan("db.d.user.createOne", async (span) => {
          span.setAttributes({
             "query.has_custom_id": !!options.id,
@@ -136,6 +136,7 @@ export const userRepo = {
                   password: passwordHash,
                   avatar: options.avatar,
                   email: options.email,
+                  emailVerifiedAt: options.emailVerifiedAt,
                   flags: UserFlags.NONE,
                   system: false,
                },
