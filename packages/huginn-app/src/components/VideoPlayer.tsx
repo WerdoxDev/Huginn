@@ -15,7 +15,7 @@ export default function VideoPlayer(props: {
    url: string;
    width: number;
    height: number;
-   duration: number;
+   duration?: number;
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
    const containerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +25,7 @@ export default function VideoPlayer(props: {
    const [currentVideoPercent, setCurrentVideoPercent] = useState(0);
    const [bufferedPercent, setBufferedPercent] = useState(0);
    const [currentTime, setCurrentTime] = useState(0);
+   const [videoDuration, setVideoDuration] = useState(0);
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
    const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
@@ -64,7 +65,7 @@ export default function VideoPlayer(props: {
             const duration = videoRef.current?.duration ?? 0;
             setCurrentTime(current);
 
-            const percentage = (current / duration) * 100;
+            const percentage = Number.isFinite(duration) && duration > 0 ? (current / duration) * 100 : 0;
             setCurrentVideoPercent(percentage);
          },
          { signal: controller.signal },
@@ -79,7 +80,7 @@ export default function VideoPlayer(props: {
                const end = buffered.end(buffered.length - 1); // Get the end time of the first (and typically only) buffered range
                const duration = videoRef.current?.duration ?? 0;
 
-               if (duration > 0) {
+               if (Number.isFinite(duration) && duration > 0) {
                   const percentage = (end / duration) * 100;
                   setBufferedPercent(percentage);
                }
@@ -93,9 +94,16 @@ export default function VideoPlayer(props: {
       };
    }, []);
 
+   function updateVideoDuration() {
+      const duration = videoRef.current?.duration ?? 0;
+      setVideoDuration(Number.isFinite(duration) && duration > 0 ? duration : 0);
+   }
+
    function updateCurrentVideoPercent(percent: number) {
       if (videoRef.current) {
          const duration = videoRef.current?.duration ?? 0;
+         if (!Number.isFinite(duration) || duration <= 0) return;
+
          const time = (duration / 100) * percent;
          videoRef.current.currentTime = time;
          setCurrentTime(time);
@@ -131,6 +139,9 @@ export default function VideoPlayer(props: {
             src={props.url}
             ref={videoRef}
             onContextMenu={props.onContextMenu}
+            onLoadedMetadata={updateVideoDuration}
+            onDurationChange={updateVideoDuration}
+            onEmptied={() => setVideoDuration(0)}
             onLoadedData={() => setIsLoaded(true)}
             onError={() => setHasError(true)}
          />
@@ -150,7 +161,7 @@ export default function VideoPlayer(props: {
                   <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm">
                      <span>{formatSeconds(currentTime)}</span>
                      <span>/</span>
-                     <span>{formatSeconds(props.duration)}</span>
+                     <span>{formatSeconds(props.duration ?? videoDuration)}</span>
                   </div>
                )}
                <HuginnMediaSlider

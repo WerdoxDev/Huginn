@@ -25,7 +25,7 @@ export default function EmbedElement(props: {
       () => props.embedType === "gifv" || (props.description === undefined && props.title === undefined && (props.thumbnail || props.video)),
       [props.embedType, props.description, props.title, props.thumbnail, props.video],
    );
-   const { hostnames, urls } = useClientStore();
+   const { urls } = useClientStore();
 
    const dimensions = useMemo(
       () =>
@@ -39,13 +39,13 @@ export default function EmbedElement(props: {
    );
 
    const thumbnailUrl = useMemo(
-      () => (props.thumbnail?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.thumbnail.url), urls?.cdn ?? `${hostnames.cdn}/cdn`) : undefined),
-      [props.thumbnail, hostnames.cdn, urls?.cdn],
+      () => (props.thumbnail?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.thumbnail.url), urls!.cdn) : undefined),
+      [props.thumbnail, urls?.cdn],
    );
 
    const videoUrl = useMemo(
-      () => (props.video?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.video.url), urls?.cdn ?? `${hostnames.cdn}/cdn`) : undefined),
-      [props.video, hostnames.cdn, urls?.cdn],
+      () => (props.video?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.video.url), urls!.cdn) : undefined),
+      [props.video, urls?.cdn],
    );
 
    function handleGifContextMenu(e: MouseEvent<HTMLVideoElement>) {
@@ -143,4 +143,4 @@ export default function EmbedElement(props: {
          </div>
       </div>
    );
-}
+}
