@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.92.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.1...app@v0.92.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **app:** wait for urls.cdn before setting notification hostname ([54575fc](https://github.com/WerdoxDev/Huginn/commit/54575fc851a5a99cf3406362ca6b0ade539b62cd))
+
 ## [0.92.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.0...app@v0.92.1) (2026-10-16)
 
 
