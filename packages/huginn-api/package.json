@@ -12,7 +12,8 @@
    },
    "scripts": {
       "start": "bun --watch ./src/index.ts",
-      "test": "vitest --coverage",
+      "test": "vitest",
+      "test:coverage": "vitest run --coverage",
       "build": "tsdown"
    },
    "dependencies": {

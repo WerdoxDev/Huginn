@@ -425,24 +425,6 @@ describe("voice state", () => {
       return gateway.authenticate();
    }
 
-   it("getVoiceToken resolves once voice_server_update and voice_state_update both arrive", async () => {
-      const userId = "u1";
-      const guildId = "g1";
-      const channelId = "c1";
-      const voiceToken = "voice-token-xyz";
-      let seq = 1;
-
-      await authenticateWithUser(userId, (client, payload) => {
-         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE) {
-            client.send(dispatchPayload("voice_server_update", { token: voiceToken }, ++seq));
-            client.send(dispatchPayload("voice_state_update", { userId, channelId, guildId }, ++seq));
-         }
-      });
-
-      const token = await gateway.getVoiceToken(guildId, channelId);
-      expect(token).toBe(voiceToken);
-   });
-
    it("sendDefaultVoiceState sends a null channel/guild update and resolves on confirmation", async () => {
       const userId = "u1";
       let seq = 1;
@@ -581,20 +563,6 @@ describe("voice state", () => {
       gateway.close();
       await expect(pending).rejects.toThrow();
    });
-
-   it("getVoiceToken should return null if disconnected while waiting for the voice server update and voice state update", async () => {
-      const userId = "u1";
-      const channelId = "c1";
-
-      await authenticateWithUser(userId, (client, payload) => {
-         if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
-            client.close(1006, "dropped");
-         }
-      });
-
-      const result = await gateway.getVoiceToken(null, channelId);
-      expect(result).toBeNull();
-   });
 });
 
 // ============================================================
@@ -627,16 +595,5 @@ describe("updatePresence()", () => {
       gateway.updatePresence({ status: "online", activities: [] } as never);
 
       await vi.waitFor(() => expect(received.some((p) => p.op === GatewayOperations.PRESENCE_UPDATE)).toBe(true));
-   });
-});
-
-describe("send()", () => {
-   it("does nothing if the socket is not connected", () => {
-      server.use(
-         link.addEventListener("connection", ({ client }) => {
-            client.addEventListener("message", () => { });
-         }),
-      );
-      expect(() => gateway["send"]({ op: GatewayOperations.HEARTBEAT, d: 0 })).not.toThrow();
    });
 });

@@ -1,113 +1,58 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { VoiceState } from "../voice-state";
 
-let voiceState: VoiceState;
+describe("voice state", () => {
+   it("shows optimistic changes immediately and accepts the server's final state", async () => {
+      const state = new VoiceState();
+      const request = vi.fn();
+      state.on("update_gateway_voice_state", request);
+      const pending = state.updateGatewayVoiceState({ isAudioMuted: true });
 
-beforeEach(() => {
-   vi.restoreAllMocks();
-   voiceState = new VoiceState();
-});
+      expect(state.gatewayVoiceState.isAudioMuted).toBe(true);
+      const update = request.mock.calls[0][0];
+      expect(update.voiceState).toMatchObject({ isAudioMuted: true });
+      expect(update.voiceState).not.toHaveProperty("sessionId");
+      update.callback();
+      await pending;
 
-describe("VoiceState", () => {
-   it("starts with the default gateway and local voice state", () => {
-      expect(voiceState.gatewayVoiceState).toEqual({
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isCameraOn: false,
-         isScreenSharing: false,
-         isAudioStreaming: false,
-      });
-      expect(voiceState.localVoiceState).toEqual({ isAudioPaused: false });
+      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isAudioMuted: false });
+      expect(state.gatewayVoiceState).toMatchObject({ channelId: "channel", isAudioMuted: false });
    });
 
-   it("ignores a no-op gateway update", async () => {
-      const gatewayUpdated = vi.fn();
-      const updateGatewayVoiceState = vi.fn();
-      voiceState.on("gateway_voice_state_updated", gatewayUpdated);
-      voiceState.on("update_gateway_voice_state", updateGatewayVoiceState);
+   it("keeps an optimistic selection if sending it fails", async () => {
+      const state = new VoiceState();
+      state.on("update_gateway_voice_state", ({ errback }) => errback?.(new Error("offline")));
 
-      await voiceState.updateGatewayVoiceState({ isAudioMuted: false });
-
-      expect(gatewayUpdated).not.toHaveBeenCalled();
-      expect(updateGatewayVoiceState).not.toHaveBeenCalled();
-      expect(voiceState.gatewayVoiceState).toEqual({
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isCameraOn: false,
-         isScreenSharing: false,
-         isAudioStreaming: false,
-      });
+      await expect(state.updateGatewayVoiceState({ isAudioMuted: true })).resolves.toBeUndefined();
+      expect(state.gatewayVoiceState.isAudioMuted).toBe(true);
    });
 
-   it("emits the local state immediately and then confirms a gateway update", async () => {
-      const gatewayUpdated = vi.fn();
-      const updateGatewayVoiceState = vi.fn(({ voiceState: nextState, callback }) => {
-         expect(nextState).toMatchObject({ isCameraOn: true, isAudioMuted: true });
-         callback({ ...nextState, isAudioMuted: true });
-      });
-      voiceState.on("gateway_voice_state_updated", gatewayUpdated);
-      voiceState.on("update_gateway_voice_state", updateGatewayVoiceState);
+   it("rejects a failed confirmed update without changing the selected state", async () => {
+      const state = new VoiceState();
+      state.on("update_gateway_voice_state", ({ errback }) => errback?.(new Error("offline")));
 
-      await voiceState.updateGatewayVoiceState({ isCameraOn: true, isAudioMuted: true });
-
-      expect(updateGatewayVoiceState).toHaveBeenCalledTimes(1);
-      expect(gatewayUpdated).toHaveBeenCalledTimes(2);
-      expect(gatewayUpdated).toHaveBeenNthCalledWith(1, {
-         isAudioDeafened: false,
-         isAudioMuted: true,
-         isCameraOn: true,
-         isScreenSharing: false,
-         isAudioStreaming: false,
-      });
-      expect(gatewayUpdated).toHaveBeenNthCalledWith(2, {
-         isAudioDeafened: false,
-         isAudioMuted: true,
-         isCameraOn: true,
-         isScreenSharing: false,
-         isAudioStreaming: false,
-      });
-      expect(voiceState.gatewayVoiceState).toEqual({
-         isAudioDeafened: false,
-         isAudioMuted: true,
-         isCameraOn: true,
-         isScreenSharing: false,
-         isAudioStreaming: false,
-      });
+      await expect(state.updateGatewayVoiceState({ channelId: "channel" }, false)).rejects.toThrow("offline");
+      expect(state.gatewayVoiceState.channelId).toBeNull();
    });
 
-   it("keeps the optimistic state when confirmation is missing", async () => {
-      const gatewayUpdated = vi.fn();
-      voiceState.on("gateway_voice_state_updated", gatewayUpdated);
-      voiceState.on("update_gateway_voice_state", ({ callback }) => callback(undefined));
+   it("preserves mute and deafen selections after leaving a channel", () => {
+      const state = new VoiceState();
+      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isAudioMuted: true, isAudioDeafened: true });
 
-      await voiceState.updateGatewayVoiceState({ isScreenSharing: true });
+      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: null, isAudioMuted: false, isAudioDeafened: false });
 
-      expect(gatewayUpdated).toHaveBeenCalledTimes(1);
-      expect(gatewayUpdated).toHaveBeenCalledWith({
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isCameraOn: false,
-         isScreenSharing: true,
-         isAudioStreaming: false,
-      });
-      expect(voiceState.gatewayVoiceState).toEqual({
-         isAudioDeafened: false,
-         isAudioMuted: false,
-         isCameraOn: false,
-         isScreenSharing: true,
-         isAudioStreaming: false,
-      });
+      expect(state.gatewayVoiceState).toMatchObject({ channelId: null, isAudioMuted: true, isAudioDeafened: true });
    });
 
-   it("merges and emits local voice state updates", () => {
-      const localUpdated = vi.fn();
-      voiceState.on("local_voice_state_updated", localUpdated);
+   it("resends the selected state after reconnecting", async () => {
+      const state = new VoiceState();
+      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isCameraOn: true });
+      const request = vi.fn(({ callback }) => callback());
+      state.on("update_gateway_voice_state", request);
 
-      voiceState.updateLocalVoiceState({ isAudioPaused: true });
+      await state.resendGatewayVoiceState();
 
-      expect(localUpdated).toHaveBeenCalledTimes(1);
-      expect(localUpdated).toHaveBeenCalledWith({ isAudioPaused: true });
-      expect(voiceState.localVoiceState).toEqual({ isAudioPaused: true });
+      expect(request).toHaveBeenCalledWith(expect.objectContaining({ voiceState: expect.objectContaining({ channelId: "channel", isCameraOn: true }) }));
    });
 });

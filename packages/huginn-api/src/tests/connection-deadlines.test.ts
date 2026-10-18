@@ -304,7 +304,7 @@ describe("TURN credential deadlines", () => {
    async function createTransportManager() {
       const manager = new VoiceTransportManager(
          makeClient(),
-         { deviceOptions: { handlerFactory: FakeHandler.createFactory(testFakeParameters) } },
+         { voiceApi: "ws://localhost:3003/voice", deviceOptions: { handlerFactory: FakeHandler.createFactory(testFakeParameters) } },
          "ws://localhost:3003/voice",
       );
       await manager.initializeDevice(testFakeParameters.generateRouterRtpCapabilities());

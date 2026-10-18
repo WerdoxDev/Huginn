@@ -1,5 +1,6 @@
 import * as shared from "@huginnjs/shared";
-import { HTTPError, HuginnAPIError, type HuginnErrorData, JsonCode, parseResponse, type RequestMethod, resolveImage, resolveRequest } from "@huginnjs/shared";
+import { HTTPError, HuginnAPIError, type HuginnErrorData, JsonCode, parseResponse, type RequestMethod, resolveFile, resolveRequest } from "@huginnjs/shared";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import { HuginnClient } from "../huginn-client";
@@ -147,17 +148,23 @@ describe("resolveRequest()", () => {
    });
 
    test("should add a file to the body and correctly determine its contentType", async () => {
-      const data = await resolveImage(decodeURIComponent(new URL("./pixel.png", import.meta.url).pathname.slice(1)));
+      const data = await resolveFile(fileURLToPath(new URL("./pixel.png", import.meta.url)));
       const resolvedRequest = await resolveRequest({
          fullRoute: "/test",
          method: "POST",
          root: "https://test.com",
-         files: [{ data: data!, name: "test" }],
+         files: [{ data: data!.data, name: "test" }],
       });
 
       expect(resolvedRequest.fetchOptions.body).toBeInstanceOf(FormData);
-      expect(Array.from((resolvedRequest.fetchOptions.body as FormData).entries())).toHaveLength(1);
-      expect(Array.from((resolvedRequest.fetchOptions.body as FormData).entries())[0]?.[0]).toBe("files[0]");
+      const entries = Array.from((resolvedRequest.fetchOptions.body as FormData).entries());
+      expect(entries).toHaveLength(1);
+      expect(entries[0][0]).toBe("files[0]");
+      const file: unknown = entries[0][1];
+      expect(file).toBeInstanceOf(Blob);
+      if (!(file instanceof Blob)) throw new Error("Expected an uploaded file");
+      expect(file.type).toBe("image/png");
+      expect(file.size).toBeGreaterThan(0);
    });
 });
 
