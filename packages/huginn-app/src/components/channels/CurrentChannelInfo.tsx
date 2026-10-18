@@ -1,33 +1,30 @@
 import ChannelIcon from "@components/ChannelIcon";
-import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { ChannelType } from "@huginnjs/shared";
 import { useClient } from "@stores/clientStore";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresences } from "@stores/presenceStore";
 import { useThisUser } from "@stores/userStore";
 import { clsx } from "clsx";
 import { useMemo, type MouseEvent } from "react";
 
-export default function CurrentChannelInfo(props: { iconZoomable?: boolean }) {
+export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMembersClick?: (event: MouseEvent) => void }) {
    const channel = useCurrentChannel();
    const client = useClient();
    const { user } = useThisUser();
    const recipients = useUsers(channel?.recipientIds);
    const { presences } = usePresences([...(channel?.recipientIds ?? []), user!.id]);
    const { updateModals } = useModals();
-   const { toggleRight } = useMobileMenuStore();
 
    const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
-   function handleClick() {
+   function handleClick(event: MouseEvent) {
       if (channel?.type === ChannelType.DM && otherUsers[0]) {
          updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } });
       } else {
-         toggleRight();
+         props.onMembersClick?.(event);
       }
    }
 

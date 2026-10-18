@@ -601,3 +601,5 @@ export type OsInfo = {
    chromeVersion: string;
    electronVersion: string;
 };
+
+export type ChannelSidebarPanel = "members" | "search";

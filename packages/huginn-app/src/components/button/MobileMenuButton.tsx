@@ -1,11 +1,11 @@
 import type { MouseEvent } from "react";
 
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useSidebarStore } from "@stores/sidebarStore";
 
 import TopBarButton from "./TopBarButton";
 
 export default function MobileMenuButton() {
-   const { openLeft, closeRight } = useMobileMenuStore();
+   const { openLeft, closeRight } = useSidebarStore();
 
    function handleClick(e: MouseEvent) {
       e.stopPropagation();

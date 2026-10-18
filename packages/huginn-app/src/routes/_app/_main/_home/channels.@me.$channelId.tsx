@@ -7,12 +7,13 @@ import ErrorComponent from "@components/ErrorComponent";
 import MessageBox from "@components/MessageBox";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
+import { ChannelType } from "@huginnjs/shared";
 import { PushNotifications } from "@lib/capacitor/push-notification-plugin";
 import { getMessagesOptions, queryClient } from "@lib/queries";
 import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { clientStore, useClient } from "@stores/clientStore";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
 import { useModals } from "@stores/modalsStore";
+import { useSidebarStore, type ChannelSidebarPanel } from "@stores/sidebarStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -45,8 +46,8 @@ function ChannelWithIdComponent() {
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
 
-   const { resetToCenter } = useMobileMenuStore();
-   const { toggleRight, closeLeft, isRightOpen } = useMobileMenuStore();
+   const { resetToCenter, toggleRight, closeRight, isRightOpen, rightPanel } = useSidebarStore();
+   const isSidebarVisible = isRightOpen && (rightPanel === "search" || channel?.type === ChannelType.GROUP_DM);
 
    const sortedMessages = useMemo(
       () =>
@@ -79,17 +80,23 @@ function ChannelWithIdComponent() {
       };
    }, [channelId, huginnWindow.environment]);
 
-   function onRecipientsClick(e: MouseEvent) {
+   function onSidebarPanelClick(e: MouseEvent, panel: ChannelSidebarPanel) {
       e.stopPropagation();
-      closeLeft();
-      toggleRight();
+      const nextOpen = !isRightOpen || rightPanel !== panel;
+      toggleRight(panel);
 
       if (!isMobile && settings) {
-         const nextOpen = !isRightOpen;
          setValue("settings", { ...settings, isChannelSidebarOpen: nextOpen });
       }
 
-      posthog.capture("channel:recipients_button_click");
+      if (panel === "members") posthog.capture("channel:recipients_button_click");
+   }
+
+   function onSidebarClose() {
+      closeRight();
+      if (!isMobile && settings) {
+         setValue("settings", { ...settings, isChannelSidebarOpen: false });
+      }
    }
 
    async function onCallClick(e: MouseEvent) {
@@ -118,13 +125,18 @@ function ChannelWithIdComponent() {
       <div className="flex h-full flex-col">
          {channel ? (
             <>
-               <ChannelWithIdTopBar channel={channel} onRecipientsClick={onRecipientsClick} onCallClick={onCallClick} />
+               <ChannelWithIdTopBar
+                  channel={channel}
+                  onRecipientsClick={(event) => onSidebarPanelClick(event, "members")}
+                  onSearchClick={(event) => onSidebarPanelClick(event, "search")}
+                  onCallClick={onCallClick}
+               />
                <div className="flex h-full w-full overflow-hidden">
                   <div className="relative flex h-full w-full flex-col overflow-hidden">
                      <div
                         className={clsx(
                            "absolute inset-0 z-40 bg-black/50 transition-all lg:pointer-events-none lg:z-auto lg:opacity-0",
-                           isRightOpen ? "opacity-100" : "pointer-events-none opacity-0",
+                           isSidebarVisible ? "opacity-100" : "pointer-events-none opacity-0",
                         )}
                         onClick={resetToCenter}
                      />
@@ -134,7 +146,7 @@ function ChannelWithIdComponent() {
                      <MessageBox messages={sortedMessages} />
                   </div>
 
-                  <ChannelSidebar channel={channel} />
+                  <ChannelSidebar channel={channel} onClose={onSidebarClose} />
                </div>
                {/* <div className="bg-surface absolute bottom-0 flex h-16 w-full shrink-0" /> */}
             </>

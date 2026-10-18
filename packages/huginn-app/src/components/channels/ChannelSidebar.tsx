@@ -1,116 +1,77 @@
-import ChannelRecipient from "@components/ChannelRecipient";
-import { useUsers } from "@hooks/api-hooks/userHooks";
+import type { ReactNode } from "react";
+
 import { useIsMobile } from "@hooks/useIsMobile";
-import { useMutationLatestState } from "@hooks/useLatestMutationStatus";
-import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { ChannelType } from "@huginnjs/shared";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
-import { useModals } from "@stores/modalsStore";
-import { useThisUser } from "@stores/userStore";
-import clsx from "clsx";
-import { useEffect, useMemo, useRef } from "react";
+import { useSidebarStore } from "@stores/sidebarStore";
+import { AnimatePresence, motion, useIsPresent } from "motion/react";
 
-import type { AppDirectChannel } from "@/types";
+import type { AppDirectChannel, ChannelSidebarPanel } from "@/types";
 
-export default function ChannelSidebar(props: { channel: AppDirectChannel }) {
-   const { user } = useThisUser();
-   const addState = useMutationLatestState("add-channel-recipient");
-   const removeState = useMutationLatestState("remove-channel-recipient");
-   const { updateModals } = useModals();
-   const containerRef = useRef<HTMLDivElement>(null);
-   const { channel } = props;
+import ChannelMembersPanel from "./ChannelMembersPanel";
+import ChannelSearchPanel from "./ChannelSearchPanel";
 
-   const { isRightOpen, isDragging, rightMenuWidth } = useMobileMenuStore();
+const panels: Record<ChannelSidebarPanel, { width: number; label: string }> = {
+   members: { width: 240, label: "Channel members" },
+   search: { width: 400, label: "Search messages" },
+};
+
+const resizeTransition = { duration: 0.15, ease: "easeInOut" } as const;
+
+export default function ChannelSidebar(props: { channel: AppDirectChannel; onClose: () => void }) {
+   const { isRightOpen, rightPanel } = useSidebarStore();
    const isMobile = useIsMobile();
-
-   const loading = useMemo(
-      () =>
-         (addState?.variables?.channelId === props.channel.id && addState?.status === "pending") ||
-         (removeState?.variables?.channelId === props.channel.id && removeState?.status === "pending"),
-      [addState, removeState],
-   );
-
-   const recipients = useUsers(props.channel?.recipientIds);
-   const sortedRecipients = useMemo(
-      () =>
-         [user, ...recipients].filter((x) => x !== undefined && x.username !== undefined).toSorted((a, b) => (a!.username! > b!.username! ? 1 : -1)),
-      [user, props.channel.recipientIds, recipients],
-   );
-
-   function handleAddMember() {
-      updateModals({ addRecipient: { isOpen: true, channelId: props.channel.id } });
-   }
-
-   useEffect(() => {
-      if (!containerRef.current) return;
-      if (!isMobile) {
-         containerRef.current.style.display = "block";
-         containerRef.current.style.transform = "none";
-         return;
-      }
-
-      if (isRightOpen) {
-         containerRef.current.style.display = "block";
-         requestAnimationFrame(() => {
-            if (containerRef.current) containerRef.current.style.transform = `translateX(0px)`;
-         });
-      } else {
-         containerRef.current.style.transform = `translateX(${rightMenuWidth}px)`;
-      }
-   }, [isRightOpen, isMobile, channel]);
-
-   function handleTransitionEnd() {
-      if (!isMobile || isRightOpen || !containerRef.current) return;
-      containerRef.current.style.display = "none";
-   }
-
-   if (channel.type !== ChannelType.GROUP_DM) return;
+   const panel = panels[rightPanel];
+   const isOpen = isRightOpen && (rightPanel !== "members" || props.channel.type === ChannelType.GROUP_DM);
+   const contentWidth = isMobile ? `min(${panel.width}px, calc(100vw - 16px))` : panel.width;
 
    return (
-      <div
-         ref={containerRef}
-         onTransitionEnd={handleTransitionEnd}
-         className={clsx(
-            "top-topbar-separator fixed inset-y-0 right-0 bottom-0 z-40 shrink-0 lg:relative lg:top-0 lg:bottom-0 lg:h-full",
-            isMobile && !isDragging && "transition-transform",
-            !isMobile && "transition-[width]",
-            // isRightOpen ? "block" : "hidden",
-         )}
-         style={{
-            // visibility: !isRightOpen ? "hidden" : "visible",
-            width: isMobile ? rightMenuWidth : isRightOpen ? rightMenuWidth : "0",
-            // transform: isMobile ? `translateX(${rightMenuWidth - (isRightOpen ? rightMenuWidth : 0)}px)` : "none",
+      <motion.div
+         inert={!isOpen}
+         initial={false}
+         animate={{
+            width: isMobile || isOpen ? contentWidth : 0,
+            x: isMobile && !isOpen ? "100%" : 0,
+         }}
+         transition={resizeTransition}
+         className="top-topbar-separator fixed inset-y-0 right-0 z-40 shrink-0 overflow-hidden lg:relative lg:top-0 lg:h-full"
+         onKeyDown={(event) => {
+            if (event.key === "Escape") {
+               event.stopPropagation();
+               props.onClose();
+            }
          }}
       >
-         <div className="absolute inset-0 flex" style={{ width: rightMenuWidth }}>
-            <div className="bg-surface h-full w-0.5 shrink-0 overflow-hidden" />
-            <div className="group bg-surface-alt relative flex h-full w-full flex-col overflow-hidden">
-               <div className="scroll-super-thin flex flex-col overflow-y-scroll pb-2">
-                  <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Members - {sortedRecipients.length}</div>
-                  <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
-                     {sortedRecipients
-                        .filter((x) => x !== undefined)
-                        .map((x) => (
-                           <ChannelRecipient isOwner={x.id === channel.ownerId} key={x.id} recipient={x} channelId={props.channel.id} />
-                        ))}
-                  </div>
-                  <HuginnButton
-                     onClick={handleAddMember}
-                     className="group/button border-primary-800 hover:bg-primary-800 active:bg-primary-800 mt-1 ml-2 flex items-center gap-x-2 border border-dashed p-1.5 text-left text-sm text-white/70 hover:text-white active:text-white"
-                  >
-                     <div className="bg-primary-800 group-hover/button:bg-primary-700 group-active/button:bg-primary-700 flex h-7 w-7 items-center justify-center rounded-full transition-colors">
-                        <IconMingcuteAddFill />
-                     </div>
-                     <div>Add Member</div>
-                  </HuginnButton>
-                  {loading && (
-                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <HuginnLoadingIcon className="size-10" />
-                     </div>
-                  )}
-               </div>
-            </div>
+         <div className="bg-surface-alt absolute inset-0">
+            <AnimatePresence initial={false} mode="popLayout">
+               {isOpen && (
+                  <SidebarContent key={`${props.channel.id}:${rightPanel}`} width={contentWidth}>
+                     {rightPanel === "members" ? (
+                        <ChannelMembersPanel channel={props.channel} />
+                     ) : (
+                        <ChannelSearchPanel channel={props.channel} onClose={props.onClose} />
+                     )}
+                  </SidebarContent>
+               )}
+            </AnimatePresence>
          </div>
-      </div>
+      </motion.div>
+   );
+}
+
+function SidebarContent(props: { children: ReactNode; width: number | string }) {
+   const isPresent = useIsPresent();
+
+   return (
+      <motion.div
+         inert={!isPresent}
+         initial={{ opacity: 0 }}
+         animate={{ opacity: 1 }}
+         exit={{ opacity: 0 }}
+         transition={{ duration: 0.15, ease: "easeInOut" }}
+         style={{ width: props.width }}
+         className="bg-surface-alt border-surface absolute inset-y-0 right-0 overflow-hidden border-l-2"
+      >
+         {props.children}
+      </motion.div>
    );
 }

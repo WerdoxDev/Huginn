@@ -5,7 +5,7 @@ import { useInset } from "@contexts/InsetContext";
 import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { getChannelsOptions, queryClient } from "@lib/queries";
-import { useMobileMenuStore } from "@stores/mobileMenuStore";
+import { useSidebarStore } from "@stores/sidebarStore";
 import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -30,13 +30,13 @@ function HomeLayoutComponent() {
       leftOffset,
       openLeft,
       setLeftOffset,
-      leftMenuWidth,
+      leftSidebarWidth,
       resetToCenter,
       isDragging,
       setIsDragging,
       openRight,
       closeRight,
-   } = useMobileMenuStore();
+   } = useSidebarStore();
    const { lastNavBarHeight } = useInset();
 
    const settings = useStorage("settings");
@@ -73,13 +73,13 @@ function HomeLayoutComponent() {
 
       if (!isLeftOpen && !isRightOpen) {
          if (diffX > 0) {
-            setLeftOffset(Math.min(diffX, leftMenuWidth));
+            setLeftOffset(Math.min(diffX, leftSidebarWidth));
          } else if (diffX < 0) {
             setLeftOffset(0);
          }
       } else if (isLeftOpen) {
-         const newOffset = leftMenuWidth + diffX;
-         setLeftOffset(Math.max(0, Math.min(newOffset, leftMenuWidth)));
+         const newOffset = leftSidebarWidth + diffX;
+         setLeftOffset(Math.max(0, Math.min(newOffset, leftSidebarWidth)));
       }
    }
 
@@ -89,17 +89,17 @@ function HomeLayoutComponent() {
 
       if (!isLeftOpen && !isRightOpen) {
          if (leftOffset > threshold) {
-            setLeftOffset(leftMenuWidth);
+            setLeftOffset(leftSidebarWidth);
             openLeft();
          } else {
             setLeftOffset(0);
          }
       } else if (isLeftOpen) {
-         if (leftOffset < leftMenuWidth - threshold) {
+         if (leftOffset < leftSidebarWidth - threshold) {
             setLeftOffset(0);
             resetToCenter();
          } else {
-            setLeftOffset(leftMenuWidth);
+            setLeftOffset(leftSidebarWidth);
          }
       }
    }
@@ -151,8 +151,8 @@ function HomeLayoutComponent() {
                !isDragging && "transition-transform",
             )}
             style={{
-               width: leftMenuWidth,
-               transform: isMobile ? `translateX(-${leftMenuWidth - leftOffset}px)` : "none",
+               width: leftSidebarWidth,
+               transform: isMobile ? `translateX(-${leftSidebarWidth - leftOffset}px)` : "none",
             }}
          >
             <GuildsBar />
