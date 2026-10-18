@@ -14,7 +14,7 @@ type Inputs = {
 
 export default function ChangeEmailModal() {
    const { register, handleSubmit, formState, handleErrors, getValues } = useHuginnForm<Inputs>();
-   const { updateModals, changeEmail } = useModals();
+   const { updateModals } = useModals();
    const recentAuthentication = useRecentAuthentication();
    const isOAuth = useIsOAuth();
 

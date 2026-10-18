@@ -29,7 +29,8 @@ describe("POST /api/staff/game-contributions/:contributionId/reject", () => {
       try {
          const contributionUpdated = new Promise<APIContribution>((resolve) => {
             ws.onmessage = (event) => {
-               if (testIsDispatch(event.data, "application_contribution_update")) resolve(JSON.parse(event.data).d);
+               const data = JSON.parse(event.data);
+               if (testIsDispatch(data, "application_contribution_update")) resolve(data.d);
             };
          });
          const result = await testHandler(`/api/staff/game-contributions/${contribution.id}/reject`, authHeader(user.accessToken), "POST");

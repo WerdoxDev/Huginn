@@ -14,10 +14,10 @@ function randomIGDBId() {
 describe("staff known games", () => {
    test("requires the live staff user flag", async () => {
       const [user] = await createTestUsers(1);
-      const getResult = testHandler("/api/staff/known-games", authHeader(user.accessToken), "GET");
-      const deleteResult = testHandler("/api/staff/known-games/1", authHeader(user.accessToken), "DELETE");
-      await expect(getResult).rejects.toThrow("Forbidden");
-      await expect(deleteResult).rejects.toThrow("Forbidden");
+      await Promise.all([
+         expect(testHandler("/api/staff/known-games", authHeader(user.accessToken), "GET")).rejects.toThrow("Forbidden"),
+         expect(testHandler("/api/staff/known-games/1", authHeader(user.accessToken), "DELETE")).rejects.toThrow("Forbidden"),
+      ]);
    });
 
    test("lists active games with their active matchers", async () => {

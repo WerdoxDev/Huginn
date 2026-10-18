@@ -1,26 +1,3 @@
-/**
- * Tests for `HuginnClient`.
- *
- * Unlike `gateway.test.ts` (which exercises the real WebSocket handshake via
- * MSW), this file treats `HuginnClient` as a unit: every collaborator it
- * constructs (`Gateway`, `REST`, `AuthAPI`, `TokenHandler`, `Voice`,
- * `VoiceManager`, and the other `rest-apis/*` classes) is mocked. That's
- * deliberate — `HuginnClient`'s constructor eagerly calls
- * `this.gateway.connect()`, and its real job here is orchestration
- * (session restore, token bookkeeping, cleanup ordering), not network I/O.
- * `jose`'s `decodeJwt` and `@huginnjs/shared`'s `snowflake` are left real
- * since they're pure/local and exercising them is part of the point.
- *
- * Assumptions (adjust if your layout differs):
- *   - This file lives next to `huginn-client.ts`, e.g. `src/huginn-client.test.ts`.
- *   - `./rest`, `./cdn`, and the `./rest-apis/*` modules (other than `auth`)
- *     export a single class each and are safe to auto-mock with `vi.mock(path)`
- *     (no factory) — Vitest replaces the class with a mock constructor whose
- *     instance methods are all `vi.fn()`. If any of those modules have more
- *     complex exports, swap in an explicit factory like the ones used below
- *     for `./gateway` / `./rest-apis/auth`.
- */
-
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginnjs/shared";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -355,15 +332,15 @@ describe("login()", () => {
 describe("register()", () => {
    const newUser = { email: "new@example.com", username: "newbie", password: "hunter2" } as RegisterUser;
 
-   it("stores the returned tokens on success", async () => {
-      const response = { token: "access-2", refreshToken: "refresh-2" } as APIPostRegisterResult;
+   it("returns the created user without signing in", async () => {
+      const response = { id: "new-user", username: "newbie", email: "new@example.com" } as APIPostRegisterResult;
       vi.mocked(client.auth.register).mockResolvedValue(response);
 
       const result = await client.register(newUser);
 
-      expect(result).toBe(response);
-      expect(client.tokenHandler.token).toBe("access-2");
-      expect(client.tokenHandler.refreshToken).toBe("refresh-2");
+      expect(result).toEqual(response);
+      expect(client.tokenHandler.token).toBeUndefined();
+      expect(client.tokenHandler.refreshToken).toBeUndefined();
    });
 
    it("leaves stored tokens untouched if the response has no tokens (e.g. pending email verification)", async () => {
@@ -405,7 +382,7 @@ describe("logout()", () => {
    it("still cleans up even if the logout request fails", async () => {
       client.tokenHandler.token = "access";
       vi.mocked(client.auth.logout).mockRejectedValue(new Error("network down"));
-      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => { });
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       await expect(client.logout()).resolves.toBeUndefined();
 

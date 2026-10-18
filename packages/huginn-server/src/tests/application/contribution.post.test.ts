@@ -26,7 +26,8 @@ describe("POST /api/applications/catalog", () => {
 
       const contributionAdded = new Promise<APIContribution>((resolve) => {
          ws.onmessage = (event) => {
-            if (testIsDispatch(event.data, "application_contribution_add")) resolve(event.data.d);
+            const data = JSON.parse(event.data);
+            if (testIsDispatch(data, "application_contribution_add")) resolve(data.d);
          };
       });
 

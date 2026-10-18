@@ -71,7 +71,7 @@ describe("Connection", () => {
          d: {
             token: "",
             intents: 0,
-            properties: { os: "test", browser: "test", device: "test" },
+            properties: { os: "test", client: "Huginn Web", device: "test" },
          },
       };
 
@@ -98,7 +98,7 @@ describe("Connection", () => {
          d: {
             token: user.accessToken,
             intents: 0,
-            properties: { os: "test", browser: "test", device: "test" },
+            properties: { os: "test", client: "Huginn Web", device: "test" },
          },
       };
 

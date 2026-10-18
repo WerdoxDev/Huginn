@@ -1,109 +1,82 @@
 import { EventEmitter } from "@huginnjs/shared";
 import { vi } from "vitest";
 
-class VoiceTransportManager extends EventEmitter<Record<string, unknown>> {
-   getConsumers = vi.fn(() => [] as any[]);
-   getProducer = vi.fn((_kind: string) => undefined as any);
-   createConsumer = vi.fn(async (_userId: string, _kind: string) => {});
-}
+// Keep the real stores and event delivery; replace browser/native boundaries.
+vi.mock("@lib/sync-zustand", () => ({ syncZustandStore: vi.fn() }));
+vi.mock("@lib/query-utils", () => ({ getChannels: () => [], getChannelComputedName: () => "Call" }));
 
-vi.doMock("@huginnjs/api", async () => {
-   class FakeVoice extends EventEmitter<Record<string, unknown>> {
-      public transport = new VoiceTransportManager();
-      public device = {
-         openMicrophone: vi.fn(async (_track: any) => {}),
-         replaceMicrophoneTrack: vi.fn(async (_track: any) => {}),
+vi.doMock("@huginnjs/api", () => ({
+   Voice: class extends EventEmitter<Record<string, unknown>> {
+      transport = Object.assign(new EventEmitter<Record<string, unknown>>(), {
+         getConsumers: vi.fn(() => []),
+         getProducer: vi.fn(),
+         createConsumer: vi.fn(async () => {}),
+      });
+      device = {
+         openMicrophone: vi.fn(async () => {}),
+         replaceMicrophoneTrack: vi.fn(async () => {}),
       };
-      public status = "idle";
-
-      public constructor(
-         public client: any,
-         public options?: any,
-      ) {
+      status = "idle";
+      constructor(public client: unknown) {
          super();
+         this.on("ready", () => {
+            this.status = "ready";
+         });
+         this.on("reset", () => {
+            this.status = "idle";
+         });
       }
-   }
+   },
+   HuginnClient: class {},
+}));
 
-   return {
-      Voice: FakeVoice,
-      HuginnClient: class {},
-   };
-});
-
-vi.doMock("./voice-transport-manager", async () => {
-   return { VoiceTransportManager };
-});
-
-vi.mock("@stores/voiceStore", () => {
-   const state = {
-      updateSpeakingState: vi.fn(),
-      removeSpeakingState: vi.fn(),
-      clearSpeakingStates: vi.fn(),
-   };
-   return {
-      voiceStore: {
-         getState: vi.fn(() => state),
-      },
-   };
-});
-
-vi.mock("./audio-level-checker", () => {
-   class AudioLevelChecker {
-      public onAudioLevel?: (db: number) => void;
-      public startChecking = vi.fn(async (_stream: any) => {});
-      public stopChecking = vi.fn();
-
-      public constructor(
-         public producerId: string,
-         public consumerId: string,
-         public userId: string,
-         public mediaKind: string,
-      ) {}
-   }
-   return { AudioLevelChecker };
-});
-
-vi.mock("./audio-source-player", () => {
-   class AudioSourcePlayer {
-      public setGain = vi.fn((_output?: number, _individual?: number) => {});
-      public setSinkId = vi.fn((_id: string) => {});
-      public stop = vi.fn();
-
-      public constructor(
-         public stream: any,
+vi.mock("@capawesome-team/capacitor-android-foreground-service", () => ({
+   ForegroundService: {
+      startForegroundService: vi.fn(async () => {}),
+      stopForegroundService: vi.fn(async () => {}),
+      addListener: vi.fn(async () => ({ remove: vi.fn() })),
+   },
+   ServiceType: { Microphone: "microphone" },
+}));
+vi.mock("@lib/capacitor/media-devices-plugin", () => ({
+   NativeMediaDevices: {
+      startCommunication: vi.fn(),
+      stopCommunication: vi.fn(),
+      setAudioRoute: vi.fn(),
+   },
+}));
+vi.mock("./audio-level-checker", () => ({
+   AudioLevelChecker: class {
+      onAudioLevel?: (db: number) => void;
+      startChecking = vi.fn(async () => {});
+      stopChecking = vi.fn();
+   },
+}));
+vi.mock("./audio-source-player", () => ({
+   AudioSourcePlayer: class {
+      setGain = vi.fn();
+      setSinkId = vi.fn();
+      stop = vi.fn();
+      constructor(
+         public stream: MediaStream,
          public producerId: string,
          public userId: string,
          public kind: string,
       ) {}
-   }
-   return { AudioSourcePlayer };
-});
-
-vi.mock("./voice-debugger", () => {
-   class VoiceDebugger {
-      public constructor(public client: any) {}
-   }
-   return { VoiceDebugger };
-});
-
-vi.mock("./voice-host", () => ({
-   VoiceHost: class {},
+   },
 }));
-
-vi.mock("./voice-popout", () => ({
-   VoicePopout: class {},
-}));
-
-vi.mock("./voice-input-device", () => {
-   class VoiceInputDevice {
-      public static acquire = vi.fn(() => () => VoiceInputDevice.close());
-      public static getStream = vi.fn(async (_deviceId: string, _volume: number, _noiseSuppression: boolean) => {
-         const track = { id: "default-audio-track", clone: () => track };
+vi.mock("./voice-debugger", () => ({ VoiceDebugger: class {} }));
+vi.mock("./voice-host", () => ({ VoiceHost: class {} }));
+vi.mock("./voice-popout", () => ({ VoicePopout: class {} }));
+vi.mock("./voice-input-device", () => ({
+   VoiceInputDevice: class {
+      static acquire = vi.fn(() => () => this.close());
+      static getStream = vi.fn(async () => {
+         const track = { id: "microphone-track", clone: () => track };
          return { getAudioTracks: () => [track] };
       });
-      public static initializeAudioLevel = vi.fn(async (_client: any) => {});
-      public static setGain = vi.fn((_volume: number) => {});
-      public static close = vi.fn();
-   }
-   return { VoiceInputDevice };
-});
+      static initializeAudioLevel = vi.fn(async () => {});
+      static setGain = vi.fn();
+      static close = vi.fn();
+   },
+}));

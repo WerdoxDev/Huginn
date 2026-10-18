@@ -68,7 +68,7 @@ export class PresenceManager {
             const newSessionPresence: GatewaySession = {
                sessionId: session.sessionId,
                clientInfo: {
-                  browser: session.properties?.browser || "web",
+                  browser: session.properties?.client || "Huginn Web",
                   os: session.properties?.os || "unknown",
                },
                status: settings.status,
@@ -160,8 +160,8 @@ export class PresenceManager {
                "presence.final_activities.count": aggregate.activities.length,
             });
 
-            // only send if there is an actual update. This prevents a privacy leak where an invisible session updates activities
-            if (JSON.stringify(previousAggregate) !== JSON.stringify(aggregate)) {
+            // Broadcast profile edits or aggregate changes. Invisible activity updates alone must stay private.
+            if (options.user || JSON.stringify(previousAggregate) !== JSON.stringify(aggregate)) {
                this.sendPresenceUpdate(`${userId}_presence`, aggregate, options.user ?? { id: userId });
             }
             this.sendSessionUpdate(userId, sessions);
@@ -382,7 +382,7 @@ export class PresenceManager {
       for (const session of sessions) {
          statuses.push(session.status);
 
-         const key = BROWSER_TO_PLATFORM_KEY[session.clientInfo.browser];
+         const key = BROWSER_TO_PLATFORM_KEY[session.clientInfo.browser] ?? "web";
          const existing = clientStatus[key];
          if (
             (!existing || this.getStatusPriority(session.status) < this.getStatusPriority(existing)) &&

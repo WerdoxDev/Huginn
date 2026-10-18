@@ -18,7 +18,7 @@ export default function LinkButton(
          </Link>
       </div>
    ) : props.href ? (
-      <a className={clsx("text-primary-500 select-none hover:underline", props.className)} href={props.href} target="_blank" rel="noreferrer">
+      <a className={clsx("text-primary-500 select-none cursor-pointer hover:underline", props.className)} href={props.href} target="_blank" rel="noreferrer">
          {props.children}
       </a>
    ) : (

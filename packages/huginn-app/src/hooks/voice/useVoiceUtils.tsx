@@ -60,7 +60,7 @@ export function useVoiceUtils() {
                   type: videoProducer ? "change" : "create",
                   callback: async (options) => {
                      try {
-                        VoiceClient.sendMessage("open_captured_stream", options);
+                        await VoiceClient.sendMessage("open_captured_stream", options);
                         // await getVoiceHost().openCapturedStream(options);
                      } catch (e) {
                         updateModals({

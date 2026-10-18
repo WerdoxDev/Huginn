@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 project(huginn_addon LANGUAGES CXX)
 
+# Let clangd use the same include paths, definitions,
+# and C++ standard as the build.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_compile_definitions(NAPI_VERSION=9)
 
 set(COMMON_SOURCES
@@ -65,6 +69,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
     # Generate node.lib.
     execute_process(
-        COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS}
+        COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF}
+        /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS}
     )
 endif()

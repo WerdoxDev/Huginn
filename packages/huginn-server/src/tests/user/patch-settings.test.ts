@@ -52,7 +52,7 @@ describe("PATCH /users/@me/settings", () => {
       ws.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "settings_update")) {
-            expectUserSettingsExactSchema(data.d, { status: "offline", theme: "pine-green", pinnedChannels: [], channelBackgrounds: [] });
+            expectUserSettingsExactSchema(data.d, { status: "offline", theme: "pine-green", pinnedChannels: [], favoriteGifs: [], channelBackgrounds: [] });
             tryDone();
          }
       };

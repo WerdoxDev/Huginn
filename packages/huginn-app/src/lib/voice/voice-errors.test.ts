@@ -1,25 +1,19 @@
 import { TransportError } from "@huginnjs/api";
-import { TransportErrorCode } from "@huginnjs/shared";
+import { VoiceTransportErrorCode } from "@huginnjs/shared";
 import { describe, expect, it } from "vitest";
 
 import { getVoiceConnectionErrorMessage } from "./voice-errors";
 
-describe("getVoiceConnectionErrorMessage", () => {
-   it("shows relay errors using their numeric codes", () => {
-      const notConfigured = new TransportError("This instance has no TURN relay configured.", TransportErrorCode.RELAY_NOT_CONFIGURED);
-      const credentialsUnavailable = {
-         name: "TransportError",
-         code: TransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE,
-         message: "Could not get relay credentials.",
-      };
-
-      expect(getVoiceConnectionErrorMessage(notConfigured)).toBe(notConfigured.message);
-      expect(getVoiceConnectionErrorMessage(credentialsUnavailable)).toBe(credentialsUnavailable.message);
+describe("voice connection errors", () => {
+   it.each([
+      [VoiceTransportErrorCode.RELAY_NOT_CONFIGURED, "This instance has no TURN relay configured."],
+      [VoiceTransportErrorCode.RELAY_CREDENTIALS_UNAVAILABLE, "Could not get relay credentials."],
+      [VoiceTransportErrorCode.DEVICE_NOT_INITIALIZED, "Device unavailable"],
+   ])("shows the transport's explanation for error %s", (code, message) => {
+      expect(getVoiceConnectionErrorMessage(new TransportError(message, code))).toBe(message);
    });
 
-   it("uses the default message for other errors", () => {
-      const fallback = "Make sure you have an internet connection and try again.";
-      expect(getVoiceConnectionErrorMessage(new TransportError("Device unavailable", TransportErrorCode.DEVICE_NOT_INITIALIZED))).toBe(fallback);
-      expect(getVoiceConnectionErrorMessage(new Error("This instance has no TURN relay configured."))).toBe(fallback);
+   it.each([new Error("network failure"), null, undefined, "unknown error"])("provides recovery advice for an unknown failure: %s", (error) => {
+      expect(getVoiceConnectionErrorMessage(error)).toBe("Make sure you have an internet connection and try again.");
    });
 });
