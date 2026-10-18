@@ -12,7 +12,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 }));
 
 vi.mock("./useHuginnMutation", () => ({
-   useHuginnMutation: ({ mutationFn }: { mutationFn: (options: { alreadyRevoked?: boolean }) => Promise<void> }) => ({ mutateAsync: mutationFn }),
+   useHuginnMutation: ({ mutationFn }: { mutationFn: () => Promise<void> }) => ({ mutateAsync: mutationFn }),
 }));
 
 describe("useLogout", () => {
@@ -44,9 +44,7 @@ describe("useLogout", () => {
       const { result } = renderHook(() => useLogout());
       const logout = result.current();
 
-      await vi.waitFor(() =>
-         expect(navigate).toHaveBeenCalledWith({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } }),
-      );
+      await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } }));
       await logout;
 
       expect(gateway.waitForAnyEvents).toHaveBeenCalledWith(["reset"]);
@@ -54,9 +52,9 @@ describe("useLogout", () => {
       expect(gateway.connect).toHaveBeenCalledOnce();
    });
 
-   it("clears an already revoked session without another logout request or gateway reset wait", async () => {
+   it("clears the session and returns to login even if disconnecting voice fails", async () => {
       const gateway = {
-         isConnected: true,
+         isConnected: false,
          waitForAnyEvents: vi.fn(),
          connect: vi.fn(),
       };
@@ -65,16 +63,19 @@ describe("useLogout", () => {
          voice: { status: "connected" },
          voiceManager: { disconnectVoice: vi.fn().mockRejectedValue(new Error("voice already disconnected")) },
          logout: vi.fn(),
-         clearSessionLocally: vi.fn(),
       };
       clientStore.setState({ client: client as unknown as ReturnType<typeof clientStore.getState>["client"] });
       const { result } = renderHook(() => useLogout());
 
-      await result.current({ alreadyRevoked: true });
+      localStorage.setItem("refresh-token", "refresh");
+      localStorage.setItem("access-token", "access");
 
-      expect(client.clearSessionLocally).toHaveBeenCalledOnce();
+      await result.current();
+
+      expect(localStorage.getItem("refresh-token")).toBeNull();
+      expect(localStorage.getItem("access-token")).toBeNull();
       expect(client.voiceManager.disconnectVoice).toHaveBeenCalledOnce();
-      expect(client.logout).not.toHaveBeenCalled();
+      expect(client.logout).toHaveBeenCalledOnce();
       expect(gateway.waitForAnyEvents).not.toHaveBeenCalled();
       expect(gateway.connect).not.toHaveBeenCalled();
       expect(navigate).toHaveBeenCalledWith({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
