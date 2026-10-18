@@ -4,6 +4,7 @@ import {
    type APIThumbnail,
    type APIVideo,
    ChannelType,
+   type ClientStatus,
    type GatewaySessionUpdateData,
    type GatewayVoiceStateFlags,
    MessageType,
@@ -46,6 +47,9 @@ export function expectUserExactSchema(user: any, options: ExpectUserOptions) {
       expect(user).toHaveProperty("token");
       expect(user).toHaveProperty("refreshToken");
       keys.push("token", "refreshToken");
+   } else if (options.hasTokens === false) {
+      expect(user).not.toHaveProperty("token");
+      expect(user).not.toHaveProperty("refreshToken");
    }
 
    expect(user).toContainAllKeys(keys);
@@ -205,29 +209,28 @@ export function expectRelationshipExactSchema(relationship: any, options: Expect
 type ExpectPresenceOptions = {
    user: ExpectUserOptions;
    status: PresenceStatus;
-   activeSessionIds: Snowflake[];
+   clientStatus: ClientStatus;
    isPartialUser?: boolean;
    activities: Activity[];
 };
 
 export function expectPresenceExactSchema(presence: any, options: ExpectPresenceOptions) {
-   const activeSessions: ActiveSession[] = options.activeSessionIds.map((x) => ({ sessionId: x }));
-
-   if (options.status === "offline") {
+   if (options.status === "offline" || options.status === "invisible") {
       expect(presence).toStrictEqual({
          user: { id: options.user.id.toString() },
          status: "offline",
-         activeSessions,
+         clientStatus: {},
          activities: [],
       });
       return;
    }
 
+   expect(Object.keys(presence).sort()).toStrictEqual(["activities", "clientStatus", "status", "user"]);
    expect(presence).toMatchObject({
       status: options.status,
-      activeSessions,
-      activities: options.activities,
    });
+   expect(presence.clientStatus).toStrictEqual(options.clientStatus);
+   expect(presence.activities).toStrictEqual(options.activities);
 
    if (!options.isPartialUser) expectUserExactSchema(presence.user, { ...options.user, email: undefined });
    else expect(presence).toHaveProperty("user", { id: options.user.id.toString() });

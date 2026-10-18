@@ -87,7 +87,7 @@ describe("PATCH /users/@me", () => {
 
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, { ...user, displayName: null, hasTokens: true });
+      expectUserExactSchema(result, { ...user, displayName: null, hasTokens: false });
    });
 
    test("should edit the current user when the request is successful", async () => {
@@ -104,7 +104,7 @@ describe("PATCH /users/@me", () => {
 
       const result = (await testHandler("/api/users/@me", authHeader(user.accessToken), "PATCH", edit)) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, { ...user, ...edit, email: user.email, pendingEmail: edit.email, hasTokens: true });
+      expectUserExactSchema(result, { ...user, ...edit, email: user.email, pendingEmail: edit.email, hasTokens: false });
    });
 
    test("changing a password revokes other password sessions but keeps the current and OAuth sessions", async () => {
@@ -122,9 +122,7 @@ describe("PATCH /users/@me", () => {
       expect(sessions.filter((session) => session.authType === "password" && session.revokedAt === null)).toHaveLength(1);
       expect(sessions.find((session) => session.authType === "oauth")?.revokedAt).toBeNull();
       expect((await verifyToken("user-access", otherPasswordSession.token)).valid).toBe(false);
-      await expect(testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken: otherPasswordSession.refreshToken })).rejects.toThrow(
-         "Unauthorized",
-      );
+      await expect(testHandler("/api/auth/refresh-token", {}, "POST", { refreshToken: otherPasswordSession.refreshToken })).rejects.toThrow("Unauthorized");
       expect((await verifyToken("user-access", user.accessToken)).valid).toBe(true);
       expect((await verifyToken("user-access", oauthSession.token)).valid).toBe(true);
       expect((await verifyToken("user-access", otherUser.accessToken)).valid).toBe(true);
@@ -152,6 +150,6 @@ describe("PATCH /users/@me", () => {
          avatar: avatarData,
       })) as APIPatchCurrentUserResult;
 
-      expectUserExactSchema(result, { ...user, avatar: avatarHash, hasTokens: true });
+      expectUserExactSchema(result, { ...user, avatar: avatarHash, hasTokens: false });
    });
 });

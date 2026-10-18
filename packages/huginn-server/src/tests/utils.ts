@@ -4,6 +4,7 @@ import {
    type ChannelType,
    type GatewayWebsocketEvents,
    type GatewayIdentify,
+   type GatewayIdentifyProperties,
    type GatewayOperationTypes,
    GatewayOperations,
    type GatewayPayload,
@@ -57,13 +58,13 @@ export function wsSend(ws: WebSocket, data: unknown) {
    }
 }
 
-export async function getReadyWebSocket(user?: TestUser) {
+export async function getReadyWebSocket(user?: TestUser, properties?: Partial<GatewayIdentifyProperties>) {
    let finalUser = user;
    if (!finalUser) {
       finalUser = (await createTestUsers(1))[0];
    }
 
-   const { ws, sessionId } = await getIdentifiedWebSocket(finalUser);
+   const { ws, sessionId } = await getIdentifiedWebSocket(finalUser, properties);
 
    const readyData = await new Promise<GatewayReadyData & { sessionId: string }>((resolve, reject) => {
       ws.onmessage = (event) => {
@@ -81,7 +82,7 @@ export async function getReadyWebSocket(user?: TestUser) {
    return { ws, readyData, user: finalUser, sessionId };
 }
 
-export async function getIdentifiedWebSocket(user?: TestUser) {
+export async function getIdentifiedWebSocket(user?: TestUser, properties?: Partial<GatewayIdentifyProperties>) {
    let finalUser = user;
    if (!finalUser) {
       finalUser = (await createTestUsers(1))[0];
@@ -94,7 +95,7 @@ export async function getIdentifiedWebSocket(user?: TestUser) {
       d: {
          token: finalUser.accessToken,
          intents: 0,
-         properties: { os: "test", library: "test", device: "test" },
+         properties: { os: "test", library: "test", device: "test", client: "Huginn Web", ...properties },
       },
    };
 
