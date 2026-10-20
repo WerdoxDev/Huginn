@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.54.0...server@v0.54.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **server:** bunch of test fixes ([aa840b7](https://github.com/WerdoxDev/Huginn/commit/aa840b7400b262969cdda1af791cc2ccf0f90134))
+
 ## [0.54.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.53.0...server@v0.54.0) (2026-10-16)
 
 
