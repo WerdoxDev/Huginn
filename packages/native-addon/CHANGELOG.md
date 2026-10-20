@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.2...native-addon@v0.8.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **native:** intellisence fixes ([2488fe2](https://github.com/WerdoxDev/Huginn/commit/2488fe26c63402301b63858e9c9415dad451ac08))
+
 ## [0.8.2](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.1...native-addon@v0.8.2) (2026-10-16)
 
 

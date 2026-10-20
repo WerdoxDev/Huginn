@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.92.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.2...app@v0.92.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **app:** bunch of test fixes ([203f8c0](https://github.com/WerdoxDev/Huginn/commit/203f8c011d4fa8080eb2ed4c19c506360a476dd0))
+* **app:** electron otlp should go through posthog and not signoz anymore ([e78ecb4](https://github.com/WerdoxDev/Huginn/commit/e78ecb40733665eb6d9954292449f94d18b9212f))
+* **app:** electron otlp should go through posthog and not signoz anymore ([cbfe902](https://github.com/WerdoxDev/Huginn/commit/cbfe902528702337cf62aad2e8b122c01d5c3490))
+
 ## [0.92.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.1...app@v0.92.2) (2026-10-16)
 
 
