@@ -24,8 +24,6 @@ export default function ThemeChanger(props: { className?: string }) {
             onClick={toggleMenu}
             className="bg-surface hover:bg-surface-alt flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors outline-none"
             type="button"
-            aria-label="Choose theme"
-            aria-expanded={isOpen}
          >
             <IconMaterialSymbolsBrush className="text-primary-500 size-6" />
          </button>

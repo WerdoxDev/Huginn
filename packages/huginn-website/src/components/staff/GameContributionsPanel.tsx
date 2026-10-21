@@ -238,7 +238,6 @@ export default function GameContributionsPanel() {
                         type="button"
                         onClick={() => void loadContributions(token)}
                         disabled={queueLoading}
-                        aria-label="Refresh contribution queue"
                         className="text-text/80 hover:bg-surface hover:text-text disabled:text-text/50 ml-auto flex size-8 items-center justify-center rounded-full transition-colors duration-150 disabled:cursor-not-allowed"
                         title="Refresh queue"
                      >
@@ -282,7 +281,6 @@ export default function GameContributionsPanel() {
                               type="button"
                               key={contribution.id}
                               onClick={() => setSelectedId(contribution.id)}
-                              aria-pressed={selected}
                               className={clsx(
                                  "grid w-full cursor-pointer grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] items-center gap-2 rounded-md p-2 text-left text-sm transition-all duration-150 outline-none ring-inset md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_8rem]",
                                  selected ? "bg-primary-900 text-white" : "hover:bg-surface",
@@ -316,11 +314,7 @@ export default function GameContributionsPanel() {
                      </div>
                   ) : null}
                   {queueLoading ? (
-                     <div
-                        className="absolute inset-0 z-20 flex items-center justify-center bg-black/40"
-                        aria-live="polite"
-                        aria-label="Loading contribution queue"
-                     >
+                     <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
                         <HuginnLoadingIcon className="text-primary-500 size-10" />
                      </div>
                   ) : null}

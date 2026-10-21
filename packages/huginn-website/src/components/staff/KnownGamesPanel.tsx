@@ -110,7 +110,7 @@ export default function KnownGamesPanel() {
                         <IconMingcuteSearch2Fill className="text-primary-500 ml-2 size-5 shrink-0" />
                         <HuginnInput.Input className="text-sm" />
                         {query ? (
-                           <button type="button" aria-label="Clear search" className="mx-2 shrink-0 cursor-pointer" onClick={() => setQuery("")}>
+                           <button type="button" className="mx-2 shrink-0 cursor-pointer" onClick={() => setQuery("")}>
                               <IconMingcuteCloseFill className="size-5" />
                            </button>
                         ) : null}
@@ -120,7 +120,6 @@ export default function KnownGamesPanel() {
                      type="button"
                      color="surface-deep"
                      className="flex size-10 shrink-0 items-center justify-center"
-                     aria-label="Refresh known games"
                      disabled={isLoading}
                      onClick={() => void loadGames(token)}
                   >
@@ -199,7 +198,7 @@ export default function KnownGamesPanel() {
                      ) : null}
                   </div>
                   {isLoading ? (
-                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40" aria-live="polite" aria-label="Loading known games">
+                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
                         <HuginnLoadingIcon className="text-primary-500 size-10" />
                      </div>
                   ) : null}
