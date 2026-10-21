@@ -10,7 +10,7 @@ export type HuginnLoadingButtonProps = HuginnButtonProps & {
 
 export default function HuginnLoadingButton({ children, className, disabled, iconClassName, isLoading, ...props }: HuginnLoadingButtonProps) {
    return (
-      <HuginnButton {...props} className={clsx("flex items-center justify-center", className)} disabled={isLoading || disabled} aria-busy={isLoading}>
+      <HuginnButton {...props} className={clsx("flex items-center justify-center", className)} disabled={isLoading || disabled}>
          {isLoading ? (
             <>
                <HuginnLoadingIcon className={clsx("size-7", iconClassName)} />
