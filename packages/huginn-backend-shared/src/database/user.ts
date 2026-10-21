@@ -12,18 +12,7 @@ import {
    type Snowflake,
 } from "@huginnjs/shared";
 
-import {
-   assertCondition,
-   assertId,
-   assertObj,
-   prisma,
-   selectPrivateUser,
-   type UserArgs,
-   type UserPayload,
-   Prisma,
-   assertExists,
-   isPrismaError,
-} from "#database";
+import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma, assertExists } from "#database";
 import { DBError } from "#elysia-errors";
 import { DBErrorType } from "#types";
 
