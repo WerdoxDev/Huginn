@@ -9,7 +9,6 @@ describe("WaveformSlider", () => {
          <WaveformSlider currentPercent={25} bufferedPercent={50} onChange={vi.fn()} waveform={btoa(String.fromCharCode(0, 127, 255))} />,
       );
 
-      expect(container.querySelector('input[aria-label="Voice message playback position"]')).not.toBeNull();
       expect(container.querySelector("svg")).not.toBeNull();
       expect(container.querySelectorAll("g rect")).toHaveLength(3);
       expect(container.querySelectorAll("use")).toHaveLength(3);

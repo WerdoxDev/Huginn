@@ -41,7 +41,7 @@ export default function WaveformSlider(props: SliderProps & { waveform?: string 
       >
          <BaseSlider.Control className="h-full w-full cursor-pointer">
             <BaseSlider.Track className="relative block h-full w-full">
-               <svg aria-hidden viewBox={`0 0 ${width} ${WAVEFORM_HEIGHT}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
+               <svg viewBox={`0 0 ${width} ${WAVEFORM_HEIGHT}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
                   <defs>
                      <g id={`${clipId}-bars`}>
                         <WaveformBars samples={samples} />
@@ -57,7 +57,7 @@ export default function WaveformSlider(props: SliderProps & { waveform?: string 
                   <use href={`#${clipId}-bars`} className="fill-white/30" clipPath={`url(#${clipId}-buffered)`} />
                   <use href={`#${clipId}-bars`} className="fill-primary-500" clipPath={`url(#${clipId}-current)`} />
                </svg>
-               <BaseSlider.Thumb aria-label="Voice message playback position" className="sr-only" />
+               <BaseSlider.Thumb className="sr-only" />
             </BaseSlider.Track>
          </BaseSlider.Control>
       </BaseSlider.Root>

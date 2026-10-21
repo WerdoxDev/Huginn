@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useIsPresent } from "motion/react";
 
 import type { AppDirectChannel, ChannelSidebarPanel } from "@/types";
 
-import ChannelMembersPanel from "./ChannelMembersPanel";
+import ChannelRecipientsPanel from "./ChannelRecipientsPanel";
 import ChannelSearchPanel from "./ChannelSearchPanel";
 
 const panels: Record<ChannelSidebarPanel, { width: number; label: string }> = {
@@ -46,7 +46,7 @@ export default function ChannelSidebar(props: { channel: AppDirectChannel; onClo
                {isOpen && (
                   <SidebarContent key={`${props.channel.id}:${rightPanel}`} width={contentWidth}>
                      {rightPanel === "members" ? (
-                        <ChannelMembersPanel channel={props.channel} />
+                        <ChannelRecipientsPanel channel={props.channel} />
                      ) : (
                         <ChannelSearchPanel channel={props.channel} onClose={props.onClose} />
                      )}

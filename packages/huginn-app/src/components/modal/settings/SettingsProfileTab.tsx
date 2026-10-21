@@ -445,8 +445,6 @@ function ColorSelector(props: {
                         style={{ backgroundColor: color }}
                         onClick={() => props.onChange?.(color)}
                         disabled={props.disabled}
-                        aria-label={`Use ${color} for ${props.label}`}
-                        aria-pressed={isSelected}
                      />
                   );
                })}

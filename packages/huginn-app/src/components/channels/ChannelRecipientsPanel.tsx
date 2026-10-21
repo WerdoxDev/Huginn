@@ -9,7 +9,7 @@ import { useMemo } from "react";
 
 import type { AppDirectChannel } from "@/types";
 
-export default function ChannelMembersPanel(props: { channel: AppDirectChannel }) {
+export default function ChannelRecipientsPanel(props: { channel: AppDirectChannel }) {
    const { user } = useThisUser();
    const addState = useMutationLatestState("add-channel-recipient");
    const removeState = useMutationLatestState("remove-channel-recipient");
@@ -37,7 +37,7 @@ export default function ChannelMembersPanel(props: { channel: AppDirectChannel }
    if (channel.type !== ChannelType.GROUP_DM) return null;
 
    return (
-      <div className="scroll-super-thin flex h-full flex-col overflow-y-auto pb-2">
+      <div className="scroll-super-thin flex h-full flex-col overflow-y-scroll pb-2">
          <div className="text-text/70 pt-4 pr-2 pb-2 pl-4 text-xs uppercase">Members - {sortedRecipients.length}</div>
          <div className="flex flex-col gap-y-0.5 rounded-lg p-0 pl-2">
             {sortedRecipients

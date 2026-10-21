@@ -18,7 +18,6 @@ export default function TopBarButton(props: {
                props.className,
             )}
             onClick={props.onClick}
-            aria-label={props.tooltip}
          >
             {props.children}
          </Tooltip.Trigger>

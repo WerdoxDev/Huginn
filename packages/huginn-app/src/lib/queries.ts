@@ -1,6 +1,15 @@
 import type { HuginnClient } from "@huginnjs/api";
 
-import { type APIGetUserChannelsResult, type APIPatchUserSettingsJSONBody, type ImageSize, resolveImage, type Snowflake } from "@huginnjs/shared";
+import {
+   type APIGetUserChannelsResult,
+   type APIMessage,
+   type APIPostChannelSearchJSONBody,
+   type APIPatchUserSettingsJSONBody,
+   type ImageSize,
+   resolveImage,
+   type Snowflake,
+   MessageType,
+} from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStoreState";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { experimental_createQueryPersister } from "@tanstack/query-persist-client-core";
@@ -153,6 +162,26 @@ export function getPinnedMessagesOptions(client: HuginnClient, channelId: Snowfl
       getNextPageParam: (lastPage) => {
          if (lastPage.length < limit) return undefined;
          return lastPage[lastPage.length - 1].message.id;
+      },
+   });
+}
+
+export function getMessageSearchOptions(client: HuginnClient | undefined, body: APIPostChannelSearchJSONBody | null) {
+   return queryOptions({
+      queryKey: ["message-search", body],
+      enabled: !!client && !!body,
+      retry: false,
+      staleTime: 0,
+      queryFn: async () => {
+         if (!client || !body) throw new Error("Search is unavailable.");
+         const messages = await client.channels.searchMessages({ ...body, types: [MessageType.DEFAULT, MessageType.REPLY] });
+         function cacheUsers(message: APIMessage) {
+            updateUser(message.author);
+            for (const mention of message.mentions) updateUser(mention);
+            if ("referencedMessage" in message && message.referencedMessage) cacheUsers(message.referencedMessage);
+         }
+         for (const message of messages) cacheUsers(message);
+         return messages.map((message) => convertToAppMessage(message, "fetch"));
       },
    });
 }

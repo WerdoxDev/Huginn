@@ -12,11 +12,7 @@ export default function DefaultChannelBackgroundSelector() {
          <HuginnLabel className="mb-1!">Default Channel Background</HuginnLabel>
          <div className="text-text/60 mb-3 text-sm">Used in every channel that does not have its own background.</div>
          <div className="border-surface-alt bg-surface-deep/40 flex items-center gap-3 rounded-xl border p-3">
-            <div
-               aria-label="Default channel background preview"
-               className="bg-surface-deep relative h-14 w-24 shrink-0 overflow-hidden rounded-md"
-               style={{ backgroundColor: background?.color }}
-            >
+            <div className="bg-surface-deep relative h-14 w-24 shrink-0 overflow-hidden rounded-md" style={{ backgroundColor: background?.color }}>
                {backgroundImageUrl && (
                   <div
                      className="pointer-events-none absolute bg-center bg-no-repeat"

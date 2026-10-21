@@ -123,7 +123,7 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
                            ref={setRef(message.id)}
                            lastMessage={processedMessages[index - 1]}
                            nextMessage={processedMessages[index + 1]}
-                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_", hideActions: true }}
+                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_", hideActions: true, equalPadding: true }}
                         />
                         <div className="absolute top-2 right-2 flex gap-x-1 select-none lg:opacity-0 lg:group-hover/background:opacity-100">
                            <button

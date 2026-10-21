@@ -19,9 +19,11 @@ declare global {
   const IconMingcuteAndroidFill: typeof import('~icons/mingcute/android-fill.jsx').default
   const IconMingcuteArrowLeftFill: typeof import('~icons/mingcute/arrow-left-fill.jsx').default
   const IconMingcuteArrowRightFill: typeof import('~icons/mingcute/arrow-right-fill.jsx').default
+  const IconMingcuteAtFill: typeof import('~icons/mingcute/at-fill.jsx').default
   const IconMingcuteBasketballFill: typeof import('~icons/mingcute/basketball-fill.jsx').default
   const IconMingcuteBook2Fill: typeof import('~icons/mingcute/book2-fill.jsx').default
   const IconMingcuteBugFill: typeof import('~icons/mingcute/bug-fill.jsx').default
+  const IconMingcuteCalendarFill: typeof import('~icons/mingcute/calendar-fill.jsx').default
   const IconMingcuteCamera2Fill: typeof import('~icons/mingcute/camera2-fill.jsx').default
   const IconMingcuteCameraRotateFill: typeof import('~icons/mingcute/camera-rotate-fill.jsx').default
   const IconMingcuteCatFill: typeof import('~icons/mingcute/cat-fill.jsx').default
@@ -88,6 +90,7 @@ declare global {
   const IconMingcutePhoneFill: typeof import('~icons/mingcute/phone-fill.jsx').default
   const IconMingcutePhotoAlbum2Fill: typeof import('~icons/mingcute/photo-album2-fill.jsx').default
   const IconMingcutePic2Fill: typeof import('~icons/mingcute/pic2-fill.jsx').default
+  const IconMingcutePicFill: typeof import('~icons/mingcute/pic-fill.jsx').default
   const IconMingcutePinFill: typeof import('~icons/mingcute/pin-fill.jsx').default
   const IconMingcutePlayFill: typeof import('~icons/mingcute/play-fill.jsx').default
   const IconMingcuteQuestion2Fill: typeof import('~icons/mingcute/question2-fill.jsx').default
@@ -99,6 +102,9 @@ declare global {
   const IconMingcuteSearch2Fill: typeof import('~icons/mingcute/search2-fill.jsx').default
   const IconMingcuteServerFill: typeof import('~icons/mingcute/server-fill.jsx').default
   const IconMingcuteSettings5Fill: typeof import('~icons/mingcute/settings5-fill.jsx').default
+  const IconMingcuteSortAscendingFill: typeof import('~icons/mingcute/sort-ascending-fill.jsx').default
+  const IconMingcuteSortDescFill: typeof import('~icons/mingcute/sort-desc-fill.jsx').default
+  const IconMingcuteSortDescendingFill: typeof import('~icons/mingcute/sort-descending-fill.jsx').default
   const IconMingcuteSpeakerFill: typeof import('~icons/mingcute/speaker-fill.jsx').default
   const IconMingcuteStarFill: typeof import('~icons/mingcute/star-fill.jsx').default
   const IconMingcuteTransfer3Fill: typeof import('~icons/mingcute/transfer3-fill.jsx').default

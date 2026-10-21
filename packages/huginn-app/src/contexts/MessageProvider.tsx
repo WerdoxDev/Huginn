@@ -24,6 +24,7 @@ type MessageProviderProps = {
       disableContextMenu?: boolean;
       hideActions?: boolean;
       disableReactions?: boolean;
+      equalPadding?: boolean;
    };
    ref: RefObject<HTMLLIElement | null>;
 };
