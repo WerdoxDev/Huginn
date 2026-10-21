@@ -11,6 +11,8 @@ import type {
    APIPatchMessageResult,
    APIPostMessageJSONBody,
    APIPostMessageResult,
+   APIPostChannelSearchJSONBody,
+   APIPostChannelSearchResult,
    APIPutChannelPinResult,
    APIPostDMChannelJSONBody,
    APIPostDMChannelResult,
@@ -63,6 +65,13 @@ export class ChannelAPI {
             ...(around && { around: around.toString() }),
          }),
       }) as Promise<APIGetChannelMessagesResult>;
+   }
+
+   public async searchMessages(body: APIPostChannelSearchJSONBody): Promise<APIPostChannelSearchResult> {
+      return this.rest.post(Routes.channelSearch(), {
+         auth: true,
+         body,
+      }) as Promise<APIPostChannelSearchResult>;
    }
 
    public async getPinnedMessages(channelId: Snowflake, limit?: number, before?: Snowflake): Promise<APIGetChannelPinsResult> {
