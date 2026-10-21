@@ -154,6 +154,11 @@ export const Routes = {
       return `/channels/${id}` as const;
    },
 
+   /** Route for POST '/channels/@me/search'. */
+   channelSearch() {
+      return `/channels/@me/search` as const;
+   },
+
    /**
     * Route for:
     * - GET '/channels/{channel.id}/messages/{message.id}'
