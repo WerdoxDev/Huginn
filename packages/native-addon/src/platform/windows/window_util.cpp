@@ -39,9 +39,10 @@ namespace window_util
 
    bool GetPackageDisplayName(DWORD processId, winrt::hstring &outDisplayName)
    {
-      HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
-      if (!hProcess)
+      HANDLE hProcess = GetHandle(processId);
+      if (!hProcess){
          return false;
+      }
 
       UINT32 length = 0;
       LONG rc = GetPackageFullName(hProcess, &length, nullptr);
@@ -54,8 +55,9 @@ namespace window_util
       std::wstring fullName(length, L'\0');
       rc = GetPackageFullName(hProcess, &length, fullName.data());
       CloseHandle(hProcess);
-      if (rc != ERROR_SUCCESS)
+      if (rc != ERROR_SUCCESS){
          return false;
+      }
       fullName.resize(wcslen(fullName.c_str())); // trim to actual length
 
       PackageManager packageManager;
@@ -70,7 +72,7 @@ namespace window_util
 
    HANDLE GetHandle(DWORD processId)
    {
-      HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+      HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
       return hProcess;
    }
 
@@ -107,8 +109,9 @@ namespace window_util
    std::wstring GetProcessCommandLine(DWORD pid)
    {
       HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-      if (!hProc)
+      if (!hProc){
          return L"";
+      }
 
       HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
       auto NtQueryInformationProcess =
@@ -172,15 +175,17 @@ namespace window_util
 
    bool GetWindowThumbnailBase64(HWND hwnd, int thumbW, int thumbH, std::string &outBase64)
    {
-      if (IsIconic(hwnd))
+      if (IsIconic(hwnd)){
          return false; // window is minimized, no thumbnail available
+      }
 
       image_util::GdiplusProcessInit::EnsureStarted();
 
       int srcW = 0, srcH = 0;
       HBITMAP hSrcBitmap = nullptr;
-      if (!CaptureWindowToBitmap(hwnd, srcW, srcH, hSrcBitmap))
+      if (!CaptureWindowToBitmap(hwnd, srcW, srcH, hSrcBitmap)){
          return false;
+      }
 
       // Wrap the raw HBITMAP in a GDI+ Bitmap so it can be resized + encoded.
       Bitmap srcBitmap(hSrcBitmap, nullptr);
@@ -200,8 +205,9 @@ namespace window_util
 
       // Encode as PNG into an in-memory IStream.
       CLSID pngClsid;
-      if (image_util::GetEncoderClsid(L"image/png", &pngClsid) != 0)
+      if (image_util::GetEncoderClsid(L"image/png", &pngClsid) != 0){
          return false;
+      }
 
       IStream *stream = nullptr;
       CreateStreamOnHGlobal(nullptr, TRUE, &stream);
@@ -257,8 +263,9 @@ namespace window_util
       }
 
       LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-      if (exStyle & WS_EX_TOOLWINDOW)
+      if (exStyle & WS_EX_TOOLWINDOW){
          return TRUE;
+      }
 
       std::wstring windowTitle(titleLength + 1, 0);
       GetWindowTextW(hwnd, &windowTitle[0], titleLength + 1);
