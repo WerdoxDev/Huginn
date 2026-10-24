@@ -1,36 +1,18 @@
-import type { Prisma } from "@huginn/backend-shared/database";
 import type { APIPostChannelSearchJSONBody, MessageSearchHas, Snowflake } from "@huginnjs/shared";
 
+import { assertId, type Prisma } from "@huginn/backend-shared/database";
 import { ChannelType, MessageType } from "@huginnjs/shared";
-import { t } from "elysia";
-
-const snowflakeSchema = t.String({ pattern: "^[0-9]{1,19}$" });
-
-export const messageSearchSchema = t.Object({
-   content: t.Optional(t.String()),
-   channelId: t.Optional(snowflakeSchema),
-   authorId: t.Optional(snowflakeSchema),
-   mentions: t.Optional(t.Array(snowflakeSchema)),
-   has: t.Optional(t.Array(t.Union([t.Literal("image"), t.Literal("video"), t.Literal("audio"), t.Literal("file"), t.Literal("link"), t.Literal("embed")]))),
-   sortOrder: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
-   limit: t.Optional(t.Integer({ minimum: 1, maximum: 25 })),
-   offset: t.Optional(t.Integer({ minimum: 0, maximum: 2_147_483_647 })),
-   pinned: t.Optional(t.Boolean()),
-   attachmentFilename: t.Optional(t.String({ minLength: 1 })),
-   attachmentExtension: t.Optional(t.String({ pattern: "^\\.?[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$" })),
-   embedType: t.Optional(t.String({ minLength: 1 })),
-   minId: t.Optional(snowflakeSchema),
-   maxId: t.Optional(snowflakeSchema),
-   repliedToUserId: t.Optional(snowflakeSchema),
-   repliedToMessageId: t.Optional(snowflakeSchema),
-   types: t.Optional(t.Array(t.Number())),
-});
 
 /** PostgreSQL stores snowflakes as signed 64-bit integers. */
-export function areMessageSearchIdsValid(body: APIPostChannelSearchJSONBody): boolean {
-   return [body.channelId, body.authorId, body.minId, body.maxId, body.repliedToUserId, body.repliedToMessageId, ...(body.mentions ?? [])]
-      .filter((id) => id !== undefined)
-      .every((id) => BigInt(id) <= (1n << 63n) - 1n);
+export function assertMessageSearchIdsValid(body: APIPostChannelSearchJSONBody): asserts body is typeof body {
+   const methodName = "areMessageSearchIdsValid";
+   if (body.channelId) assertId(methodName, body.channelId);
+   if (body.authorId) assertId(methodName, body.authorId);
+   if (body.minId) assertId(methodName, body.minId);
+   if (body.maxId) assertId(methodName, body.maxId);
+   if (body.repliedToUserId) assertId(methodName, body.repliedToUserId);
+   if (body.repliedToMessageId) assertId(methodName, body.repliedToMessageId);
+   if (body.mentions) assertId(methodName, ...body.mentions);
 }
 
 function escapeLikePattern(value: string): string {

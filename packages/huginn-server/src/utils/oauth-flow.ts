@@ -156,6 +156,12 @@ export async function completeOAuth(provider: OAuthProvider, user: OAuthUser, li
    }
    if (identityProvider?.completed && identityProvider.userId) {
       await prisma.identityProvider.update({ where: { id: identityProvider.id }, data: { accountIdentifier: user.accountIdentifier } });
+      // Both providers require a verified email in their callbacks. Repair older
+      // accounts only when that email still matches the user's current email.
+      await prisma.user.updateMany({
+         where: { id: identityProvider.userId, email: { equals: user.email, mode: "insensitive" }, emailVerifiedAt: null },
+         data: { emailVerifiedAt: new Date() },
+      });
       return { handoff_code: await createOAuthHandoff(identityProvider.userId.toString(), provider) };
    }
    if (await prisma.user.exists({ email: user.email })) return { error: OAuthCode.ACCOUNT_ALREADY_CONNECTED };
