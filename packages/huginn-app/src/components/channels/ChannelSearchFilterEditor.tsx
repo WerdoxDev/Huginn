@@ -26,12 +26,12 @@ const pinnedOptions = [
    { value: "true", text: "Pinned" },
    { value: "false", text: "Not pinned" },
 ];
-// const textOptions = [
-//    { value: "attachmentFilename", text: "Attachment filename", placeholder: "e.g. holiday", pattern: undefined },
-//    { value: "attachmentExtension", text: "Attachment extension", placeholder: "e.g. png or .png", pattern: "^\\.?[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$" },
-//    { value: "embedType", text: "Embed type", placeholder: "e.g. image, video, rich or gifv", pattern: undefined },
-//    { value: "repliedToMessageId", text: "Reply to message", placeholder: "Message ID", pattern: "[0-9]{1,19}" },
-// ] as const;
+const textOptions = [
+   { value: "attachmentFilename", text: "Attachment filename", placeholder: "e.g. my_nice_photo", pattern: undefined },
+   // { value: "attachmentExtension", text: "Attachment extension", placeholder: "e.g. png or .png", pattern: "^\\.?[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$" },
+   // { value: "embedType", text: "Embed type", placeholder: "e.g. image, video, rich or gifv", pattern: undefined },
+   // { value: "repliedToMessageId", text: "Reply to message", placeholder: "Message ID", pattern: "[0-9]{1,19}" },
+] as const;
 
 export default function ChannelSearchFilterEditor(props: {
    type: SearchFilterEditorType;
@@ -44,6 +44,7 @@ export default function ChannelSearchFilterEditor(props: {
    const [selectedUserId, setSelectedUserId] = useState("");
    const [contentType, setContentType] = useState(contentOptions[0]);
    const [dateCondition, setDateCondition] = useState(dateOptions[0]);
+   const [text, setText] = useState("");
    const [date, setDate] = useState("");
    const [pinned, setPinned] = useState(pinnedOptions[0]);
 
@@ -54,10 +55,10 @@ export default function ChannelSearchFilterEditor(props: {
    const selectedUser = props.participants.find((user) => user.id === selectedUserId);
    // const userFilter = props.type === "from" || props.type === "mentions" || props.type === "repliedToUserId";
    const userFilter = props.type === "from" || props.type === "mentions";
-   // const textOption = textOptions.find((option) => option.value === props.type);
+   const textOption = textOptions.find((option) => option.value === props.type);
    const label = searchFilterOptions.find((option) => option.value === props.type)!.text;
    let draft: SearchFilter | undefined;
-   // let invalidValue = "";
+   let invalidValue = "";
 
    // if ((props.type === "from" || props.type === "mentions" || props.type === "repliedToUserId") && selectedUser) {
    if ((props.type === "from" || props.type === "mentions") && selectedUser) {
@@ -69,14 +70,13 @@ export default function ChannelSearchFilterEditor(props: {
       draft = { type: dateCondition.value, value: date, label: `${dateCondition.text}: ${formattedDate}` };
    } else if (props.type === "pinned") {
       draft = { type: "pinned", value: pinned.value, label: pinned.text };
+   } else if (textOption && text.trim()) {
+      const value = text.trim();
+      // if (textOption.value === "repliedToMessageId" && !isSearchSnowflake(value)) invalidValue = "Enter a valid message ID.";
+      // if (textOption.value === "attachmentFilename" && !/^\.?[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/.test(value))
+      //    invalidValue = "Enter a valid file extension.";
+      if (!invalidValue) draft = { type: textOption.value, value, label: `${label}: ${value}` };
    }
-   // else if (textOption && text.trim()) {
-   //    const value = text.trim();
-   //    if (textOption.value === "repliedToMessageId" && !isSearchSnowflake(value)) invalidValue = "Enter a valid message ID.";
-   //    if (textOption.value === "attachmentExtension" && !/^\.?[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/.test(value))
-   //       invalidValue = "Enter a valid file extension.";
-   //    if (!invalidValue) draft = { type: textOption.value, value, label: `${label}: ${value}` };
-   // }
    const isDuplicate = props.filters.some((filter) => filter.type === draft?.type && filter.value === draft.value);
 
    return (
@@ -135,7 +135,7 @@ export default function ChannelSearchFilterEditor(props: {
                </HuginnInput>
             </>
          )}
-         {/*{textOption && (
+         {textOption && (
             <HuginnInput required value={text} placeholder={textOption.placeholder} onChange={(event) => setText(event.target.value)}>
                <HuginnInput.Label>{label}</HuginnInput.Label>
                <HuginnInput.Wrapper>
@@ -143,11 +143,11 @@ export default function ChannelSearchFilterEditor(props: {
                      autoComplete="off"
                      className="min-w-0 text-sm"
                      pattern={textOption.pattern}
-                     inputMode={props.type === "repliedToMessageId" ? "numeric" : undefined}
+                     // inputMode={props.type === "repliedToMessageId" ? "numeric" : undefined}
                   />
                </HuginnInput.Wrapper>
             </HuginnInput>
-         )}*/}
+         )}
          <div className="flex items-center justify-end gap-2">
             <HuginnButton type="button" color="surface-alt" className="h-8 w-full text-sm" onClick={props.onClose}>
                Cancel

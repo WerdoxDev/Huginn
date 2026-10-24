@@ -5,8 +5,7 @@ import { snowflake } from "@huginnjs/shared";
 type FilterValue = { value: string; label: string };
 export type SearchFilter =
    | (FilterValue & {
-        type: "from" | "mentions" | "before" | "after" | "on" | "pinned";
-        // | "attachmentFilename"
+        type: "from" | "mentions" | "before" | "after" | "on" | "pinned" | "attachmentFilename";
         // | "attachmentExtension"
         // | "embedType"
         // | "repliedToUserId"
@@ -21,7 +20,7 @@ export const searchFilterOptions: { value: SearchFilterEditorType; text: string 
    { value: "date", text: "Date" },
    { value: "mentions", text: "Mentions" },
    { value: "pinned", text: "Pinned" },
-   // { value: "attachmentFilename", text: "Attachment filename" },
+   { value: "attachmentFilename", text: "Attachment filename" },
    // { value: "attachmentExtension", text: "Attachment extension" },
    // { value: "embedType", text: "Embed type" },
    // { value: "repliedToUserId", text: "Reply to user" },
@@ -76,13 +75,13 @@ export function buildMessageSearchBody(
          case "pinned":
             body.pinned = filter.value === "true";
             break;
-         // case "attachmentFilename":
-         // case "attachmentExtension":
-         // case "embedType":
-         // case "repliedToUserId":
-         // case "repliedToMessageId":
-         //    body[filter.type] = filter.value;
-         //    break;
+         case "attachmentFilename":
+            // case "attachmentExtension":
+            // case "embedType":
+            // case "repliedToUserId":
+            // case "repliedToMessageId":
+            body[filter.type] = filter.value;
+            break;
          case "before":
          case "after":
          case "on": {

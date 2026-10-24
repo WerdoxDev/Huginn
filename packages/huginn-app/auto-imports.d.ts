@@ -20,6 +20,7 @@ declare global {
   const IconMingcuteArrowLeftFill: typeof import('~icons/mingcute/arrow-left-fill.jsx').default
   const IconMingcuteArrowRightFill: typeof import('~icons/mingcute/arrow-right-fill.jsx').default
   const IconMingcuteAtFill: typeof import('~icons/mingcute/at-fill.jsx').default
+  const IconMingcuteAttachmentFill: typeof import('~icons/mingcute/attachment-fill.jsx').default
   const IconMingcuteBasketballFill: typeof import('~icons/mingcute/basketball-fill.jsx').default
   const IconMingcuteBook2Fill: typeof import('~icons/mingcute/book2-fill.jsx').default
   const IconMingcuteBugFill: typeof import('~icons/mingcute/bug-fill.jsx').default
@@ -51,6 +52,7 @@ declare global {
   const IconMingcuteFileFill: typeof import('~icons/mingcute/file-fill.jsx').default
   const IconMingcuteFileMusicFill: typeof import('~icons/mingcute/file-music-fill.jsx').default
   const IconMingcuteFileUploadFill: typeof import('~icons/mingcute/file-upload-fill.jsx').default
+  const IconMingcuteFilterFill: typeof import('~icons/mingcute/filter-fill.jsx').default
   const IconMingcuteFlag4Fill: typeof import('~icons/mingcute/flag4-fill.jsx').default
   const IconMingcuteFolderOpenFill: typeof import('~icons/mingcute/folder-open-fill.jsx').default
   const IconMingcuteForkFill: typeof import('~icons/mingcute/fork-fill.jsx').default
@@ -70,6 +72,8 @@ declare global {
   const IconMingcuteLeftFill: typeof import('~icons/mingcute/left-fill.jsx').default
   const IconMingcuteLink2Fill: typeof import('~icons/mingcute/link2-fill.jsx').default
   const IconMingcuteLinuxFill: typeof import('~icons/mingcute/linux-fill.jsx').default
+  const IconMingcuteListCheck2Fill: typeof import('~icons/mingcute/list-check2-fill.jsx').default
+  const IconMingcuteListCheckFill: typeof import('~icons/mingcute/list-check-fill.jsx').default
   const IconMingcuteLoading3Fill: typeof import('~icons/mingcute/loading3-fill.jsx').default
   const IconMingcuteLockFill: typeof import('~icons/mingcute/lock-fill.jsx').default
   const IconMingcuteLookDownFill: typeof import('~icons/mingcute/look-down-fill.jsx').default

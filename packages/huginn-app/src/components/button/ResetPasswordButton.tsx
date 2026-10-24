@@ -13,7 +13,7 @@ export default function ResetPasswordButton(props: { from?: PasswordModal; sugge
    }
 
    return (
-      <button type="button" className="text-primary-400 mt-2 cursor-pointer text-left text-sm hover:underline" onClick={handleClick}>
+      <button type="button" className="text-primary-500 mt-2 cursor-pointer text-left text-sm hover:underline" onClick={handleClick}>
          Forgot your password?
       </button>
    );

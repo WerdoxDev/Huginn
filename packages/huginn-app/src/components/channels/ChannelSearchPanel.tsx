@@ -1,6 +1,6 @@
 import type { APIPostChannelSearchJSONBody } from "@huginnjs/shared";
 
-import HuginnSelect from "@components/dropdown/HuginnSelect";
+import HuginnIconSelect from "@components/dropdown/HuginnIconSelect";
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useUsers } from "@hooks/api-hooks/userHooks";
 import { useErrorHandler } from "@hooks/useErrorHandler";
@@ -19,7 +19,7 @@ import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
 import ChannelSearchFilterEditor from "./ChannelSearchFilterEditor";
 
-const sortOptions: HuginnSelectItem[] = [
+const sortOptions: HuginnSelectItem<"asc" | "desc">[] = [
    { value: "desc", text: "Newest first", icon: <IconMingcuteSortDescendingFill className="size-4 shrink-0" /> },
    { value: "asc", text: "Oldest first", icon: <IconMingcuteSortAscendingFill className="size-4 shrink-0" /> },
 ] as const;
@@ -38,6 +38,7 @@ function SearchPanel(props: { channel: AppDirectChannel; onClose: () => void }) 
    const [filters, setFilters] = useState<SearchFilter[]>([]);
    const [filterType, setFilterType] = useState<SearchFilterEditorType | null>(null);
    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+   const selectedSort = sortOptions.find((option) => option.value === sortOrder) ?? sortOptions[0];
    const [submittedSearch, setSubmittedSearch] = useState<APIPostChannelSearchJSONBody | null>(null);
    const search = useQuery(getMessageSearchOptions(client, submittedSearch));
    const offset = submittedSearch?.offset ?? 0;
@@ -64,6 +65,8 @@ function SearchPanel(props: { channel: AppDirectChannel; onClose: () => void }) 
    }, [search.error]);
 
    function submitSearch() {
+      if (filterType !== null || !client || search.isFetching) return;
+
       const body = { ...buildMessageSearchBody(props.channel.id, content, filters, sortOrder, limit), offset: 0 };
       if (JSON.stringify(body) === JSON.stringify(submittedSearch)) void search.refetch();
       else setSubmittedSearch(body);
@@ -150,6 +153,7 @@ function SearchPanel(props: { channel: AppDirectChannel; onClose: () => void }) 
                         {option.value === "date" && <IconMingcuteCalendarFill className="size-4" />}
                         {option.value === "mentions" && <IconMingcuteAtFill className="size-4" />}
                         {option.value === "pinned" && <IconMingcutePinFill className="size-4" />}
+                        {option.value === "attachmentFilename" && <IconMingcuteAttachmentFill className="size-4" />}
                         {option.text}
                      </HuginnButton>
                   ))}
@@ -169,88 +173,91 @@ function SearchPanel(props: { channel: AppDirectChannel; onClose: () => void }) 
                   }}
                />
             )}
-            <div className="flex items-center justify-center gap-x-2">
+            <div className="flex flex-col gap-2">
                <HuginnLoadingButton
                   type="submit"
                   form={searchFormId}
                   color="primary"
-                  className="h-10 w-full"
-                  // iconClassName="size-5!"
+                  className="h-8 w-full"
+                  iconClassName="size-6!"
                   isLoading={search.isFetching}
-                  disabled={!client}
+                  disabled={!client || filterType !== null}
                >
                   Search
                </HuginnLoadingButton>
-               <HuginnSelect
-                  selected={sortOrder ? sortOptions.find((option) => option.value === sortOrder) : undefined}
-                  onChange={(option) => setSortOrder(option.value as "asc" | "desc")}
-               >
-                  {/*<HuginnSelect.Label>{props.label}</HuginnSelect.Label>*/}
-                  <HuginnSelect.List className={"bg-surface-deep! w-40!"} triggerClassName="text-sm">
-                     <HuginnSelect.ItemsWrapper>
-                        {sortOptions.map((option) => (
-                           <HuginnSelect.Item key={option.value} item={option} className="text-sm" />
-                        ))}
-                     </HuginnSelect.ItemsWrapper>
-                  </HuginnSelect.List>
-               </HuginnSelect>
             </div>
-            {/*<FilterSelect label="Sort order" options={[...sortOptions]} value={sortOrder} onChange={setSortOrder} className="bg-surface-deep!" />*/}
+            <div className="bg-surface-deep h-0.5 shrink-0" />
+            <div className="flex items-center justify-between gap-2">
+               <HuginnLabel className="mb-0!">Results</HuginnLabel>
+               <div className="flex items-center gap-2">
+                  {!search.isFetching && !!search.data?.length && (
+                     <span className="text-text/70 text-xs">
+                        {offset + 1}–{offset + search.data.length}
+                     </span>
+                  )}
+                  <HuginnIconSelect
+                     label="Sort results"
+                     icon={selectedSort.icon}
+                     options={sortOptions}
+                     value={sortOrder}
+                     onChange={(value) => {
+                        setSortOrder(value);
+                        if (submittedSearch && submittedSearch.sortOrder !== value) {
+                           setSubmittedSearch({ ...submittedSearch, sortOrder: value, offset: 0 });
+                        }
+                     }}
+                  />
+               </div>
+            </div>
+            {search.data && !search.data.length && (
+               <div className="text-text/80 flex w-full items-center justify-center px-3 py-6 text-sm">
+                  No results. Try lowering your expectations? :P
+               </div>
+            )}
             {!!search.data?.length && (
-               <>
-                  <div className="bg-surface-deep h-0.5 shrink-0" />
-                  <div className="mt-2 flex flex-col gap-3">
-                     <div className="flex items-center justify-between gap-2">
-                        <HuginnLabel className="mb-0!">Results</HuginnLabel>
-                        {!search.isFetching && !!search.data?.length && (
-                           <span className="text-text/70 text-xs">
-                              {offset + 1}–{offset + search.data.length}
-                           </span>
-                        )}
+               <div className="mt-2 flex flex-col gap-3">
+                  {!search.isFetching && !search.isError && search.data?.length === 0 && (
+                     <div className="text-text/70 py-6 text-center text-sm">
+                        {offset > 0 ? "No more matching messages." : "No messages matched your search."}
                      </div>
-                     {!search.isFetching && !search.isError && search.data?.length === 0 && (
-                        <div className="text-text/70 py-6 text-center text-sm">
-                           {offset > 0 ? "No more matching messages." : "No messages matched your search."}
-                        </div>
-                     )}
-                     {!search.isFetching && !search.isError && !!search.data?.length && (
-                        <ol className="flex flex-col gap-3">
-                           {search.data.map((message) => (
-                              <SearchResult
-                                 key={message.id}
-                                 message={message}
-                                 onJump={() => {
-                                    requestJumpToMessage(message.channelId, message.id);
-                                    if (isMobile) props.onClose();
-                                 }}
-                              />
-                           ))}
-                        </ol>
-                     )}
-                     {!!search.data.length && !search.isFetching && (
-                        <div className="flex items-center justify-between gap-2">
-                           <HuginnButton
-                              type="button"
-                              color="surface-deep"
-                              className="px-3 py-2 text-sm"
-                              disabled={offset === 0 || search.isFetching}
-                              onClick={() => setSubmittedSearch({ ...submittedSearch, offset: Math.max(0, offset - limit) })}
-                           >
-                              Previous
-                           </HuginnButton>
-                           <HuginnButton
-                              type="button"
-                              color="surface-deep"
-                              className="px-3 py-2 text-sm"
-                              disabled={search.isFetching || search.isError || (search.data?.length ?? 0) < limit}
-                              onClick={() => setSubmittedSearch({ ...submittedSearch, offset: offset + limit })}
-                           >
-                              Next
-                           </HuginnButton>
-                        </div>
-                     )}
-                  </div>
-               </>
+                  )}
+                  {!search.isFetching && !search.isError && !!search.data?.length && (
+                     <ol className="flex flex-col gap-3">
+                        {search.data.map((message) => (
+                           <SearchResult
+                              key={message.id}
+                              message={message}
+                              onJump={() => {
+                                 requestJumpToMessage(message.channelId, message.id);
+                                 if (isMobile) props.onClose();
+                              }}
+                           />
+                        ))}
+                     </ol>
+                  )}
+                  {!!search.data.length && !search.isFetching && (
+                     <div className="flex items-center justify-between gap-2">
+                        <HuginnButton
+                           type="button"
+                           color="surface-deep"
+                           className="px-3 py-2 text-sm"
+                           disabled={offset === 0 || search.isFetching}
+                           onClick={() => setSubmittedSearch({ ...submittedSearch, offset: Math.max(0, offset - limit) })}
+                        >
+                           Previous
+                        </HuginnButton>
+                        <HuginnButton
+                           type="button"
+                           color="surface-deep"
+                           className="px-3 py-2 text-sm"
+                           disabled={search.isFetching || search.isError || (search.data?.length ?? 0) < limit}
+                           onClick={() => setSubmittedSearch({ ...submittedSearch, offset: offset + limit })}
+                        >
+                           Next
+                        </HuginnButton>
+                     </div>
+                  )}
+               </div>
             )}
          </div>
       </div>
@@ -277,7 +284,7 @@ function SearchResult(props: { message: AppMessage; onJump: () => void }) {
          <div className="absolute top-2 right-2 z-10 flex select-none lg:opacity-0 lg:group-hover/background:opacity-100">
             <button
                onClick={props.onJump}
-               className="bg-surface-alt hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-3 py-2 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white lg:px-2 lg:py-1"
+               className="bg-surface-alt hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-3 py-1 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white lg:px-2 lg:py-1"
             >
                Jump
             </button>
