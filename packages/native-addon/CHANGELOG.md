@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.3...native-addon@v0.8.4) (2026-10-24)
+
+
+### Bug Fixes
+
+* **native:** windows OpenProcess should use less intrusive permissions to always succeed ([#362](https://github.com/WerdoxDev/Huginn/issues/362)) ([7fc67e4](https://github.com/WerdoxDev/Huginn/commit/7fc67e4e6724903e62b5264c714afc3c74818ecc))
+
 ## [0.8.3](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.2...native-addon@v0.8.3) (2026-10-20)
 
 
