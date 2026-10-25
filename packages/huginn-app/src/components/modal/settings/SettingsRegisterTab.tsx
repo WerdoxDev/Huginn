@@ -52,8 +52,8 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
          updateModals({
             info: {
                status: "error",
-               title: "Failed!",
-               text: "This application is already added!",
+               title: "Failed to register",
+               text: "You've already registered this application!",
                isOpen: true,
             },
          });

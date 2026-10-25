@@ -25,6 +25,7 @@ import SettingsNotificationTab from "./settings/SettingsNotificationTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSecurityTab from "./settings/SettingsSecurityTab";
+import SettingsSystemTab from "./settings/SettingsSystemTab";
 import SettingsThemeTab from "./settings/SettingsThemeTab";
 
 const tabs: SettingsTabType[] = [
@@ -74,6 +75,12 @@ const tabs: SettingsTabType[] = [
             component: SettingsAudioVideoTab,
          },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
+         {
+            name: "system",
+            text: "System",
+            icon: <IconMingcuteSettings5Fill />,
+            component: SettingsSystemTab,
+         },
          {
             name: "instances",
             text: "Instances",

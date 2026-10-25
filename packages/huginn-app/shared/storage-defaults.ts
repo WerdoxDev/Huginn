@@ -39,6 +39,7 @@ export const storageDefaults: StorageMap = {
       screenShareSimulcast: true,
       screenShareAudioBitrate: CONSTANTS.DEFAULT_AUDIO_BITRATE,
       screenShareVideoBitrate: CONSTANTS.DEFAULT_VIDEO_BITRATE,
+      autostart: true,
       useProxy: true,
       forceRelay: false,
       isVoiceDeafened: false,

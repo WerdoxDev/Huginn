@@ -1,14 +1,13 @@
 import CautionInfo from "@components/CautionInfo";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import HuginnAccordion from "@components/HuginnAccordion";
-import { HuginnButton, HuginnCheckbox, HuginnInput, HuginnLabel, HuginnTextArea } from "@huginn/frontend-shared";
+import { HuginnButton, HuginnInput, HuginnLabel, HuginnTextArea } from "@huginn/frontend-shared";
 import { defaultInstanceUrls, normalizeAccessAddress, switchInstanceTokens, validateInstanceUrls } from "@lib/instances";
 import { useClient } from "@stores/clientStore";
 import { clientStore } from "@stores/clientStoreState";
 import { useModals } from "@stores/modalsStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { clearUserStore } from "@stores/userStore";
-import { useHuginnWindow } from "@stores/windowStore";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -34,7 +33,6 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
    const { updateModals } = useModals();
    const navigate = useNavigate();
    const client = useClient();
-   const huginnWindow = useHuginnWindow();
    const [selectedId, setSelectedId] = useState(settings.currentInstanceId);
    const selected = useMemo(() => instances.find((item) => item.id === selectedId), [instances, selectedId]);
    const loadedSelectedId = useRef<string | undefined>(undefined);
@@ -331,11 +329,6 @@ export default function SettingsInstancesTab(_props: SettingsTabProps) {
                   </div>
                </div>
             </>
-         )}
-         {huginnWindow.environment === "desktop" && (
-            <HuginnCheckbox checked={settings.useProxy} onChange={(value) => void setValue("settings", { ...settings, useProxy: value })}>
-               <HuginnCheckbox.Input>Use System Proxy</HuginnCheckbox.Input>
-            </HuginnCheckbox>
          )}
       </div>
    );

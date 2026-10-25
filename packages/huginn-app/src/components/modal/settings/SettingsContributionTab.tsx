@@ -42,8 +42,9 @@ const contributionStatusOptions: HuginnSelectItem<ContributionStatus>[] = [
    { value: "rejected", text: contributionStatuses.rejected.label },
 ];
 
-const contributionSortOptions: HuginnSelectItem<"asc" | "desc" | "status">[] = [
+const contributionSortOptions: HuginnSelectItem<"asc" | "desc" | "status" | "name">[] = [
    { value: "status", text: "Status", icon: <IconMingcuteListCheck2Fill className="size-4 shrink-0" /> },
+   { value: "name", text: "Name", icon: <IconMingcuteAzSortAscendingLettersFill className="size-4 shrink-0" /> },
    { value: "desc", text: "Newest first", icon: <IconMingcuteSortDescendingFill className="size-4 shrink-0" /> },
    { value: "asc", text: "Oldest first", icon: <IconMingcuteSortAscendingFill className="size-4 shrink-0" /> },
 ];
@@ -52,7 +53,7 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
    const client = useClient();
    const knownApplications = useStorage("application-catalog");
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
-   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "status">("status");
+   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "status" | "name">("status");
    const [statusFilters, setStatusFilters] = useState<ContributionStatus[]>([]);
    const selectedSort = contributionSortOptions.find((option) => option.value === sortOrder) ?? contributionSortOptions[0];
    const hasStatusFilters = statusFilters.length > 0 && statusFilters.length < contributionStatusOptions.length;
@@ -96,6 +97,11 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
             game: contribution.knownGameId === null ? undefined : games.get(contribution.knownGameId),
          }))
          .sort((a, b) => {
+            if (sortOrder === "name") {
+               const nameA = a.game?.canonicalName ?? a.contribution.windowTitle;
+               const nameB = b.game?.canonicalName ?? b.contribution.windowTitle;
+               return nameA.localeCompare(nameB, undefined, { sensitivity: "base", numeric: true });
+            }
             if (sortOrder === "status") {
                const statusDifference = contributionStatusOrder[a.contribution.status] - contributionStatusOrder[b.contribution.status];
                if (statusDifference !== 0) return statusDifference;

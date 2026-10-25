@@ -308,6 +308,7 @@ export type AppSettings = {
    screenShareSimulcast: boolean;
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
+   autostart: boolean;
    useProxy: boolean;
    forceRelay: boolean;
    isVoiceMuted: boolean;
