@@ -31,6 +31,7 @@ export default defineConfig({
                items: [
                   { text: "Getting started", link: "/" },
                   { text: "Authentication", link: "/guide/authentication" },
+                  { text: "Message search", link: "/guide/message-search" },
                   { text: "Gateway & events", link: "/guide/gateway-events" },
                   { text: "Voice & media", link: "/guide/voice" },
                   { text: "Instance access addresses", link: "/guide/instances" },

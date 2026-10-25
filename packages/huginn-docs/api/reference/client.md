@@ -42,7 +42,7 @@ User options are merged with the defaults. A custom `Voice` subclass can be supp
 | --------------- | ----------------------------------------------------------------- |
 | `auth`          | Login, registration, logout, refresh, notification tokens.        |
 | `users`         | Users, profiles, current user, settings, email verification.      |
-| `channels`      | DMs, recipients, messages, pins, typing, acknowledgements, calls. |
+| `channels`      | DMs, recipients, messages, message search, pins, typing, acknowledgements, calls. |
 | `messages`      | Message reactions.                                                |
 | `relationships` | Fetch, create, and remove relationships.                          |
 | `applications`  | Known applications and application icons.                         |

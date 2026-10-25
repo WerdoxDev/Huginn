@@ -50,6 +50,16 @@ Accessed through `client.channels`.
 
 `before`, `after`, and `around` are passed as query parameters. Choose the cursor mode supported by the endpoint.
 
+### Search messages
+
+| Method | Returns | Description |
+| --- | --- | --- |
+| `searchMessages(body: APIPostChannelSearchJSONBody)` | `APIPostChannelSearchResult` | Search accessible DMs and group DMs with content and structured filters. |
+
+Sends a JSON body to `POST /api/channels/@me/search` and returns an `APIMessage[]`. Omit `channelId` to search all accessible direct conversations. Results default to the newest 25 matches; use `limit`, `offset`, and `sortOrder` to page through results.
+
+See [Message search](/api/guide/message-search) for all filters, content categories, date bounds, pagination, and examples.
+
 ### Manage direct-message channels
 
 | Method                                    | Returns                    | Description                                           |
