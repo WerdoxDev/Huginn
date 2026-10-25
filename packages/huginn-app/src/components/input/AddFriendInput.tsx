@@ -13,7 +13,7 @@ export default function AddFriendInput(props: {
 }) {
    return (
       <HuginnInput {...props.inputProps} className={clsx(props.inputProps.className, "w-full", props.className)} placeholder="e.g: Werdox">
-         <HuginnInput.Wrapper className="gap-x-5 rounded-lg! px-3 pl-5">
+         <HuginnInput.Wrapper className="gap-x-5 rounded-lg! px-3 py-2 pl-5">
             <HuginnInput.Input className="px-0 py-5" />
             <HuginnLoadingButton
                {...props.buttonProps}

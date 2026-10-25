@@ -156,7 +156,7 @@ function RedirectComponent() {
 
    return (
       <div className="flex min-h-dvh flex-1 items-center justify-center px-4 py-8">
-         <div aria-live="polite" className="bg-surface flex w-full max-w-96 flex-col items-center rounded-lg p-5 text-center shadow-xl">
+         <div className="bg-surface flex w-full max-w-96 flex-col items-center rounded-lg p-5 text-center shadow-xl">
             {isError || isCancelled ? (
                <div className={isError ? "bg-negative-700 rounded-full p-2.5" : "bg-surface-alt rounded-full p-2.5"}>
                   <div className={isError ? "bg-negative-500 rounded-full p-2.5" : "bg-caution-500 rounded-full p-2.5"}>
@@ -168,7 +168,6 @@ function RedirectComponent() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="size-7 text-white"
-                        aria-hidden="true"
                      >
                         <circle cx="12" cy="12" r="9" />
                         {isCancelled ? <path d="M8 12h8" /> : <path d="M12 7v6m0 4h.01" />}

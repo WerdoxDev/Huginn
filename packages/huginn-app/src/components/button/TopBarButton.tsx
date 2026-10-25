@@ -7,11 +7,16 @@ export default function TopBarButton(props: {
    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
    tooltip?: string;
    className?: string;
+   active?: boolean;
 }) {
    return (
       <Tooltip hideOnMobile>
          <Tooltip.Trigger
-            className={clsx("text-text/80 hover:text-text active:text-text transition-colors", props.className)}
+            className={clsx(
+               props.active ? "text-primary-400" : "text-text/80 hover:text-text active:text-text",
+               "transition-colors",
+               props.className,
+            )}
             onClick={props.onClick}
          >
             {props.children}

@@ -58,7 +58,13 @@ export function initPresenceStore() {
       const session = d.sessions.find((x) => x.sessionId === client.gateway.sessionId);
       if (!session) return;
 
-      const presence = convertToAppPresence({ user: { id: d.user.id }, activities: session.activities, status: session.status, clientStatus: {} });
+      // Display activities from every owned session, but keep the local session separate for outgoing updates.
+      const presence = convertToAppPresence({
+         user: { id: d.user.id },
+         activities: d.sessions.flatMap((s) => s.activities),
+         status: session.status,
+         clientStatus: {},
+      });
 
       store.setState({ session: convertToAppSession(session) });
       thisStore.updatePresence(d.user.id, presence);
@@ -83,7 +89,7 @@ export function initPresenceStore() {
 
       const presence = convertToAppPresence({
          user: { id: client.currentUser.id },
-         activities: session.activities,
+         activities: d.flatMap((s) => s.activities),
          status: session.status,
          clientStatus: {},
       });
@@ -92,15 +98,18 @@ export function initPresenceStore() {
       store.getState().updatePresence(client.currentUser.id, presence);
    });
 
-   const unlisten4 = client.gateway.listen("disconnected", () => {
-      stopCheckingForActivity();
-   });
+   const unlisten4 = client.gateway.listen("disconnected", stopCheckingForActivity);
+   const unlisten5 = client.gateway.listen("resumed", startCheckingForActivity);
+   const unlisten6 = client.gateway.listen("reset", stopCheckingForActivity);
 
    return () => {
       unlisten();
       unlisten2();
       unlisten3();
       unlisten4();
+      unlisten5();
+      unlisten6();
+      stopCheckingForActivity();
    };
 }
 

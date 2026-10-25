@@ -43,7 +43,6 @@ function Input({
          id={context.id}
          type="button"
          role="switch"
-         aria-checked={context.checked}
          disabled={context.disabled}
          onClick={(event) => {
             onClick?.(event);

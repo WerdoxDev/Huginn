@@ -89,7 +89,8 @@ export default function DefaultMessage() {
          data-context={hasContext === true ? true : undefined}
          data-swipe={swipeX !== 0 ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start p-2 pr-0 pl-4 select-none lg:select-auto",
+            "group relative flex flex-col items-start py-2 pr-0 select-none lg:select-auto",
+            !context.options?.equalPadding ? "pl-4" : "py-2.5! pl-2.5",
             swipeX === 0 ? "transition-[transform_150ms,color_150ms]" : "transition-colors",
             !context.options?.hideBackground &&
                (isEditing || isReplying || isJumpHighlighted
@@ -102,10 +103,10 @@ export default function DefaultMessage() {
             isJumpHighlighted && "animate-pulse",
             (isSeparate || isLastAction) && "rounded-tr-lg",
             isNextSeparate && "rounded-br-lg",
-            !isSeparate && !isLastAction && "py-0",
+            !isSeparate && !isLastAction && "py-0!",
             hasReactions && "pb-2",
             !isNextSeparate && "pb-0",
-            isSeparate && !isNewDate && !isUnread && "mt-1.5",
+            !context.options?.equalPadding && isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
          style={{ transform: `translateX(${swipeX}px)` }}
       >
@@ -269,7 +270,7 @@ function DefaultRenderer(props: {
             props.isPreview && props.error === undefined && "text-white/50",
          )}
       >
-         <div className="absolute inset-y-0 left-0 flex">
+         <div className="absolute inset-y-0 right-0 flex w-full">
             <div style={{ width: `${props.widths.width + 20}px` }} className="shrink-0">
                <div
                   className={clsx(

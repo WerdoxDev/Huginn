@@ -109,6 +109,7 @@ export const electronAPI = {
    },
 
    // App
+   setAutostart: (enabled: boolean) => ipcRenderer.invoke("app:set-autostart", enabled) as Promise<void>,
    setProxy: (useSystemProxy: boolean) => ipcRenderer.invoke("app:set-proxy", useSystemProxy),
    reinitializeAnalytics: () => ipcRenderer.invoke("app:reinitialize-analytics") as Promise<void>,
 

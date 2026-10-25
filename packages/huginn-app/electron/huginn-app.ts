@@ -6,6 +6,7 @@ import path from "node:path";
 
 import { ElectronStorage } from "../shared/electron-storage";
 import { StorageController } from "../shared/storage-controller";
+import { applyAutostartSettings } from "./autostart";
 import { MainWindow } from "./main-window";
 
 const { autoUpdater } = updater;
@@ -52,11 +53,13 @@ export class HuginnApp {
       this.mainWindow = new MainWindow();
       this.createTray();
 
-      // Setup as Startup App
-      app.setLoginItemSettings({ openAtLogin: true, path: app.getPath("exe"), args: ["--silent"] });
-
       const settings = await this.storage.loadFile("settings");
       await this.applyProxySettings(settings.data.useProxy);
+      try {
+         await applyAutostartSettings(settings.data.autostart);
+      } catch (error) {
+         analytics.log({ body: "could not apply autostart settings", attributes: { error: String(error) }, level: "error" });
+      }
    }
 
    private handleAllWindowClosed() {
@@ -95,6 +98,8 @@ export class HuginnApp {
                clientId: info.id,
             }),
       );
+
+      console.log(settings, info, process.env.VITE_PUBLIC_POSTHOG_KEY);
 
       this.storage.adapter.setAnalytics(analytics);
    }
@@ -154,6 +159,10 @@ export class HuginnApp {
    }
 
    private registerAppEvents() {
+      ipcMain.handle("app:set-autostart", async (_, enabled: boolean) => {
+         if (typeof enabled !== "boolean") throw new TypeError("Autostart must be a boolean");
+         await applyAutostartSettings(enabled);
+      });
       ipcMain.handle("app:set-proxy", async (_, useSystemProxy: boolean) => {
          await this.applyProxySettings(useSystemProxy);
       });

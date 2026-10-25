@@ -1,15 +1,17 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
-export const useMobileMenuStore = create(
+import type { ChannelSidebarPanel } from "@/types";
+
+export const useSidebarStore = create(
    combine(
       {
          isLeftOpen: false,
          isRightOpen: false,
+         rightPanel: "members" as ChannelSidebarPanel,
 
          leftOffset: 0,
-         leftMenuWidth: 320,
-         rightMenuWidth: 240,
+         leftSidebarWidth: 320,
          isDragging: false,
       },
       (set) => ({
@@ -22,13 +24,20 @@ export const useMobileMenuStore = create(
             set((state) => ({
                isLeftOpen: true,
                isRightOpen: false,
-               leftOffset: state.leftMenuWidth,
+               leftOffset: state.leftSidebarWidth,
             })),
          closeLeft: () => set({ isLeftOpen: false, leftOffset: 0 }),
 
-         openRight: () => set({ isLeftOpen: false, isRightOpen: true }),
+         openRight: (panel?: ChannelSidebarPanel) =>
+            set((state) => ({ isLeftOpen: false, leftOffset: 0, isRightOpen: true, rightPanel: panel ?? state.rightPanel })),
          closeRight: () => set({ isRightOpen: false }),
-         toggleRight: () => set((state) => ({ isRightOpen: !state.isRightOpen })),
+         toggleRight: (panel: ChannelSidebarPanel = "members") =>
+            set((state) => ({
+               isLeftOpen: false,
+               leftOffset: 0,
+               isRightOpen: !state.isRightOpen || state.rightPanel !== panel,
+               rightPanel: panel,
+            })),
       }),
    ),
 );

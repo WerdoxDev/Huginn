@@ -102,7 +102,7 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
             <div className="text-lg font-bold">Pinned Messages</div>
          </div>
          <div className="bg-surface h-0.5 w-full" />
-         <div className="scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pl-2" onScroll={onScroll}>
+         <div className="scroll-super-thin max-h-[70vh] overflow-y-scroll py-2 pt-4 pl-2 lg:pt-2" onScroll={onScroll}>
             {isLoading && (
                <div className="text-text/70 flex h-20 items-center justify-center gap-x-2">
                   <HuginnLoadingIcon className="size-10" />
@@ -123,12 +123,12 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
                            ref={setRef(message.id)}
                            lastMessage={processedMessages[index - 1]}
                            nextMessage={processedMessages[index + 1]}
-                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_", hideActions: true }}
+                           options={{ hideBackground: true, disableContextMenu: true, idPrefix: "pinned_", hideActions: true, equalPadding: true }}
                         />
                         <div className="absolute top-2 right-2 flex gap-x-1 select-none lg:opacity-0 lg:group-hover/background:opacity-100">
                            <button
                               onClick={() => props.onMessageClick(message.id)}
-                              className="bg-surface-alt hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-3 py-2 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white lg:px-2 lg:py-1"
+                              className="bg-surface-alt hover:bg-surface active:bg-surface flex cursor-pointer items-center justify-center rounded-md px-3 py-1 text-sm text-white/70 transition-colors outline-none hover:text-white active:text-white lg:px-2 lg:py-1"
                            >
                               Jump
                            </button>

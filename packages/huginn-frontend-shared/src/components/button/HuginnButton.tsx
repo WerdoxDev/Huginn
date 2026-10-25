@@ -25,7 +25,7 @@ export default function HuginnButton({ color, className, ...props }: HuginnButto
       <button
          {...props}
          className={clsx(
-            "cursor-pointer rounded-md text-white opacity-100 outline-hidden transition-colors select-none disabled:cursor-not-allowed",
+            "cursor-pointer rounded-md text-white opacity-100 outline-hidden transition-colors select-none disabled:cursor-not-allowed disabled:text-white/50",
             className,
             colors[color ?? "none"],
          )}

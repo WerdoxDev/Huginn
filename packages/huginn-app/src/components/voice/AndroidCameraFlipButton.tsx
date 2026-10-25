@@ -1,5 +1,5 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import { useVoiceUtils } from "@hooks/voice/useVoiceUtils";
+import { HuginnButton } from "@huginn/frontend-shared";
 import { useThisUser } from "@stores/userStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useState } from "react";
@@ -27,7 +27,6 @@ export default function AndroidCameraFlipButton(props: { cameraSource?: MediaSou
       <HuginnButton
          type="button"
          color="surface-alt"
-         aria-label="Flip camera"
          className="flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white disabled:opacity-50"
          disabled={isFlippingCamera}
          onClick={() => void handleFlipCamera()}

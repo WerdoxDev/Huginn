@@ -15,7 +15,7 @@ export function useElapsedTime(startTime?: number) {
    }, [startTime]);
 
    function getFormattedDuration() {
-      const duration = moment.duration(moment(currentTime).diff(startTime));
+      const duration = moment.duration(Math.max(0, moment(currentTime).diff(startTime)));
       return `${Math.floor(duration.asHours()).toString().padStart(2, "0")}:${duration.minutes().toString().padStart(2, "0")}:${duration.seconds().toString().padStart(2, "0")}`;
    }
 

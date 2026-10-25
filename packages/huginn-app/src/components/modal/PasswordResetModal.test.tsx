@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
    updateModals: vi.fn(),
 }));
 
-vi.mock("@components/input/OTPInput", () => ({ default: () => <input aria-label="Code" /> }));
+vi.mock("@components/input/OTPInput", () => ({ default: () => <input /> }));
 vi.mock("@components/input/PasswordInput", () => {
    const PasswordInput = ({ children }: { children: ReactNode }) => children;
    PasswordInput.ToggleButton = () => null;

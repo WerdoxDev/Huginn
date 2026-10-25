@@ -308,6 +308,7 @@ export type AppSettings = {
    screenShareSimulcast: boolean;
    screenShareVideoBitrate: number;
    screenShareAudioBitrate: number;
+   autostart: boolean;
    useProxy: boolean;
    forceRelay: boolean;
    isVoiceMuted: boolean;
@@ -601,3 +602,5 @@ export type OsInfo = {
    chromeVersion: string;
    electronVersion: string;
 };
+
+export type ChannelSidebarPanel = "members" | "search";

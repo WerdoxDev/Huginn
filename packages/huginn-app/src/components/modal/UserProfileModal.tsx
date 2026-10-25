@@ -162,7 +162,6 @@ function ProfileContent(props: { userId: string }) {
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <button
                      type="button"
-                     aria-label="View avatar"
                      className="bg-surface-alt group cursor-pointer rounded-full p-1 disabled:cursor-default"
                      onClick={handleAvatarClick}
                      disabled={!user.avatar}

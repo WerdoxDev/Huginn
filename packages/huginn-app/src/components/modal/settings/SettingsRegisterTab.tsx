@@ -1,7 +1,7 @@
-import { HuginnButton } from "@huginn/frontend-shared";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
+import { HuginnButton, HuginnLabel } from "@huginn/frontend-shared";
 import { useModals } from "@stores/modalsStore";
 import { usePresenceStore } from "@stores/presenceStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
@@ -52,8 +52,8 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
          updateModals({
             info: {
                status: "error",
-               title: "Failed!",
-               text: "This application is already added!",
+               title: "Failed to register",
+               text: "You've already registered this application!",
                isOpen: true,
             },
          });
@@ -88,19 +88,9 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
    return (
       <div className="flex w-full flex-col items-center">
          <div className="flex w-full max-w-md flex-col gap-y-5">
-            <div className="flex flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
-               {!targetActivity ? (
-                  <div className="bg-surface-alt rounded-lg p-3">
-                     <div className="text-text/80">No activities detected...</div>
-                  </div>
-               ) : (
-                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
-               )}
-            </div>
             {huginnWindow.environment === "desktop" && (
                <div className="flex flex-col">
-                  <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Register Application</div>
+                  <HuginnLabel>Register Application</HuginnLabel>
                   <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                      <div className="text-text/80 text-sm">Add a custom application to be shown on your profile as your activity</div>
                      <HuginnSelect onChange={handleApplicationChanged} selected={selectedApplication}>
@@ -119,7 +109,17 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
                </div>
             )}
             <div className="flex flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Registered Applications</div>
+               <HuginnLabel>Current Activity</HuginnLabel>
+               {!targetActivity ? (
+                  <div className="bg-surface-alt rounded-lg p-3">
+                     <div className="text-text/80">No activities detected...</div>
+                  </div>
+               ) : (
+                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
+               )}
+            </div>
+            <div className="flex flex-col">
+               <HuginnLabel>Registered Applications</HuginnLabel>
                <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   {customApplications.length === 0 ? (
                      <div className="text-text/80">No applications registered...</div>

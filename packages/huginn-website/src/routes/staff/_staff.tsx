@@ -70,8 +70,6 @@ function StaffLayoutComponent() {
                <button
                   type="button"
                   onClick={() => setNavigationOpen((open) => !open)}
-                  aria-label={navigationOpen ? "Close staff navigation" : "Open staff navigation"}
-                  aria-expanded={navigationOpen}
                   className="text-text/80 hover:bg-surface-alt hover:text-text mr-2 flex size-10 items-center justify-center rounded-full transition-colors duration-150 md:hidden"
                >
                   {navigationOpen ? <IconMdiClose className="size-6" /> : <IconMaterialSymbolsMenu className="size-6" />}
@@ -89,7 +87,6 @@ function StaffLayoutComponent() {
                   <button
                      type="button"
                      onClick={() => void logout()}
-                     aria-label="Clear staff token and sign out"
                      className="text-text/80 hover:bg-surface-alt hover:text-text flex size-10 items-center justify-center rounded-full transition-colors duration-150"
                      title="Clear staff token"
                   >
@@ -100,12 +97,7 @@ function StaffLayoutComponent() {
 
             <div className="relative flex min-h-0 flex-1">
                {navigationOpen ? (
-                  <button
-                     type="button"
-                     aria-label="Close staff navigation"
-                     onClick={() => setNavigationOpen(false)}
-                     className="fixed inset-x-0 top-16 bottom-0 z-30 bg-black/50 md:hidden"
-                  />
+                  <button type="button" onClick={() => setNavigationOpen(false)} className="fixed inset-x-0 top-16 bottom-0 z-30 bg-black/50 md:hidden" />
                ) : null}
 
                <aside
@@ -122,7 +114,7 @@ function StaffLayoutComponent() {
                               to={item.to}
                               className={`flex items-center gap-3 rounded-md p-3 transition-colors duration-150 ${active ? "bg-primary-900 text-white" : "text-text/70 hover:bg-surface hover:text-text"}`}
                            >
-                              <NavigationIcon className="size-5 shrink-0" aria-hidden="true" />
+                              <NavigationIcon className="size-5 shrink-0" />
                               <div className="min-w-0">
                                  <div className="text-sm font-medium">{item.label}</div>
                                  <div className={`truncate text-xs ${active ? "text-white/70" : "text-text/50"}`}>{item.description}</div>

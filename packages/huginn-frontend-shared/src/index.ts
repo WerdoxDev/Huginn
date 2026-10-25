@@ -10,6 +10,8 @@ export { default as HuginnDialog } from "./components/dialog/HuginnDialog";
 export type { HuginnDialogProps } from "./components/dialog/HuginnDialog";
 export { default as HuginnMenu } from "./components/dropdown/HuginnMenu";
 export type { HuginnMenuProps } from "./components/dropdown/HuginnMenu";
+export { default as HuginnIconSelect } from "./components/dropdown/HuginnIconSelect";
+export type { HuginnIconSelectProps } from "./components/dropdown/HuginnIconSelect";
 export { default as HuginnSelect } from "./components/dropdown/HuginnSelect";
 export type { HuginnSelectProps } from "./components/dropdown/HuginnSelect";
 export { default as HuginnIcon } from "./components/HuginnIcon";

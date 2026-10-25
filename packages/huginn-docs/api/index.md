@@ -12,6 +12,7 @@ outline: deep
 
 - **[Authenticate a session](/api/guide/authentication)** — Log in, restore tokens, initialize the gateway, and handle session expiry.
 - **[Call the REST API](/api/reference/rest-apis)** — Users, channels, messages, relationships, GIFs, OAuth, and applications.
+- **[Search messages](/api/guide/message-search)** — Search DMs and group DMs with content, media, author, date, and reply filters.
 - **[React to live events](/api/guide/gateway-events)** — Messages, presence, relationships, calls, settings, and resumable sessions.
 - **[Add voice and media](/api/guide/voice)** — Calls, voice gateway, devices and mediasoup client.
 

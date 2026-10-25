@@ -375,6 +375,36 @@ export type APIPatchMessageJSONBody = {
 
 export type APIGetMessageByIdResult = APIMessage;
 export type APIGetChannelMessagesResult = APIMessage[];
+export type MessageSearchHas = "image" | "video" | "audio" | "file" | "link" | "embed";
+
+export type APIPostChannelSearchJSONBody = {
+   content?: string;
+   channelId?: Snowflake;
+   authorId?: Snowflake;
+   /** Every listed user must be mentioned. */
+   mentions?: Snowflake[];
+   /** Every listed content category must be present. */
+   has?: MessageSearchHas[];
+   sortOrder?: "asc" | "desc";
+   /** Defaults to 25; maximum 25. */
+   limit?: number;
+   offset?: number;
+   pinned?: boolean;
+   attachmentFilename?: string;
+   /** An extension with or without its leading dot, e.g. "png" or ".png". */
+   attachmentExtension?: string;
+   embedType?: string;
+   /** Exclusive before bound: snowflake.getMinimum(beforeTimestamp). */
+   minId?: Snowflake;
+   /** Exclusive after bound: snowflake.getMaximum(afterTimestamp). */
+   maxId?: Snowflake;
+   repliedToUserId?: Snowflake;
+   repliedToMessageId?: Snowflake;
+   types?: MessageType[];
+};
+
+export type APIPostChannelSearchResult = APIMessage[];
+
 export type APIMessagePin = {
    pinnedAt: Date | string;
    message: APIMessage;

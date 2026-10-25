@@ -318,10 +318,8 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                d: undefined,
             };
 
-            const settings = await prisma.settings.getOrCreateSettings(result.user.id);
-
             result.oldSession.send(resumedData, true, false);
-            this.presenceManager.setUserPresence(result.user.id, result.oldSession, settings);
+            // Resuming keeps the existing session's status and activities during the reconnect window.
             this.presenceManager.sendUserPresenceUpdate(result.user.id);
             this.presenceManager.sendUserSessionUpdate(result.user.id);
          } catch (e) {

@@ -13,6 +13,7 @@ import {
 } from "@huginnjs/shared";
 
 import { assertCondition, assertId, assertObj, prisma, selectPrivateUser, type UserArgs, type UserPayload, Prisma, assertExists } from "#database";
+import { DBError } from "#elysia-errors";
 import { DBErrorType } from "#types";
 
 export const userExtension = Prisma.defineExtension({
@@ -44,7 +45,11 @@ export const userExtension = Prisma.defineExtension({
                   return idFix(user) as UserPayload<Args>;
                } catch (e) {
                   recordSpanError(e);
-                  await assertExists(e, methodName, DBErrorType.NULL_USER, [username]);
+                  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+                     const error = new DBError(methodName, DBErrorType.NULL_USER, username);
+                     throw error;
+                  }
+
                   throw e;
                }
             });

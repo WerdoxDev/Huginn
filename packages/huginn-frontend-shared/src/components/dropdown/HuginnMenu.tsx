@@ -145,7 +145,9 @@ function Content({
 
 function Item({
    children,
+   checked,
    className,
+   closeOnClick = true,
    disabled,
    endSlot,
    label,
@@ -159,7 +161,9 @@ function Item({
    color?: MenuTone;
    endSlot?: ReactNode;
    children?: ReactNode;
+   checked?: boolean;
    className?: string;
+   closeOnClick?: boolean;
    disabled?: boolean;
 }) {
    const context = useContext(MenuContext);
@@ -183,13 +187,24 @@ function Item({
    function handleClick() {
       if (disabled) return;
       onClick?.();
-      context.close();
+      if (closeOnClick) context.close();
    }
 
    return context.isMobile ? (
-      <button type="button" disabled={disabled} onClick={handleClick} className={itemClass}>
+      <button
+         type="button"
+         role={checked === undefined ? undefined : "checkbox"}
+         aria-checked={checked}
+         disabled={disabled}
+         onClick={handleClick}
+         className={itemClass}
+      >
          {content}
       </button>
+   ) : checked !== undefined ? (
+      <Menu.CheckboxItem checked={checked} closeOnClick={false} onCheckedChange={handleClick} label={label} disabled={disabled} className={itemClass}>
+         {content}
+      </Menu.CheckboxItem>
    ) : (
       <Menu.Item closeOnClick={false} onClick={handleClick} label={label} disabled={disabled} className={itemClass}>
          {content}
@@ -208,7 +223,7 @@ function Separator({ className }: { className?: string }) {
 
 function ChevronRightIcon({ className }: { className?: string }) {
    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" className={className}>
          <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
    );

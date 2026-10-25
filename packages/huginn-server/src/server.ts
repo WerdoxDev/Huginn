@@ -31,6 +31,7 @@ import { requestPasswordReset } from "#routes/auth/password-reset/request.post";
 import { postRefreshToken } from "#routes/auth/refresh-token.post";
 import { postRegister } from "#routes/auth/register.post";
 import { getChangelog } from "#routes/changelog.get";
+import { postChannelSearch } from "#routes/channels/@me/search.post";
 import { deleteChannel } from "#routes/channels/[channelId].delete";
 import { getChannel } from "#routes/channels/[channelId].get";
 import { patchChannel } from "#routes/channels/[channelId].patch";
@@ -190,6 +191,7 @@ export const app = new Elysia({
    .use(deleteUserDevice)
 
    // channel
+   .use(postChannelSearch)
    .use(postChannelMessage)
    .use(getChannelMessages)
    .use(deleteChannel)

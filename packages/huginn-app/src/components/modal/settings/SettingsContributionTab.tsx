@@ -1,8 +1,9 @@
+import HuginnIconSelect from "@components/dropdown/HuginnIconSelect";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
 import Tooltip from "@components/tooltip/Tooltip";
 import { useContributeApplication } from "@hooks/mutations/useContributeApplication";
-import { HuginnLoadingButton } from "@huginn/frontend-shared";
+import { HuginnLabel, HuginnLoadingButton, type HuginnSelectItem } from "@huginn/frontend-shared";
 import { JsonCode } from "@huginnjs/shared";
 import { getApplicationContributionsOptions } from "@lib/queries";
 import { isWorthyHuginnError } from "@lib/utils";
@@ -13,6 +14,7 @@ import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 import moment from "moment";
 import { useMemo, useState } from "react";
 
@@ -21,15 +23,40 @@ import type { SelectItem, SettingsTabProps } from "@/types";
 import huginnInHuginnUrl from "@/assets/huginn-in-huginn-meme.jpg";
 
 const contributionStatuses = {
-   pending: { label: "Pending", className: "bg-caution-300/10 text-caution-300" },
-   accepted: { label: "Accepted", className: "bg-positive-300/10 text-positive-300" },
-   rejected: { label: "Rejected", className: "bg-negative-300/10 text-negative-300" },
+   pending: { label: "Pending", className: "bg-surface-deep text-caution-300 " },
+   accepted: { label: "Accepted", className: "bg-surface-deep text-positive-300 " },
+   rejected: { label: "Rejected", className: "bg-surface-deep text-negative-300 " },
 } as const;
+
+type ContributionStatus = keyof typeof contributionStatuses;
+
+const contributionStatusOrder: Record<ContributionStatus, number> = {
+   accepted: 0,
+   pending: 1,
+   rejected: 2,
+};
+
+const contributionStatusOptions: HuginnSelectItem<ContributionStatus>[] = [
+   { value: "accepted", text: contributionStatuses.accepted.label },
+   { value: "pending", text: contributionStatuses.pending.label },
+   { value: "rejected", text: contributionStatuses.rejected.label },
+];
+
+const contributionSortOptions: HuginnSelectItem<"asc" | "desc" | "status" | "name">[] = [
+   { value: "status", text: "Status", icon: <IconMingcuteListCheck2Fill className="size-4 shrink-0" /> },
+   { value: "name", text: "Name", icon: <IconMingcuteAzSortAscendingLettersFill className="size-4 shrink-0" /> },
+   { value: "desc", text: "Newest first", icon: <IconMingcuteSortDescendingFill className="size-4 shrink-0" /> },
+   { value: "asc", text: "Oldest first", icon: <IconMingcuteSortAscendingFill className="size-4 shrink-0" /> },
+];
 
 export default function SettingsContributionTab(_props: SettingsTabProps) {
    const client = useClient();
    const knownApplications = useStorage("application-catalog");
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
+   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "status" | "name">("status");
+   const [statusFilters, setStatusFilters] = useState<ContributionStatus[]>([]);
+   const selectedSort = contributionSortOptions.find((option) => option.value === sortOrder) ?? contributionSortOptions[0];
+   const hasStatusFilters = statusFilters.length > 0 && statusFilters.length < contributionStatusOptions.length;
    const submitMutation = useContributeApplication();
    const { user } = useThisUser();
    const { session } = usePresenceStore();
@@ -63,11 +90,26 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
 
    const contributedApplications = useMemo(() => {
       const games = new Map(knownApplications.games.map((game) => [game.id, game]));
-      return contributions.map((contribution) => ({
-         contribution,
-         game: contribution.knownGameId === null ? undefined : games.get(contribution.knownGameId),
-      }));
-   }, [contributions, knownApplications.games]);
+      return contributions
+         .filter((contribution) => statusFilters.length === 0 || statusFilters.includes(contribution.status))
+         .map((contribution) => ({
+            contribution,
+            game: contribution.knownGameId === null ? undefined : games.get(contribution.knownGameId),
+         }))
+         .sort((a, b) => {
+            if (sortOrder === "name") {
+               const nameA = a.game?.canonicalName ?? a.contribution.windowTitle;
+               const nameB = b.game?.canonicalName ?? b.contribution.windowTitle;
+               return nameA.localeCompare(nameB, undefined, { sensitivity: "base", numeric: true });
+            }
+            if (sortOrder === "status") {
+               const statusDifference = contributionStatusOrder[a.contribution.status] - contributionStatusOrder[b.contribution.status];
+               if (statusDifference !== 0) return statusDifference;
+            }
+            const difference = new Date(a.contribution.createdAt).getTime() - new Date(b.contribution.createdAt).getTime();
+            return sortOrder === "asc" ? difference : -difference;
+         });
+   }, [contributions, knownApplications.games, sortOrder, statusFilters]);
 
    function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
@@ -135,19 +177,9 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
    return (
       <div className="flex w-full flex-col items-center">
          <div className="flex w-full max-w-md flex-col gap-y-5">
-            <div className="flex flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Current Activity</div>
-               {!targetActivity ? (
-                  <div className="bg-surface-alt rounded-lg p-3">
-                     <div className="text-text/80">No activities detected...</div>
-                  </div>
-               ) : (
-                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
-               )}
-            </div>
             {huginnWindow.environment === "desktop" && (
                <div className="flex flex-col">
-                  <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Submit Application</div>
+                  <HuginnLabel>Submit Application</HuginnLabel>
                   <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                      <div className="text-text/80 text-sm">
                         Not seeing what you're doing? Try adding it here. And if your application gets verified, we'll show your contribution!
@@ -174,10 +206,43 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
                </div>
             )}
             <div className="flex flex-col">
-               <div className="text-text/90 mb-2 text-xs font-medium uppercase select-none">Your Contributions</div>
+               <HuginnLabel>Current Activity</HuginnLabel>
+               {!targetActivity ? (
+                  <div className="bg-surface-alt rounded-lg p-3">
+                     <div className="text-text/80">No activities detected...</div>
+                  </div>
+               ) : (
+                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
+               )}
+            </div>
+            <div className="flex flex-col">
+               <div className="flex items-end justify-between gap-2">
+                  <HuginnLabel>Your Contributions</HuginnLabel>
+                  {/*<div className="text-text/90 text-xs font-medium uppercase select-none">Your Contributions</div>*/}
+                  <div className="mb-1 flex items-center gap-1">
+                     <HuginnIconSelect
+                        label="Filter contributions by status"
+                        icon={<IconMingcuteFilterFill className="size-4" />}
+                        options={contributionStatusOptions}
+                        multiple
+                        value={statusFilters}
+                        onChange={setStatusFilters}
+                        active={hasStatusFilters}
+                     />
+                     <HuginnIconSelect
+                        label="Sort contributions"
+                        icon={selectedSort.icon}
+                        options={contributionSortOptions}
+                        value={sortOrder}
+                        onChange={setSortOrder}
+                     />
+                  </div>
+               </div>
                <div className="bg-surface-alt flex flex-col gap-y-2 rounded-lg p-3">
                   {contributedApplications.length === 0 ? (
-                     <div className="text-text/80">No applications contributed...</div>
+                     <div className="text-text/80">
+                        {contributions.length === 0 ? "No applications contributed..." : "No contributions match the selected statuses."}
+                     </div>
                   ) : (
                      contributedApplications.map(({ contribution, game }) => {
                         const contributionStatus = contributionStatuses[contribution.status];
@@ -210,10 +275,10 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
                                     </Tooltip.Content>
                                  </Tooltip>
                               )}
-                              <div className={`ml-auto rounded px-1.5 py-0.5 text-xs font-medium ${contributionStatus.className}`}>
+                              <div className={clsx("ml-auto rounded px-2 py-1 text-xs", contributionStatus.className)}>
                                  {contributionStatus.label}
                               </div>
-                              <div className="text-white/70">{moment(contribution.createdAt).format("DD.MM.YYYY")}</div>
+                              <div className="text-text/70 w-20 text-right">{moment(contribution.createdAt).format("DD.MM.YYYY")}</div>
                            </div>
                         );
                      })
