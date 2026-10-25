@@ -10,7 +10,7 @@ import {
 import { describe, expect, test } from "bun:test";
 
 import { expectPresenceExactSchema, expectSessionUpdateExactSchema } from "#tests/expect-utils";
-import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, testIsDispatch, wsSend } from "#tests/utils";
+import { authHeader, createTestRelationships, createTestUsers, getReadyWebSocket, getWebSocket, testIsDispatch, testIsOpcode, wsSend } from "#tests/utils";
 
 function waitForDispatch<Event extends keyof GatewayWebsocketEvents>(
    ws: WebSocket,
@@ -234,6 +234,44 @@ describe("Presence", () => {
       const expected = [expectedSession(sessionId, { status: "dnd", activities: [{ ...activity, sessionId }] }), expectedSession(secondId)];
       expectSessionUpdateExactSchema(await firstUpdate, expected);
       expectSessionUpdateExactSchema(await secondUpdate, expected);
+   });
+
+   test("preserves session status and activities when resuming and shares them with sibling sessions", async () => {
+      const { ws, user, sessionId } = await getReadyWebSocket();
+      let lastSequence = 0;
+      ws.addEventListener("message", (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsOpcode(data, GatewayOperations.DISPATCH) && data.s !== undefined) lastSequence = data.s;
+      });
+      const { ws: siblingWs, sessionId: siblingId } = await getReadyWebSocket(user);
+      const activity = { name: "resumed-game", createdAt: Date.now(), type: ActivityType.PLAYING };
+      const updated = waitForDispatch(ws, "session_update", (sessions) => sessions.some((session) => session.activities.length === 1));
+      updatePresence(ws, { status: "idle", activities: [activity] });
+      await updated;
+
+      await new Promise<void>((resolve) => {
+         ws.addEventListener("close", () => resolve(), { once: true });
+         ws.close();
+      });
+
+      const resumedWs = await getWebSocket();
+      const resumed = waitForDispatch(resumedWs, "resumed");
+      const resumedSessions = waitForDispatch(resumedWs, "session_update");
+      const siblingSessions = waitForDispatch(siblingWs, "session_update");
+      resumedWs.addEventListener("message", (event) => {
+         const data = JSON.parse(event.data);
+         if (testIsOpcode(data, GatewayOperations.HELLO)) {
+            wsSend(resumedWs, {
+               op: GatewayOperations.RESUME,
+               d: { sessionId, token: user.accessToken, seq: lastSequence },
+            });
+         }
+      });
+
+      await resumed;
+      const expected = [expectedSession(sessionId, { status: "idle", activities: [{ ...activity, sessionId }] }), expectedSession(siblingId)];
+      expectSessionUpdateExactSchema(await resumedSessions, expected);
+      expectSessionUpdateExactSchema(await siblingSessions, expected);
    });
 
    test("applies overallStatus to every session while keeping activities on the sending session", async () => {
