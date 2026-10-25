@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.93.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.4...app@v0.93.0) (2026-10-25)
+
+
+### Features
+
+* **app:** autostart setting + name sort for contributions + overall activity status ([a93acc7](https://github.com/WerdoxDev/Huginn/commit/a93acc79d9f25502467e18bd207908f069a9463d))
+* **app:** cleaner message search + settings contribution filter and sort ([30ec080](https://github.com/WerdoxDev/Huginn/commit/30ec08085b9f0b9696ed5fafb7ebfcdd680e7eb9))
+* **app:** first ui iteration of full search feature ([0d95994](https://github.com/WerdoxDev/Huginn/commit/0d95994519db53475cfc043dccd1df7c4cd6972a))
+* **app:** much better channel sidebar handling + initial experimental ui for message search ([a66a3d0](https://github.com/WerdoxDev/Huginn/commit/a66a3d037c66d70c496810791b2f9c6e2b67cc0a))
+
 ## [0.92.4](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.3...app@v0.92.4) (2026-10-24)
 
 
