@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.48.0...shared@v0.49.0) (2026-10-25)
+
+
+### Features
+
+* **shared:** search types + snowflake min & max from timestamp generation ([d7203d2](https://github.com/WerdoxDev/Huginn/commit/d7203d2ce2c54fedb8a45cf0c2ca3b025c5d3b35))
+
 ## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.47.0...shared@v0.48.0) (2026-10-16)
 
 

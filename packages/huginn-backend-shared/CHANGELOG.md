@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.34.0...backend-shared@v0.34.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **backend-shared:** find user with username error was always invalid id instead of not found ([9d67bd2](https://github.com/WerdoxDev/Huginn/commit/9d67bd252af6b8959bda80af86c851a11d9e277b))
+* **backend-shared:** google/github accounts should not require email verification when registered through oauth ([cde3a3b](https://github.com/WerdoxDev/Huginn/commit/cde3a3bb4884569e8e07967c5ff60fff4c64cf6d))
+
 ## [0.34.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.33.0...backend-shared@v0.34.0) (2026-10-16)
 
 

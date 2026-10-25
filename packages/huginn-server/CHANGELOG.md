@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.55.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.54.1...server@v0.55.0) (2026-10-25)
+
+
+### Features
+
+* **server:** implement full search endpoint ([76ac017](https://github.com/WerdoxDev/Huginn/commit/76ac017801853f20f04761888a6487ac92265040))
+
+
+### Bug Fixes
+
+* **server:** new test for same user activity sharing ([823233f](https://github.com/WerdoxDev/Huginn/commit/823233f17baaaaaff6244ad4bdc984457b44a9c7))
+* **server:** oauth accounts require no email verification ([132fe41](https://github.com/WerdoxDev/Huginn/commit/132fe41bdf8934fa3bee664f23762fcbe60169d8))
+
 ## [0.54.1](https://github.com/WerdoxDev/Huginn/compare/server@v0.54.0...server@v0.54.1) (2026-10-20)
 
 

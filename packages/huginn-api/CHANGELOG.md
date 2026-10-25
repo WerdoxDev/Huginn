@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.46.1...api@v0.47.0) (2026-10-25)
+
+
+### Features
+
+* **api:** add new search functions ([5dcf787](https://github.com/WerdoxDev/Huginn/commit/5dcf7872b6b5bd71340342cf747ec6ed4b76dab3))
+
 ## [0.46.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.46.0...api@v0.46.1) (2026-10-20)
 
 
