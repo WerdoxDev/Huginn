@@ -1,5 +1,6 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginnjs/shared";
 
+import { HuginnAPIError } from "@huginnjs/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Gateway } from "../gateway";
@@ -17,15 +18,6 @@ vi.mock("../gateway.ts", () => ({
          authenticate: vi.fn(),
          user: undefined as APIUser | undefined,
          on: vi.fn(),
-      };
-   }),
-}));
-
-vi.mock("../token-handler.ts", () => ({
-   TokenHandler: vi.fn(function () {
-      return {
-         token: undefined as string | undefined,
-         refreshToken: undefined as string | undefined,
       };
    }),
 }));
@@ -109,6 +101,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+   client.tokenHandler.setTokens({});
    vi.useRealTimers();
 });
 
@@ -268,7 +261,9 @@ describe("initialize() with stored tokens", () => {
    });
 
    it("clears the session and reports invalid_tokens if refreshing throws a non-network error", async () => {
-      vi.mocked(client.auth.refreshToken).mockRejectedValue(new Error("refresh rejected"));
+      vi.mocked(client.auth.refreshToken).mockRejectedValue(
+         new HuginnAPIError({ code: 0, message: "Unauthorized" }, 0, 401, "POST", "/auth/refresh-token", {}),
+      );
       client.tokenHandler.token = "stale-token";
 
       const result = await client.initialize({

@@ -1,6 +1,6 @@
 import type { APIPostLoginResult, APIPostRegisterResult, APIUser, LoginCredentials, RegisterUser, Tokens } from "@huginnjs/shared";
 
-import { type Snowflake, snowflake, WorkerID } from "@huginnjs/shared";
+import { HuginnAPIError, type Snowflake, snowflake, WorkerID } from "@huginnjs/shared";
 import { decodeJwt } from "jose";
 
 import type { AuthenticationStatus, ClientOptions, VoiceConstructor } from ".";
@@ -156,9 +156,10 @@ export class HuginnClient<V extends Voice = Voice> {
    }
 
    private async restoreSession(tokens: Partial<Tokens>): Promise<InitializationStatus> {
+      this.tokenHandler.setTokens(tokens);
       const accessTokenValid = await this.validateAccessToken(tokens.token);
       if (!accessTokenValid && tokens.refreshToken) {
-         const refreshResult = await this.refreshSession(tokens.refreshToken);
+         const refreshResult = await this.refreshSession();
 
          // invalid tokens is handled further down
          if (refreshResult.success) return "success";
@@ -179,9 +180,9 @@ export class HuginnClient<V extends Voice = Voice> {
       try {
          const decoded = decodeJwt(token);
          const expireDate = (decoded.exp ?? 0) * 1000;
-         const isValid = expireDate >= Date.now();
+         const isValid = expireDate > Date.now();
 
-         if (isValid) {
+         if (isValid && this.tokenHandler.token !== token) {
             this.tokenHandler.token = token;
          }
 
@@ -191,23 +192,20 @@ export class HuginnClient<V extends Voice = Voice> {
       }
    }
 
-   private async refreshSession(refreshToken: string): Promise<RefreshTokenResult> {
+   private async refreshSession(): Promise<RefreshTokenResult> {
       try {
-         const newTokens = await this.auth.refreshToken({ refreshToken });
-         this.tokenHandler.token = newTokens.token;
-         this.tokenHandler.refreshToken = newTokens.refreshToken;
+         if (!(await this.tokenHandler.refresh())) return { success: false, status: "invalid_token", retryable: false };
          return { success: true, status: "success", retryable: true };
       } catch (e) {
-         if (e instanceof TypeError && e.message.toLocaleLowerCase().includes("fail")) {
-            return { success: false, status: "network_error", retryable: true };
+         if (e instanceof HuginnAPIError && (e.status === 401 || e.status === 403)) {
+            return { success: false, status: "invalid_token", retryable: false };
          }
-         return { success: false, status: "invalid_token", retryable: false };
+         return { success: false, status: "network_error", retryable: true };
       }
    }
 
    private clearSession(): void {
-      this.tokenHandler.token = undefined;
-      this.tokenHandler.refreshToken = undefined;
+      this.tokenHandler.setTokens({});
       this.setUser(undefined);
    }
 
@@ -225,8 +223,7 @@ export class HuginnClient<V extends Voice = Voice> {
       const result = await this.auth.login(credentials);
 
       if ("token" in result && "refreshToken" in result) {
-         this.tokenHandler.token = result.token;
-         this.tokenHandler.refreshToken = result.refreshToken;
+         this.tokenHandler.setTokens(result);
       }
 
       return result;

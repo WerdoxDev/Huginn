@@ -1,3 +1,7 @@
+import type { Tokens } from "@huginnjs/shared";
+
+import { CONSTANTS, HuginnAPIError } from "@huginnjs/shared";
+
 import type { HuginnClient } from ".";
 
 import { decodeToken } from "./utils";
@@ -5,9 +9,11 @@ import { decodeToken } from "./utils";
 export class TokenHandler {
    private _token?: string;
    private _refreshToken?: string;
+   private _sessionVersion = 0;
    private tokenTimeout?: ReturnType<typeof setTimeout>;
    private timeoutPromise?: Promise<boolean>;
    private resolveTimeout?: (success: boolean) => void;
+   private refreshPromise?: Promise<boolean>;
    private changeListeners = new Set<(token?: string, refreshToken?: string) => void>();
 
    private readonly client: HuginnClient;
@@ -16,55 +22,47 @@ export class TokenHandler {
       this.client = client;
    }
 
-   /**
-    * Returns the authorization token as a readonly string
-    */
    public get token(): Readonly<string | undefined> {
       return this._token;
    }
 
-   /**
-    * Sets the authorization tokens used by auth requests
-    *
-    * @param token - The authorization token to use
-    */
    public set token(token: string | undefined) {
-      this._token = token;
-      if (!token) this.cancelRefreshTimeout();
-      this.notifyChange();
-
-      if (!token) {
-         return;
-      }
-
-      const [isValid, payload] = decodeToken(token);
-
-      if (!isValid || !payload) {
-         return;
-      }
-
-      const date1 = new Date();
-      const date2 = new Date((payload.exp ?? 0) * 1000);
-      const diffTime = date2.getTime() - date1.getTime();
-
-      this.startRefreshTimeout(diffTime - 1000);
+      this.setTokens({ token, refreshToken: this._refreshToken });
    }
 
-   /**
-    * Returns the refresh token as a readonly string
-    */
    public get refreshToken(): Readonly<string | undefined> {
       return this._refreshToken;
    }
 
-   /**
-    * Sets the refresh token used to get new tokens when they expire
-    *
-    * @param refreshToken - The refresh token to later get new authorization token with
-    */
    public set refreshToken(refreshToken: string | undefined) {
-      this._refreshToken = refreshToken;
-      this.notifyChange();
+      this.setTokens({ token: this._token, refreshToken });
+   }
+
+   /** Changes on session replacement or clearing, but not on automatic rotation. */
+   public get sessionVersion(): number {
+      return this._sessionVersion;
+   }
+
+   /** Publish a complete pair so persistence never observes mismatched credentials. */
+   public setTokens(tokens: Partial<Tokens>): void {
+      this._sessionVersion++;
+      this.refreshPromise = undefined;
+      this.applyTokens(tokens);
+   }
+
+   private applyTokens(tokens: Partial<Tokens>): void {
+      this.cancelRefreshTimeout();
+      this._token = tokens.token;
+      this._refreshToken = tokens.refreshToken;
+
+      const [isValid, payload] = this._token ? decodeToken(this._token) : [false, null];
+      if (this._refreshToken && isValid && payload?.exp) {
+         const remaining = payload.exp * 1000 - Date.now();
+         const leadTime = Math.min(30_000, Math.max(1000, remaining / 10));
+         this.startRefreshTimeout(remaining - leadTime);
+      }
+
+      for (const listener of this.changeListeners) listener(this._token, this._refreshToken);
    }
 
    public onChange(listener: (token?: string, refreshToken?: string) => void): () => void {
@@ -72,43 +70,82 @@ export class TokenHandler {
       return () => this.changeListeners.delete(listener);
    }
 
-   private notifyChange() {
-      for (const listener of this.changeListeners) listener(this._token, this._refreshToken);
+   /** Wait for an active refresh, or refresh an expired token after a delayed timer. */
+   public async ensureValidToken(): Promise<boolean> {
+      if (this.refreshPromise) {
+         await this.refreshPromise;
+         return !!this._token;
+      }
+
+      if (this._token) {
+         const [isValid, payload] = decodeToken(this._token);
+         // Tokens without readable expiry metadata are left for the server to validate.
+         if (!isValid || payload?.exp === undefined || payload.exp * 1000 > Date.now()) return true;
+      }
+
+      return this.refresh();
    }
 
-   /**
-    * Returns a promise that waits for the token to refresh.
-    * Result will be whether or not token got successfuly refreshed
-    * Immidiatly returns a false if no timeout is in process
-    */
-   public async waitForTokenRefresh(): Promise<boolean> {
-      return (await this.timeoutPromise) ?? false;
-   }
+   /** Share a single rotation across timers, requests and gateway authentication. */
+   public refresh(): Promise<boolean> {
+      if (this.refreshPromise) return this.refreshPromise;
+      const refreshToken = this._refreshToken;
+      if (!refreshToken) return Promise.resolve(false);
 
-   private startRefreshTimeout(time: number) {
       this.cancelRefreshTimeout();
+      const version = this._sessionVersion;
+      const promise = Promise.resolve().then(async () => {
+         if (version !== this._sessionVersion) return false;
+         try {
+            const tokens = await this.client.auth.refreshToken({ refreshToken });
+            if (version !== this._sessionVersion) return false;
+            this.applyTokens(tokens);
+            return true;
+         } catch (error) {
+            if (version !== this._sessionVersion) return false;
+            if (error instanceof HuginnAPIError && (error.status === 401 || error.status === 403)) {
+               this.setTokens({});
+            } else {
+               this.startRefreshTimeout(CONSTANTS.TOKEN_REFRESH_RETRY_DELAY_MS);
+            }
+            throw error;
+         }
+      });
 
+      this.refreshPromise = promise;
+      const cleanup = () => {
+         if (this.refreshPromise === promise) this.refreshPromise = undefined;
+      };
+      void promise.then(cleanup, cleanup);
+      return promise;
+   }
+
+   /** Wait for the active or scheduled refresh; failures are reported as false. */
+   public async waitForTokenRefresh(): Promise<boolean> {
+      try {
+         return (await (this.refreshPromise ?? this.timeoutPromise)) ?? false;
+      } catch {
+         return false;
+      }
+   }
+
+   private startRefreshTimeout(time: number): void {
+      this.cancelRefreshTimeout();
       this.timeoutPromise = new Promise<boolean>((resolve) => {
          this.resolveTimeout = resolve;
          this.tokenTimeout = setTimeout(
-            async () => {
+            () => {
+               this.tokenTimeout = undefined;
                this.resolveTimeout = undefined;
-               try {
-                  const newTokens = await this.client.auth.refreshToken({ refreshToken: this.refreshToken ?? "" });
-                  this.refreshToken = newTokens.refreshToken;
-                  this.token = newTokens.token;
-                  resolve(true);
-               } catch {
-                  resolve(false);
-               }
+               void this.refresh().then(resolve, () => resolve(false));
             },
             Math.max(0, time),
          );
       });
    }
 
-   private cancelRefreshTimeout() {
-      if (this.tokenTimeout) clearTimeout(this.tokenTimeout);
+   private cancelRefreshTimeout(): void {
+      if (this.tokenTimeout !== undefined) clearTimeout(this.tokenTimeout);
       this.tokenTimeout = undefined;
       this.resolveTimeout?.(false);
       this.resolveTimeout = undefined;
