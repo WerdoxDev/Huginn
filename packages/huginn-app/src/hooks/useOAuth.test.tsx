@@ -26,7 +26,14 @@ function createClient(returnedUserId: string) {
             refreshToken: "new-refresh",
          }),
       },
-      tokenHandler: { token: "old-access", refreshToken: "old-refresh" },
+      tokenHandler: {
+         token: "old-access",
+         refreshToken: "old-refresh",
+         setTokens(tokens: { token: string; refreshToken: string }) {
+            this.token = tokens.token;
+            this.refreshToken = tokens.refreshToken;
+         },
+      },
    };
 }
 
@@ -60,7 +67,7 @@ describe("useOAuth handoff", () => {
 
       expect(await completeHandoff()).toBeNull();
       expect(client.oauth.exchangeHandoff).toHaveBeenCalledWith("one-time-code");
-      expect(client.tokenHandler).toEqual({ token: "old-access", refreshToken: "old-refresh" });
+      expect(client.tokenHandler).toMatchObject({ token: "old-access", refreshToken: "old-refresh" });
       expect(mocks.updateModals).toHaveBeenCalledWith(expect.objectContaining({ info: expect.objectContaining({ title: "Wrong account" }) }));
    });
 
