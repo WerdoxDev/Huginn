@@ -1,0 +1,4 @@
+**
+!ops
+!ops/postgres-backup
+!ops/postgres-backup/worker.py

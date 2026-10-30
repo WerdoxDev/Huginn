@@ -1,0 +1,5 @@
+**/.data
+**/.env*
+**/secrets.env
+**/.git
+**/node_modules

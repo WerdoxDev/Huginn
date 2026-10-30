@@ -1,0 +1,82 @@
+version: "3.8"
+
+# Deploy separately from the app so application deployments keep backups running.
+services:
+   postgres-backup:
+      image: ${POSTGRES_BACKUP_IMAGE:-huginn-postgres-backup:1}
+      environment:
+         - PGHOST=huginn-backend_postgres
+         - PGPORT=5432
+         - PGUSER=huginn
+         - PGDATABASE=huginn
+         - PGPASSWORD_FILE=/run/secrets/postgres_password
+         - PGCONNECT_TIMEOUT=15
+         - RESTIC_PASSWORD_FILE=/run/secrets/postgres_backup_password
+         - AWS_SHARED_CREDENTIALS_FILE=/run/secrets/postgres_backup_aws
+         - AWS_EC2_METADATA_DISABLED=true
+         - BACKUP_CONFIG_FILE=/run/secrets/postgres_backup_config
+      secrets:
+         - postgres_password
+         - postgres_backup_password
+         - postgres_backup_aws
+         - postgres_backup_config
+      volumes:
+         - backup_state:/state
+         - backup_repository:/repository
+         - backup_cache:/cache
+      tmpfs:
+         - /work:size=268435456,mode=0700,uid=999,gid=999
+      networks:
+         - database
+         - backup_egress
+      healthcheck:
+         test: ["CMD", "python3", "/opt/backup/worker.py", "health"]
+         interval: 60s
+         timeout: 10s
+         retries: 3
+         start_period: 10m
+      stop_grace_period: 2m
+      deploy:
+         replicas: 1
+         placement:
+            constraints:
+               - node.labels.huginn.postgres == true
+         update_config:
+            order: stop-first
+         resources:
+            limits:
+               memory: 1g
+               cpus: "1.0"
+         restart_policy:
+            condition: on-failure
+            delay: 30s
+
+networks:
+   database:
+      external: true
+      name: huginn-backend_database
+   backup_egress:
+      driver: overlay
+
+volumes:
+   backup_state:
+      external: true
+      name: huginn_postgres_backup_state
+   backup_repository:
+      external: true
+      name: huginn_postgres_backup_repository
+   backup_cache:
+      external: true
+      name: huginn_postgres_backup_cache
+
+secrets:
+   postgres_password:
+      external: true
+   postgres_backup_password:
+      external: true
+   postgres_backup_aws:
+      external: true
+      name: ${POSTGRES_BACKUP_AWS_SECRET:-postgres_backup_aws}
+   postgres_backup_config:
+      external: true
+      name: ${POSTGRES_BACKUP_CONFIG_SECRET:-postgres_backup_config}

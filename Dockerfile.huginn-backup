@@ -1,0 +1,14 @@
+FROM restic/restic:0.19.1 AS restic
+
+FROM postgres:18-bookworm
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 python3-boto3 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=restic /usr/bin/restic /usr/local/bin/restic
+COPY ops/postgres-backup/worker.py /opt/backup/worker.py
+RUN mkdir -p /state /repository /work /cache \
+    && chown postgres:postgres /state /repository /work /cache
+USER postgres
+ENV PYTHONUNBUFFERED=1 TZ=UTC
+ENTRYPOINT ["python3", "/opt/backup/worker.py"]
+CMD ["run"]

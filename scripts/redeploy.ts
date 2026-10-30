@@ -9,7 +9,7 @@ export async function redeploy(): Promise<number> {
    await runCommand(["docker", "config", "rm", "caddy_config"], { cwd: repositoryRoot });
    await runCommand(["docker", "config", "create", "caddy_config", "Caddyfile"], { cwd: repositoryRoot });
 
-   return await runCommand(["docker", "stack", "deploy", "-c", "docker-stack.yaml", stackName, "--with-registry-auth"], {
+   return await runCommand(["docker", "stack", "deploy", "-c", "docker-stack.yaml", stackName, "--with-registry-auth", "--resolve-image", "never"], {
       cwd: repositoryRoot,
    });
 }

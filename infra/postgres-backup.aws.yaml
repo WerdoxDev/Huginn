@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Private, encrypted storage and monitoring for Huginn PostgreSQL backups
+Parameters:
+   Instance:
+      Type: String
+      Default: midgard
+      AllowedPattern: "[a-z0-9-]+"
+   NotificationEmail:
+      Type: String
+      Default: ""
+      Description: Optional email for failure and missed-backup alerts; confirm the SNS subscription.
+Conditions:
+   HasNotificationEmail:
+      Fn::Not:
+         - Fn::Equals: [{ Ref: NotificationEmail }, ""]
+Resources:
+   BackupBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+         BucketName:
+            Fn::Sub: "huginn-postgres-backups-${AWS::AccountId}-${AWS::Region}-${Instance}"
+         PublicAccessBlockConfiguration:
+            BlockPublicAcls: true
+            BlockPublicPolicy: true
+            IgnorePublicAcls: true
+            RestrictPublicBuckets: true
+         OwnershipControls:
+            Rules:
+               - ObjectOwnership: BucketOwnerEnforced
+         VersioningConfiguration:
+            Status: Enabled
+         BucketEncryption:
+            ServerSideEncryptionConfiguration:
+               - ServerSideEncryptionByDefault:
+                    SSEAlgorithm: AES256
+         LifecycleConfiguration:
+            Rules:
+               - Id: ExpireOldVersions
+                 Status: Enabled
+                 NoncurrentVersionExpiration:
+                    NoncurrentDays: 90
+                 AbortIncompleteMultipartUpload:
+                    DaysAfterInitiation: 7
+         Tags:
+            - Key: Application
+              Value: Huginn
+            - Key: Purpose
+              Value: PostgreSQL backups
+   BackupBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+         Bucket: { Ref: BackupBucket }
+         PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+               - Sid: RequireTLS
+                 Effect: Deny
+                 Principal: "*"
+                 Action: "s3:*"
+                 Resource:
+                    - Fn::GetAtt: [BackupBucket, Arn]
+                    - Fn::Sub: "${BackupBucket.Arn}/*"
+                 Condition:
+                    Bool:
+                       "aws:SecureTransport": "false"
+   BackupUser:
+      Type: AWS::IAM::User
+      Properties:
+         Policies:
+            - PolicyName: HuginnPostgresBackup
+              PolicyDocument:
+                 Version: "2012-10-17"
+                 Statement:
+                    - Effect: Allow
+                      Action: ["s3:GetBucketLocation", "s3:ListBucket", "s3:ListBucketMultipartUploads"]
+                      Resource: { Fn::GetAtt: [BackupBucket, Arn] }
+                    - Effect: Allow
+                      Action: ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]
+                      Resource: { Fn::Sub: "${BackupBucket.Arn}/restic/*" }
+                    - Effect: Allow
+                      Action: "cloudwatch:PutMetricData"
+                      Resource: "*"
+                      Condition:
+                         StringEquals:
+                            "cloudwatch:namespace": Huginn/PostgresBackups
+   BackupAlerts:
+      Type: AWS::SNS::Topic
+   BackupAlertEmail:
+      Type: AWS::SNS::Subscription
+      Condition: HasNotificationEmail
+      Properties:
+         TopicArn: { Ref: BackupAlerts }
+         Protocol: email
+         Endpoint: { Ref: NotificationEmail }
+   BackupAlertsPolicy:
+      Type: AWS::SNS::TopicPolicy
+      Properties:
+         Topics: [{ Ref: BackupAlerts }]
+         PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+               - Effect: Allow
+                 Principal: { Service: cloudwatch.amazonaws.com }
+                 Action: "sns:Publish"
+                 Resource: { Ref: BackupAlerts }
+                 Condition:
+                    StringEquals:
+                       "aws:SourceAccount": { Ref: "AWS::AccountId" }
+                    ArnLike:
+                       "aws:SourceArn": { Fn::Sub: "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*" }
+   BackupFailureAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+         AlarmDescription: A PostgreSQL backup, upload, check, or restore verification failed.
+         Namespace: Huginn/PostgresBackups
+         MetricName: BackupFailure
+         Dimensions: [{ Name: Instance, Value: { Ref: Instance } }]
+         Statistic: Sum
+         Period: 300
+         EvaluationPeriods: 1
+         Threshold: 1
+         ComparisonOperator: GreaterThanOrEqualToThreshold
+         TreatMissingData: notBreaching
+         AlarmActions: [{ Ref: BackupAlerts }]
+   MissingBackupAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+         AlarmDescription: No fresh PostgreSQL snapshot has reached S3 for 26 hours.
+         Namespace: Huginn/PostgresBackups
+         MetricName: OffsiteBackupSuccess
+         Dimensions: [{ Name: Instance, Value: { Ref: Instance } }]
+         Statistic: Sum
+         Period: 3600
+         EvaluationPeriods: 26
+         DatapointsToAlarm: 26
+         Threshold: 1
+         ComparisonOperator: LessThanThreshold
+         TreatMissingData: breaching
+         AlarmActions: [{ Ref: BackupAlerts }]
+Outputs:
+   BucketName:
+      Value: { Ref: BackupBucket }
+   BackupUserName:
+      Description: Create an access key for this restricted user; no key is exposed by CloudFormation.
+      Value: { Ref: BackupUser }
+   ResticRepository:
+      Value: { Fn::Sub: "s3:https://s3.${AWS::Region}.amazonaws.com/${BackupBucket}/restic" }
+   Region:
+      Value: { Ref: "AWS::Region" }
+   AlertTopicArn:
+      Value: { Ref: BackupAlerts }

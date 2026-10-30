@@ -5,8 +5,51 @@ networks:
       external: true
    dozzle:
       driver: overlay
+   database:
+      driver: overlay
+      internal: true
+
+volumes:
+   postgres_data:
+      external: true
+      name: huginn_postgres_data
 
 services:
+   postgres:
+      image: postgres:18
+      environment:
+         - POSTGRES_DB=huginn
+         - POSTGRES_USER=huginn
+         - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+         - PGDATA=/var/lib/postgresql/18/docker
+      secrets:
+         - postgres_password
+      volumes:
+         - postgres_data:/var/lib/postgresql
+      networks:
+         - database
+      healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U huginn -d huginn"]
+         interval: 10s
+         timeout: 5s
+         retries: 5
+         start_period: 30s
+      stop_grace_period: 60s
+      deploy:
+         replicas: 1
+         placement:
+            constraints:
+               - node.labels.huginn.postgres == true
+         update_config:
+            order: stop-first
+         resources:
+            limits:
+               memory: 1g
+               cpus: "1.0"
+         restart_policy:
+            condition: on-failure
+            delay: 5s
+
    dozzle:
       image: amir20/dozzle:latest
       environment:
@@ -32,7 +75,7 @@ services:
             condition: on-failure
 
    server:
-      image: ghcr.io/werdoxdev/huginn-server:latest
+      image: ghcr.io/werdoxdev/huginn-server:${HUGINN_BACKEND_TAG:-postgres}
       environment:
          - SERVER_HOST=0.0.0.0
          - SERVER_PORT=3004
@@ -44,8 +87,10 @@ services:
          - 'INSTANCE_URLS_BY_HOST={"midgard.huginn.dev":{"origin":"https://midgard.huginn.dev", "posthog":"https://e.huginn.dev", "otlp": "https://otlp.huginn.dev"},"huginn.werdox.com":{"origin":"https://huginn.werdox.com", "posthog": "https://e-huginn.werdox.com", "otlp": "https://otlp-huginn.werdox.com"}}'
       secrets:
          - backend_secrets
+         - postgres_connection
       networks:
          - caddy
+         - database
       deploy:
          resources:
             limits:
@@ -56,15 +101,17 @@ services:
             delay: 5s
 
    cdn:
-      image: ghcr.io/werdoxdev/huginn-cdn:latest
+      image: ghcr.io/werdoxdev/huginn-cdn:${HUGINN_BACKEND_TAG:-postgres}
       environment:
          - CDN_HOST=0.0.0.0
          - CDN_PORT=3002
          - OTEL_SERVICE_NAME=cdn
       secrets:
          - backend_secrets
+         - postgres_connection
       networks:
          - caddy
+         - database
       deploy:
          resources:
             limits:
@@ -75,7 +122,7 @@ services:
             delay: 5s
 
    voice:
-      image: ghcr.io/werdoxdev/huginn-voice:latest
+      image: ghcr.io/werdoxdev/huginn-voice:${HUGINN_BACKEND_TAG:-postgres}
       environment:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
@@ -100,8 +147,10 @@ services:
            mode: host
       secrets:
          - backend_secrets
+         - postgres_connection
       networks:
          - caddy
+         - database
       deploy:
          resources:
             limits:
@@ -117,4 +166,8 @@ configs:
 
 secrets:
    backend_secrets:
+      external: true
+   postgres_password:
+      external: true
+   postgres_connection:
       external: true
