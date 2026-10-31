@@ -81,10 +81,10 @@ function IndexComponent() {
    const scopeRef = useRef<ReturnType<typeof createScope> | null>(null);
 
    const updateProgressText = useMemo(() => {
-      // if (huginnWindow.environment === "desktop")
-      return `${(downloaded.current / 1024 / 1024).toFixed(2)}MB / ${(contentLength.current / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
-      // if (huginnWindow.environment === "android") return `${Math.ceil(progress)}%`;
-   }, [progress]);
+      const downloadedSize = `${(downloaded / 1024 / 1024).toFixed(2)}MB`;
+      if (contentLength <= 0) return `${downloadedSize} downloaded`;
+      return `${downloadedSize} / ${(contentLength / 1024 / 1024).toFixed(2)}MB (${Math.ceil(progress)}%)`;
+   }, [progress, contentLength, downloaded]);
 
    const { errorTitle, errorDescription } = useMemo(() => {
       if (state.status !== "error") {
@@ -299,7 +299,7 @@ function IndexComponent() {
                   )}
                </div>
             )}
-            {state.current === "update" && progress !== 0 && (
+            {state.current === "update" && (downloaded > 0 || progress > 0) && (
                <div className="mt-3 flex flex-col">
                   <div className="bg-surface-deep relative h-6 w-56 rounded-md p-0.5">
                      <div className="bg-positive-700 h-full rounded-sm" style={{ width: `${progress}%` }} />

@@ -223,12 +223,12 @@ export default function VoiceControls(props: {
                </VoiceControlButton>
             )}
          </div>
-         <div
+         {/*<div
             className={clsx(
                "pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/50 to-transparent",
                !props.isFullscreen && "rounded-xl",
             )}
-         ></div>
+         ></div>*/}
          {!props.isMobile && (
             <div className="absolute right-2.5 bottom-2.5 flex gap-x-2">
                {client?.voice.popout && props.isInVoice && (

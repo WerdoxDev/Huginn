@@ -111,7 +111,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
       oxfmt:
         specifier: ^0.65.0
         version: 0.65.0
@@ -267,8 +267,8 @@ importers:
         specifier: ^6.2.10
         version: 6.2.10
       loopback-capture:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^4.0.0
+        version: 4.0.0
       mediabunny:
         specifier: ^1.55.2
         version: 1.55.2
@@ -368,7 +368,7 @@ importers:
         version: 14.6.6(@testing-library/dom@10.4.1)
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
       '@types/react':
         specifier: ^19.2.18
         version: 19.2.18
@@ -468,7 +468,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
       '@types/culori':
         specifier: ^4.0.1
         version: 4.0.1
@@ -550,10 +550,10 @@ importers:
     dependencies:
       '@elysia/cors':
         specifier: ^1.4.0
-        version: 1.4.2(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))
+        version: 1.4.2(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))
       '@elysia/opentelemetry':
         specifier: ^1.4.11
-        version: 1.4.12(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))(supports-color@11.0.0)
+        version: 1.4.12(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))(supports-color@11.0.0)
       '@huginn/backend-shared':
         specifier: workspace:*
         version: link:../huginn-backend-shared
@@ -571,7 +571,7 @@ importers:
         version: 3.4.2
       elysia:
         specifier: ^1.4.29
-        version: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
+        version: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
       envalid:
         specifier: ^8.2.0
         version: 8.2.0
@@ -593,7 +593,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
 
   packages/huginn-docs:
     devDependencies:
@@ -794,7 +794,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
       mediasoup:
         specifier: ^3.26.0
         version: 3.26.0
@@ -825,7 +825,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
 
   packages/huginn-voice:
     dependencies:
@@ -982,7 +982,7 @@ importers:
         version: 6.3.3(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@types/bun':
         specifier: latest
-        version: 1.4.2
+        version: 1.4.4
 
 packages:
 
@@ -5634,8 +5634,8 @@ packages:
   '@types/bun@1.4.0':
     resolution: {integrity: sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ==}
 
-  '@types/bun@1.4.2':
-    resolution: {integrity: sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ==}
+  '@types/bun@1.4.4':
+    resolution: {integrity: sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ==}
 
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
@@ -6749,8 +6749,8 @@ packages:
   bun-types@1.4.0:
     resolution: {integrity: sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q==}
 
-  bun-types@1.4.2:
-    resolution: {integrity: sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w==}
+  bun-types@1.4.4:
+    resolution: {integrity: sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ==}
 
   bun-webgpu-darwin-arm64@0.1.7:
     resolution: {integrity: sha512-mRrFFyHzPWjsTRidAZBRcu808CPQBOUL0P6b4nxLhp+XHcV/mbUHERZMgW9s58tsojQfSdzschiQa8q+JCgRWA==}
@@ -9070,8 +9070,8 @@ packages:
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
 
-  loopback-capture@3.0.2:
-    resolution: {integrity: sha512-65qyF9L7e+InnbEZP3Ic4C4J+SszoxEq84XpIZWJYH3/IgUpTKqBzJ4wCF+ShL3bvqV7I2wOEgQv9VfpaO2AMw==}
+  loopback-capture@4.0.0:
+    resolution: {integrity: sha512-DAzxZiEuY/VWkC5u8b0gRzETPlSK1u8AQ8x8p/NEKGtIpIKZ7Y5dmcSBFkGDYV5FEwnMg4YY0kxIOKLJVQxRAw==}
     engines: {node: '>=18.17.0'}
     cpu: [x64]
     os: [linux, win32]
@@ -13410,9 +13410,9 @@ snapshots:
     dependencies:
       elysia: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.0)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
 
-  '@elysia/cors@1.4.2(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))':
+  '@elysia/cors@1.4.2(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))':
     dependencies:
-      elysia: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
+      elysia: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
 
   '@elysia/openapi@1.4.15(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.0)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))':
     dependencies:
@@ -13427,12 +13427,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@elysia/opentelemetry@1.4.12(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))(supports-color@11.0.0)':
+  '@elysia/opentelemetry@1.4.12(elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2))(supports-color@11.0.0)':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/instrumentation': 0.200.0(@opentelemetry/api@1.9.1)(supports-color@11.0.0)
       '@opentelemetry/sdk-node': 0.200.0(@opentelemetry/api@1.9.1)(supports-color@11.0.0)
-      elysia: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
+      elysia: 1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -16804,9 +16804,9 @@ snapshots:
     dependencies:
       bun-types: 1.4.0
 
-  '@types/bun@1.4.2':
+  '@types/bun@1.4.4':
     dependencies:
-      bun-types: 1.4.2
+      bun-types: 1.4.4
 
   '@types/cacheable-request@6.0.3':
     dependencies:
@@ -17857,9 +17857,10 @@ snapshots:
     dependencies:
       '@types/node': 26.3.0
 
-  bun-types@1.4.2:
+  bun-types@1.4.4:
     dependencies:
       '@types/node': 26.3.0
+      undici-types: 8.10.0
 
   bun-webgpu-darwin-arm64@0.1.7:
     optional: true
@@ -18715,7 +18716,7 @@ snapshots:
       '@types/bun': 1.4.0
       typescript: 7.0.2
 
-  elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.2)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2):
+  elysia@1.4.29(@sinclair/typebox@0.34.52)(@types/bun@1.4.4)(exact-mirror@1.0.0(typebox@1.3.19))(file-type@22.0.2(supports-color@11.0.0))(openapi-types@12.1.3)(typescript@7.0.2):
     dependencies:
       '@sinclair/typebox': 0.34.52
       cookie: 1.1.1
@@ -18725,7 +18726,7 @@ snapshots:
       memoirist: 0.4.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@types/bun': 1.4.2
+      '@types/bun': 1.4.4
       typescript: 7.0.2
 
   emoji-regex@10.6.0: {}
@@ -20413,7 +20414,7 @@ snapshots:
 
   long@5.3.2: {}
 
-  loopback-capture@3.0.2:
+  loopback-capture@4.0.0:
     dependencies:
       bindings: 1.5.0
 
