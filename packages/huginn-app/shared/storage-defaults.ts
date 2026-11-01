@@ -27,6 +27,7 @@ export const storageDefaults: StorageMap = {
       inputDeviceId: "",
       outputDeviceId: "",
       cameraDeviceId: "",
+      isCameraInverted: false,
       inputThreshold: -50,
       inputVolume: 100,
       outputVolume: 100,

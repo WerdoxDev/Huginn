@@ -2,6 +2,8 @@ import Tooltip from "@components/tooltip/Tooltip";
 import UserAvatar from "@components/UserAvatar";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useUser } from "@hooks/api-hooks/userHooks";
+import { useFullscreen } from "@hooks/useFullscreen";
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { useMessageWidths } from "@hooks/useMessageWidths";
 import { useSwipeToReply } from "@hooks/useSwipeToReply";
@@ -33,6 +35,8 @@ export default function DefaultMessage() {
       lastMessage: context.lastMessage,
       nextMessage: context.nextMessage,
    });
+   const { isFullscreen } = useFullscreen();
+   const isMobile = useIsMobile();
 
    const [isHovering, setIsHovering] = useState(false);
 
@@ -85,7 +89,9 @@ export default function DefaultMessage() {
          onMouseEnter={() => setIsHovering(true)}
          onMouseLeave={() => setIsHovering(false)}
          {...touchHandlers}
-         onContextMenu={context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)}
+         onContextMenu={
+            isMobile && isFullscreen ? undefined : context.options?.disableContextMenu ? undefined : (e) => open({ message: context.message }, e)
+         }
          data-context={hasContext === true ? true : undefined}
          data-swipe={swipeX !== 0 ? true : undefined}
          className={clsx(

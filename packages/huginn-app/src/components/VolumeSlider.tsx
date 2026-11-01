@@ -1,3 +1,4 @@
+import { useIsMobile } from "@hooks/useIsMobile";
 import { useTimeout } from "@hooks/useTimeout";
 import { type MouseEvent, useRef, useState } from "react";
 
@@ -10,6 +11,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
    const [isMuted, setIsMuted] = useState(false);
    const previousPercent = useRef(0);
    const { cancel: cancelTimeout, start: startTimeout } = useTimeout(() => setAudioHovering(false), 500);
+   const isMobile = useIsMobile();
 
    function cancelAudioHoverTimeout() {
       cancelTimeout();
@@ -52,7 +54,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
          >
             {isMuted ? <IconMingcuteVolumeMuteFill className="size-6" /> : <IconMingcuteVolumeFill className="size-6" />}
          </button>
-         {audioHovering && (
+         {audioHovering && !isMobile && (
             <div
                className="bg-surface-deep/90 absolute bottom-10 h-24 w-4 rounded-lg p-1 py-1"
                onMouseEnter={cancelAudioHoverTimeout}

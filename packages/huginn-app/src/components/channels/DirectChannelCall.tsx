@@ -321,25 +321,33 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 hidden h-3 cursor-ns-resize lg:block" />
 
          {isMobile && (
-            <HuginnButton
-               type="button"
-               color="surface-alt"
-               className="absolute top-3 left-3 z-40 flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white"
-               onClick={handleHideCallClick}
-            >
-               <IconMingcuteDownFill className="size-6" />
-            </HuginnButton>
-         )}
-
-         {isMobile && voiceState.channelId === props.channelId && (
-            <div className="absolute top-3 right-3 z-40 flex gap-x-2" onClick={(event) => event.stopPropagation()}>
-               {voiceState.isCameraOn && <AndroidCameraFlipButton cameraSource={cameraSources[user.id]} />}
-               <AndroidAudioRouteSelect compact />
+            <div className="absolute inset-x-0 top-3 right-3 left-3 z-40 flex h-10 items-center gap-x-2">
+               <HuginnButton
+                  type="button"
+                  color="surface-alt"
+                  className="flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white"
+                  onClick={handleHideCallClick}
+               >
+                  <IconMingcuteDownFill className="size-6" />
+               </HuginnButton>
+               <div className="z-20">
+                  <VoicePopoutStatus />
+               </div>
+               {isMobile && voiceState.channelId === props.channelId && (
+                  <div className="ml-auto flex gap-x-2" onClick={(event) => event.stopPropagation()}>
+                     {voiceState.isCameraOn && <AndroidCameraFlipButton cameraSource={cameraSources[user.id]} />}
+                     <AndroidAudioRouteSelect compact />
+                  </div>
+               )}
             </div>
          )}
 
          <VoicePopoutIndicator />
-         {(isChildWindow() || isMobile) && <VoicePopoutStatus />}
+         {isChildWindow() && (
+            <div className="absolute top-3 left-3 z-20 size-7">
+               <VoicePopoutStatus />
+            </div>
+         )}
 
          <div className="flex min-h-0 w-full flex-col" ref={gridRef} style={{ height: !isOverlay ? gridHeight : "100%" }}>
             <div

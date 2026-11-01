@@ -22,6 +22,11 @@ export function useSwipeToReply(onReply: () => void) {
    }
 
    const onTouchStart: TouchEventHandler<HTMLDivElement> = (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-ignore-reply]")) {
+         resetGesture();
+         return;
+      }
+
       if (event.touches.length !== 1) {
          resetGesture();
          return;

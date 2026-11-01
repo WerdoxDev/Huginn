@@ -296,6 +296,7 @@ export type AppSettings = {
    inputDeviceId: string;
    outputDeviceId: string;
    cameraDeviceId: string;
+   isCameraInverted: boolean;
    inputVolume: number;
    outputVolume: number;
    mediaVolume: number;

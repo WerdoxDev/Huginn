@@ -447,9 +447,9 @@ export class VoiceHost {
    }
 
    private async handleUpdateStream(update: VoiceStreamUpdate): Promise<void> {
-      const platform = windowStore.getState().platform;
+      const { environment, platform } = windowStore.getState();
 
-      if (platform === "linux") {
+      if (environment === "desktop" && platform === "linux") {
          const { maxBitrate, ...captureOptions } = update.video ?? {};
          if (captureOptions.width !== undefined || captureOptions.height !== undefined || captureOptions.frameRate !== undefined) {
             await this.voice.updateDesktopCapture(captureOptions);
@@ -459,7 +459,8 @@ export class VoiceHost {
       } else {
          if (update.video) {
             await this.voice.stream.updateVideoParameters(update.video);
-            this.voice.updateDesktopCaptureOptions(update.video);
+            // Browser sharing opens its track directly, without desktop capture options.
+            if (this.voice.getDesktopCaptureOptions()) this.voice.updateDesktopCaptureOptions(update.video);
          }
          if (update.audio?.maxBitrate) await this.voice.stream.updateAudioBitrate(update.audio.maxBitrate);
       }

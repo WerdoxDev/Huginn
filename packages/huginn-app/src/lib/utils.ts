@@ -197,6 +197,11 @@ export function getMediaErrorMessage(e: unknown, type?: "camera" | "screen" | "a
       }
    }
 
+   // Temporary workaround for browsers that don't give the NotFoundError
+   if (e instanceof Error && e.message.includes("Requested device not found")) {
+      return type === "camera" ? "No camera was found" : type === "audio" ? "No audio was found" : "No screens or windows were found";
+   }
+
    const defaultError = "An unexpected error occurred. Please try again.";
    if (!(e instanceof DOMException)) {
       return defaultError;
