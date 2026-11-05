@@ -184,10 +184,12 @@ function ItemsWrapper({
    alignOffset = 0,
    children,
    className,
+   positionerClassName,
    side,
    sideOffset = 4,
 }: {
    className?: string;
+   positionerClassName?: string;
    children?: ReactNode;
    side?: Select.Positioner.Props["side"];
    align?: Select.Positioner.Props["align"];
@@ -218,7 +220,7 @@ function ItemsWrapper({
             alignOffset={alignOffset}
             collisionPadding={{ top: 28, bottom: 4, left: 4, right: 4 }}
             alignItemWithTrigger={false}
-            className="z-20"
+            className={clsx("z-20", positionerClassName)}
             style={{ width: "var(--anchor-width)" }}
          >
             <Select.Popup
