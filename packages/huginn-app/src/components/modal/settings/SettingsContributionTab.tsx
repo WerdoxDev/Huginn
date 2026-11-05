@@ -90,10 +90,12 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
 
    const contributedApplications = useMemo(() => {
       const games = new Map(knownApplications.games.map((game) => [game.id, game]));
+      const matchers = new Map(knownApplications.matchers.map((matcher) => [matcher.id, matcher]));
       return contributions
          .filter((contribution) => statusFilters.length === 0 || statusFilters.includes(contribution.status))
          .map((contribution) => ({
             contribution,
+            matcher: contribution.applicationMatcherId === null ? undefined : matchers.get(contribution.applicationMatcherId),
             game: contribution.knownGameId === null ? undefined : games.get(contribution.knownGameId),
          }))
          .sort((a, b) => {
@@ -109,7 +111,7 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
             const difference = new Date(a.contribution.createdAt).getTime() - new Date(b.contribution.createdAt).getTime();
             return sortOrder === "asc" ? difference : -difference;
          });
-   }, [contributions, knownApplications.games, sortOrder, statusFilters]);
+   }, [contributions, knownApplications.games, knownApplications.matchers, sortOrder, statusFilters]);
 
    function onApplicationChanged(value: SelectItem) {
       setSelectedApplication(value);
@@ -244,15 +246,15 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
                         {contributions.length === 0 ? "No applications contributed..." : "No contributions match the selected statuses."}
                      </div>
                   ) : (
-                     contributedApplications.map(({ contribution, game }) => {
+                     contributedApplications.map(({ contribution, game, matcher }) => {
                         const contributionStatus = contributionStatuses[contribution.status];
-                        const knownGameIconHash = game?.iconHash ?? contribution.iconHash;
-                        const iconUrl =
-                           contribution.knownGameId !== null && knownGameIconHash
-                              ? client?.cdn.applicationIcon(contribution.knownGameId, knownGameIconHash)
-                              : contribution.iconHash
-                                ? client?.cdn.applicationIcon(contribution.id, contribution.iconHash)
-                                : undefined;
+                        const iconUrl = matcher
+                           ? matcher.iconHash
+                              ? client?.cdn.applicationIcon(matcher.knownGameId, matcher.iconHash)
+                              : undefined
+                           : contribution.status !== "accepted" && contribution.iconHash
+                             ? client?.cdn.applicationIcon(contribution.id, contribution.iconHash)
+                             : undefined;
                         return (
                            <div className="flex items-center gap-x-2" key={contribution.id}>
                               {iconUrl ? (

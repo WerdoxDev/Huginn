@@ -1,4 +1,4 @@
-import type { GatewayReadyData, GatewaySession, GatewayWebsocketEvents } from "@huginnjs/shared";
+import type { APIGetApplicationCatalogResult, GatewayReadyData, GatewaySession, GatewayWebsocketEvents } from "@huginnjs/shared";
 
 import { ActivityType, EventEmitter, GatewayCode } from "@huginnjs/shared";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -35,6 +35,39 @@ describe("presence gateway events", () => {
       return presenceStore.getState().presences.find((presence) => presence.userId === user.id);
    }
 
+   function regionalCatalog(iconHash: string | null): APIGetApplicationCatalogResult {
+      return {
+         cursor: "1",
+         full: true,
+         games: [{ id: 7, igdbId: 42, canonicalName: "Shared game", aliases: [], createdAt: "2026-01-01", updatedAt: null }],
+         matchers: ["global-icon", iconHash].map((hash, index) => ({
+            id: index + 1,
+            knownGameId: 7,
+            iconHash: hash,
+            exeNames: [index === 0 ? "global.exe" : "regional.exe"],
+            windowTitles: [],
+            platform: "unknown",
+            status: "verified",
+            verificationMethod: "manual",
+            commandLinePatterns: [],
+            createdAt: "2026-01-01",
+            updatedAt: null,
+         })),
+         deletedGameIds: [],
+         deletedMatcherIds: [],
+      };
+   }
+
+   function startRegionalActivity(iconHash: string | null, session = makeSession("local")) {
+      vi.useFakeTimers();
+      windowStore.setState({ environment: "desktop" });
+      window.electronAPI = {
+         getOpenApplications: vi.fn().mockResolvedValue([{ processId: 1, exePath: "/games/regional.exe", windowTitle: "Shared game" }]),
+      } as unknown as typeof window.electronAPI;
+      storageStore.getState().setCachedValue("application-catalog", regionalCatalog(iconHash));
+      ready([session]);
+   }
+
    beforeEach(() => {
       originalElectronAPI = window.electronAPI;
       windowStore.setState({ environment: "browser" });
@@ -65,6 +98,45 @@ describe("presence gateway events", () => {
 
       expect(selfPresence()?.activities).toEqual(remote.activities);
       expect(presenceStore.getState().session).toEqual(local);
+   });
+
+   test.each(["regional-icon", null])("uses the detected matcher's icon (%s) in outgoing presence", async (iconHash) => {
+      startRegionalActivity(iconHash);
+
+      await vi.advanceTimersByTimeAsync(5000);
+
+      expect(gateway.updatePresence).toHaveBeenCalledWith({
+         status: "online",
+         activities: [
+            expect.objectContaining({
+               applicationId: 2,
+               name: "Shared game",
+               iconUrl: iconHash ? `/application-icons/7/${iconHash}.webp` : undefined,
+            }),
+         ],
+      });
+   });
+
+   test.each(["replacement-icon", null])("publishes an icon change to %s for the same matcher", async (iconHash) => {
+      const local = makeSession("local", "Shared game");
+      local.activities[0] = { ...local.activities[0], applicationId: 2, iconUrl: "/application-icons/7/regional-icon.webp" };
+      startRegionalActivity("regional-icon", local);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(gateway.updatePresence).not.toHaveBeenCalled();
+
+      storageStore.getState().setCachedValue("application-catalog", regionalCatalog(iconHash));
+      await vi.advanceTimersByTimeAsync(5000);
+
+      expect(gateway.updatePresence).toHaveBeenCalledWith(
+         expect.objectContaining({
+            activities: [
+               expect.objectContaining({
+                  applicationId: 2,
+                  iconUrl: iconHash ? `/application-icons/7/${iconHash}.webp` : undefined,
+               }),
+            ],
+         }),
+      );
    });
 
    test("merges private activities on session_update while keeping the local session separate", () => {

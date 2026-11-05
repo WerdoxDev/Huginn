@@ -36,10 +36,12 @@ export default function ApplicationContributionsProvider(props: { children?: Rea
    useEffect(() => {
       const unlistenAdd = client?.gateway.listen("application_contribution_add", onContributionAdded);
       const unlistenUpdate = client?.gateway.listen("application_contribution_update", onContributionUpdated);
+      const unlistenCatalog = client?.gateway.listen("application_catalog_update", updateApplicationCatalog);
 
       return () => {
          unlistenAdd?.();
          unlistenUpdate?.();
+         unlistenCatalog?.();
       };
    }, [client, queryClient]);
 
