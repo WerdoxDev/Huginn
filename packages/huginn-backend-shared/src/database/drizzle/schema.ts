@@ -426,7 +426,6 @@ export const knownGame = pgTable(
       igdbId: integer().notNull(),
       canonicalName: text().notNull(),
       aliases: text().array().notNull(),
-      iconHash: text(),
       revision: bigint({ mode: "bigint" }).notNull(),
       createdAt: timestamp({ precision: 3, mode: "string" })
          .default(sql`CURRENT_TIMESTAMP`)
@@ -446,6 +445,7 @@ export const applicationMatcher = pgTable(
    {
       id: serial().primaryKey().notNull(),
       knownGameId: integer().notNull(),
+      iconHash: text(),
       exeNames: text().array().notNull(),
       windowTitles: text().array().notNull(),
       platform: text().notNull(),

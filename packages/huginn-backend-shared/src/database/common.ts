@@ -206,7 +206,6 @@ export const selectKnownGame = {
    igdbId: true,
    canonicalName: true,
    aliases: true,
-   iconHash: true,
    createdAt: true,
    updatedAt: true,
 } satisfies Prisma.KnownGameSelect;
@@ -214,6 +213,7 @@ export const selectKnownGame = {
 export const selectApplicationMatcher = {
    id: true,
    knownGameId: true,
+   iconHash: true,
    exeNames: true,
    windowTitles: true,
    platform: true,
