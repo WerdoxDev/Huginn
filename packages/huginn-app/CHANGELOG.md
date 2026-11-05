@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.94.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.93.0...app@v0.94.0) (2026-11-05)
+
+
+### Features
+
+* **app:** force app update ([e0babe9](https://github.com/WerdoxDev/Huginn/commit/e0babe9357b4953cfbb651f46ed7bfb7217cd103))
+
 ## [0.93.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.92.4...app@v0.93.0) (2026-10-25)
 
 
