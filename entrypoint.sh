@@ -33,12 +33,18 @@ export RUNNER_EXEC
 cat "$SOURCE_FILE" > "$WORKING_DIR/.env"
 cat "$SOURCE_FILE" > "packages/huginn-backend-shared/.env"
 
+# Environment variables take precedence over the legacy Neon URL in .env.
+if [ -f /run/secrets/postgres_connection ]; then
+   POSTGRESQL_URL="$(cat /run/secrets/postgres_connection)"
+   export POSTGRESQL_URL
+fi
+
 echo "Successfully wrote content of '$SOURCE_FILE' to .env"
 echo "$WORKING_DIR"
 echo "$SCRIPT"
 echo "Runner: $RUNNER | Exec command: $RUNNER_EXEC"
 
-(cd packages/huginn-backend-shared && $RUNNER_EXEC prisma migrate deploy) || true
+(cd packages/huginn-backend-shared && $RUNNER_EXEC prisma migrate deploy)
 # Execute the provided command
 cd "$WORKING_DIR"
 exec $RUNNER run "$SCRIPT"

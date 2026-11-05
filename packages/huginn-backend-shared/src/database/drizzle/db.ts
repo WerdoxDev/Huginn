@@ -1,7 +1,5 @@
-import { idFix } from "@huginnjs/shared";
-import { neon } from "@neondatabase/serverless";
 import { better } from "better-drizzle";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 import * as relations from "./relations";
 import * as schema from "./schema";
@@ -14,10 +12,9 @@ import * as schema from "./schema";
 // types.setTypeParser(114, (val) => JSON.parse(val));  // json
 // types.setTypeParser(3802, parseJsonWithBigInt); // jsonb
 
-const sql = neon(process.env.POSTGRESQL_URL!, {});
 const mySchema = { ...schema, ...relations };
 // const mySchema = testSchema;
-const db = drizzle({ client: sql, schema: mySchema });
+const db = drizzle({ connection: process.env.POSTGRESQL_URL!, schema: mySchema });
 
 // const plugin = definePlugin({
 //    id: "exists-plugin",

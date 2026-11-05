@@ -6,6 +6,7 @@ export enum BackHandlerId {
    LeftSidebar = 20,
    RightSidebar = 30,
    CallOverlay = 40,
+   VideoPlayer = 50,
    MessageBox = 100,
 }
 

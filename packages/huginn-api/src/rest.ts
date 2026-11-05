@@ -75,15 +75,26 @@ export class REST {
     * @param options - Request options
     */
    public async request(options: Omit<InternalRequest, "root">): Promise<unknown> {
+      const managedAuth = !!options.auth && options.token === undefined;
+      const version = this.client.tokenHandler.sessionVersion;
+      if (managedAuth) await this.client.tokenHandler.ensureValidToken();
+      return this.sendRequest(options, managedAuth, version, true);
+   }
+
+   private async sendRequest(options: Omit<InternalRequest, "root">, managedAuth: boolean, version: number, retry: boolean): Promise<unknown> {
+      const token = options.token ?? this.client.tokenHandler.token;
       const { url, fetchOptions } = await resolveRequest({
          ...options,
-         token: options.token ?? this.client.tokenHandler.token,
+         token,
          root: this.options.api,
          authPrefix: this.options.authPrefix,
       });
 
+      // Body preparation can yield while the user signs out or changes account.
+      if (managedAuth && version !== this.client.tokenHandler.sessionVersion) throw new Error("Session changed while making a request");
+      options.xhr?.signal?.throwIfAborted();
       let response: ResponseLike;
-      if (options.xhr && isBrowser()) {
+      if (options.xhr?.enabled && isBrowser()) {
          response = await this.sendXHRRequest(url, fetchOptions, options.xhr);
       } else {
          response = await this.options.makeRequest(url, fetchOptions);
@@ -91,7 +102,19 @@ export class REST {
 
       if (response.ok) return parseResponse(response);
 
-      return this.handleErrors(response, options.method, url, fetchOptions);
+      const currentSession = managedAuth && version === this.client.tokenHandler.sessionVersion;
+      if (response.status === 401 && currentSession && retry) {
+         // Another request may already have refreshed the token used by this request.
+         const refreshed = token !== this.client.tokenHandler.token || (await this.client.tokenHandler.refresh());
+         if (refreshed && version === this.client.tokenHandler.sessionVersion && this.client.tokenHandler.token) {
+            return this.sendRequest(options, managedAuth, version, false);
+         }
+      }
+
+      return this.handleErrors(response, options.method, url, {
+         ...options,
+         auth: managedAuth && version === this.client.tokenHandler.sessionVersion && token === this.client.tokenHandler.token,
+      });
    }
 
    public async handleErrors(response: ResponseLike, method: string, url: string, requestData: HandlerRequestData): Promise<ResponseLike> {

@@ -1,0 +1,7 @@
+# Copy to .env.postgres-backup (git-ignored) and chmod 600 before adding credentials.
+# Use the ResticRepository and Region outputs from infra/postgres-backup.aws.yaml.
+RESTIC_REPOSITORY=s3:https://s3.eu-central-1.amazonaws.com/YOUR-BACKUP-BUCKET/restic
+AWS_DEFAULT_REGION=eu-central-1
+AWS_ACCESS_KEY_ID=RESTRICTED_BACKUP_USER_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=RESTRICTED_BACKUP_USER_SECRET_KEY
+BACKUP_INSTANCE=midgard

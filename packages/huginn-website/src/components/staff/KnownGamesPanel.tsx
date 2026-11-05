@@ -1,4 +1,4 @@
-import type { APIStaffKnownGame } from "@huginnjs/shared";
+import type { APIApplicationMatcher, APIStaffKnownGame } from "@huginnjs/shared";
 
 import { useStaffSession } from "@contexts/StaffSessionContext";
 import {
@@ -14,8 +14,11 @@ import {
 } from "@huginn/frontend-shared";
 import { useEffect, useMemo, useState } from "react";
 
-import { StaffAPIError, deleteKnownGame, getKnownGames } from "@/lib/api";
+import { StaffAPIError, deleteKnownGame, getApplicationIconUrl, getKnownGames } from "@/lib/api";
 import { clearStaffToken } from "@/lib/auth";
+
+import KnownGameEditor from "./KnownGameEditor";
+import KnownGameMatcherEditor from "./KnownGameMatcherEditor";
 
 function formatDate(value: Date | string) {
    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
@@ -30,6 +33,9 @@ export default function KnownGamesPanel() {
    const [gameToDelete, setGameToDelete] = useState<APIStaffKnownGame>();
    const [isDeleting, setDeleting] = useState(false);
    const [deleteError, setDeleteError] = useState("");
+   const [gameToEdit, setGameToEdit] = useState<APIStaffKnownGame>();
+   const [matcherToEdit, setMatcherToEdit] = useState<{ game: APIStaffKnownGame; matcher: APIApplicationMatcher }>();
+   const [saveMessage, setSaveMessage] = useState("");
 
    const filteredGames = useMemo(() => {
       const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -88,7 +94,7 @@ export default function KnownGamesPanel() {
          <div className="border-surface bg-surface-deep flex h-16 shrink-0 items-center border-b-2 px-5">
             <div>
                <div className="text-lg font-bold text-white">Known games</div>
-               <div className="text-text/70 text-xs">Browse and remove games from the application catalog</div>
+               <div className="text-text/70 text-xs">Manage games, IGDB references, and detection matchers</div>
             </div>
          </div>
 
@@ -133,6 +139,15 @@ export default function KnownGamesPanel() {
                   </div>
                ) : null}
 
+               {saveMessage ? (
+                  <div role="status" className="bg-positive-500/10 text-positive-300 mx-3 mb-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
+                     <span className="flex-1">{saveMessage}</span>
+                     <button type="button" aria-label="Dismiss update message" className="cursor-pointer" onClick={() => setSaveMessage("")}>
+                        <IconMingcuteCloseFill className="size-4" />
+                     </button>
+                  </div>
+               ) : null}
+
                <div className="relative min-h-80 flex-1">
                   <div className="scroll-thin absolute inset-0 space-y-3 overflow-y-auto px-3 pb-3">
                      {filteredGames.map((game) => (
@@ -148,18 +163,29 @@ export default function KnownGamesPanel() {
                                  </div>
                                  {game.aliases.length ? <div className="text-text/70 mt-2 text-sm">Aliases: {game.aliases.join(", ")}</div> : null}
                               </div>
-                              <HuginnButton
-                                 type="button"
-                                 color="negative"
-                                 className="flex h-9 shrink-0 items-center gap-2 px-3 text-sm"
-                                 onClick={() => {
-                                    setDeleteError("");
-                                    setGameToDelete(game);
-                                 }}
-                              >
-                                 <IconMingcuteDelete3Fill className="size-4" />
-                                 Delete
-                              </HuginnButton>
+                              <div className="flex shrink-0 flex-wrap gap-2">
+                                 <HuginnButton
+                                    type="button"
+                                    color="surface-deep"
+                                    className="flex h-9 items-center gap-2 px-3 text-sm"
+                                    onClick={() => setGameToEdit(game)}
+                                 >
+                                    <IconMingcuteEdit2Fill className="size-4" />
+                                    Edit game
+                                 </HuginnButton>
+                                 <HuginnButton
+                                    type="button"
+                                    color="negative"
+                                    className="flex h-9 shrink-0 items-center gap-2 px-3 text-sm"
+                                    onClick={() => {
+                                       setDeleteError("");
+                                       setGameToDelete(game);
+                                    }}
+                                 >
+                                    <IconMingcuteDelete3Fill className="size-4" />
+                                    Delete
+                                 </HuginnButton>
+                              </div>
                            </div>
 
                            {game.matchers.length ? (
@@ -167,8 +193,35 @@ export default function KnownGamesPanel() {
                                  {game.matchers.map((matcher) => (
                                     <div key={matcher.id} className="bg-surface-deep rounded-md p-3 text-xs">
                                        <div className="flex items-center gap-2">
+                                          {matcher.iconHash ? (
+                                             <img
+                                                src={getApplicationIconUrl(matcher.knownGameId, matcher.iconHash)}
+                                                alt=""
+                                                width={32}
+                                                height={32}
+                                                loading="lazy"
+                                                className="size-8 shrink-0 rounded-md object-contain"
+                                             />
+                                          ) : (
+                                             <div
+                                                className="bg-surface text-text/40 flex size-8 shrink-0 items-center justify-center rounded-md"
+                                                aria-hidden="true"
+                                             >
+                                                <IconMingcuteGame2Fill className="size-5" />
+                                             </div>
+                                          )}
                                           <span className="font-medium text-white">{matcher.platform}</span>
                                           <span className="text-text/50">Matcher #{matcher.id}</span>
+                                          <HuginnButton
+                                             type="button"
+                                             color="surface"
+                                             className="ml-auto flex h-8 shrink-0 items-center gap-1.5 px-2 text-xs"
+                                             aria-label={`Edit matcher #${matcher.id} for ${game.canonicalName}`}
+                                             onClick={() => setMatcherToEdit({ game, matcher })}
+                                          >
+                                             <IconMingcuteEdit2Fill className="size-3.5" />
+                                             Edit
+                                          </HuginnButton>
                                        </div>
                                        <div className="text-text/70 mt-2 space-y-1 break-all">
                                           {matcher.exeNames.length ? <div>Executables: {matcher.exeNames.join(", ")}</div> : null}
@@ -205,6 +258,42 @@ export default function KnownGamesPanel() {
                </div>
             </section>
          </main>
+
+         {gameToEdit ? (
+            <KnownGameEditor
+               key={gameToEdit.id}
+               game={gameToEdit}
+               onClose={() => setGameToEdit(undefined)}
+               onSave={(updated) => {
+                  setGames((current) =>
+                     current
+                        .map((game) => (game.id === updated.id ? updated : game))
+                        .sort((left, right) => left.canonicalName.localeCompare(right.canonicalName)),
+                  );
+                  setGameToEdit(undefined);
+                  setSaveMessage("Game updated. Connected clients have been notified.");
+               }}
+            />
+         ) : null}
+         {matcherToEdit ? (
+            <KnownGameMatcherEditor
+               key={matcherToEdit.matcher.id}
+               game={matcherToEdit.game}
+               matcher={matcherToEdit.matcher}
+               onClose={() => setMatcherToEdit(undefined)}
+               onSave={(updated) => {
+                  setGames((current) =>
+                     current.map((game) =>
+                        game.id === updated.knownGameId
+                           ? { ...game, matchers: game.matchers.map((matcher) => (matcher.id === updated.id ? updated : matcher)) }
+                           : game,
+                     ),
+                  );
+                  setMatcherToEdit(undefined);
+                  setSaveMessage("Matcher updated. Connected clients have been notified.");
+               }}
+            />
+         ) : null}
 
          <HuginnDialog
             open={gameToDelete !== undefined}

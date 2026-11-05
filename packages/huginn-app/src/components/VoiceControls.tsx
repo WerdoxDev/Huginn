@@ -5,6 +5,7 @@ import { VoiceClient } from "@lib/voice/voice-client";
 import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
+import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useState, type MouseEvent } from "react";
@@ -13,6 +14,7 @@ import type { MediaSource } from "@/types";
 
 import StreamButton from "./button/StreamButton";
 import VoiceControlButton from "./button/VoiceControlButton";
+import { HuginnMenu } from "./dropdown/HuginnMenu";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function VoiceControls(props: {
@@ -43,6 +45,8 @@ export default function VoiceControls(props: {
    } = useVoiceUtils();
    const { voiceState } = useVoiceStore();
    const { updateModals } = useModals();
+   const settings = useStorage("settings");
+   const { updateSettings } = useStorageStore();
 
    const videoSource = props.mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
    const audioSource = props.mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
@@ -71,7 +75,7 @@ export default function VoiceControls(props: {
       };
    }, [props.isMobile]);
 
-   function handleStreamButtonOpenChanged(isOpen: boolean) {
+   function handleMenuOpenChanged(isOpen: boolean) {
       setForceShow(isOpen);
    }
 
@@ -170,7 +174,7 @@ export default function VoiceControls(props: {
                               onCloseStream={closeStream}
                               onChangeStream={changeStream}
                               onUpdateStream={updateStream}
-                              onOpenChanged={handleStreamButtonOpenChanged}
+                              onOpenChanged={handleMenuOpenChanged}
                               // menu={{ side: "top", align: "center", sideOffset: 12 }}
                            >
                               <VoiceControlButton
@@ -196,15 +200,46 @@ export default function VoiceControls(props: {
                               </VoiceControlButton>
                            </StreamButton>
                         )}
-                        <VoiceControlButton
-                           activeColor="primary"
-                           activeHoverColor="negative"
-                           isActive={voiceState.isCameraOn}
-                           onClick={handleToggleCamera}
-                           tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
-                        >
-                           <IconMingcuteCamera2Fill className="size-6" />
-                        </VoiceControlButton>
+                        <HuginnMenu onOpenChange={handleMenuOpenChanged}>
+                           <div className="flex">
+                              <VoiceControlButton
+                                 activeColor="primary"
+                                 activeHoverColor="negative"
+                                 isActive={voiceState.isCameraOn}
+                                 onClick={handleToggleCamera}
+                                 tooltip={voiceState.isCameraOn ? "Turn off camera" : "Turn on camera"}
+                                 className={clsx(voiceState.isCameraOn && "rounded-r-none")}
+                              >
+                                 <IconMingcuteCamera2Fill className="size-6" />
+                              </VoiceControlButton>
+                              {voiceState.isCameraOn && (
+                                 <HuginnMenu.Trigger
+                                    aria-label="Camera options"
+                                    disabled={props.isMobile && props.isMobileControlsHidden}
+                                    className="bg-primary-800 hover:bg-primary-600 ml-0.5 flex h-full items-center justify-center rounded-r-lg px-1 transition-colors"
+                                    render={(props, state) => (
+                                       <button {...props}>
+                                          {state.open ? (
+                                             <IconMingcuteUpFill className="text-text size-4" />
+                                          ) : (
+                                             <IconMingcuteDownFill className="text-text size-4" />
+                                          )}
+                                       </button>
+                                    )}
+                                 />
+                              )}
+                           </div>
+                           {voiceState.isCameraOn && (
+                              <HuginnMenu.Content sideOffset={8} className="border-surface border">
+                                 <HuginnMenu.Item
+                                    label="Invert Camera"
+                                    checked={settings.isCameraInverted}
+                                    onClick={() => void updateSettings({ isCameraInverted: !settings.isCameraInverted })}
+                                    endSlot={settings.isCameraInverted ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
+                                 />
+                              </HuginnMenu.Content>
+                           )}
+                        </HuginnMenu>
                      </div>
                   </div>
                   <VoiceControlButton
@@ -223,12 +258,12 @@ export default function VoiceControls(props: {
                </VoiceControlButton>
             )}
          </div>
-         <div
+         {/*<div
             className={clsx(
                "pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/50 to-transparent",
                !props.isFullscreen && "rounded-xl",
             )}
-         ></div>
+         ></div>*/}
          {!props.isMobile && (
             <div className="absolute right-2.5 bottom-2.5 flex gap-x-2">
                {client?.voice.popout && props.isInVoice && (

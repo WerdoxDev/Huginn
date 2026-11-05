@@ -9,6 +9,7 @@ import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { createRadialMaskStyle } from "@lib/mask-utils";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
+import { useStorage } from "@stores/storageStore";
 import { useThisUser } from "@stores/userStore";
 import clsx from "clsx";
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from "react";
@@ -48,6 +49,7 @@ export default function VoiceElement(props: {
    const videoRef = useRef<HTMLVideoElement>(null);
    const { user: thisUser } = useThisUser();
    const user = useUser(props.userId);
+   const settings = useStorage("settings");
 
    const [isHovered, setIsHovered] = useState(false);
    const [isLoadingStream, setIsLoadingStream] = useState(false);
@@ -235,7 +237,17 @@ export default function VoiceElement(props: {
             )
          )}
          {props.isConnected && (isCamera || isScreenShare) && !isPreview && (
-            <video className={clsx("h-full w-full bg-black", !props.isMaximized && "rounded-lg")} ref={videoRef} autoPlay playsInline muted />
+            <video
+               className={clsx(
+                  "h-full w-full bg-black",
+                  !props.isMaximized && "rounded-lg",
+                  isCamera && props.userId === thisUser?.id && settings.isCameraInverted && "-scale-x-100",
+               )}
+               ref={videoRef}
+               autoPlay
+               playsInline
+               muted
+            />
          )}
          {!isPreview && isAudioStream && <VoiceAudioVisualizer track={track ?? undefined} />}
       </div>

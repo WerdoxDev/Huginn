@@ -12,10 +12,8 @@ import { useCapacitorListener } from "./useCapacitorListener";
 
 export function useUpdater(options: { onNotAvailable?: () => void | Promise<void>; onError?: (message: string) => void; onUpdating?: () => void }) {
    const huginnWindow = useHuginnWindow();
-   const [progress, setProgress] = useState(0);
+   const [{ progress, contentLength, downloaded }, setDownloadProgress] = useState({ progress: 0, contentLength: 0, downloaded: 0 });
    const [updateInfo, setUpdateInfo] = useState<UpdateInfo>();
-   const contentLength = useRef(0);
-   const downloaded = useRef(0);
    const isChecking = useRef(false);
    const clientStore = useClientStore();
 
@@ -87,13 +85,14 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
             return;
          }
 
-         const { version, filename, checksum, signature } = await result.json();
+         const { version, filename, checksum, signature, size } = await result.json();
 
          const { bundleId } = await LiveUpdate.getCurrentBundle();
          console.log("Current bundleId", bundleId, "Latest version", version);
          if (version === bundleId || __APP_VERSION__ === version) options.onNotAvailable?.();
          else {
             console.log("Update available", version);
+            setDownloadProgress({ progress: 0, contentLength: Number.isFinite(size) && size > 0 ? size : 0, downloaded: 0 });
             setUpdateInfo({ version });
             options.onUpdating?.();
             await LiveUpdate.downloadBundle({
@@ -102,6 +101,10 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
                signature,
                bundleId: version,
                artifactType: "zip",
+            });
+            setDownloadProgress((previous) => {
+               const total = previous.contentLength || previous.downloaded;
+               return { progress: 100, contentLength: total, downloaded: total };
             });
 
             await LiveUpdate.setNextBundle({ bundleId: version });
@@ -118,9 +121,15 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
    useCapacitorListener(() =>
       LiveUpdate.addListener("downloadBundleProgress", (info) => {
          console.log("Download progress", info);
-         downloaded.current = info.downloadedBytes;
-         contentLength.current = info.totalBytes;
-         setProgress(Math.round(info.progress * 100));
+         setDownloadProgress((previous) => {
+            // Android reports -1 when the response has no Content-Length. Keep the manifest size as a fallback.
+            const total = Number.isFinite(info.totalBytes) && info.totalBytes > 0 ? info.totalBytes : previous.contentLength;
+            return {
+               downloaded: info.downloadedBytes,
+               contentLength: total,
+               progress: total > 0 ? Math.min(100, Math.max(0, (info.downloadedBytes / total) * 100)) : 0,
+            };
+         });
       }),
    );
 
@@ -130,9 +139,7 @@ export function useUpdater(options: { onNotAvailable?: () => void | Promise<void
       }
 
       const unlisten = window.electronAPI.onUpdateProgress((_, info) => {
-         downloaded.current = info.transferred;
-         contentLength.current = info.total;
-         setProgress(info.percent);
+         setDownloadProgress({ downloaded: info.transferred, contentLength: info.total, progress: info.percent });
       });
 
       return () => {

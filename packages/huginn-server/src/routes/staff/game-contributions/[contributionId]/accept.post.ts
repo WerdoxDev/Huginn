@@ -11,6 +11,7 @@ import {
 import { CDNRoutes, type APIPostAcceptGameContributionResult } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { isValidExeName, matcherValuesSchema, normalizeExeNames, normalizeMatcherValues } from "#utils/application-matchers";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { filterApplicationMatcher, filterContribution, filterKnownGame } from "#utils/helpers";
 import { getIGDBGame } from "#utils/igdb";
@@ -18,7 +19,6 @@ import { cdnFetch, cdnUpload } from "#utils/server-request";
 import { verifyStaff } from "#utils/staff";
 
 const paramsSchema = t.Object({ contributionId: t.Numeric({ minimum: 1 }) });
-const matcherValuesSchema = t.Array(t.String({ minLength: 1, maxLength: 1_024 }), { maxItems: 50 });
 const bodySchema = t.Object({
    igdbId: t.Number({ minimum: 1 }),
    exeNames: matcherValuesSchema,
@@ -26,17 +26,9 @@ const bodySchema = t.Object({
    commandLinePatterns: matcherValuesSchema,
 });
 
-function normalizeMatcherValues(values: string[]) {
-   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
-}
-
-function normalizeExeNames(values: string[]) {
-   return normalizeMatcherValues(values).map((value) => value.replaceAll("\\", "/"));
-}
-
-function isValidExeName(value: string) {
-   const parts = value.split("/");
-   return parts.length <= 2 && parts.every((part) => part.length > 0 && part !== "." && part !== "..");
+function sameMatcherValues(left: string[], right: string[]) {
+   const values = new Set(left);
+   return values.size === new Set(right).size && right.every((value) => values.has(value));
 }
 
 export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).post(
@@ -86,11 +78,11 @@ export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).p
             const game = existingGame
                ? await tx.knownGame.update({
                     where: { id: existingGame.id },
-                    data: { canonicalName, aliases, iconHash: contribution.iconHash ?? existingGame.iconHash, revision, deletedAt: null },
+                    data: { canonicalName, aliases, revision, deletedAt: null },
                     select: selectKnownGame,
                  })
                : await tx.knownGame.create({
-                    data: { igdbId: selectedGame.id, canonicalName, aliases, iconHash: contribution.iconHash, revision },
+                    data: { igdbId: selectedGame.id, canonicalName, aliases, revision },
                     select: selectKnownGame,
                  });
 
@@ -100,20 +92,27 @@ export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).p
                });
             }
 
-            const existingMatcher = await tx.applicationMatcher.findFirst({
-               where: {
-                  knownGameId: game.id,
-                  platform: contribution.platform,
-                  ...(exeNames.length > 0 ? { exeNames: { hasSome: exeNames } } : { windowTitles: { hasSome: windowTitles } }),
-               },
+            const candidates = await tx.applicationMatcher.findMany({
+               where: { knownGameId: game.id, platform: contribution.platform, deletedAt: null },
+               orderBy: { id: "asc" },
             });
+            // Overlapping rules can describe different regional versions. Only reuse
+            // equivalent rules with compatible icons; never combine their constraints.
+            const existingMatcher = candidates.find(
+               (candidate) =>
+                  sameMatcherValues(normalizeExeNames(candidate.exeNames), exeNames) &&
+                  sameMatcherValues(candidate.windowTitles, windowTitles) &&
+                  sameMatcherValues(candidate.commandLinePatterns, commandLinePatterns) &&
+                  (!candidate.iconHash || !contribution.iconHash || candidate.iconHash === contribution.iconHash),
+            );
             const matcher = existingMatcher
                ? await tx.applicationMatcher.update({
                     where: { id: existingMatcher.id },
                     data: {
-                       exeNames: [...new Set([...existingMatcher.exeNames, ...exeNames])],
-                       windowTitles: [...new Set([...existingMatcher.windowTitles, ...windowTitles])],
-                       commandLinePatterns: [...new Set([...existingMatcher.commandLinePatterns, ...commandLinePatterns])],
+                       exeNames,
+                       windowTitles,
+                       commandLinePatterns,
+                       iconHash: contribution.iconHash ?? existingMatcher.iconHash,
                        status: "verified",
                        verificationMethod: "manual",
                        revision,
@@ -124,6 +123,7 @@ export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).p
                : await tx.applicationMatcher.create({
                     data: {
                        knownGameId: game.id,
+                       iconHash: contribution.iconHash,
                        exeNames,
                        windowTitles,
                        commandLinePatterns,
@@ -152,6 +152,8 @@ export const postStaffAcceptGameContribution = new Elysia().use(verifyStaff()).p
       );
 
       if (!result) return status("Conflict", { message: "This contribution has already been reviewed." });
+
+      dispatchToTopic("application_catalog", "application_catalog_update", undefined);
 
       const gatewayContribution = filterContribution(result.contribution);
       if (gatewayContribution) {

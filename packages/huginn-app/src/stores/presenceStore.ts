@@ -154,7 +154,9 @@ function startCheckingForActivity() {
             known?: { matcher: APIApplicationMatcher; game: APIKnownGame };
          } = knownMatch ?? customMatch;
 
-         const knownIconUrl = match.known?.game.iconHash ? CDNRoutes.applicationIcon(match.known.game.id, match.known.game.iconHash) : undefined;
+         const knownIconUrl = match.known?.matcher.iconHash
+            ? CDNRoutes.applicationIcon(match.known.game.id, match.known.matcher.iconHash)
+            : undefined;
 
          // Skip if we already have the activity
          if (ourActivities[0]) {
@@ -211,6 +213,7 @@ export function detectKnownApplication(applications: ApplicationInfo[], catalog:
            detected: ApplicationInfo;
            known: { matcher: APIApplicationMatcher; game: APIKnownGame };
            score: number;
+           matcherTitleMatches: boolean;
         }
       | undefined;
 
@@ -231,23 +234,24 @@ export function detectKnownApplication(applications: ApplicationInfo[], catalog:
             return Math.max(score, candidateIndex === 1 ? 2 : candidateIndex === 0 ? 1 : 0);
          }, 0);
          const exeMatches = exeMatchScore > 0;
-         const knownTitles = [game.canonicalName, ...game.aliases, ...matcher.windowTitles].map(cleanApplicationTitle);
-         const titleMatches = knownTitles.includes(windowTitle);
+         const matcherTitleMatches = matcher.windowTitles.some((title) => cleanApplicationTitle(title) === windowTitle);
+         const knownTitles = [game.canonicalName, ...game.aliases].map(cleanApplicationTitle);
+         const titleMatches = matcherTitleMatches || knownTitles.includes(windowTitle);
          const commandLineMatches = matcher.commandLinePatterns.every((pattern) => application.cmdLine?.includes(pattern) === true);
 
          if ((exeMatches || titleMatches) && commandLineMatches) {
             const score = matcher.commandLinePatterns.length + exeMatchScore + Number(titleMatches) + Number(matcher.platform === platform);
 
-            if (!bestMatch || score > bestMatch.score) {
-               bestMatch = { detected: application, known: { matcher, game }, score };
+            // Prefer a variant's own title over shared game aliases when evidence is otherwise equal.
+            if (!bestMatch || score > bestMatch.score || (score === bestMatch.score && matcherTitleMatches && !bestMatch.matcherTitleMatches)) {
+               bestMatch = { detected: application, known: { matcher, game }, score, matcherTitleMatches };
             }
          }
       }
    }
 
    if (bestMatch) {
-      const { score: _, ...match } = bestMatch;
-      return match;
+      return { detected: bestMatch.detected, known: bestMatch.known };
    }
 }
 

@@ -18,8 +18,9 @@ import { useVoicePreferences } from "@hooks/useVoicePreferences";
 import { useVoiceSnapshot } from "@hooks/voice/useMediaSources";
 import { HuginnButton, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { isChildWindow } from "@lib/child-window";
+import { getVoiceGridLayout } from "@lib/voice-grid-layout";
 import { useThisUser } from "@stores/userStore";
-import { useVoiceStore, voiceStore } from "@stores/voiceStore";
+import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
@@ -67,13 +68,13 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
    const [containerRef, showControls] = useHover<HTMLDivElement>([user, isShown]);
    const gridRef = useRef<HTMLDivElement>(null);
+   const gridViewportRef = useRef<HTMLDivElement>(null);
+   const gridContentRef = useRef<HTMLDivElement>(null);
    const resizerRef = useRef<HTMLDivElement>(null);
    const [isResizing, setIsResizing] = useState(false);
    const [gridSize, setGridSize] = useState<{
       elementWidth: number;
       elementHeight: number;
-      rows: number;
-      cols: number;
    }>();
    const [gridHeight, setGridHeight] = useState(250);
    const [isMobileCallHidden, setIsMobileCallHidden] = useState(true);
@@ -121,6 +122,10 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
    useLayoutEffect(() => {
       const controller = new AbortController();
+      const observer = new ResizeObserver(() => updateGridSize());
+      if (gridViewportRef.current) {
+         observer.observe(gridViewportRef.current);
+      }
 
       window.addEventListener(
          "resize",
@@ -163,6 +168,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
 
       return () => {
          controller.abort();
+         observer.disconnect();
       };
    }, [isShown, maximizedSource, isMobileCallHidden, isMobile]);
 
@@ -242,18 +248,17 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
    }
 
    const updateGridSize = useEffectEvent(() => {
-      if (!gridRef.current) {
+      if (!gridViewportRef.current || !gridContentRef.current) {
          return;
       }
 
-      const store = voiceStore.getState();
       const openMediaPopoutProducers = popoutState.openMediaPopoutProducers;
       const numBoxes = maximizedSource?.producerId
          ? 1
          : // People in voice
-           store.voiceStates.filter((x) => !openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "")).length +
+           thisVoiceStates.filter((x) => !openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "")).length +
            // Streams
-           store.voiceStates.filter(
+           thisVoiceStates.filter(
               (x) =>
                  (x.isAudioStreaming || x.isScreenSharing) &&
                  !openMediaPopoutProducers.includes((streamVideoSources[x.userId] || streamAudioSources[x.userId])?.producerId ?? ""),
@@ -261,56 +266,16 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
            // People getting ringed
            (thisCallState?.ringing.length ?? 0);
 
-      const containerWidth = gridRef.current.clientWidth;
-      const containerHeight = gridRef.current.clientHeight;
-      const boxMargin = !maximizedSource?.producerId ? 12 : 0;
-      const padding = {
-         top: !maximizedSource?.producerId ? 12 : 0,
-         right: !maximizedSource?.producerId ? 20 : 0,
-         bottom: !maximizedSource?.producerId ? 80 : 0,
-         left: !maximizedSource?.producerId ? 20 : 0,
-      };
-      const aspectRatio = 16 / 9;
+      const contentStyle = getComputedStyle(gridContentRef.current);
+      const width = Math.max(0, gridViewportRef.current.clientWidth - parseFloat(contentStyle.paddingLeft) - parseFloat(contentStyle.paddingRight));
+      const height = Math.max(0, gridViewportRef.current.clientHeight - parseFloat(contentStyle.paddingTop) - parseFloat(contentStyle.paddingBottom));
+      const nextSize = maximizedSource
+         ? { elementWidth: width, elementHeight: height }
+         : getVoiceGridLayout(numBoxes, width, height, parseFloat(contentStyle.columnGap));
 
-      let best = {
-         elementWidth: 0,
-         elementHeight: 0,
-         rows: 0,
-         cols: 0,
-      };
-
-      for (let rows = 1; rows <= numBoxes; rows++) {
-         const cols = Math.ceil(numBoxes / rows);
-
-         // Total spacing from margins
-         const totalMarginX = (cols - 1) * boxMargin;
-         const totalMarginY = (rows - 1) * boxMargin;
-
-         // Usable space after subtracting padding and internal margins
-         const usableWidth = containerWidth - padding.left - padding.right - totalMarginX;
-         const usableHeight = containerHeight - padding.top - padding.bottom - totalMarginY;
-
-         // Max box size
-         let elementWidth = usableWidth / cols;
-         let elementHeight = elementWidth / aspectRatio;
-
-         // If height overflows, resize based on height instead
-         if (elementHeight > usableHeight / rows) {
-            elementHeight = usableHeight / rows;
-            elementWidth = elementHeight * aspectRatio;
-         }
-
-         if (elementWidth * elementHeight > best.elementWidth * best.elementHeight) {
-            best = {
-               elementWidth: Math.floor(elementWidth),
-               elementHeight: Math.floor(elementHeight),
-               rows,
-               cols,
-            };
-         }
-      }
-
-      setGridSize(best);
+      setGridSize((previous) =>
+         previous?.elementWidth === nextSize.elementWidth && previous.elementHeight === nextSize.elementHeight ? previous : nextSize,
+      );
    });
 
    if (!user || !isShown) {
@@ -321,7 +286,7 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
       <div className={clsx("fixed inset-x-3 top-20 z-20 transition-opacity", isMobileCallHidden ? "opacity-100" : "pointer-events-none opacity-0")}>
          <HuginnButton
             color="primary"
-            className="relative flex w-full items-center p-1 px-2 text-white shadow-md"
+            className="ring-primary-300 relative flex w-full items-center p-1 px-2 text-white shadow-md ring"
             onClick={() => setIsMobileCallHidden(false)}
          >
             <div className="flex items-center gap-x-1">
@@ -356,121 +321,147 @@ export default function DirectChannelCall(props: { channelId: Snowflake }) {
          <div ref={resizerRef} className="absolute inset-x-0 -bottom-1.5 z-20 hidden h-3 cursor-ns-resize lg:block" />
 
          {isMobile && (
-            <HuginnButton
-               type="button"
-               color="surface-alt"
-               className="absolute top-3 left-3 z-40 flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white"
-               onClick={handleHideCallClick}
-            >
-               <IconMingcuteDownFill className="size-6" />
-            </HuginnButton>
-         )}
-
-         {isMobile && voiceState.channelId === props.channelId && (
-            <div className="absolute top-3 right-3 z-40 flex gap-x-2" onClick={(event) => event.stopPropagation()}>
-               {voiceState.isCameraOn && <AndroidCameraFlipButton cameraSource={cameraSources[user.id]} />}
-               <AndroidAudioRouteSelect compact />
+            <div className="absolute inset-x-0 top-3 right-3 left-3 z-40 flex h-10 items-center gap-x-2">
+               <HuginnButton
+                  type="button"
+                  color="surface-alt"
+                  className="flex size-10 items-center justify-center rounded-full! text-white/70 shadow-lg transition-colors active:text-white"
+                  onClick={handleHideCallClick}
+               >
+                  <IconMingcuteDownFill className="size-6" />
+               </HuginnButton>
+               <div className="z-20">
+                  <VoicePopoutStatus />
+               </div>
+               {isMobile && voiceState.channelId === props.channelId && (
+                  <div className="ml-auto flex gap-x-2" onClick={(event) => event.stopPropagation()}>
+                     {voiceState.isCameraOn && <AndroidCameraFlipButton cameraSource={cameraSources[user.id]} />}
+                     <AndroidAudioRouteSelect compact />
+                  </div>
+               )}
             </div>
          )}
 
          <VoicePopoutIndicator />
-         {(isChildWindow() || isMobile) && <VoicePopoutStatus />}
+         {isChildWindow() && (
+            <div className="absolute top-3 left-3 z-20 size-7">
+               <VoicePopoutStatus />
+            </div>
+         )}
 
-         <div
-            className={clsx(
-               "flex w-full shrink flex-wrap content-center items-center justify-center gap-3",
-               !maximizedSource && "px-5 py-2",
-               !isLoading && !maximizedSource && "pb-20",
-            )}
-            ref={gridRef}
-            style={{ height: !isOverlay ? gridHeight : "100%" }}
-         >
-            {popoutState.isPopoutOpen && !isChildWindow() ? (
-               <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
-            ) : isLoading ? (
-               <HuginnLoadingIcon className="size-16" />
-            ) : (
-               <>
-                  {/* Consumable or consuming streams */}
-                  {thisVoiceStates
-                     .filter(
-                        (x) =>
-                           !popoutState.openMediaPopoutProducers.includes(
-                              (streamVideoSources[x.userId] || streamAudioSources[x.userId])?.producerId ?? "",
-                           ) &&
-                           (x.isAudioStreaming || x.isScreenSharing) &&
-                           (maximizedSource
-                              ? x.userId === maximizedSource.userId &&
-                                (maximizedSource.kind === "stream_video" || maximizedSource.kind === "stream_audio")
-                              : true),
-                     )
-                     .map((x) => (
-                        <VoiceElement
-                           type="stream"
-                           key={`${x.userId}-stream`}
-                           gridElementWidth={gridSize?.elementWidth ?? 0}
-                           gridElementHeight={gridSize?.elementHeight ?? 0}
-                           userId={x.userId}
-                           channelId={props.channelId}
-                           guildId={null}
-                           isConnected={voiceState.channelId === props.channelId}
-                           isResizing={isResizing}
-                           isGridView={isGridView}
-                           isMaximized={!!maximizedSource}
-                           mediaSource={streamVideoSources[x.userId] ?? streamAudioSources[x.userId]}
-                           secondMediaSource={streamVideoSources[x.userId] && streamAudioSources[x.userId]}
-                           voicePreference={voicePreferencesLookup[x.userId]}
-                           voiceState={x}
-                           onClick={voiceState.channelId === props.channelId ? maximizeSource : undefined}
-                        />
-                     ))}
-                  {/* Normals user / cameras */}
-                  {thisVoiceStates
-                     .filter(
-                        (x) =>
-                           !popoutState.openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "") &&
-                           (maximizedSource ? x.userId === maximizedSource.userId && maximizedSource.kind === "camera" : true),
-                     )
-                     .map((x) => (
-                        <VoiceElement
-                           type="normal"
-                           key={`${x.userId}-element`}
-                           gridElementWidth={gridSize?.elementWidth ?? 0}
-                           gridElementHeight={gridSize?.elementHeight ?? 0}
-                           mediaSource={cameraSources[x.userId] ?? microphoneSources[x.userId]}
-                           secondMediaSource={cameraSources[x.userId] !== undefined ? microphoneSources[x.userId] : undefined}
-                           voicePreference={voicePreferencesLookup[x.userId]}
-                           userId={x.userId}
-                           channelId={props.channelId}
-                           guildId={null}
-                           onClick={maximizeSource}
-                           isResizing={isResizing}
-                           isGridView={isGridView}
-                           isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
-                           isMaximized={!!maximizedSource}
-                           isConnected={voiceState.channelId === props.channelId}
-                           voiceState={x}
-                        />
-                     ))}
-                  {/* Ringing Users */}
-                  {!maximizedSource &&
-                     thisCallState?.ringing.map((x) => (
-                        <VoiceElement
-                           type="normal"
-                           key={x}
-                           isRinging
-                           gridElementWidth={gridSize?.elementWidth ?? 0}
-                           gridElementHeight={gridSize?.elementHeight ?? 0}
-                           isGridView={isGridView}
-                           userId={x}
-                           channelId={props.channelId}
-                           guildId={null}
-                           isConnected={voiceState.channelId === props.channelId}
-                           isResizing={isResizing}
-                        />
-                     ))}
-               </>
-            )}
+         <div className="flex min-h-0 w-full flex-col" ref={gridRef} style={{ height: !isOverlay ? gridHeight : "100%" }}>
+            <div
+               ref={gridViewportRef}
+               className={clsx(
+                  "scroll-thin min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain",
+                  !maximizedSource && "scrollbar-gutter-both",
+               )}
+               style={{
+                  maskImage:
+                     !isLoading && !maximizedSource
+                        ? "linear-gradient(to bottom, black calc(100% - 5rem), transparent calc(100% - 2.5rem))"
+                        : undefined,
+               }}
+            >
+               <div
+                  ref={gridContentRef}
+                  className={clsx(
+                     "flex min-h-full w-full flex-wrap content-center items-center justify-center gap-x-3",
+                     !maximizedSource && "px-5",
+                     !maximizedSource && (isMobile ? "pt-16" : "pt-3"),
+                     isGridView ? "gap-y-3" : "gap-y-12",
+                     !maximizedSource && isGridView && (isLoading ? "pb-3" : "pb-23"),
+                     !maximizedSource && !isGridView && (isLoading ? "pb-12" : "pb-32"),
+                  )}
+               >
+                  {popoutState.isPopoutOpen && !isChildWindow() ? (
+                     <div className="text-text flex items-center justify-center text-center">Voice is popped out in another window</div>
+                  ) : isLoading ? (
+                     <HuginnLoadingIcon className="size-16" />
+                  ) : (
+                     <>
+                        {/* Consumable or consuming streams */}
+                        {thisVoiceStates
+                           .filter(
+                              (x) =>
+                                 !popoutState.openMediaPopoutProducers.includes(
+                                    (streamVideoSources[x.userId] || streamAudioSources[x.userId])?.producerId ?? "",
+                                 ) &&
+                                 (x.isAudioStreaming || x.isScreenSharing) &&
+                                 (maximizedSource
+                                    ? x.userId === maximizedSource.userId &&
+                                      (maximizedSource.kind === "stream_video" || maximizedSource.kind === "stream_audio")
+                                    : true),
+                           )
+                           .map((x) => (
+                              <VoiceElement
+                                 type="stream"
+                                 key={`${x.userId}-stream`}
+                                 gridElementWidth={gridSize?.elementWidth ?? 0}
+                                 gridElementHeight={gridSize?.elementHeight ?? 0}
+                                 userId={x.userId}
+                                 channelId={props.channelId}
+                                 guildId={null}
+                                 isConnected={voiceState.channelId === props.channelId}
+                                 isResizing={isResizing}
+                                 isGridView={isGridView}
+                                 isMaximized={!!maximizedSource}
+                                 mediaSource={streamVideoSources[x.userId] ?? streamAudioSources[x.userId]}
+                                 secondMediaSource={streamVideoSources[x.userId] && streamAudioSources[x.userId]}
+                                 voicePreference={voicePreferencesLookup[x.userId]}
+                                 voiceState={x}
+                                 onClick={voiceState.channelId === props.channelId ? maximizeSource : undefined}
+                              />
+                           ))}
+                        {/* Normals user / cameras */}
+                        {thisVoiceStates
+                           .filter(
+                              (x) =>
+                                 !popoutState.openMediaPopoutProducers.includes(cameraSources[x.userId]?.producerId ?? "") &&
+                                 (maximizedSource ? x.userId === maximizedSource.userId && maximizedSource.kind === "camera" : true),
+                           )
+                           .map((x) => (
+                              <VoiceElement
+                                 type="normal"
+                                 key={`${x.userId}-element`}
+                                 gridElementWidth={gridSize?.elementWidth ?? 0}
+                                 gridElementHeight={gridSize?.elementHeight ?? 0}
+                                 mediaSource={cameraSources[x.userId] ?? microphoneSources[x.userId]}
+                                 secondMediaSource={cameraSources[x.userId] !== undefined ? microphoneSources[x.userId] : undefined}
+                                 voicePreference={voicePreferencesLookup[x.userId]}
+                                 userId={x.userId}
+                                 channelId={props.channelId}
+                                 guildId={null}
+                                 onClick={maximizeSource}
+                                 isResizing={isResizing}
+                                 isGridView={isGridView}
+                                 isSpeaking={usersSpeakingLookup[x.userId]?.speaking}
+                                 isMaximized={!!maximizedSource}
+                                 isConnected={voiceState.channelId === props.channelId}
+                                 voiceState={x}
+                              />
+                           ))}
+                        {/* Ringing Users */}
+                        {!maximizedSource &&
+                           thisCallState?.ringing.map((x) => (
+                              <VoiceElement
+                                 type="normal"
+                                 key={x}
+                                 isRinging
+                                 gridElementWidth={gridSize?.elementWidth ?? 0}
+                                 gridElementHeight={gridSize?.elementHeight ?? 0}
+                                 isGridView={isGridView}
+                                 userId={x}
+                                 channelId={props.channelId}
+                                 guildId={null}
+                                 isConnected={voiceState.channelId === props.channelId}
+                                 isResizing={isResizing}
+                              />
+                           ))}
+                     </>
+                  )}
+               </div>
+            </div>
          </div>
          {!isLoading && (
             <VoiceControls

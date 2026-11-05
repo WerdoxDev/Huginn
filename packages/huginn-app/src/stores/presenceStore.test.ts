@@ -11,7 +11,6 @@ const game = (id: number, canonicalName: string): APIKnownGame => ({
    igdbId: id,
    canonicalName,
    aliases: [],
-   iconHash: null,
    createdAt: "2026-01-01T00:00:00.000Z",
    updatedAt: null,
 });
@@ -19,6 +18,7 @@ const game = (id: number, canonicalName: string): APIKnownGame => ({
 const matcher = (id: number, knownGameId: number, options: Partial<APIApplicationMatcher> = {}): APIApplicationMatcher => ({
    id,
    knownGameId,
+   iconHash: null,
    exeNames: [],
    windowTitles: [],
    platform: "unknown",
@@ -48,6 +48,49 @@ const catalog = (games: APIKnownGame[], matchers: APIApplicationMatcher[]): APIG
 });
 
 describe("detectKnownApplication", () => {
+   test("keeps executable evidence ahead of a sibling matcher's shared title", () => {
+      const games = [game(1, "Shared game")];
+      const matchers = [
+         matcher(1, 1, { exeNames: ["global.exe"], windowTitles: ["Shared game"], iconHash: "global-icon" }),
+         matcher(2, 1, { exeNames: ["regional.exe"], windowTitles: ["Regional title"], iconHash: "regional-icon" }),
+      ];
+
+      const match = detectKnownApplication(
+         [application({ exePath: "/games/regional.exe", windowTitle: "Shared game" })],
+         catalog(games, matchers),
+         "linux",
+      );
+
+      expect(match?.known.matcher.id).toBe(2);
+   });
+
+   test.each(["exe", "title", "folder", "commandLine"])("selects a regional matcher for the same game by %s", (evidence) => {
+      const games = [{ ...game(1, "Shared game"), aliases: ["Regional title"] }];
+      const matchers = [
+         matcher(1, 1, { exeNames: ["game.exe"], iconHash: "global-icon" }),
+         matcher(2, 1, {
+            exeNames: [evidence === "exe" ? "regional.exe" : evidence === "folder" ? "regional/game.exe" : "game.exe"],
+            windowTitles: evidence === "title" ? ["Regional title"] : [],
+            commandLinePatterns: evidence === "commandLine" ? ["--region=jp"] : [],
+            iconHash: "regional-icon",
+         }),
+      ];
+      const match = detectKnownApplication(
+         [
+            application({
+               exePath: evidence === "exe" ? "/games/regional.exe" : "/games/regional/game.exe",
+               windowTitle: evidence === "title" ? "Regional title" : "Shared game",
+               cmdLine: "game.exe --region=jp",
+            }),
+         ],
+         catalog(games, matchers),
+         "linux",
+      );
+
+      expect(match?.known.matcher.id).toBe(2);
+      expect(match?.known.matcher.iconHash).toBe("regional-icon");
+   });
+
    test("prefers the matcher with the most matching evidence", () => {
       const games = [game(1, "Generic game"), game(2, "Specific game")];
       const matchers = [matcher(1, 1, { exeNames: ["game.exe"] }), matcher(2, 2, { exeNames: ["game.exe"], windowTitles: ["Specific game"] })];

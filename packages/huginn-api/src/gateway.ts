@@ -18,6 +18,7 @@ import {
    analytics,
    recordSpanError,
    SpanStatusCode,
+   HuginnAPIError,
 } from "@huginnjs/shared";
 
 import type { GatewayOptions } from "./types";
@@ -178,6 +179,23 @@ export class Gateway extends SharedWebsocket<Events> {
 
          if (!this.isConnected) {
             return { authenticated: false, retryable: true, status: "not_connected" };
+         }
+
+         const socket = this.socket;
+         const version = this.client.tokenHandler.sessionVersion;
+         try {
+            if (!(await this.client.tokenHandler.ensureValidToken())) {
+               return { authenticated: false, retryable: false, status: "authentication_failed" };
+            }
+         } catch (error) {
+            const invalidToken = error instanceof HuginnAPIError && (error.status === 401 || error.status === 403);
+            return { authenticated: false, retryable: !invalidToken, status: invalidToken ? "authentication_failed" : "network_error" };
+         }
+         if (!this.isConnected || this.socket !== socket || this.intentionalClose) {
+            return { authenticated: false, retryable: true, status: "not_connected" };
+         }
+         if (version !== this.client.tokenHandler.sessionVersion) {
+            return { authenticated: false, retryable: false, status: "authentication_failed" };
          }
 
          span.setAttribute("gateway.can_resume", this.canResume);
@@ -538,13 +556,14 @@ export class Gateway extends SharedWebsocket<Events> {
       return analytics.startActiveSpan("apiGateway.attemptReconnect", async (span) => {
          span.setAttributes(this.getDefaultAttributes());
 
-         await this.connect();
+         if (!this.isConnected) await this.connect();
 
          span.setAttribute("gateway.had_user", !!this.user);
          // If we had a user, re-authenticate
          if (this.user) {
-            await this.authenticate();
-            this.emit("reconnected", undefined);
+            const result = await this.authenticate();
+            if (result.authenticated) this.emit("reconnected", undefined);
+            else if (result.retryable && !this.intentionalClose) this.scheduleReconnect();
          }
       });
    }

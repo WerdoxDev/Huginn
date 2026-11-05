@@ -9,11 +9,12 @@ type Package = {
 };
 
 const stackName = "huginn-backend";
+const backendTag = process.env.HUGINN_BACKEND_TAG || "postgres";
 const packages: Package[] = [
-   { key: "caddy", image: "ghcr.io/werdoxdev/caddy", dockerfile: "Dockerfile.caddy" },
-   { key: "huginn-server", image: "ghcr.io/werdoxdev/huginn-server", dockerfile: "Dockerfile.huginn-server" },
-   { key: "huginn-cdn", image: "ghcr.io/werdoxdev/huginn-cdn", dockerfile: "Dockerfile.huginn-cdn" },
-   { key: "huginn-voice", image: "ghcr.io/werdoxdev/huginn-voice", dockerfile: "Dockerfile.huginn-voice" },
+   { key: "caddy", image: "ghcr.io/werdoxdev/caddy:latest", dockerfile: "Dockerfile.caddy" },
+   { key: "huginn-server", image: `ghcr.io/werdoxdev/huginn-server:${backendTag}`, dockerfile: "Dockerfile.huginn-server" },
+   { key: "huginn-cdn", image: `ghcr.io/werdoxdev/huginn-cdn:${backendTag}`, dockerfile: "Dockerfile.huginn-cdn" },
+   { key: "huginn-voice", image: `ghcr.io/werdoxdev/huginn-voice:${backendTag}`, dockerfile: "Dockerfile.huginn-voice" },
 ];
 
 function printUsage(): void {
@@ -92,7 +93,7 @@ async function deploy(): Promise<number> {
             continue;
          }
 
-         const exitCode = await runCommand(["docker", "push", `${packageDefinition.image}:latest`], { cwd: repositoryRoot });
+         const exitCode = await runCommand(["docker", "push", packageDefinition.image], { cwd: repositoryRoot });
          if (exitCode !== 0) {
             printFailure();
             return 1;
@@ -134,6 +135,7 @@ async function deploy(): Promise<number> {
    console.log("Deploying new stack...");
    const deployCommand = ["docker", "stack", "deploy", "-c", "docker-stack.yaml", stackName];
    if (pushToRegistry) deployCommand.push("--with-registry-auth");
+   else deployCommand.push("--resolve-image", "never");
 
    const deployExitCode = await runCommand(deployCommand, { cwd: repositoryRoot });
    if (deployExitCode !== 0) {

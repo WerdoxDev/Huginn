@@ -1,7 +1,12 @@
 import {
+   CDNRoutes,
    type APIGetStaffGameContributionsResult,
    type APIGetStaffIGDBGamesResult,
    type APIGetStaffKnownGamesResult,
+   type APIPatchStaffKnownGameJSONBody,
+   type APIPatchStaffKnownGameResult,
+   type APIPatchStaffApplicationMatcherJSONBody,
+   type APIPatchStaffApplicationMatcherResult,
    type APIPostAcceptGameContributionResult,
    type APIPublicUser,
 } from "@huginnjs/shared";
@@ -15,7 +20,8 @@ const staffRoutes = {
    igdbGames: "/staff/igdb-games",
    knownGames: "/staff/known-games",
    acceptContribution: (id: number) => `/staff/game-contributions/${id}/accept`,
-   deleteKnownGame: (id: number) => `/staff/known-games/${id}`,
+   knownGame: (id: number) => `/staff/known-games/${id}`,
+   knownGameMatcher: (gameId: number, matcherId: number) => `/staff/known-games/${gameId}/matchers/${matcherId}`,
    rejectContribution: (id: number) => `/staff/game-contributions/${id}/reject`,
 } as const;
 
@@ -86,11 +92,29 @@ export function rejectGameContribution(token: string, contributionId: number) {
 }
 
 export function deleteKnownGame(token: string, gameId: number) {
-   return staffRequest<undefined>(staffRoutes.deleteKnownGame(gameId), token, {
+   return staffRequest<undefined>(staffRoutes.knownGame(gameId), token, {
       method: "DELETE",
+   });
+}
+
+export function updateKnownGame(token: string, gameId: number, body: APIPatchStaffKnownGameJSONBody) {
+   return staffRequest<APIPatchStaffKnownGameResult>(staffRoutes.knownGame(gameId), token, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+   });
+}
+
+export function updateKnownGameMatcher(token: string, gameId: number, matcherId: number, body: APIPatchStaffApplicationMatcherJSONBody) {
+   return staffRequest<APIPatchStaffApplicationMatcherResult>(staffRoutes.knownGameMatcher(gameId, matcherId), token, {
+      method: "PATCH",
+      body: JSON.stringify(body),
    });
 }
 
 export function getContributionIconUrl(iconUrl: string) {
    return `${cdnAddress}/cdn${iconUrl}`;
+}
+
+export function getApplicationIconUrl(knownGameId: number, iconHash: string) {
+   return getContributionIconUrl(CDNRoutes.applicationIcon(knownGameId, iconHash));
 }

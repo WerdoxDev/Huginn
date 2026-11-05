@@ -64,6 +64,8 @@ import { postStaffRejectGameContribution } from "#routes/staff/game-contribution
 import { getStaffIGDBGames } from "#routes/staff/igdb-games.get";
 import { getStaffKnownGames } from "#routes/staff/known-games.get";
 import { deleteStaffKnownGame } from "#routes/staff/known-games/[gameId].delete";
+import { patchStaffKnownGame } from "#routes/staff/known-games/[gameId].patch";
+import { patchStaffApplicationMatcher } from "#routes/staff/known-games/[gameId]/matchers/[matcherId].patch";
 import { getStaffMe } from "#routes/staff/me.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
@@ -241,6 +243,8 @@ export const app = new Elysia({
    .use(getStaffIGDBGames)
    .use(getStaffKnownGames)
    .use(deleteStaffKnownGame)
+   .use(patchStaffKnownGame)
+   .use(patchStaffApplicationMatcher)
    .use(postStaffAcceptGameContribution)
    .use(postStaffRejectGameContribution)
 

@@ -62,6 +62,7 @@ async function main() {
 
    const manifest = {
       filename: path.basename(OUT_ZIP),
+      size: Bun.file(OUT_ZIP).size,
       version: version,
       checksum: checksum,
       signature: signature,

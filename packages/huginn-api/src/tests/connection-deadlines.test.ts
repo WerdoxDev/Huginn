@@ -57,6 +57,7 @@ async function connectSignaling(kind: "gateway" | "voice", interval = 40_000) {
    socket.receive({ op: ops.HELLO, d: { heartbeatInterval: interval, sessionId: "original-session" } });
    await connected;
    const authenticated = client instanceof Gateway ? client.authenticate() : Promise.resolve();
+   await Promise.resolve();
    socket.receive({ op: ops.DISPATCH, t: "ready", s: 7, d: { user: { id: "user-me" }, producers: [], consumers: [], rtpCapabilities: {} } });
    await authenticated;
    return { client, socket, sockets, ops };

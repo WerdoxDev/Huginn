@@ -327,7 +327,6 @@ model KnownGame {
   igdbId        Int       @unique
   canonicalName String
   aliases       String[]
-  iconHash      String?
   revision      BigInt
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
@@ -343,6 +342,7 @@ model KnownGame {
 model ApplicationMatcher {
   id                  Int                           @id @default(autoincrement())
   knownGameId         Int
+  iconHash            String?
   exeNames            String[]
   windowTitles        String[]
   platform            String

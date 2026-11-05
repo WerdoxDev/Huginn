@@ -9,7 +9,6 @@ const game = (id: number, name: string): APIKnownGame => ({
    igdbId: id * 10,
    canonicalName: name,
    aliases: [],
-   iconHash: null,
    createdAt: "2026-01-01T00:00:00.000Z",
    updatedAt: null,
 });
@@ -17,6 +16,7 @@ const game = (id: number, name: string): APIKnownGame => ({
 const matcher = (id: number, knownGameId: number): APIApplicationMatcher => ({
    id,
    knownGameId,
+   iconHash: null,
    exeNames: [`game-${id}.exe`],
    windowTitles: [],
    platform: "win32",
@@ -38,6 +38,16 @@ const catalog = (options: Partial<APIGetApplicationCatalogResult> = {}): APIGetA
 });
 
 describe("applyApplicationCatalogUpdate", () => {
+   test.each(["replacement-icon", null])("updates a matcher's icon to %s without changing its siblings", (iconHash) => {
+      const original = { ...matcher(1, 1), iconHash: "original-icon" };
+      const sibling = { ...matcher(2, 1), iconHash: "regional-icon" };
+      const cached = catalog({ cursor: "1", games: [game(1, "Game")], matchers: [original, sibling] });
+      const updated = { ...original, iconHash };
+      const delta = catalog({ cursor: "2", full: false, matchers: [updated] });
+
+      expect(applyApplicationCatalogUpdate(cached, delta)).toEqual(catalog({ cursor: "2", games: cached.games, matchers: [updated, sibling] }));
+   });
+
    test("applies idempotent upserts and advances the cursor", () => {
       const cached = catalog({ cursor: "1", games: [game(1, "Old name")], matchers: [matcher(1, 1)] });
       const delta = catalog({ cursor: "2", full: false, games: [game(1, "New name")], matchers: [matcher(1, 1)] });

@@ -13,6 +13,7 @@ import { useClient } from "@stores/clientStore";
 import { clearTemporaryDevice, refreshDevices, useDevice } from "@stores/deviceStore";
 import { useStorage } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { SelectItem, SettingsTabProps } from "@/types";
@@ -286,6 +287,16 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
       </div>
    );
 
+   const invertCameraCheckbox = (
+      <HuginnCheckbox
+         checked={settings.isCameraInverted ?? false}
+         onChange={(isCameraInverted) => props.onChange?.({ isCameraInverted })}
+         className="w-full max-w-xs"
+      >
+         <HuginnCheckbox.Input>Invert Camera</HuginnCheckbox.Input>
+      </HuginnCheckbox>
+   );
+
    const cameraPreview = (
       <div className="bg-surface-deep relative flex aspect-video w-full max-w-md items-center justify-center overflow-hidden rounded-lg shadow-lg">
          {!isTestingCamera && (
@@ -293,7 +304,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
                Test Camera
             </HuginnButton>
          )}
-         <video ref={videoRef} autoPlay playsInline muted className="w-full" />
+         <video ref={videoRef} autoPlay playsInline muted className={clsx("w-full", settings.isCameraInverted && "-scale-x-100")} />
       </div>
    );
 
@@ -351,6 +362,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
                            </HuginnSelect.ItemsWrapper>
                         </HuginnSelect.List>
                      </HuginnSelect>
+                     {invertCameraCheckbox}
                      {cameraPreview}
                   </>
                ) : (
@@ -444,6 +456,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
                      </HuginnSelect.ItemsWrapper>
                   </HuginnSelect.List>
                </HuginnSelect>
+               {invertCameraCheckbox}
                {cameraPreview}
             </div>
          </div>

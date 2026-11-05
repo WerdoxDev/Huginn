@@ -23,6 +23,7 @@ export class ClientSession extends CommonClientSession<GatewayPayload, GatewayId
       }
 
       const userId = this.user.id;
+      this.subscribe("application_catalog");
 
       const relationships = await prisma.relationship.getUserRelationships(userId, {
          select: { ...selectRelationshipUser, type: true },

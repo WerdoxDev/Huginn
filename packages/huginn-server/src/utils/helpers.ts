@@ -167,7 +167,7 @@ export function filterChannel<T extends ChannelPayload<{ select: typeof selectCh
 }
 
 export function filterKnownGame<T extends KnownGamePayload<{ select: typeof selectKnownGame }>>(knownGame: T) {
-   return pick(knownGame, ["id", "igdbId", "canonicalName", "aliases", "iconHash", "createdAt", "updatedAt"]);
+   return pick(knownGame, ["id", "igdbId", "canonicalName", "aliases", "createdAt", "updatedAt"]);
 }
 
 export function filterApplicationMatcher<T extends ApplicationMatcherPayload<{ select: typeof selectApplicationMatcher }>>(matcher: T) {
@@ -175,6 +175,7 @@ export function filterApplicationMatcher<T extends ApplicationMatcherPayload<{ s
       ...pick(matcher, [
          "id",
          "knownGameId",
+         "iconHash",
          "exeNames",
          "windowTitles",
          "platform",
@@ -197,6 +198,7 @@ export function filterContribution<T extends ContributionPayload<{ select: typeo
       ...pick(contribution, [
          "id",
          "knownGameId",
+         "applicationMatcherId",
          "windowTitle",
          "cleanedWindowTitle",
          "exePath",

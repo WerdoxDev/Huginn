@@ -88,8 +88,7 @@ export function useOAuth() {
                });
                return null;
             }
-            client.tokenHandler.token = tokens.token;
-            client.tokenHandler.refreshToken = tokens.refreshToken;
+            client.tokenHandler.setTokens(tokens);
          } catch {
             updateModals({
                info: {

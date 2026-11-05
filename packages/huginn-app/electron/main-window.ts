@@ -345,13 +345,13 @@ export class MainWindow extends BaseWindow {
          this.loopbackCapture = new loopback.LoopbackCapture();
 
          if (mode === "application" && processId) {
-            this.loopbackCapture.start(processId, true, (data) => {
+            this.loopbackCapture.start(processId, (data) => {
                window.webContents.send("audio:loopback-data", data);
             });
          } else {
             this.loopbackCapture.startSystemAudio((data) => {
                window.webContents.send("audio:loopback-data", data);
-            });
+            }, process.pid);
          }
       });
 

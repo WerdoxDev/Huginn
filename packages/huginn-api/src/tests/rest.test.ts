@@ -365,6 +365,55 @@ describe("request()", () => {
       expect(result).toStrictEqual({ ok: true });
    });
 
+   test("refreshes and retries an authenticated XHR upload with its original files and progress callback", async () => {
+      const client = new HuginnClient();
+      client.tokenHandler.setTokens({ token: "old-access", refreshToken: "saved-refresh" });
+      const makeRequest = vi.fn().mockResolvedValue(
+         new Response(JSON.stringify({ token: "new-access", refreshToken: "new-refresh" }), {
+            headers: { "Content-Type": "application/json" },
+         }),
+      );
+      client.rest.options.makeRequest = makeRequest;
+      vi.spyOn(shared, "isBrowser").mockReturnValue(true);
+      globalThis.XMLHttpRequest = MockXMLHttpRequest as unknown as typeof XMLHttpRequest;
+      const progressHandler = vi.fn();
+      MockXMLHttpRequest.nextConfig = {
+         status: 401,
+         responseText: JSON.stringify({ code: 0, message: "Unauthorized" }),
+         onSend() {
+            MockXMLHttpRequest.nextConfig = {
+               status: 200,
+               responseText: JSON.stringify({ id: "message" }),
+               onSend(xhr) {
+                  (xhr.upload as { onprogress?: (event: ProgressEvent) => void }).onprogress?.({ loaded: 1, total: 2 } as ProgressEvent);
+               },
+            };
+         },
+      };
+
+      const body = { content: "hello", nonce: "123" };
+      const result = await client.channels.createMessage("channel", body, [{ data: "file contents", name: "test.txt" }], progressHandler);
+
+      expect(result).toEqual({ id: "message" });
+      expect(makeRequest).toHaveBeenCalledExactlyOnceWith(
+         expect.stringContaining("/auth/refresh-token"),
+         expect.objectContaining({
+            body: JSON.stringify({ refreshToken: "saved-refresh" }),
+         }),
+      );
+      expect(MockXMLHttpRequest.instances).toHaveLength(2);
+      const [first, retried] = MockXMLHttpRequest.instances;
+      expect(first.requestHeaders.Authorization).toBe("Bearer old-access");
+      expect(retried.requestHeaders.Authorization).toBe("Bearer new-access");
+      for (const xhr of [first, retried]) {
+         const form = xhr.body as FormData;
+         expect(form.get("payload_json")).toBe(JSON.stringify(body));
+         expect(await (form.get("files[0]") as Blob).text()).toBe("file contents");
+      }
+      expect(progressHandler).toHaveBeenCalledOnce();
+      client.tokenHandler.setTokens({});
+   });
+
    test("should delegate to handleErrors and throw when the response is not ok", async () => {
       const client = new HuginnClient();
       const makeRequest = vi.fn().mockResolvedValue(
