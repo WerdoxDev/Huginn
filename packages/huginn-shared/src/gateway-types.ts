@@ -68,6 +68,7 @@ export type GatewayWebsocketEvents = {
    message_reaction_remove: GatewayMessageReactionRemoveData;
    application_contribution_add: GatewayApplicationContributionAddData;
    application_contribution_update: GatewayApplicationContributionUpdateData;
+   application_catalog_update: undefined;
 };
 
 export type GatewayPayload<Event extends keyof GatewayWebsocketEvents | undefined = undefined> = Event extends undefined

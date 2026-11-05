@@ -540,7 +540,6 @@ export type APIKnownGame = {
    igdbId: number;
    canonicalName: string;
    aliases: string[];
-   iconHash: string | null;
    createdAt: Date | string;
    updatedAt: Date | string | null;
 };
@@ -548,6 +547,7 @@ export type APIKnownGame = {
 export type APIApplicationMatcher = {
    id: number;
    knownGameId: number;
+   iconHash: string | null;
    exeNames: string[];
    windowTitles: string[];
    platform: string;
@@ -610,6 +610,14 @@ export type APIStaffKnownGame = APIKnownGame & {
 export type APIGetStaffKnownGamesResult = {
    games: APIStaffKnownGame[];
 };
+
+export type APIPatchStaffKnownGameJSONBody = { igdbId: number };
+export type APIPatchStaffKnownGameResult = APIStaffKnownGame;
+
+export type APIPatchStaffApplicationMatcherJSONBody = Pick<APIApplicationMatcher, "exeNames" | "windowTitles" | "commandLinePatterns" | "platform"> & {
+   icon?: string;
+};
+export type APIPatchStaffApplicationMatcherResult = APIApplicationMatcher;
 
 export type APIIGDBGameCandidate = {
    id: number;
@@ -703,6 +711,7 @@ export type APIContribution = {
    id: number;
    contributorId: Snowflake;
    knownGameId: number | null;
+   applicationMatcherId: number | null;
    windowTitle: string;
    cleanedWindowTitle: string;
    exePath: string;
