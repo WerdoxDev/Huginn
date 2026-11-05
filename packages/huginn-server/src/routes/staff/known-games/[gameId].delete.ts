@@ -2,6 +2,7 @@ import { notFound } from "@huginn/backend-shared";
 import { nextApplicationCatalogRevision, Prisma, prismaBase } from "@huginn/backend-shared/database";
 import Elysia, { t } from "elysia";
 
+import { dispatchToTopic } from "#utils/gateway-utils";
 import { verifyStaff } from "#utils/staff";
 
 const paramsSchema = t.Object({ gameId: t.Numeric({ minimum: 1 }) });
@@ -34,6 +35,7 @@ export const deleteStaffKnownGame = new Elysia().use(verifyStaff()).delete(
       );
 
       if (!deleted) return notFound(status);
+      dispatchToTopic("application_catalog", "application_catalog_update", undefined);
       return status("No Content");
    },
    { params: paramsSchema },

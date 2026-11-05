@@ -64,7 +64,7 @@ export async function searchIGDBGames(query: string) {
    );
 }
 
-export async function getIGDBGame(id: number) {
+export async function getIGDBGame(id: number): Promise<IGDBSearchResult | undefined> {
    const [game] = await queryGames(`fields ${GAME_FIELDS}; where id = ${id}; limit 1;`);
    return game;
 }

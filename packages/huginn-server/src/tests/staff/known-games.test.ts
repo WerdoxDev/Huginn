@@ -35,6 +35,7 @@ describe("staff known games", () => {
          data: [
             {
                knownGameId: game.id,
+               iconHash: "known-game-icon",
                exeNames: ["known-game.exe"],
                windowTitles: [],
                platform: "windows",
@@ -63,6 +64,8 @@ describe("staff known games", () => {
          expect(listedGame?.canonicalName).toBe("Known Game Test");
          expect(listedGame?.aliases).toEqual(["Known Game Alias"]);
          expect(listedGame?.matchers.map((matcher) => matcher.id)).toEqual([matchers[0].id]);
+         expect(listedGame?.matchers[0].iconHash).toBe("known-game-icon");
+         expect(listedGame).not.toHaveProperty("iconHash");
       } finally {
          await prisma.applicationMatcher.deleteMany({ where: { knownGameId: game.id } });
          await prisma.knownGame.delete({ where: { id: game.id } });
