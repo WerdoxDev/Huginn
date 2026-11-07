@@ -54,7 +54,7 @@ function Input({
          <span className="text-text text-xs font-medium uppercase opacity-90 select-none">{children}</span>
          <span
             className={clsx(
-               "bg-surface-alt group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
+               "bg-surface-alt group-data-checked:bg-primary-700! relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
                innerClassName,
             )}
          >
