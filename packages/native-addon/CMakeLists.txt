@@ -21,6 +21,7 @@ if(WIN32)
         ${PLATFORM_DIR}/process_icon.cpp
         ${PLATFORM_DIR}/screen_thumbnail.cpp
         ${PLATFORM_DIR}/screen_util.cpp
+        ${PLATFORM_DIR}/window_listener.cpp
         ${PLATFORM_DIR}/window_thumbnail.cpp
         ${PLATFORM_DIR}/window_util.cpp
     )

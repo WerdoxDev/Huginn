@@ -1,0 +1,46 @@
+// Machine-specific files are installed or built separately on Windows.
+.git
+node_modules
+.pnpm-store
+.bun
+build
+builds
+dist
+dist-ssr
+out
+target
+.electron
+.cache
+.data
+.output
+.nitro
+.vercel
+.vite
+.turbo
+coverage
+test-results
+playwright-report
+logs
+uploads
+certs
+ffmpeg
+update-keys
+emoji-out
+icon-out
+.vs
+.idea
+.vscode
+*.node
+*.log
+*.tsbuildinfo
+*.env
+.env*
+*.local
+*.code-workspace
+// Mobile builds are not needed for desktop development.
+/packages/huginn-app/android/.gradle
+/packages/huginn-app/android/.idea
+/packages/huginn-app/ios/Pods
+
+// Generated independently by Vite on each platform.
+/packages/huginn-app/auto-imports.d.ts

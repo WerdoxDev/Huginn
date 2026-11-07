@@ -16,6 +16,7 @@ export type ProcessInfo = {
    exePath?: string;
    hwnd?: number;
    stableId?: string;
+   isBorderlessFullscreen?: boolean;
    rect?: { x: number; y: number; width: number; height: number } | null;
 };
 
@@ -29,7 +30,20 @@ type HyprlandClient = {
    initialClass?: string;
 };
 
+/** Window client-area rectangle in screen coordinates, matching ProcessInfo.rect on Windows. */
+export type WindowBounds = { x: number; y: number; width: number; height: number };
+
 export type Addon = {
+   /** Windows only. Fires on bounds changes; returns an idempotent unlisten function.
+    * Automatically releases the callback when the window closes. No initial callback is fired.
+    */
+   listenToWindowBounds(hwnd: number, callback: (bounds: WindowBounds) => void): () => void;
+   /** Windows only. Fires once when the window is destroyed; returns an idempotent unlisten function. */
+   listenToWindowClose(hwnd: number, callback: () => void): () => void;
+   /** Windows only. Reports initial foreground state asynchronously, then changes.
+    * Returns an idempotent unlisten function; automatically releases the callback on window closure.
+    */
+   listenToWindowFocus(hwnd: number, callback: (focused: boolean) => void): () => void;
    getFileSha256(filepath: string): string;
    getProcessIconBase64(processId: number): Promise<string | null>;
    getOpenApplications(): Promise<ProcessInfo[]>;

@@ -1,5 +1,6 @@
 #include "window_util.h"
 #include "image_util.h"
+#include <mutex>
 #include <windows.h>
 #include <psapi.h>
 #include <string>
@@ -289,12 +290,19 @@ namespace window_util
 
       std::wstring cmdLine = GetProcessCommandLine(processId);
 
+      RECT rect{};
+      GetClientScreenBounds(hwnd, rect);
+
+      BOOL isBorderlessFullscreen = IsBorderlessFullscreen(hwnd);
+
       ProcessInfo app;
       app.exePath = exePath;
       app.windowTitle = windowTitle;
       app.processId = processId;
       app.cmdLine = cmdLine;
       app.hwnd = hwnd;
+      app.rect = rect;
+      app.isBorderlessFullscreen = isBorderlessFullscreen;
       apps->push_back(app);
 
       return TRUE;
@@ -317,5 +325,53 @@ namespace window_util
       }
 
       return uniqueApps;
+   }
+
+   bool IsBorderlessFullscreen(HWND hwnd) {
+      if (!hwnd || !IsWindow(hwnd)) {
+              return false;
+      }
+
+      // CRITICAL: Exclude your own process immediately
+      DWORD windowPid = 0;
+      GetWindowThreadProcessId(hwnd, &windowPid);
+      if (windowPid == GetCurrentProcessId()) {
+         return false;
+      }
+
+      LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
+      if (style & WS_CHILD) return false;
+      if ((style & WS_CAPTION) || (style & WS_THICKFRAME)) return false;
+
+      RECT windowRect;
+      if (!GetWindowRect(hwnd, &windowRect)) return false;
+
+      HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+      MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+      if (!GetMonitorInfo(hMonitor, &monitorInfo)) return false;
+
+      return (windowRect.left <= monitorInfo.rcMonitor.left &&
+            windowRect.top <= monitorInfo.rcMonitor.top &&
+            windowRect.right >= monitorInfo.rcMonitor.right &&
+            windowRect.bottom >= monitorInfo.rcMonitor.bottom);
+   }
+
+   bool GetClientScreenBounds(HWND hwnd, RECT& result) {
+       RECT client;
+       if (!GetClientRect(hwnd, &client))
+           return false;
+
+       POINT topLeft{client.left, client.top};
+       POINT bottomRight{client.right, client.bottom};
+
+       if (!ClientToScreen(hwnd, &topLeft) ||
+           !ClientToScreen(hwnd, &bottomRight))
+           return false;
+
+       result = {
+           topLeft.x, topLeft.y,
+           bottomRight.x, bottomRight.y
+       };
+       return true;
    }
 }

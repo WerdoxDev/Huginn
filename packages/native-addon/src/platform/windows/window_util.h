@@ -1,4 +1,5 @@
 #pragma once
+#include "window_bounds.h"
 #include <windows.h>
 #include <string>
 #include <map>
@@ -16,8 +17,10 @@ namespace window_util
       std::wstring exePath;
       std::wstring windowTitle;
       std::wstring cmdLine;
+      RECT rect;
       DWORD processId;
       HWND hwnd;
+      BOOL isBorderlessFullscreen;
    };
 
    std::string WideToUtf8(const std::wstring &wide);
@@ -28,4 +31,5 @@ namespace window_util
    bool IsCloaked(HWND hwnd);
    HANDLE GetHandle(DWORD processId);
    std::map<DWORD, ProcessInfo> EnumerateApplications();
+   bool IsBorderlessFullscreen(HWND hwnd);
 }
