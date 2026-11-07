@@ -446,6 +446,7 @@ describe("voice state", () => {
 
       await authenticateWithUser(userId, (client, payload) => {
          if (payload.op === GatewayOperations.VOICE_STATE_UPDATE && (payload.d as { channelId?: string | null })?.channelId === channelId) {
+            expect(payload.d).toMatchObject({ isCameraInverted: true });
             client.send(
                dispatchPayload(
                   "voice_state_update",
@@ -454,6 +455,7 @@ describe("voice state", () => {
                      channelId,
                      guildId,
                      isCameraOn: true,
+                     isCameraInverted: true,
                      isAudioMuted: false,
                      isAudioDeafened: false,
                      isAudioStreaming: false,
@@ -466,13 +468,14 @@ describe("voice state", () => {
       });
 
       const state = await gateway.updateVoiceState(
-         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         { isCameraOn: true, isCameraInverted: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
          channelId,
          guildId,
       );
 
       expect(state.channelId).toBe(channelId);
       expect(state.userId).toBe(userId);
+      expect(state.isCameraInverted).toBe(true);
    });
 
    it("updateVoiceState should only resolve when the voice state update for the current user arrives", async () => {
@@ -492,6 +495,7 @@ describe("voice state", () => {
                      channelId,
                      guildId,
                      isCameraOn: true,
+                     isCameraInverted: true,
                      isAudioMuted: false,
                      isAudioDeafened: false,
                      isAudioStreaming: false,
@@ -509,6 +513,7 @@ describe("voice state", () => {
                      channelId,
                      guildId,
                      isCameraOn: true,
+                     isCameraInverted: true,
                      isAudioMuted: false,
                      isAudioDeafened: false,
                      isAudioStreaming: false,
@@ -521,7 +526,7 @@ describe("voice state", () => {
       });
 
       const state = await gateway.updateVoiceState(
-         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         { isCameraOn: true, isCameraInverted: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
          channelId,
          guildId,
       );
@@ -542,7 +547,7 @@ describe("voice state", () => {
 
       await expect(
          gateway.updateVoiceState(
-            { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+            { isCameraOn: true, isCameraInverted: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
             channelId,
             null,
          ),
@@ -555,7 +560,7 @@ describe("voice state", () => {
 
       await authenticateWithUser(userId);
       const pending = gateway.updateVoiceState(
-         { isCameraOn: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
+         { isCameraOn: true, isCameraInverted: true, isAudioMuted: false, isAudioDeafened: false, isAudioStreaming: false, isScreenSharing: false },
          channelId,
          null,
       );

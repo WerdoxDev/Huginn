@@ -36,23 +36,37 @@ describe("voice state", () => {
       expect(state.gatewayVoiceState.channelId).toBeNull();
    });
 
-   it("preserves mute and deafen selections after leaving a channel", () => {
+   it("preserves mute, deafen and camera inversion selections after leaving a channel", () => {
       const state = new VoiceState();
-      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isAudioMuted: true, isAudioDeafened: true });
+      state.confirmGatewayVoiceState({
+         ...state.gatewayVoiceState,
+         channelId: "channel",
+         isAudioMuted: true,
+         isAudioDeafened: true,
+         isCameraInverted: true,
+      });
 
-      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: null, isAudioMuted: false, isAudioDeafened: false });
+      state.confirmGatewayVoiceState({
+         ...state.gatewayVoiceState,
+         channelId: null,
+         isAudioMuted: false,
+         isAudioDeafened: false,
+         isCameraInverted: false,
+      });
 
-      expect(state.gatewayVoiceState).toMatchObject({ channelId: null, isAudioMuted: true, isAudioDeafened: true });
+      expect(state.gatewayVoiceState).toMatchObject({ channelId: null, isAudioMuted: true, isAudioDeafened: true, isCameraInverted: true });
    });
 
    it("resends the selected state after reconnecting", async () => {
       const state = new VoiceState();
-      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isCameraOn: true });
+      state.confirmGatewayVoiceState({ ...state.gatewayVoiceState, channelId: "channel", isCameraOn: true, isCameraInverted: true });
       const request = vi.fn(({ callback }) => callback());
       state.on("update_gateway_voice_state", request);
 
       await state.resendGatewayVoiceState();
 
-      expect(request).toHaveBeenCalledWith(expect.objectContaining({ voiceState: expect.objectContaining({ channelId: "channel", isCameraOn: true }) }));
+      expect(request).toHaveBeenCalledWith(
+         expect.objectContaining({ voiceState: expect.objectContaining({ channelId: "channel", isCameraOn: true, isCameraInverted: true }) }),
+      );
    });
 });

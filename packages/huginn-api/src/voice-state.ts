@@ -28,6 +28,7 @@ export class VoiceState extends EventEmitter<Events> {
       isAudioDeafened: false,
       isAudioMuted: false,
       isCameraOn: false,
+      isCameraInverted: false,
       isScreenSharing: false,
       isAudioStreaming: false,
    };
@@ -43,6 +44,7 @@ export class VoiceState extends EventEmitter<Events> {
             "voice.state.is_audio_deafened": newState.isAudioDeafened,
             "voice.state.is_audio_muted": newState.isAudioMuted,
             "voice.state.is_camera_on": newState.isCameraOn,
+            "voice.state.is_camera_inverted": newState.isCameraInverted,
             "voice.state.is_screen_sharing": newState.isScreenSharing,
             "voice.state.is_audio_streaming": newState.isAudioStreaming,
          });
@@ -88,6 +90,7 @@ export class VoiceState extends EventEmitter<Events> {
               isAudioDeafened: this.gatewayVoiceState.isAudioDeafened,
               isAudioMuted: this.gatewayVoiceState.isAudioMuted,
               isCameraOn: this.gatewayVoiceState.isCameraOn,
+              isCameraInverted: this.gatewayVoiceState.isCameraInverted,
               isScreenSharing: this.gatewayVoiceState.isScreenSharing,
               isAudioStreaming: this.gatewayVoiceState.isAudioStreaming,
            };
