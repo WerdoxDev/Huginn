@@ -333,12 +333,17 @@ export type ClientInfo = {
    lastVersion?: string;
 };
 
+export type ApplicationPreferenceKey = `known:${number}` | `custom:${string}`;
+
+export type ApplicationPreferences = Record<ApplicationPreferenceKey, { overlayEnabled?: boolean }>;
+
 export type StorageMap = {
    settings: AppSettings;
    instances: InstanceProfile[];
    keybinds: Keybind[];
    "application-catalog": APIGetApplicationCatalogResult;
    "custom-applications": CustomApplication[];
+   "application-preferences": ApplicationPreferences;
    "client-info": ClientInfo;
    "pinned-channels": Snowflake[];
 };

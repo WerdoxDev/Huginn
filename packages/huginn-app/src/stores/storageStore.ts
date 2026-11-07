@@ -47,7 +47,7 @@ const store = createStore(
 );
 
 export async function initStorageStoreEarly() {
-   const keys: FileType[] = ["client-info", "custom-applications", "keybinds", "settings", "instances", "pinned-channels"];
+   const keys: FileType[] = ["client-info", "custom-applications", "application-preferences", "keybinds", "settings", "instances", "pinned-channels"];
    const cache = {} as StorageMap;
 
    await storage.mergeNewProperties();

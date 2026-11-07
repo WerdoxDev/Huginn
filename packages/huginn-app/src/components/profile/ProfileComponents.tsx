@@ -25,14 +25,18 @@ export function ProfileActivity(props: {
    activity: Pick<Activity, "type" | "name" | "iconUrl" | "startedAt">;
    accentColor?: string | null;
    className?: string;
+   headerRight?: ReactNode;
 }) {
    const { activity } = props;
    const typeLabel = getActivityTypeLabel(activity.type);
    const { getFormattedDuration } = useElapsedTime(activity.startedAt);
 
    return (
-      <div className={clsx("bg-surface overflow-hidden rounded-md p-3", props.className)}>
-         <HuginnLabel className="text-tiny">{typeLabel}</HuginnLabel>
+      <div className={clsx("bg-surface relative overflow-hidden rounded-md p-3", props.className)}>
+         <div className="absolute top-3 right-3">{props.headerRight}</div>
+         <div className="mb-1 flex items-center justify-between gap-2">
+            <HuginnLabel className="text-tiny mb-0!">{typeLabel}</HuginnLabel>
+         </div>
          <div className="flex items-center gap-x-3">
             <div
                className="flex size-14 shrink-0 items-center justify-center rounded-lg"

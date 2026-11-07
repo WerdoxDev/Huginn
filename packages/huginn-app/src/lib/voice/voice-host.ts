@@ -479,6 +479,8 @@ export class VoiceHost {
       const store = storageStore.getState();
       const settings = await store.getValue("settings");
 
+      if (!newMutedState) await this.voice.ensureMicrophoneAvailable();
+
       await this.client.voiceManager.voiceState.updateGatewayVoiceState({
          isAudioMuted: newMutedState,
          isAudioDeafened: newDeafenedState,
@@ -494,7 +496,7 @@ export class VoiceHost {
 
       await this.client.voiceManager.voiceState.updateGatewayVoiceState({
          isAudioDeafened: newDeafenedState,
-         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
+         isAudioMuted: newDeafenedState || this.voice.isMicrophoneUnavailable || settings.isVoiceMuted,
       });
       await store.setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
    }

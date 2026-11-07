@@ -14,7 +14,7 @@ import { Input, MPEG_TS, ReadableStreamSource, VideoSampleSink } from "mediabunn
 
 import type { AppSettings, Environment } from "@/types";
 
-import { getHostId } from "../child-window";
+import { getHostId, isChildWindow } from "../child-window";
 import { AudioLevelChecker } from "./audio-level-checker";
 import { AudioSourcePlayer } from "./audio-source-player";
 import { VoiceClient } from "./voice-client";
@@ -36,6 +36,22 @@ export class VoiceBridge extends Voice {
    public readonly host?: VoiceHost;
 
    private microphoneReady?: Promise<void>;
+   private _isMicrophoneUnavailable = false;
+
+   public get isMicrophoneUnavailable(): boolean {
+      return this._isMicrophoneUnavailable;
+   }
+
+   public async ensureMicrophoneAvailable(): Promise<void> {
+      if (this.status !== "ready") return;
+      if (this.transport.getProducer("microphone") && !this.isMicrophoneUnavailable) return;
+
+      const settings = storageStore.getState().getCachedValue("settings");
+      await this.openOrReplaceMicrophone(settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression, windowStore.getState().environment);
+      if (this.isMicrophoneUnavailable) {
+         throw new Error("No microphone was found. Connect a microphone and try again.");
+      }
+   }
 
    private releaseInput?: () => void;
    private forgroundServiceListener?: PluginListenerHandle;
@@ -80,7 +96,7 @@ export class VoiceBridge extends Voice {
 
       this.debugger = new VoiceDebugger(client as HuginnClient<VoiceBridge>);
 
-      if (window.opener) return;
+      if (isChildWindow()) return;
 
       const hostId = getHostId();
       this.popout = new VoicePopout(hostId);
@@ -150,6 +166,8 @@ export class VoiceBridge extends Voice {
 
       this.releaseInput?.();
       this.releaseInput = undefined;
+      this.microphoneReady = undefined;
+      this._isMicrophoneUnavailable = false;
 
       this.stopAudioLoopback();
 
@@ -367,10 +385,31 @@ export class VoiceBridge extends Voice {
 
    private async openOrReplaceMicrophone(microphoneDeviceId: string, microphoneVolume: number, noiseSuppression: boolean, environment: Environment) {
       const streamPromise = this.inputDevice.getStream(environment === "android" ? "" : microphoneDeviceId, microphoneVolume, noiseSuppression);
-      this.microphoneReady = streamPromise.then(() => undefined);
+      // Receiving audio must remain available even if opening the microphone fails.
+      this.microphoneReady = streamPromise.then(
+         () => undefined,
+         () => undefined,
+      );
 
-      const otherStream = await streamPromise;
-      // const otherStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      let otherStream: MediaStream;
+      try {
+         otherStream = await streamPromise;
+      } catch (error) {
+         const name = error && typeof error === "object" && "name" in error ? error.name : undefined;
+         const message = error && typeof error === "object" && "message" in error ? error.message : undefined;
+         if (
+            name !== "NotFoundError" &&
+            name !== "DevicesNotFoundError" &&
+            !(typeof message === "string" && message.includes("Requested device not found"))
+         ) {
+            throw error;
+         }
+
+         this._isMicrophoneUnavailable = true;
+         await this.client.voiceManager.voiceState.updateGatewayVoiceState({ isAudioMuted: true });
+         return;
+      }
+      this._isMicrophoneUnavailable = false;
       const audioTrack = otherStream.getAudioTracks()[0].clone();
 
       try {

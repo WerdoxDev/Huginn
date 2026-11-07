@@ -71,7 +71,10 @@ function makeClient() {
       voiceManager: {
          applyVoiceState: vi.fn(async () => {}),
          voiceState: {
-            gatewayVoiceState: { isAudioDeafened: false },
+            gatewayVoiceState: { isAudioDeafened: false, isAudioMuted: false },
+            updateGatewayVoiceState: vi.fn(async (update: Partial<{ isAudioMuted: boolean; isAudioDeafened: boolean }>) => {
+               Object.assign(client.voiceManager.voiceState.gatewayVoiceState, update);
+            }),
             updateLocalVoiceState: vi.fn(),
             updateVoicePreferences: vi.fn(),
          },
@@ -154,6 +157,76 @@ describe("call audio", () => {
 
       bridge.emit("reset", undefined);
       expect(bridge.inputDevice.close).toHaveBeenCalled();
+   });
+
+   it.each(["NotFoundError", "DevicesNotFoundError", "Error"])(
+      "joins muted and plays incoming audio when microphone capture fails with %s",
+      async (name) => {
+         vi.mocked(bridge.inputDevice.getStream).mockRejectedValueOnce(new DOMException("Requested device not found", name));
+
+         bridge.emit("ready", undefined);
+         await vi.waitFor(() => expect(client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted).toBe(true));
+         await receive();
+
+         expect(bridge.status).toBe("ready");
+         expect(bridge.isMicrophoneUnavailable).toBe(true);
+         expect(client.voiceManager.voiceState.gatewayVoiceState.isAudioDeafened).toBe(false);
+         expect(bridge.device.openMicrophone).not.toHaveBeenCalled();
+         expect(bridge.audioSourcePlayers[0].setGain).toHaveBeenCalledWith(undefined, 50);
+      },
+   );
+
+   it("rejects unmuting without a microphone and retries after one is connected", async () => {
+      const getStream = vi.mocked(bridge.inputDevice.getStream);
+      getStream.mockRejectedValueOnce(new DOMException("No device", "NotFoundError"));
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.isMicrophoneUnavailable).toBe(true));
+
+      getStream.mockRejectedValueOnce(new DOMException("No device", "NotFoundError"));
+      await expect(bridge.ensureMicrophoneAvailable()).rejects.toThrow("No microphone was found");
+      expect(client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted).toBe(true);
+      expect(bridge.device.openMicrophone).not.toHaveBeenCalled();
+
+      await expect(bridge.ensureMicrophoneAvailable()).resolves.toBeUndefined();
+      expect(bridge.isMicrophoneUnavailable).toBe(false);
+      expect(bridge.device.openMicrophone).toHaveBeenCalled();
+      expect(bridge.inputDevice.initializeAudioLevel).toHaveBeenCalled();
+   });
+
+   it("keeps receiving audio when switching to a missing microphone", async () => {
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.inputDevice.initializeAudioLevel).toHaveBeenCalled());
+      vi.mocked(bridge.inputDevice.getStream).mockRejectedValueOnce(new DOMException("No device", "NotFoundError"));
+      const settings = storageStore.getState().getCachedValue("settings");
+
+      storageStore.getState().setCachedValue("settings", { ...settings, inputDeviceId: "missing" });
+      await vi.waitFor(() => expect(bridge.isMicrophoneUnavailable).toBe(true));
+      const incoming = await receive();
+
+      expect(client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted).toBe(true);
+      expect(incoming.pause).not.toHaveBeenCalled();
+      expect(bridge.audioSourcePlayers).toHaveLength(1);
+   });
+
+   it("preserves errors other than a missing microphone", async () => {
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.inputDevice.initializeAudioLevel).toHaveBeenCalled());
+      const error = new DOMException("Permission denied", "NotAllowedError");
+      vi.mocked(bridge.inputDevice.getStream).mockRejectedValueOnce(error);
+
+      await expect(bridge.ensureMicrophoneAvailable()).rejects.toBe(error);
+
+      expect(bridge.isMicrophoneUnavailable).toBe(false);
+   });
+
+   it("clears missing microphone state when leaving the call", async () => {
+      vi.mocked(bridge.inputDevice.getStream).mockRejectedValueOnce(new DOMException("No device", "NotFoundError"));
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.isMicrophoneUnavailable).toBe(true));
+
+      bridge.emit("reset", undefined);
+
+      expect(bridge.isMicrophoneUnavailable).toBe(false);
    });
 
    it("replaces an active microphone when the selected device changes", async () => {

@@ -1,3 +1,4 @@
+import ApplicationOverlayButton from "@components/ApplicationOverlayButton";
 import HuginnIconSelect from "@components/dropdown/HuginnIconSelect";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
@@ -59,7 +60,7 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
    const hasStatusFilters = statusFilters.length > 0 && statusFilters.length < contributionStatusOptions.length;
    const submitMutation = useContributeApplication();
    const { user } = useThisUser();
-   const { session } = usePresenceStore();
+   const { session, activeApplication } = usePresenceStore();
    const { updateModals } = useModals();
    const huginnWindow = useHuginnWindow();
    const targetActivity = session.activities[0];
@@ -214,7 +215,12 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
                      <div className="text-text/80">No activities detected...</div>
                   </div>
                ) : (
-                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
+                  <ProfileActivity
+                     activity={targetActivity}
+                     accentColor={accentColor}
+                     className="bg-surface-alt"
+                     headerRight={activeApplication && <ApplicationOverlayButton applicationKey={activeApplication.key} />}
+                  />
                )}
             </div>
             <div className="flex flex-col">

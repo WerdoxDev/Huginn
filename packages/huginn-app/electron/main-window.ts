@@ -12,6 +12,7 @@ import type { AudioSource, DisplaySource, OsInfo } from "@/types";
 import { BaseWindow } from "./base-window";
 import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
+import { OverlayWindow } from "./overlay-window";
 import { ScreenManager } from "./screen-manager";
 import { isLinux, isWindows } from "./utils";
 import { ElectronWebSocket } from "./websocket";
@@ -25,6 +26,8 @@ export class MainWindow extends BaseWindow {
    private loopbackCapture: LoopbackCapture | undefined;
    private nativeCaptureOptions?: { captureId: string; width: number; height: number; frameRate: number };
    private websocket: ElectronWebSocket = new ElectronWebSocket();
+   private overlayWindow?: OverlayWindow;
+   private stopOverlayListeners?: () => void;
 
    public constructor() {
       super("main", {
@@ -61,6 +64,7 @@ export class MainWindow extends BaseWindow {
       this.registerNativeEvents(window);
       this.registerSessionEvents();
       this.registerMediaEvents(window);
+      this.registerOverlayEvents();
    }
 
    private registerSessionEvents() {
@@ -469,6 +473,99 @@ export class MainWindow extends BaseWindow {
          });
 
          window.webContents.downloadURL(url.toString());
+      });
+   }
+
+   private closeOverlay() {
+      const stop = this.stopOverlayListeners;
+      this.stopOverlayListeners = undefined;
+      stop?.();
+
+      const overlay = this.overlayWindow;
+      this.overlayWindow = undefined;
+      if (overlay && !overlay.window.isDestroyed()) {
+         overlay.window.close();
+      }
+   }
+
+   private registerOverlayEvents() {
+      this.window.once("closed", () => this.closeOverlay());
+      ipcMain.on("overlay:open", async (_event, input: { hwnd: number; hostId: string }) => {
+         await analytics.startActiveSpan("electronMain.overlay.open", async (span) => {
+            const applications = await native.getOpenApplications();
+            const appInfo = applications.find((app) => app.hwnd === input.hwnd);
+
+            if (!appInfo) {
+               throw new Error(`Overlay: Application with hwnd ${input.hwnd} not found`);
+            }
+
+            if (!appInfo.rect) {
+               throw new Error(`Overlay: Application with hwnd ${input.hwnd} has no valid rectangle`);
+            }
+
+            this.stopOverlayListeners?.();
+            this.stopOverlayListeners = undefined;
+
+            if (!this.overlayWindow || this.overlayWindow.window.isDestroyed()) {
+               const overlay = new OverlayWindow(input.hostId);
+               this.overlayWindow = overlay;
+               overlay.window.once("closed", () => {
+                  if (this.overlayWindow === overlay) this.closeOverlay();
+               });
+            }
+
+            const overlay = this.overlayWindow;
+            let targetFocused = false;
+            let latestRect = appInfo.rect;
+            overlay.window.hide();
+
+            const update = (rect: Electron.Rectangle, window: BrowserWindow) => {
+               latestRect = rect;
+               const bounds = screen.screenToDipRect(null, rect);
+               window.setBounds(bounds, true);
+               if (targetFocused) {
+                  window.setAlwaysOnTop(true, "screen-saver");
+                  window.showInactive();
+                  window.moveTop();
+               }
+            };
+
+            const listeners: Array<() => void> = [];
+            this.stopOverlayListeners = () => {
+               for (const unlisten of listeners) unlisten();
+            };
+
+            try {
+               listeners.push(
+                  native.listenToWindowBounds(appInfo.hwnd!, (bounds) => {
+                     if (this.overlayWindow === overlay && !overlay.window.isDestroyed()) {
+                        update(bounds, overlay.window);
+                     }
+                  }),
+               );
+               listeners.push(
+                  native.listenToWindowClose(appInfo.hwnd!, () => {
+                     if (this.overlayWindow === overlay) this.closeOverlay();
+                  }),
+               );
+               listeners.push(
+                  native.listenToWindowFocus(appInfo.hwnd!, (focused) => {
+                     if (this.overlayWindow !== overlay || overlay.window.isDestroyed()) return;
+                     targetFocused = focused;
+                     if (focused) update(latestRect, overlay.window);
+                     else overlay.window.hide();
+                  }),
+               );
+               update(appInfo.rect, overlay.window);
+            } catch (error) {
+               this.closeOverlay();
+               throw error;
+            }
+         });
+      });
+
+      ipcMain.on("overlay:close", () => {
+         this.closeOverlay();
       });
    }
 }

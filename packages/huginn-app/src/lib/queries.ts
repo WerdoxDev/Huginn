@@ -17,7 +17,7 @@ import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react
 
 import { BroadcastStorage } from "./broadcast-storage";
 import { Gallery } from "./capacitor/gallery-plugin";
-import { getHostId } from "./child-window";
+import { getHostId, isChildWindow } from "./child-window";
 import { defineMutation, defineQuery } from "./query-bridge";
 import { updateUser } from "./query-utils";
 import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationship, convertToAppUser, convertToAppUserProfile } from "./utils";
@@ -25,7 +25,7 @@ import { convertToAppDirectChannel, convertToAppMessage, convertToAppRelationshi
 const hostId = getHostId();
 const storage = new BroadcastStorage(`huginn-query-storage:${hostId}`);
 
-if (window.opener) {
+if (isChildWindow()) {
    await storage.ready;
 }
 

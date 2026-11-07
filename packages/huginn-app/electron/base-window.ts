@@ -5,19 +5,20 @@ export abstract class BaseWindow {
    private readonly _window: BrowserWindow;
    private readonly name: string;
 
-   public constructor(name: string, options: BrowserWindowConstructorOptions, startPath: string = "") {
+   public constructor(name: string, options: BrowserWindowConstructorOptions, startPath: string = "", query?: Record<string, string>) {
       this.name = name;
       this._window = new BrowserWindow(options);
 
       const baseUrl = process.env.VITE_DEV_SERVER_URL;
       if (baseUrl) {
-         const url = `${baseUrl}/app/#/${startPath}`;
+         const search = query ? `?${new URLSearchParams(query)}` : "";
+         const url = `${baseUrl}/app/${search}#/${startPath}`;
 
          this._window.loadURL(url);
       } else {
          const filePath = path.join(import.meta.dirname, "../dist/index.html");
 
-         this._window.loadFile(filePath, { hash: `/${startPath}` });
+         this._window.loadFile(filePath, { hash: `/${startPath}`, query });
       }
    }
 

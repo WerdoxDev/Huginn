@@ -29,7 +29,18 @@ export function useVoiceUtils() {
    }
 
    async function toggleMute() {
-      await VoiceClient.sendMessage("toggle_mute");
+      try {
+         await VoiceClient.sendMessage("toggle_mute");
+      } catch (error) {
+         updateModals({
+            info: {
+               status: "error",
+               title: "Microphone Unavailable",
+               text: error instanceof Error ? error.message : "Unable to change your mute state. Please try again.",
+               isOpen: true,
+            },
+         });
+      }
    }
 
    async function toggleDeafen() {

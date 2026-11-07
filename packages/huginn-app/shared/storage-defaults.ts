@@ -81,5 +81,6 @@ export const storageDefaults: StorageMap = {
       deletedMatcherIds: [],
    },
    "custom-applications": [],
+   "application-preferences": {},
    "pinned-channels": [],
 };
