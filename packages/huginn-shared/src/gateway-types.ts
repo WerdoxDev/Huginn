@@ -221,6 +221,7 @@ export type GatewayVoiceStateFlags = {
    isScreenSharing: boolean;
    isAudioStreaming: boolean;
    isCameraOn: boolean;
+   isCameraInverted: boolean;
 };
 
 export type GatewayVoiceStateUpdateData = GatewayVoiceState;
