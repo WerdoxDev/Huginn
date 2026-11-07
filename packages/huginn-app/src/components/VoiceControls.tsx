@@ -5,7 +5,7 @@ import { VoiceClient } from "@lib/voice/voice-client";
 import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useStorage, useStorageStore } from "@stores/storageStore";
+import { useStorage } from "@stores/storageStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import clsx from "clsx";
 import { useEffect, useState, type MouseEvent } from "react";
@@ -46,7 +46,6 @@ export default function VoiceControls(props: {
    const { voiceState } = useVoiceStore();
    const { updateModals } = useModals();
    const settings = useStorage("settings");
-   const { updateSettings } = useStorageStore();
 
    const videoSource = props.mediaSources.find((x) => x.kind === "stream_video" && x.type === "producing");
    const audioSource = props.mediaSources.find((x) => x.kind === "stream_audio" && x.type === "producing");
@@ -234,7 +233,9 @@ export default function VoiceControls(props: {
                                  <HuginnMenu.Item
                                     label="Invert Camera"
                                     checked={settings.isCameraInverted}
-                                    onClick={() => void updateSettings({ isCameraInverted: !settings.isCameraInverted })}
+                                    onClick={() =>
+                                       void VoiceClient.sendMessage("set_camera_inverted", { isCameraInverted: !settings.isCameraInverted })
+                                    }
                                     endSlot={settings.isCameraInverted ? <IconMingcuteCheckFill className="text-positive-300" /> : undefined}
                                  />
                               </HuginnMenu.Content>

@@ -241,7 +241,7 @@ export default function ScreenShareModal() {
             <HuginnAccordion>
                <HuginnAccordion.Item className="flex flex-col gap-y-2.5">
                   <HuginnAccordion.Header>
-                     <HuginnAccordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center text-white transition-colors">
+                     <HuginnAccordion.Trigger className="group hover:text-primary-500 flex w-full cursor-pointer items-center font-semibold text-white transition-colors">
                         <span>Advanced</span>
                         <IconMingcuteDownFill className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-panel-open:rotate-180" />
                      </HuginnAccordion.Trigger>
@@ -250,7 +250,7 @@ export default function ScreenShareModal() {
                      {modal.type === "create" && (
                         <HuginnCheckbox checked={isSimulcastEnabled} onChange={setIsSimulcastEnabled} className="flex-col">
                            <HuginnCheckbox.Input innerClassName="bg-surface!">Use Simulcast</HuginnCheckbox.Input>
-                           <div className="mt-1 max-w-40 text-xs text-white/40">Requires more bandwidth. Provides better experience for others</div>
+                           <div className="text-text/50 mt-1 max-w-40 text-xs">Requires more bandwidth. Provides better experience for others</div>
                         </HuginnCheckbox>
                      )}
                      <HuginnSlider

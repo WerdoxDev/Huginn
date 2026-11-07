@@ -64,6 +64,10 @@ type VoiceProtocol = {
       data: { deviceId?: string; frameRate?: number; facingMode?: "user" | "environment" };
       result: undefined;
    };
+   set_camera_inverted: {
+      data: { isCameraInverted: boolean };
+      result: undefined;
+   };
    prepare_stream_replacement: {
       data: undefined;
       result: undefined;

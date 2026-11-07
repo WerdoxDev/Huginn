@@ -1,6 +1,7 @@
 import type { HuginnClient } from "@huginnjs/api";
 
 import { EventEmitter } from "@huginnjs/shared";
+import { storageStore } from "@stores/storageStore";
 import { windowStore } from "@stores/windowStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -117,5 +118,35 @@ describe("stream settings", () => {
       expect(voice.updateDesktopCapture).toHaveBeenCalledWith(captureOptions);
       expect(voice.stream.updateVideoBitrate).toHaveBeenCalledWith(2_000_000);
       expect(voice.stream.updateVideoParameters).not.toHaveBeenCalled();
+   });
+});
+
+describe("camera inversion", () => {
+   it.each([true, false])("persists an inversion request from a popout: %s", async (isCameraInverted) => {
+      await storageStore.getState().updateSettings({ isCameraInverted: !isCameraInverted });
+      channel.onmessage?.(
+         new MessageEvent("message", {
+            data: {
+               kind: "request",
+               hostId: "host",
+               requestId: "invert",
+               type: "set_camera_inverted",
+               data: { isCameraInverted },
+            },
+         }),
+      );
+
+      await vi.waitFor(() =>
+         expect(channel.postMessage).toHaveBeenCalledWith({
+            kind: "result",
+            hostId: "host",
+            requestId: "invert",
+            type: "set_camera_inverted",
+            result: undefined,
+         }),
+      );
+      expect(storageStore.getState().cache.settings.isCameraInverted).toBe(isCameraInverted);
+      const saved = await storageStore.getState().storage.loadFile("settings");
+      expect(saved.data.isCameraInverted).toBe(isCameraInverted);
    });
 });

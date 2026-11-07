@@ -182,6 +182,10 @@ export class VoiceHost {
                   await this.handleOpenCamera(request.data.deviceId, request.data.frameRate, request.data.facingMode);
                   this.sendResult(request, undefined);
                   break;
+               case "set_camera_inverted":
+                  await storageStore.getState().updateSettings({ isCameraInverted: request.data.isCameraInverted });
+                  this.sendResult(request, undefined);
+                  break;
                case "update_stream":
                   await this.handleUpdateStream(request.data);
                   this.sendResult(request, undefined);
