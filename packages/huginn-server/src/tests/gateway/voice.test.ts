@@ -6,7 +6,7 @@ import { expectCallStateExactSchema, expectVoiceServerExactSchema, expectVoiceSt
 import { authHeader, createTestChannel, createTestUsers, getIdentifiedWebSocket, getReadyWebSocket, multiDone, testIsDispatch, wsSend } from "#tests/utils";
 
 describe("Voice", () => {
-   test("should receive both VOICE_SERVER_UPDATE and VOICE_STATE_UPDATE after sending OP 6", async (done) => {
+   test("should broadcast camera inversion in VOICE_STATE_UPDATE after sending OP 6", async (done) => {
       const [user, user2] = await createTestUsers(2);
 
       const channel = await createTestChannel(undefined, ChannelType.DM, user.id, user2.id);
@@ -25,6 +25,7 @@ describe("Voice", () => {
             isScreenSharing: false,
             isAudioStreaming: false,
             isCameraOn: false,
+            isCameraInverted: true,
          },
       };
 
@@ -37,7 +38,13 @@ describe("Voice", () => {
             tryDone();
          }
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, { channelId: channel.id.toString(), guildId: null, userId: user.id.toString(), sessionId });
+            expectVoiceStateExactSchema(data.d, {
+               channelId: channel.id.toString(),
+               guildId: null,
+               userId: user.id.toString(),
+               sessionId,
+               flags: { isCameraInverted: true },
+            });
             tryDone();
          }
       };
@@ -46,7 +53,13 @@ describe("Voice", () => {
       ws2.onmessage = (event) => {
          const data = JSON.parse(event.data);
          if (testIsDispatch(data, "voice_state_update")) {
-            expectVoiceStateExactSchema(data.d, { channelId: channel.id.toString(), guildId: null, userId: user.id.toString(), sessionId });
+            expectVoiceStateExactSchema(data.d, {
+               channelId: channel.id.toString(),
+               guildId: null,
+               userId: user.id.toString(),
+               sessionId,
+               flags: { isCameraInverted: true },
+            });
             tryDone();
          }
       };
@@ -118,6 +131,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -159,6 +173,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -172,6 +187,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -219,6 +235,7 @@ describe("Voice", () => {
                isAudioStreaming: false,
                isScreenSharing: false,
                isCameraOn: false,
+               isCameraInverted: false,
             },
          };
 
@@ -232,6 +249,7 @@ describe("Voice", () => {
                isAudioStreaming: false,
                isScreenSharing: false,
                isCameraOn: false,
+               isCameraInverted: false,
             },
          };
 
@@ -283,6 +301,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -343,6 +362,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -361,6 +381,7 @@ describe("Voice", () => {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          },
       };
 
@@ -398,6 +419,7 @@ describe("Voice", () => {
                         isAudioStreaming: false,
                         isScreenSharing: false,
                         isCameraOn: true,
+                        isCameraInverted: false,
                      },
                   });
                   tryDone();
@@ -413,6 +435,7 @@ describe("Voice", () => {
                         isAudioStreaming: true,
                         isScreenSharing: false,
                         isCameraOn: false,
+                        isCameraInverted: false,
                      },
                   });
                   tryDone();
@@ -432,6 +455,7 @@ describe("Voice", () => {
                isAudioStreaming: false,
                isScreenSharing: false,
                isCameraOn: true,
+               isCameraInverted: false,
             },
          };
 
@@ -445,6 +469,7 @@ describe("Voice", () => {
                isAudioStreaming: true,
                isScreenSharing: false,
                isCameraOn: false,
+               isCameraInverted: false,
             },
          };
 

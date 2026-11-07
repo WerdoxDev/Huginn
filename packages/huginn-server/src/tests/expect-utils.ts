@@ -335,6 +335,7 @@ export function expectVoiceStateExactSchema(voiceState: any, options: ExpectVoic
       isScreenSharing: options.flags?.isScreenSharing ?? voiceState.isScreenSharing,
       isAudioStreaming: options.flags?.isAudioStreaming ?? voiceState.isAudioStreaming,
       isCameraOn: options.flags?.isCameraOn ?? voiceState.isCameraOn,
+      isCameraInverted: options.flags?.isCameraInverted ?? voiceState.isCameraInverted,
    });
 }
 
