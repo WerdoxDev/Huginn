@@ -22,6 +22,7 @@ import SettingsDevicesTab from "./settings/SettingsDevicesTab";
 import SettingsInstancesTab from "./settings/SettingsInstancesTab";
 import SettingsKeybindsTab from "./settings/SettingsKeybindsTab";
 import SettingsNotificationTab from "./settings/SettingsNotificationTab";
+import SettingsOverlayTab from "./settings/SettingsOverlayTab";
 import SettingsProfileTab from "./settings/SettingsProfileTab";
 import SettingsRegisterTab from "./settings/SettingsRegisterTab";
 import SettingsSecurityTab from "./settings/SettingsSecurityTab";
@@ -76,6 +77,13 @@ const tabs: SettingsTabType[] = [
          },
          { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab, condition: __IS_ELECTRON__ },
          {
+            name: "overlay",
+            text: "Overlay",
+            icon: <IconMingcuteEyeLine />,
+            component: SettingsOverlayTab,
+            condition: __IS_ELECTRON__,
+         },
+         {
             name: "system",
             text: "System",
             icon: <IconMingcuteSettings5Fill />,
@@ -125,7 +133,10 @@ const tabs: SettingsTabType[] = [
 function useFlatTabs() {
    const client = useClient();
 
-   return tabs.filter((x) => x.children && (client?.gateway.status === "authenticated" || !x?.auth)).flatMap((x) => x.children);
+   return tabs
+      .filter((x) => x.children && (client?.gateway.status === "authenticated" || !x?.auth))
+      .flatMap((x) => x.children)
+      .filter((x) => x?.condition === undefined || x.condition === true);
 }
 
 export default function SettingsModal() {

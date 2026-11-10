@@ -316,6 +316,8 @@ export type AppSettings = {
    isVoiceMuted: boolean;
    isVoiceDeafened: boolean;
    isNotificationsEnabled: boolean;
+   overlayEnabled: boolean;
+   voiceOverlayOnlySpeaking: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };

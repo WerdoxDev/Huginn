@@ -40,4 +40,28 @@ describe("application overlay button", () => {
       render(<ApplicationOverlayButton applicationKey="known:7" />);
       expect(screen.queryByRole("button")).toBeNull();
    });
+
+   test("indicates the global override for known and registered apps and preserves their preferences", async () => {
+      windowStore.setState({ environment: "desktop" });
+      storageStore.getState().setCachedValue("application-preferences", { "custom:/custom.exe": { overlayEnabled: false } });
+      render(
+         <>
+            <ApplicationOverlayButton applicationKey="known:7" />
+            <ApplicationOverlayButton applicationKey="custom:/custom.exe" />
+         </>,
+      );
+
+      await act(async () => storageStore.getState().updateSettings({ overlayEnabled: false }));
+      const buttons = screen.getAllByRole("button", { name: "Overlay disabled globally. Enable it in Settings > Overlay.", pressed: false });
+      expect(buttons).toHaveLength(2);
+      for (const button of buttons) {
+         expect(button.getAttribute("aria-disabled")).toBe("true");
+         await act(async () => fireEvent.click(button));
+      }
+      expect(storageStore.getState().cache["application-preferences"]).toEqual({ "custom:/custom.exe": { overlayEnabled: false } });
+
+      await act(async () => storageStore.getState().updateSettings({ overlayEnabled: true }));
+      expect(screen.getByRole("button", { name: "Disable overlay", pressed: true })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Enable overlay", pressed: false })).toBeTruthy();
+   });
 });

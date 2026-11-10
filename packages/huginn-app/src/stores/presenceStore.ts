@@ -104,6 +104,10 @@ export function initPresenceStore() {
       (state) => state.cache["application-preferences"],
       () => syncOverlay(),
    );
+   const unlistenOverlaySettings = storageStore.subscribe(
+      (state) => state.cache.settings?.overlayEnabled,
+      () => syncOverlay(),
+   );
 
    const unlisten4 = client.gateway.listen("disconnected", stopCheckingForActivity);
    const unlisten5 = client.gateway.listen("resumed", startCheckingForActivity);
@@ -117,6 +121,7 @@ export function initPresenceStore() {
       unlisten5();
       unlisten6();
       unlistenPreferences();
+      unlistenOverlaySettings();
       stopCheckingForActivity();
    };
 }
@@ -126,7 +131,8 @@ let overlayTarget: number | string | undefined;
 function syncOverlay() {
    const active = store.getState().activeApplication;
    const preferences = storageStore.getState().getCachedValue("application-preferences");
-   const target = active && (preferences?.[active.key]?.overlayEnabled ?? true) ? (active.hwnd ?? active.hyprlandAddress) : undefined;
+   const enabled = storageStore.getState().getCachedValue("settings")?.overlayEnabled ?? true;
+   const target = enabled && active && (preferences?.[active.key]?.overlayEnabled ?? true) ? (active.hwnd ?? active.hyprlandAddress) : undefined;
 
    if (target === overlayTarget) return;
    if (target) window.electronAPI.openOverlay(target, getHostId());

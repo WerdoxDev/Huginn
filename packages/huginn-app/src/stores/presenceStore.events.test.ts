@@ -181,6 +181,57 @@ describe("presence gateway events", () => {
       expect(presenceStore.getState().activeApplication).toBeUndefined();
    });
 
+   test.each([123, "0xabc"])("applies global settings immediately to overlay target %s and respects per-app preferences", async (target) => {
+      startRegionalActivity("regional-icon");
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = {
+         getOpenApplications: vi
+            .fn()
+            .mockResolvedValue([
+               {
+                  processId: 1,
+                  ...(typeof target === "number" ? { hwnd: target } : { hyprlandAddress: target }),
+                  exePath: "/games/regional.exe",
+                  windowTitle: "Shared game",
+               },
+            ]),
+         openOverlay,
+         closeOverlay,
+      } as unknown as typeof window.electronAPI;
+      const setGlobalOverlay = (overlayEnabled: boolean) =>
+         storageStore.getState().setCachedValue("settings", { ...storageStore.getState().cache.settings, overlayEnabled });
+
+      setGlobalOverlay(false);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).not.toHaveBeenCalled();
+      expect(gateway.updatePresence).toHaveBeenCalled();
+      gateway.updatePresence.mockClear();
+      presenceStore.setState({
+         session: {
+            ...presenceStore.getState().session,
+            activities: [
+               { ...makeSession("local", "Shared game").activities[0], applicationId: 2, iconUrl: "/application-icons/7/regional-icon.webp" },
+            ],
+         },
+      });
+
+      setGlobalOverlay(true);
+      expect(openOverlay).toHaveBeenCalledExactlyOnceWith(target, getHostId());
+      setGlobalOverlay(false);
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledOnce();
+
+      storageStore.getState().setCachedValue("application-preferences", { "known:7": { overlayEnabled: false } });
+      setGlobalOverlay(true);
+      expect(openOverlay).toHaveBeenCalledOnce();
+      storageStore.getState().setCachedValue("application-preferences", {});
+      expect(openOverlay).toHaveBeenCalledTimes(2);
+      expect(openOverlay).toHaveBeenLastCalledWith(target, getHostId());
+      expect(gateway.updatePresence).not.toHaveBeenCalled();
+   });
+
    test("opens and retargets a Hyprland overlay using the window address", async () => {
       startRegionalActivity("regional-icon");
       const getOpenApplications = vi
