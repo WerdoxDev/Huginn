@@ -1,6 +1,8 @@
 import binding from "bindings";
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { readlink } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 
 import { getLinuxProcessIconBase64, updateLinuxProcessIdentifiers } from "./linux-app-icons";
@@ -16,11 +18,14 @@ export type ProcessInfo = {
    exePath?: string;
    hwnd?: number;
    stableId?: string;
+   /** Hyprland toplevel address, kept separate from Windows HWNDs and capture stable IDs. */
+   hyprlandAddress?: string;
    isBorderlessFullscreen?: boolean;
    rect?: { x: number; y: number; width: number; height: number } | null;
 };
 
 type HyprlandClient = {
+   address: string;
    pid: number;
    title: string;
    at: [number, number];
@@ -102,6 +107,7 @@ async function getOpenApplications(): Promise<ProcessInfo[]> {
                exePath,
                hwnd: undefined,
                stableId: x.stableId,
+               hyprlandAddress: x.address,
                rect: { x: x.at[0], y: x.at[1], width: x.size[0], height: x.size[1] },
             };
          }),
@@ -233,7 +239,15 @@ function startDesktopCaptureLINUX(options: {
    });
 }
 
+function getHyprlandOverlayHelperPath(): string {
+   // bindings exposes the path used to load the .node module. Executables must live
+   // outside Electron's asar archive, alongside the unpacked native binding.
+   const bindingPath = createRequire(import.meta.url).resolve((addon as Addon & { path: string }).path);
+   return join(dirname(bindingPath), "huginn-hyprland-overlay").replace(/\.asar([/\\])/, ".asar.unpacked$1");
+}
+
 export default {
+   getHyprlandOverlayHelperPath,
    ...addon,
    getProcessIconBase64,
    startDesktopCaptureLINUX,
