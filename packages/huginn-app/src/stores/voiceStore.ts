@@ -1,4 +1,4 @@
-import { type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginnjs/shared";
+import { recordSpanError, type GatewayCallState, type GatewayVoiceState, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { syncZustandStore } from "@lib/sync-zustand";
 import { clientStore } from "@stores/clientStoreState";
@@ -84,6 +84,7 @@ export async function initVoiceStore() {
    const settings = storageStore.getState().getCachedValue("settings");
    const isDeafened = settings?.isVoiceDeafened ?? false;
    const isMuted = settings?.isVoiceMuted ?? false;
+   const isCameraInverted = settings?.isCameraInverted ?? false;
    store.setState({
       voiceState: client.voiceManager.voiceState.gatewayVoiceState,
    });
@@ -92,15 +93,26 @@ export async function initVoiceStore() {
          ...state.voiceState,
          isAudioMuted: isDeafened ? true : isMuted,
          isAudioDeafened: isDeafened,
+         isCameraInverted,
       },
    }));
    await client.voiceManager.voiceState.updateGatewayVoiceState({
       isAudioMuted: isDeafened ? true : isMuted,
       isAudioDeafened: isDeafened,
+      isCameraInverted,
    });
    store.setState({
       voiceState: client.voiceManager.voiceState.gatewayVoiceState,
    });
+
+   unlisteners.push(
+      storageStore.subscribe(
+         (state) => state.cache.settings?.isCameraInverted ?? false,
+         (isCameraInverted) => {
+            void client.voiceManager.voiceState.updateGatewayVoiceState({ isCameraInverted }).catch(recordSpanError);
+         },
+      ),
+   );
 
    unlisteners.push(
       client.gateway.listen("ready", async (d) => {

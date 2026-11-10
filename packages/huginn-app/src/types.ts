@@ -83,6 +83,7 @@ export type SettingsTabType = {
    children?: Omit<SettingsTabType, "children">[];
    icon?: ReactNode;
    component?: (props: SettingsTabProps) => React.JSX.Element | undefined;
+   condition?: boolean;
 };
 
 export type SettingsTabProps = {
@@ -315,6 +316,8 @@ export type AppSettings = {
    isVoiceMuted: boolean;
    isVoiceDeafened: boolean;
    isNotificationsEnabled: boolean;
+   overlayEnabled: boolean;
+   voiceOverlayOnlySpeaking: boolean;
 };
 
 export type Keybind = { type: KeybindType; combination: string[]; isEnabled: boolean };
@@ -333,12 +336,17 @@ export type ClientInfo = {
    lastVersion?: string;
 };
 
+export type ApplicationPreferenceKey = `known:${number}` | `custom:${string}`;
+
+export type ApplicationPreferences = Record<ApplicationPreferenceKey, { overlayEnabled?: boolean }>;
+
 export type StorageMap = {
    settings: AppSettings;
    instances: InstanceProfile[];
    keybinds: Keybind[];
    "application-catalog": APIGetApplicationCatalogResult;
    "custom-applications": CustomApplication[];
+   "application-preferences": ApplicationPreferences;
    "client-info": ClientInfo;
    "pinned-channels": Snowflake[];
 };

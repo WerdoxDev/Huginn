@@ -36,7 +36,7 @@ export default {
    pacman: {
       artifactName: "${productName}_${version}_${arch}.tar.zst",
       compression: "zstd",
-      depends: ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-core", "libsecret", "wf-recorder"],
+      depends: ["gtk3", "libnotify", "nss", "libxss", "libxtst", "xdg-utils", "at-spi2-core", "libsecret", "wf-recorder", "wayland"],
    },
 
    appImage: {
@@ -45,6 +45,7 @@ export default {
    },
 
    npmRebuild: false,
+   asarUnpack: ["node_modules/native-addon/build/Release/huginn-hyprland-overlay"],
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
    files: [
       "dist/**/*",

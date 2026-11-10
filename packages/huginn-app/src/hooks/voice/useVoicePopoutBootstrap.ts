@@ -12,7 +12,7 @@ type VoicePopoutState = {
    isReady: boolean;
 };
 
-export function useVoicePopoutBootstrap(): VoicePopoutState {
+export function useVoicePopoutBootstrap({ allowDisconnected = false } = {}): VoicePopoutState {
    const [state, setState] = useState<VoicePopoutState>({ channelId: null, error: null, isReady: false });
 
    useEffect(() => {
@@ -24,13 +24,13 @@ export function useVoicePopoutBootstrap(): VoicePopoutState {
 
             VoiceClient.configure(getHostId());
             const snapshot = await VoiceClient.sendMessage("get_snapshot");
-            if (!snapshot.connection) throw new Error("The host window is not connected to voice");
+            if (!snapshot.connection && !allowDisconnected) throw new Error("The host window is not connected to voice");
 
             voiceSnapshotStore.setMediaSources(snapshot.mediaSources);
             voiceSnapshotStore.setPopoutWindows(snapshot.popoutState);
             await initializeClient();
 
-            if (!cancelled) setState({ channelId: snapshot.connection.channelId, error: null, isReady: true });
+            if (!cancelled) setState({ channelId: snapshot.connection?.channelId ?? null, error: null, isReady: true });
          } catch (reason) {
             if (!cancelled) {
                setState({ channelId: null, error: reason instanceof Error ? reason.message : String(reason), isReady: true });
@@ -42,7 +42,7 @@ export function useVoicePopoutBootstrap(): VoicePopoutState {
       return () => {
          cancelled = true;
       };
-   }, []);
+   }, [allowDisconnected]);
 
    return state;
 }

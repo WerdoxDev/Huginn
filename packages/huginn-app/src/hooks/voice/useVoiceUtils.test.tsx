@@ -79,6 +79,18 @@ describe("voice controls", () => {
       expect(mocks.sendMessage).toHaveBeenCalledWith(message);
    });
 
+   it("shows the missing microphone error when unmuting is rejected", async () => {
+      const message = "No microphone was found. Connect a microphone and try again.";
+      mocks.sendMessage.mockRejectedValueOnce(new Error(message));
+      const { result } = renderHook(() => useVoiceUtils());
+
+      await act(() => result.current.toggleMute());
+
+      expect(mocks.updateModals).toHaveBeenCalledWith({
+         info: { isOpen: true, status: "error", title: "Microphone Unavailable", text: message },
+      });
+   });
+
    it("opens the selected camera and can flip between front and rear cameras", async () => {
       const { result } = renderHook(() => useVoiceUtils());
       await act(() => result.current.openCamera());

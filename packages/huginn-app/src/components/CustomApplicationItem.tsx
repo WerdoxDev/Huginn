@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import type { CustomApplication } from "@/types";
 
+import ApplicationOverlayButton from "./ApplicationOverlayButton";
 import Tooltip from "./tooltip/Tooltip";
 
 export default function CustomApplicationItem(props: {
@@ -44,7 +45,8 @@ export default function CustomApplicationItem(props: {
                </div>
             )}
          </div>
-         <div className="ml-auto shrink-0">
+         <div className="ml-auto flex shrink-0 items-center gap-2">
+            <ApplicationOverlayButton applicationKey={`custom:${props.application.exePath}`} />
             <Tooltip>
                <Tooltip.Trigger
                   onClick={() => props.onDelete?.(props.application.exePath)}

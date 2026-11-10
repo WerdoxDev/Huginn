@@ -1,6 +1,7 @@
 import type { APIGetApplicationCatalogResult, GatewayReadyData, GatewaySession, GatewayWebsocketEvents } from "@huginnjs/shared";
 
 import { ActivityType, EventEmitter, GatewayCode } from "@huginnjs/shared";
+import { getHostId } from "@lib/child-window";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { createTestUser } from "@/test-utils";
@@ -137,6 +138,187 @@ describe("presence gateway events", () => {
             ],
          }),
       );
+   });
+
+   test.each(["known", "custom"] as const)("toggles the %s game's overlay immediately without republishing its activity", async (kind) => {
+      const local = makeSession("local", "Shared game");
+      if (kind === "known") {
+         local.activities[0] = { ...local.activities[0], applicationId: 2, iconUrl: "/application-icons/7/regional-icon.webp" };
+      }
+      startRegionalActivity("regional-icon", local);
+      const key = kind === "known" ? "known:7" : "custom:/games/regional.exe";
+      if (kind === "custom") {
+         storageStore.getState().setCachedValue("application-catalog", { ...regionalCatalog(null), games: [], matchers: [] });
+         storageStore.getState().setCachedValue("custom-applications", [{ title: "Shared game", exePath: "/games/regional.exe", isEnabled: true }]);
+      }
+      const getOpenApplications = vi
+         .fn()
+         .mockResolvedValue([{ processId: 1, hwnd: 123, exePath: "/games/regional.exe", windowTitle: "Shared game" }]);
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(presenceStore.getState().activeApplication).toEqual({ key, hwnd: 123 });
+      expect(openOverlay).toHaveBeenCalledExactlyOnceWith(123, getHostId());
+      expect(gateway.updatePresence).not.toHaveBeenCalled();
+
+      storageStore.getState().setCachedValue("application-preferences", { [key]: { overlayEnabled: false } });
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledOnce();
+
+      storageStore.getState().setCachedValue("application-preferences", { [key]: { overlayEnabled: true } });
+      expect(openOverlay).toHaveBeenCalledTimes(2);
+      expect(openOverlay).toHaveBeenLastCalledWith(123, getHostId());
+      expect(gateway.updatePresence).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledTimes(2);
+      getOpenApplications.mockResolvedValue([]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(closeOverlay).toHaveBeenCalledTimes(2);
+      expect(presenceStore.getState().activeApplication).toBeUndefined();
+   });
+
+   test.each([123, "0xabc"])("applies global settings immediately to overlay target %s and respects per-app preferences", async (target) => {
+      startRegionalActivity("regional-icon");
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = {
+         getOpenApplications: vi
+            .fn()
+            .mockResolvedValue([
+               {
+                  processId: 1,
+                  ...(typeof target === "number" ? { hwnd: target } : { hyprlandAddress: target }),
+                  exePath: "/games/regional.exe",
+                  windowTitle: "Shared game",
+               },
+            ]),
+         openOverlay,
+         closeOverlay,
+      } as unknown as typeof window.electronAPI;
+      const setGlobalOverlay = (overlayEnabled: boolean) =>
+         storageStore.getState().setCachedValue("settings", { ...storageStore.getState().cache.settings, overlayEnabled });
+
+      setGlobalOverlay(false);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).not.toHaveBeenCalled();
+      expect(gateway.updatePresence).toHaveBeenCalled();
+      gateway.updatePresence.mockClear();
+      presenceStore.setState({
+         session: {
+            ...presenceStore.getState().session,
+            activities: [
+               { ...makeSession("local", "Shared game").activities[0], applicationId: 2, iconUrl: "/application-icons/7/regional-icon.webp" },
+            ],
+         },
+      });
+
+      setGlobalOverlay(true);
+      expect(openOverlay).toHaveBeenCalledExactlyOnceWith(target, getHostId());
+      setGlobalOverlay(false);
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledOnce();
+
+      storageStore.getState().setCachedValue("application-preferences", { "known:7": { overlayEnabled: false } });
+      setGlobalOverlay(true);
+      expect(openOverlay).toHaveBeenCalledOnce();
+      storageStore.getState().setCachedValue("application-preferences", {});
+      expect(openOverlay).toHaveBeenCalledTimes(2);
+      expect(openOverlay).toHaveBeenLastCalledWith(target, getHostId());
+      expect(gateway.updatePresence).not.toHaveBeenCalled();
+   });
+
+   test("opens and retargets a Hyprland overlay using the window address", async () => {
+      startRegionalActivity("regional-icon");
+      const getOpenApplications = vi
+         .fn()
+         .mockResolvedValue([
+            { processId: 1, hyprlandAddress: "0xabc", stableId: "capture-id", exePath: "/games/regional.exe", windowTitle: "Shared game" },
+         ]);
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledExactlyOnceWith("0xabc", getHostId());
+      storageStore.getState().setCachedValue("application-preferences", { "known:7": { overlayEnabled: false } });
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      storageStore.getState().setCachedValue("application-preferences", {});
+      getOpenApplications.mockResolvedValue([
+         { processId: 1, hyprlandAddress: "0xdef", stableId: "capture-id", exePath: "/games/regional.exe", windowTitle: "Shared game" },
+      ]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenLastCalledWith("0xdef", getHostId());
+      getOpenApplications.mockResolvedValue([]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(closeOverlay).toHaveBeenCalledTimes(2);
+   });
+
+   test("keeps a known game's overlay disabled across matchers and still publishes presence", async () => {
+      startRegionalActivity("regional-icon");
+      storageStore.getState().setCachedValue("application-preferences", { "known:7": { overlayEnabled: false } });
+      const getOpenApplications = vi
+         .fn()
+         .mockResolvedValue([{ processId: 1, hwnd: 123, exePath: "/games/regional.exe", windowTitle: "Shared game" }]);
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).not.toHaveBeenCalled();
+      expect(gateway.updatePresence).toHaveBeenCalled();
+
+      getOpenApplications.mockResolvedValue([{ processId: 2, hwnd: 456, exePath: "/games/global.exe", windowTitle: "Shared game" }]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).not.toHaveBeenCalled();
+      expect(presenceStore.getState().activeApplication).toEqual({ key: "known:7", hwnd: 456 });
+   });
+
+   test("closes the previous overlay when switching to a disabled game or losing the window", async () => {
+      startRegionalActivity("regional-icon");
+      const getOpenApplications = vi
+         .fn()
+         .mockResolvedValue([{ processId: 1, hwnd: 123, exePath: "/games/regional.exe", windowTitle: "Shared game" }]);
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+      await vi.advanceTimersByTimeAsync(5000);
+      storageStore.getState().setCachedValue("custom-applications", [{ title: "Custom game", exePath: "/custom.exe", isEnabled: true }]);
+      storageStore.getState().setCachedValue("application-preferences", { "custom:/custom.exe": { overlayEnabled: false } });
+      expect(closeOverlay).not.toHaveBeenCalled();
+
+      getOpenApplications.mockResolvedValue([{ processId: 2, hwnd: 456, exePath: "/custom.exe", windowTitle: "Custom game" }]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      expect(openOverlay).toHaveBeenCalledOnce();
+
+      storageStore.getState().setCachedValue("application-preferences", {});
+      expect(openOverlay).toHaveBeenLastCalledWith(456, getHostId());
+      getOpenApplications.mockResolvedValue([{ processId: 2, exePath: "/custom.exe", windowTitle: "Custom game" }]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(closeOverlay).toHaveBeenCalledTimes(2);
+   });
+
+   test("does not reopen an overlay when an in-flight detection finishes after cleanup", async () => {
+      startRegionalActivity("regional-icon");
+      const getOpenApplications = vi.fn();
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      let resolveApplications!: (applications: unknown[]) => void;
+      getOpenApplications.mockReturnValue(
+         new Promise((resolve) => {
+            resolveApplications = resolve;
+         }),
+      );
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+      await vi.advanceTimersByTimeAsync(5000);
+      cleanup?.();
+      resolveApplications([{ processId: 1, hwnd: 123, exePath: "/games/regional.exe", windowTitle: "Shared game" }]);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(openOverlay).not.toHaveBeenCalled();
+      expect(presenceStore.getState().activeApplication).toBeUndefined();
    });
 
    test("merges private activities on session_update while keeping the local session separate", () => {

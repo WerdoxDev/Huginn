@@ -182,6 +182,10 @@ export class VoiceHost {
                   await this.handleOpenCamera(request.data.deviceId, request.data.frameRate, request.data.facingMode);
                   this.sendResult(request, undefined);
                   break;
+               case "set_camera_inverted":
+                  await storageStore.getState().updateSettings({ isCameraInverted: request.data.isCameraInverted });
+                  this.sendResult(request, undefined);
+                  break;
                case "update_stream":
                   await this.handleUpdateStream(request.data);
                   this.sendResult(request, undefined);
@@ -475,6 +479,8 @@ export class VoiceHost {
       const store = storageStore.getState();
       const settings = await store.getValue("settings");
 
+      if (!newMutedState) await this.voice.ensureMicrophoneAvailable();
+
       await this.client.voiceManager.voiceState.updateGatewayVoiceState({
          isAudioMuted: newMutedState,
          isAudioDeafened: newDeafenedState,
@@ -490,7 +496,7 @@ export class VoiceHost {
 
       await this.client.voiceManager.voiceState.updateGatewayVoiceState({
          isAudioDeafened: newDeafenedState,
-         isAudioMuted: newDeafenedState ? true : settings.isVoiceMuted,
+         isAudioMuted: newDeafenedState || this.voice.isMicrophoneUnavailable || settings.isVoiceMuted,
       });
       await store.setValue("settings", { ...settings, isVoiceDeafened: newDeafenedState });
    }

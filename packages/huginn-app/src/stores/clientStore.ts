@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import { HuginnClient } from "@huginnjs/api";
 import { analytics, type APIPublicUser, type GatewayReadyData, type Snowflake } from "@huginnjs/shared";
+import { isChildWindow } from "@lib/child-window";
 import { fetchInstanceUrls, probeInstanceUrls, tryAccessAddresses } from "@lib/instances";
 import { getInitialChannels, getInitialRelationships, queryClient } from "@lib/queries";
 import { updateUser } from "@lib/query-utils";
@@ -169,7 +170,7 @@ export async function initializeClient() {
 
    store.setState({ client });
 
-   if (window.opener) return;
+   if (isChildWindow()) return;
 
    let connected = false;
    try {

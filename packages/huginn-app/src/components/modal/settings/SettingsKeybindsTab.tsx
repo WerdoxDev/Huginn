@@ -31,20 +31,25 @@ export default function SettingsKeybindsTab() {
    }, []);
 
    return (
-      <div className="flex flex-col">
-         <div className="flex w-sm flex-col gap-y-2">
-            {sortedKeybinds.map((x) => (
-               <KeybindDisplay
-                  key={x.type}
-                  type={x.type}
-                  text={keybindsTexts[x.type]}
-                  combination={x.combination}
-                  isEnabled={x.isEnabled}
-                  onChange={onChange}
-               />
-            ))}
+      <div className="flex justify-center">
+         <div className="flex w-full max-w-md flex-col">
+            <div className="mb-2 flex items-center gap-x-1">
+               <IconMingcuteInformationFill className="text-caution-100 size-5" />
+               <div className="text-text/70 text-sm italic select-none">Keybinds are disabled while you are in this page</div>
+            </div>
+            <div className="flex w-full flex-col gap-y-2">
+               {sortedKeybinds.map((x) => (
+                  <KeybindDisplay
+                     key={x.type}
+                     type={x.type}
+                     text={keybindsTexts[x.type]}
+                     combination={x.combination}
+                     isEnabled={x.isEnabled}
+                     onChange={onChange}
+                  />
+               ))}
+            </div>
          </div>
-         <div className="text-text mt-2 text-xs font-medium italic opacity-70 select-none">*Keybinds are disabled while you are in this page</div>
       </div>
    );
 }
@@ -58,11 +63,8 @@ function KeybindDisplay(props: {
 }) {
    const [displayCombination, setDisplayCombination] = useState("");
    const [isEditing, setIsEditing] = useState(false);
-   const { updateModals } = useModals();
 
    useEffect(() => {
-      // updateModals({ settings: { isClosable: !isEditing } });
-
       if (!isEditing) {
          return;
       }

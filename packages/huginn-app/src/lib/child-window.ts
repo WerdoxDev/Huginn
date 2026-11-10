@@ -15,7 +15,8 @@ export function getHostId(): string {
 }
 
 export function isChildWindow(): boolean {
-   return requestedHostId !== null && window.opener !== null;
+   // Electron overlays receive a host ID but have no browser opener.
+   return requestedHostId !== null || window.opener != null;
 }
 
 export function addHostId(url: string, targetHostId = hostId): string {

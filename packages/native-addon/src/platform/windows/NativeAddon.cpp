@@ -3,6 +3,7 @@
 #include "file_util.h"
 #include "process_icon.h"
 #include "screen_thumbnail.h"
+#include "window_listener.h"
 #include "window_thumbnail.h"
 #include "window_util.h"
 
@@ -48,6 +49,18 @@ namespace
          object.Set("cmdLine", Napi::String::New(env, window_util::WideToUtf8(app.cmdLine)));
          object.Set("processId", Napi::Number::New(env, app.processId));
          object.Set("hwnd", Napi::Number::New(env, reinterpret_cast<uintptr_t>(app.hwnd)));
+         object.Set("isBorderlessFullscreen", Napi::Boolean::New(env, app.isBorderlessFullscreen));
+
+         object.Set("rect", Napi::Object::New(env));
+
+         int width = app.rect.right - app.rect.left;
+         int height = app.rect.bottom - app.rect.top;
+
+         object.Get("rect").As<Napi::Object>().Set("x", Napi::Number::New(env, app.rect.left));
+         object.Get("rect").As<Napi::Object>().Set("y", Napi::Number::New(env, app.rect.top));
+         object.Get("rect").As<Napi::Object>().Set("width", Napi::Number::New(env, width));
+         object.Get("rect").As<Napi::Object>().Set("height", Napi::Number::New(env, height));
+
          result[index++] = object;
       }
 
@@ -86,6 +99,9 @@ Napi::Object NativeAddon::Init(Napi::Env env, Napi::Object exports)
    exports.Set("getFileSha256", Napi::Function::New(env, GetFileSHA256));
    exports.Set("getProcessIconBase64", Napi::Function::New(env, GetProcessIconBase64));
    exports.Set("getOpenApplications", Napi::Function::New(env, GetOpenApplications));
+   exports.Set("listenToWindowBounds", Napi::Function::New(env, ListenToWindowBounds));
+   exports.Set("listenToWindowClose", Napi::Function::New(env, ListenToWindowClose));
+   exports.Set("listenToWindowFocus", Napi::Function::New(env, ListenToWindowFocus));
    exports.Set("getPackageDisplayName", Napi::Function::New(env, GetPackageDisplayName));
    exports.Set("getWindowThumbnailBase64", Napi::Function::New(env, GetWindowThumbnailBase64));
    exports.Set("getScreenThumbnailBase64", Napi::Function::New(env, GetScreenThumbnailBase64));

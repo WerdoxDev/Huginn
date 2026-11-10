@@ -139,6 +139,11 @@ export const electronAPI = {
       ipcRenderer.on(`ws:error:${name}`, callback);
       return () => ipcRenderer.off(`ws:error:${name}`, callback);
    },
+
+   // Overlay
+   openOverlay: (target: number | string, hostId: string) =>
+      ipcRenderer.send("overlay:open", typeof target === "string" ? { hyprlandAddress: target, hostId } : { hwnd: target, hostId }),
+   closeOverlay: () => ipcRenderer.send("overlay:close"),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

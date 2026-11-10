@@ -9,13 +9,14 @@ import {
    type GatewaySession,
    type Snowflake,
 } from "@huginnjs/shared";
+import { getHostId } from "@lib/child-window";
 import { convertToAppPresence, convertToAppSession } from "@lib/utils";
 import { produce } from "immer";
 import { useMemo } from "react";
 import { createStore, useStore } from "zustand";
 import { combine } from "zustand/middleware";
 
-import type { ApplicationInfo, AppPresence, CustomApplication } from "@/types";
+import type { ApplicationInfo, ApplicationPreferenceKey, AppPresence, CustomApplication } from "@/types";
 
 import { clientStore } from "./clientStoreState";
 import { storageStore } from "./storageStore";
@@ -24,6 +25,7 @@ import { windowStore } from "./windowStore";
 const initialStore = () => ({
    presences: [] as AppPresence[],
    session: {} as GatewaySession,
+   activeApplication: undefined as { key: ApplicationPreferenceKey; hwnd?: number; hyprlandAddress?: string } | undefined,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -98,6 +100,15 @@ export function initPresenceStore() {
       store.getState().updatePresence(client.currentUser.id, presence);
    });
 
+   const unlistenPreferences = storageStore.subscribe(
+      (state) => state.cache["application-preferences"],
+      () => syncOverlay(),
+   );
+   const unlistenOverlaySettings = storageStore.subscribe(
+      (state) => state.cache.settings?.overlayEnabled,
+      () => syncOverlay(),
+   );
+
    const unlisten4 = client.gateway.listen("disconnected", stopCheckingForActivity);
    const unlisten5 = client.gateway.listen("resumed", startCheckingForActivity);
    const unlisten6 = client.gateway.listen("reset", stopCheckingForActivity);
@@ -109,11 +120,40 @@ export function initPresenceStore() {
       unlisten4();
       unlisten5();
       unlisten6();
+      unlistenPreferences();
+      unlistenOverlaySettings();
       stopCheckingForActivity();
    };
 }
 
+let overlayTarget: number | string | undefined;
+
+function syncOverlay() {
+   const active = store.getState().activeApplication;
+   const preferences = storageStore.getState().getCachedValue("application-preferences");
+   const enabled = storageStore.getState().getCachedValue("settings")?.overlayEnabled ?? true;
+   const target = enabled && active && (preferences?.[active.key]?.overlayEnabled ?? true) ? (active.hwnd ?? active.hyprlandAddress) : undefined;
+
+   if (target === overlayTarget) return;
+   if (target) window.electronAPI.openOverlay(target, getHostId());
+   else window.electronAPI.closeOverlay();
+   overlayTarget = target;
+}
+
+function setActiveApplication(activeApplication: ReturnType<typeof initialStore>["activeApplication"]) {
+   const previous = store.getState().activeApplication;
+   if (
+      previous?.key !== activeApplication?.key ||
+      previous?.hwnd !== activeApplication?.hwnd ||
+      previous?.hyprlandAddress !== activeApplication?.hyprlandAddress
+   ) {
+      store.setState({ activeApplication });
+   }
+   syncOverlay();
+}
+
 let activityInterval: number | undefined;
+let activityGeneration = 0;
 function startCheckingForActivity() {
    if (windowStore.getState().environment !== "desktop") {
       return;
@@ -121,6 +161,7 @@ function startCheckingForActivity() {
 
    stopCheckingForActivity();
 
+   const generation = activityGeneration;
    activityInterval = window.setInterval(async () => {
       try {
          const session = store.getState().session;
@@ -131,6 +172,7 @@ function startCheckingForActivity() {
          const knownApplications = storageStore.getState().getCachedValue("application-catalog");
          const customApplications = storageStore.getState().getCachedValue("custom-applications");
          const openApplications = await window.electronAPI.getOpenApplications();
+         if (generation !== activityGeneration) return;
 
          const knownMatch = detectKnownApplication(openApplications, knownApplications, windowStore.getState().platform);
          const customMatch = detectCustomApplication(openApplications, customApplications);
@@ -138,6 +180,7 @@ function startCheckingForActivity() {
          const ourActivities = session.activities.filter((x) => x.sessionId === client.gateway.sessionId);
 
          if (!knownMatch && !customMatch) {
+            setActiveApplication(undefined);
             // Nothing detected -> clear presence if it was set before
             if (ourActivities.length !== 0) {
                client.gateway.updatePresence({
@@ -153,6 +196,12 @@ function startCheckingForActivity() {
             custom?: CustomApplication;
             known?: { matcher: APIApplicationMatcher; game: APIKnownGame };
          } = knownMatch ?? customMatch;
+
+         setActiveApplication({
+            key: match.known ? `known:${match.known.game.id}` : `custom:${match.custom!.exePath}`,
+            hwnd: match.detected.hwnd,
+            ...(match.detected.hyprlandAddress ? { hyprlandAddress: match.detected.hyprlandAddress } : {}),
+         });
 
          const knownIconUrl = match.known?.matcher.iconHash
             ? CDNRoutes.applicationIcon(match.known.game.id, match.known.matcher.iconHash)
@@ -200,6 +249,8 @@ function startCheckingForActivity() {
 }
 
 function stopCheckingForActivity() {
+   activityGeneration++;
+   setActiveApplication(undefined);
    if (activityInterval) {
       clearInterval(activityInterval);
       activityInterval = undefined;

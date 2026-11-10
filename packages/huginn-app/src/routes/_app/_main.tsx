@@ -34,7 +34,7 @@ function MainLayoutComponent() {
    }, []);
 
    return (
-      <div className="absolute inset-0 overflow-hidden" style={{ viewTransitionName: "main" }}>
+      <div className="bg-surface-alt absolute inset-0 overflow-hidden" style={{ viewTransitionName: "main" }}>
          <WebsocketProviders>
             <Outlet />
          </WebsocketProviders>

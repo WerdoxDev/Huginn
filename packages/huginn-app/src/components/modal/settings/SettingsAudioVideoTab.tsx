@@ -265,22 +265,22 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
 
    const noiseSuppressionCheckbox = (
       <div className="flex">
-         <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-full max-w-xs">
+         <HuginnCheckbox checked={noiseSuppression} onChange={setNoiseSuppression} className="w-full max-w-md">
             <HuginnCheckbox.Input>Noise Suppression</HuginnCheckbox.Input>
          </HuginnCheckbox>
       </div>
    );
 
    const relayCheckbox = (
-      <div className="flex flex-col gap-y-2">
+      <div className="flex flex-col">
          <HuginnCheckbox
             checked={settings.forceRelay ?? false}
             onChange={(forceRelay) => props.onChange?.({ forceRelay })}
-            className="w-full max-w-xs"
+            className="w-full max-w-md"
          >
             <HuginnCheckbox.Input>Force relay for calls</HuginnCheckbox.Input>
          </HuginnCheckbox>
-         <div className="text-text/70 text-sm">
+         <div className="text-text/70 max-w-sm text-sm">
             Routes voice and video through a TURN relay configured by this instance. Calls cannot connect if no relay is available. Takes effect on
             your next call.
          </div>
@@ -291,7 +291,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
       <HuginnCheckbox
          checked={settings.isCameraInverted ?? false}
          onChange={(isCameraInverted) => props.onChange?.({ isCameraInverted })}
-         className="w-full max-w-xs"
+         className="w-full max-w-md"
       >
          <HuginnCheckbox.Input>Invert Camera</HuginnCheckbox.Input>
       </HuginnCheckbox>
@@ -443,7 +443,7 @@ export default function SettingsAudioVideoTab(props: SettingsTabProps) {
                <div className="bg-surface-alt h-px w-full" />
                <HuginnSelect
                   disabled={cameraDeviceOptions.length === 0}
-                  className="w-full max-w-xs"
+                  className="w-full max-w-md"
                   onChange={onCameraChange}
                   selected={cameraDeviceOptions.find((option) => option.value === selectedCamera?.deviceId)}
                >

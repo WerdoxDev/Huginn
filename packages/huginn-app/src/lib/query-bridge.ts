@@ -10,12 +10,13 @@ import type {
 
 import { HuginnAPIError } from "@huginnjs/shared";
 
+import { isChildWindow } from "./child-window";
 import { queryClient } from "./queries";
 
 const CHANNEL_NAME = "huginn-query-bridge";
 const REQUEST_TIMEOUT_MS = 15_000;
 
-const isMainWindow = !window.opener;
+const isMainWindow = !isChildWindow();
 
 const channel = new BroadcastChannel(CHANNEL_NAME);
 

@@ -26,7 +26,7 @@ export default function SettingsSystemTab(_props: SettingsTabProps) {
                <HuginnCheckbox checked={settings.autostart} onChange={(value) => void changeAutostart(value)}>
                   <HuginnCheckbox.Input>Start Huginn at Login</HuginnCheckbox.Input>
                </HuginnCheckbox>
-               <div className="text-text/70 mt-2 text-sm">Automatically start Huginn when you sign in to your computer.</div>
+               <div className="text-text/70 max-w-sm text-sm">Automatically start Huginn when you sign in to your computer.</div>
             </div>
             <div>
                <HuginnCheckbox
@@ -35,7 +35,7 @@ export default function SettingsSystemTab(_props: SettingsTabProps) {
                >
                   <HuginnCheckbox.Input>Use System Proxy</HuginnCheckbox.Input>
                </HuginnCheckbox>
-               <div className="text-text/70 mt-2 text-sm">Use your computer’s proxy settings for network connections.</div>
+               <div className="text-text/70 max-w-sm text-sm">Use your computer’s proxy settings for network connections.</div>
             </div>
          </div>
       </div>

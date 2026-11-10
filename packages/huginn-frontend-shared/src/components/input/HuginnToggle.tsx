@@ -51,10 +51,11 @@ function Input({
          className={clsx("group flex w-full cursor-pointer items-center justify-between disabled:cursor-not-allowed", className)}
          data-checked={context.checked ? "" : undefined}
       >
-         <span className="text-text text-xs font-medium uppercase opacity-90 select-none">{children}</span>
+         {/*<HuginnLabel>{children}</HuginnLabel>*/}
+         <span className="text-text text-sm font-medium uppercase select-none">{children}</span>
          <span
             className={clsx(
-               "bg-surface-alt group-data-checked:bg-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full p-1 ring-white/20 transition-colors",
+               "bg-surface-alt group-data-checked:bg-primary-700! not-group-data-checked:border-text/50 group-data-checked:border-primary-700 relative flex h-7 w-12 items-center justify-center rounded-full border p-1 transition-all",
                innerClassName,
             )}
          >

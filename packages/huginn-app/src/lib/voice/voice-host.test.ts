@@ -1,6 +1,7 @@
 import type { HuginnClient } from "@huginnjs/api";
 
 import { EventEmitter } from "@huginnjs/shared";
+import { storageStore } from "@stores/storageStore";
 import { windowStore } from "@stores/windowStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -25,7 +26,19 @@ let voice: ReturnType<typeof makeVoice>;
 
 function makeVoice() {
    return {
-      client: { currentUser: { id: "self" } },
+      client: {
+         currentUser: { id: "self" },
+         voiceManager: {
+            voiceState: {
+               gatewayVoiceState: { isAudioMuted: true, isAudioDeafened: false },
+               updateGatewayVoiceState: vi.fn(async (update: Partial<{ isAudioMuted: boolean; isAudioDeafened: boolean }>) => {
+                  Object.assign(voice.client.voiceManager.voiceState.gatewayVoiceState, update);
+               }),
+            },
+         },
+      },
+      isMicrophoneUnavailable: false,
+      ensureMicrophoneAvailable: vi.fn(async () => {}),
       transport: Object.assign(new EventEmitter(), {
          getConsumers: () => [],
          getProducers: () => [],
@@ -55,7 +68,7 @@ beforeEach(() => {
    );
    windowStore.setState({ environment: "browser", platform: undefined });
    voice = makeVoice();
-   host = new VoiceHost("host", voice as unknown as VoiceBridge, voice.client as HuginnClient<VoiceBridge>);
+   host = new VoiceHost("host", voice as unknown as VoiceBridge, voice.client as unknown as HuginnClient<VoiceBridge>);
 });
 
 afterEach(() => {
@@ -117,5 +130,83 @@ describe("stream settings", () => {
       expect(voice.updateDesktopCapture).toHaveBeenCalledWith(captureOptions);
       expect(voice.stream.updateVideoBitrate).toHaveBeenCalledWith(2_000_000);
       expect(voice.stream.updateVideoParameters).not.toHaveBeenCalled();
+   });
+});
+
+async function requestVoiceControl(type: "toggle_mute" | "toggle_deafen", error?: string) {
+   channel.onmessage?.(
+      new MessageEvent("message", {
+         data: { kind: "request", hostId: "host", requestId: "control", type, data: undefined },
+      }),
+   );
+   await vi.waitFor(() =>
+      expect(channel.postMessage).toHaveBeenCalledWith({
+         kind: "result",
+         hostId: "host",
+         requestId: "control",
+         type,
+         ...(error ? { error } : { result: undefined }),
+      }),
+   );
+}
+
+describe("microphone controls", () => {
+   it("keeps the user muted and returns the missing microphone error", async () => {
+      const message = "No microphone was found. Connect a microphone and try again.";
+      voice.ensureMicrophoneAvailable.mockRejectedValueOnce(new Error(message));
+
+      await requestVoiceControl("toggle_mute", message);
+
+      expect(voice.client.voiceManager.voiceState.updateGatewayVoiceState).not.toHaveBeenCalled();
+      expect(voice.client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted).toBe(true);
+   });
+
+   it("unmutes after a microphone becomes available", async () => {
+      await requestVoiceControl("toggle_mute");
+
+      expect(voice.ensureMicrophoneAvailable).toHaveBeenCalled();
+      expect(voice.client.voiceManager.voiceState.gatewayVoiceState.isAudioMuted).toBe(false);
+      expect(storageStore.getState().cache.settings.isVoiceMuted).toBe(false);
+   });
+
+   it("allows undeafening without unmuting when no microphone is available", async () => {
+      voice.isMicrophoneUnavailable = true;
+      voice.client.voiceManager.voiceState.gatewayVoiceState.isAudioDeafened = true;
+      await storageStore.getState().updateSettings({ isVoiceMuted: false });
+
+      await requestVoiceControl("toggle_deafen");
+
+      expect(voice.client.voiceManager.voiceState.gatewayVoiceState).toEqual({ isAudioMuted: true, isAudioDeafened: false });
+      expect(voice.ensureMicrophoneAvailable).not.toHaveBeenCalled();
+   });
+});
+
+describe("camera inversion", () => {
+   it.each([true, false])("persists an inversion request from a popout: %s", async (isCameraInverted) => {
+      await storageStore.getState().updateSettings({ isCameraInverted: !isCameraInverted });
+      channel.onmessage?.(
+         new MessageEvent("message", {
+            data: {
+               kind: "request",
+               hostId: "host",
+               requestId: "invert",
+               type: "set_camera_inverted",
+               data: { isCameraInverted },
+            },
+         }),
+      );
+
+      await vi.waitFor(() =>
+         expect(channel.postMessage).toHaveBeenCalledWith({
+            kind: "result",
+            hostId: "host",
+            requestId: "invert",
+            type: "set_camera_inverted",
+            result: undefined,
+         }),
+      );
+      expect(storageStore.getState().cache.settings.isCameraInverted).toBe(isCameraInverted);
+      const saved = await storageStore.getState().storage.loadFile("settings");
+      expect(saved.data.isCameraInverted).toBe(isCameraInverted);
    });
 });

@@ -373,6 +373,7 @@ export class Gateway extends SharedWebsocket<Events> {
             isAudioStreaming: false,
             isScreenSharing: false,
             isCameraOn: false,
+            isCameraInverted: false,
          });
 
          await this.waitForVoiceStateUpdate(null);

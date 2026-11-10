@@ -1,3 +1,4 @@
+import ApplicationOverlayButton from "@components/ApplicationOverlayButton";
 import CustomApplicationItem from "@components/CustomApplicationItem";
 import HuginnSelect from "@components/dropdown/HuginnSelect";
 import { ProfileActivity } from "@components/profile/ProfileComponents";
@@ -13,7 +14,7 @@ import { useMemo, useState } from "react";
 import type { CustomApplication, SelectItem, SettingsTabProps } from "@/types";
 
 export default function SettingsRegisterTab(_props: SettingsTabProps) {
-   const { session } = usePresenceStore();
+   const { session, activeApplication } = usePresenceStore();
    const { user } = useThisUser();
    const [selectedApplication, setSelectedApplication] = useState<SelectItem>();
    const huginnWindow = useHuginnWindow();
@@ -115,7 +116,12 @@ export default function SettingsRegisterTab(_props: SettingsTabProps) {
                      <div className="text-text/80">No activities detected...</div>
                   </div>
                ) : (
-                  <ProfileActivity activity={targetActivity} accentColor={accentColor} className="bg-surface-alt" />
+                  <ProfileActivity
+                     activity={targetActivity}
+                     accentColor={accentColor}
+                     className="bg-surface-alt"
+                     headerRight={activeApplication && <ApplicationOverlayButton applicationKey={activeApplication.key} />}
+                  />
                )}
             </div>
             <div className="flex flex-col">

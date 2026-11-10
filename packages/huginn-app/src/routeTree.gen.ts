@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as OverlayRouteImport } from './routes/overlay'
 import { Route as VoiceDebugRouteImport } from './routes/voice-debug'
 import { Route as AppMainRouteImport } from './routes/_app/_main'
 import { Route as AppStartRouteImport } from './routes/_app/_start'
@@ -26,6 +27,11 @@ import { Route as AppMainHomeChannelsAtmeChannelIdRouteImport } from './routes/_
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OverlayRoute = OverlayRouteImport.update({
+  id: '/overlay',
+  path: '/overlay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VoiceDebugRoute = VoiceDebugRouteImport.update({
@@ -95,6 +101,7 @@ const AppMainHomeChannelsAtmeChannelIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppStartIndexRoute
+  '/overlay': typeof OverlayRoute
   '/voice-debug': typeof VoiceDebugRoute
   '/media-popout': typeof AppMediaPopoutRoute
   '/popout': typeof AppPopoutRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppStartIndexRoute
+  '/overlay': typeof OverlayRoute
   '/voice-debug': typeof VoiceDebugRoute
   '/media-popout': typeof AppMediaPopoutRoute
   '/popout': typeof AppPopoutRoute
@@ -120,6 +128,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/overlay': typeof OverlayRoute
   '/voice-debug': typeof VoiceDebugRoute
   '/_app/_main': typeof AppMainRouteWithChildren
   '/_app/_start': typeof AppStartRouteWithChildren
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/overlay'
     | '/voice-debug'
     | '/media-popout'
     | '/popout'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/overlay'
     | '/voice-debug'
     | '/media-popout'
     | '/popout'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/overlay'
     | '/voice-debug'
     | '/_app/_main'
     | '/_app/_start'
@@ -179,6 +191,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  OverlayRoute: typeof OverlayRoute
   VoiceDebugRoute: typeof VoiceDebugRoute
 }
 
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/overlay': {
+      id: '/overlay'
+      path: '/overlay'
+      fullPath: '/overlay'
+      preLoaderRoute: typeof OverlayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/voice-debug': {
@@ -348,6 +368,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  OverlayRoute: OverlayRoute,
   VoiceDebugRoute: VoiceDebugRoute,
 }
 export const routeTree = rootRouteImport

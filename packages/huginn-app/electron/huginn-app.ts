@@ -42,6 +42,7 @@ export class HuginnApp {
    private registerEvents() {
       this.registerCliEvents();
       this.registerAppEvents();
+      // this.startOverlayCheck();
    }
 
    private async onReady() {
@@ -129,7 +130,7 @@ export class HuginnApp {
             label: "Quit",
             type: "normal",
             click: () => {
-               app.exit();
+               app.quit();
             },
          },
       ]);
@@ -160,7 +161,6 @@ export class HuginnApp {
 
    private registerAppEvents() {
       ipcMain.handle("app:set-autostart", async (_, enabled: boolean) => {
-         if (typeof enabled !== "boolean") throw new TypeError("Autostart must be a boolean");
          await applyAutostartSettings(enabled);
       });
       ipcMain.handle("app:set-proxy", async (_, useSystemProxy: boolean) => {
@@ -170,4 +170,23 @@ export class HuginnApp {
          await this.initAnalytics();
       });
    }
+
+   // private startOverlayCheck() {
+   //    setInterval(async () => {
+   //       const applications = await native.getOpenApplications();
+   //       const fullscreenApp = applications.filter((app) => app.isBorderlessFullscreen && app.rect && app.rect.width > 0 && app.rect.height > 0)[0];
+   //       console.log(fullscreenApp);
+
+   //       // clean up old overlay
+   //       if (!fullscreenApp) {
+   //          console.log("NO LONGER EXISTS");
+   //          if (this.overlayWindow) {
+   //             this.overlayWindow.window.close();
+   //             this.overlayWindow = undefined;
+   //          }
+   //          return;
+   //       }
+
+   //    }, 5000);
+   // }
 }

@@ -46,6 +46,8 @@ export const storageDefaults: StorageMap = {
       isVoiceDeafened: false,
       isVoiceMuted: false,
       isNotificationsEnabled: true,
+      overlayEnabled: true,
+      voiceOverlayOnlySpeaking: false,
    },
    instances: [
       { id: "default", name: "Default", accessAddresses: ["https://midgard.huginn.dev"] },
@@ -81,5 +83,6 @@ export const storageDefaults: StorageMap = {
       deletedMatcherIds: [],
    },
    "custom-applications": [],
+   "application-preferences": {},
    "pinned-channels": [],
 };

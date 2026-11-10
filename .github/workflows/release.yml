@@ -134,7 +134,7 @@ jobs:
            if: runner.os == 'Linux'
            run: |
               sudo apt-get update
-              sudo apt-get install --yes libarchive-tools
+              sudo apt-get install --yes libarchive-tools libwayland-dev libwayland-bin pkg-config
 
          - name: Install dependencies
            run: cd packages/huginn-app && pnpm install --ignore-scripts

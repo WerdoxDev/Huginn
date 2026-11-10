@@ -110,6 +110,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
                   isAudioDeafened: false,
                   isAudioMuted: false,
                   isCameraOn: false,
+                  isCameraInverted: false,
                   isAudioStreaming: false,
                   isScreenSharing: false,
                });
@@ -338,6 +339,7 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             "params.is_audio_deafened": data.isAudioDeafened,
             "params.is_audio_muted": data.isAudioMuted,
             "params.is_camera_on": data.isCameraOn,
+            "params.is_camera_inverted": data.isCameraInverted,
             "params.is_audio_streaming": data.isAudioStreaming,
             "params.is_screen_sharing": data.isScreenSharing,
          });
@@ -346,7 +348,18 @@ export class ServerGateway extends CommonWebsocket<ClientSession, GatewayPayload
             const userId = session?.user?.id;
             if (!session || !userId) return;
 
-            const filteredData = pick(data, ["channelId", "guildId", "isAudioDeafened", "isAudioMuted", "isCameraOn", "isScreenSharing", "isAudioStreaming"]);
+            const filteredData = pick(data, [
+               "channelId",
+               "guildId",
+               "isAudioDeafened",
+               "isAudioMuted",
+               "isCameraOn",
+               "isCameraInverted",
+               "isScreenSharing",
+               "isAudioStreaming",
+            ]);
+            // Older clients do not send the inversion flag.
+            filteredData.isCameraInverted = data.isCameraInverted === true;
 
             const previousState = this.voiceManager.getVoiceState(userId);
             this.voiceManager.updateVoiceState({ userId, ...filteredData, sessionId: session.sessionId });
