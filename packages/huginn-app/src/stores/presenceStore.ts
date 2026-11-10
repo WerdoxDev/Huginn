@@ -25,7 +25,7 @@ import { windowStore } from "./windowStore";
 const initialStore = () => ({
    presences: [] as AppPresence[],
    session: {} as GatewaySession,
-   activeApplication: undefined as { key: ApplicationPreferenceKey; hwnd?: number } | undefined,
+   activeApplication: undefined as { key: ApplicationPreferenceKey; hwnd?: number; hyprlandAddress?: string } | undefined,
 });
 
 type StoreType = ReturnType<typeof initialStore>;
@@ -121,22 +121,26 @@ export function initPresenceStore() {
    };
 }
 
-let overlayHwnd: number | undefined;
+let overlayTarget: number | string | undefined;
 
 function syncOverlay() {
    const active = store.getState().activeApplication;
    const preferences = storageStore.getState().getCachedValue("application-preferences");
-   const hwnd = active && (preferences?.[active.key]?.overlayEnabled ?? true) ? active.hwnd : undefined;
+   const target = active && (preferences?.[active.key]?.overlayEnabled ?? true) ? (active.hwnd ?? active.hyprlandAddress) : undefined;
 
-   if (hwnd === overlayHwnd) return;
-   if (hwnd) window.electronAPI.openOverlay(hwnd, getHostId());
+   if (target === overlayTarget) return;
+   if (target) window.electronAPI.openOverlay(target, getHostId());
    else window.electronAPI.closeOverlay();
-   overlayHwnd = hwnd;
+   overlayTarget = target;
 }
 
 function setActiveApplication(activeApplication: ReturnType<typeof initialStore>["activeApplication"]) {
    const previous = store.getState().activeApplication;
-   if (previous?.key !== activeApplication?.key || previous?.hwnd !== activeApplication?.hwnd) {
+   if (
+      previous?.key !== activeApplication?.key ||
+      previous?.hwnd !== activeApplication?.hwnd ||
+      previous?.hyprlandAddress !== activeApplication?.hyprlandAddress
+   ) {
       store.setState({ activeApplication });
    }
    syncOverlay();
@@ -190,6 +194,7 @@ function startCheckingForActivity() {
          setActiveApplication({
             key: match.known ? `known:${match.known.game.id}` : `custom:${match.custom!.exePath}`,
             hwnd: match.detected.hwnd,
+            ...(match.detected.hyprlandAddress ? { hyprlandAddress: match.detected.hyprlandAddress } : {}),
          });
 
          const knownIconUrl = match.known?.matcher.iconHash

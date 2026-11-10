@@ -141,7 +141,8 @@ export const electronAPI = {
    },
 
    // Overlay
-   openOverlay: (hwnd: number, hostId: string) => ipcRenderer.send("overlay:open", { hwnd, hostId }),
+   openOverlay: (target: number | string, hostId: string) =>
+      ipcRenderer.send("overlay:open", typeof target === "string" ? { hyprlandAddress: target, hostId } : { hwnd: target, hostId }),
    closeOverlay: () => ipcRenderer.send("overlay:close"),
 };
 

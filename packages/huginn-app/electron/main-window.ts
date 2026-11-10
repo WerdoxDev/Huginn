@@ -10,6 +10,7 @@ import path from "node:path";
 import type { AudioSource, DisplaySource, OsInfo } from "@/types";
 
 import { BaseWindow } from "./base-window";
+import { HyprlandOverlay } from "./hyprland-overlay";
 import * as keybindsController from "./keybinds-controller";
 import { NotificationController } from "./notification-controller";
 import { OverlayWindow } from "./overlay-window";
@@ -26,7 +27,7 @@ export class MainWindow extends BaseWindow {
    private loopbackCapture: LoopbackCapture | undefined;
    private nativeCaptureOptions?: { captureId: string; width: number; height: number; frameRate: number };
    private websocket: ElectronWebSocket = new ElectronWebSocket();
-   private overlayWindow?: OverlayWindow;
+   private overlayWindow?: OverlayWindow | HyprlandOverlay;
    private stopOverlayListeners?: () => void;
 
    public constructor() {
@@ -490,8 +491,26 @@ export class MainWindow extends BaseWindow {
 
    private registerOverlayEvents() {
       this.window.once("closed", () => this.closeOverlay());
-      ipcMain.on("overlay:open", async (_event, input: { hwnd: number; hostId: string }) => {
+      ipcMain.on("overlay:open", async (_event, input: { hwnd?: number; hyprlandAddress?: string; hostId: string }) => {
          await analytics.startActiveSpan("electronMain.overlay.open", async (span) => {
+            if (isLinux) {
+               this.closeOverlay();
+               if (!input.hyprlandAddress || this.window.isDestroyed()) return;
+               let overlay: HyprlandOverlay | undefined;
+               try {
+                  overlay = new HyprlandOverlay(input.hostId, input.hyprlandAddress);
+                  this.overlayWindow = overlay;
+                  overlay.window.once("closed", () => {
+                     if (this.overlayWindow === overlay) this.closeOverlay();
+                  });
+                  await overlay.start();
+               } catch (error) {
+                  if (overlay && this.overlayWindow === overlay) this.closeOverlay();
+                  log.error("Unable to open Hyprland overlay", error);
+               }
+               return;
+            }
+            if (input.hwnd === undefined) return;
             const applications = await native.getOpenApplications();
             const appInfo = applications.find((app) => app.hwnd === input.hwnd);
 

@@ -1,7 +1,7 @@
-import { getHostId } from "@lib/child-window";
 import type { APIGetApplicationCatalogResult, GatewayReadyData, GatewaySession, GatewayWebsocketEvents } from "@huginnjs/shared";
 
 import { ActivityType, EventEmitter, GatewayCode } from "@huginnjs/shared";
+import { getHostId } from "@lib/child-window";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { createTestUser } from "@/test-utils";
@@ -179,6 +179,31 @@ describe("presence gateway events", () => {
       await vi.advanceTimersByTimeAsync(5000);
       expect(closeOverlay).toHaveBeenCalledTimes(2);
       expect(presenceStore.getState().activeApplication).toBeUndefined();
+   });
+
+   test("opens and retargets a Hyprland overlay using the window address", async () => {
+      startRegionalActivity("regional-icon");
+      const getOpenApplications = vi
+         .fn()
+         .mockResolvedValue([
+            { processId: 1, hyprlandAddress: "0xabc", stableId: "capture-id", exePath: "/games/regional.exe", windowTitle: "Shared game" },
+         ]);
+      const openOverlay = vi.fn();
+      const closeOverlay = vi.fn();
+      window.electronAPI = { getOpenApplications, openOverlay, closeOverlay } as unknown as typeof window.electronAPI;
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenCalledExactlyOnceWith("0xabc", getHostId());
+      storageStore.getState().setCachedValue("application-preferences", { "known:7": { overlayEnabled: false } });
+      expect(closeOverlay).toHaveBeenCalledOnce();
+      storageStore.getState().setCachedValue("application-preferences", {});
+      getOpenApplications.mockResolvedValue([
+         { processId: 1, hyprlandAddress: "0xdef", stableId: "capture-id", exePath: "/games/regional.exe", windowTitle: "Shared game" },
+      ]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(openOverlay).toHaveBeenLastCalledWith("0xdef", getHostId());
+      getOpenApplications.mockResolvedValue([]);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(closeOverlay).toHaveBeenCalledTimes(2);
    });
 
    test("keeps a known game's overlay disabled across matchers and still publishes presence", async () => {
