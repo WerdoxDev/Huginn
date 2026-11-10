@@ -130,7 +130,7 @@ export class HuginnApp {
             label: "Quit",
             type: "normal",
             click: () => {
-               app.exit();
+               app.quit();
             },
          },
       ]);

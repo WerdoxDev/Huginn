@@ -265,6 +265,32 @@ describe("call audio", () => {
       expect(player.setSinkId).toHaveBeenCalledWith("headphones");
    });
 
+   it("mutes live playback when output volume jumps directly to zero and restores it", async () => {
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.inputDevice.initializeAudioLevel).toHaveBeenCalled());
+      await receive();
+      const player = bridge.audioSourcePlayers[0];
+      const settings = storageStore.getState().getCachedValue("settings");
+
+      storageStore.getState().setCachedValue("settings", { ...settings, outputVolume: 0 });
+      expect(player.setGain).toHaveBeenLastCalledWith(0, undefined);
+
+      storageStore.getState().setCachedValue("settings", settings);
+      expect(player.setGain).toHaveBeenLastCalledWith(90, undefined);
+   });
+
+   it("mutes the microphone when input volume jumps directly to zero and restores it", async () => {
+      bridge.emit("ready", undefined);
+      await vi.waitFor(() => expect(bridge.inputDevice.initializeAudioLevel).toHaveBeenCalled());
+      const settings = storageStore.getState().getCachedValue("settings");
+
+      storageStore.getState().setCachedValue("settings", { ...settings, inputVolume: 0 });
+      expect(bridge.inputDevice.setGain).toHaveBeenLastCalledWith(0);
+
+      storageStore.getState().setCachedValue("settings", settings);
+      expect(bridge.inputDevice.setGain).toHaveBeenLastCalledWith(80);
+   });
+
    it("updates the visible speaking state and removes it when the producer leaves", async () => {
       const incoming = await receive();
       const level = bridge.audioLevelCheckers.get("user-1")!;

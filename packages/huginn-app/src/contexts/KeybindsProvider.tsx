@@ -38,7 +38,7 @@ export default function KeybindsProvider(props: { children?: ReactNode }) {
       if (window.electronAPI) {
          window.electronAPI.updateKeybinds(keybinds).then((x) => {
             if (!x) {
-               showError("Due to software limitations, you can't use this Keybind!");
+               showError("Couldn't register this shortcut. It may already be used by your desktop or another running Huginn instance.");
 
                if (previousKeybinds) {
                   setValue("keybinds", previousKeybinds);

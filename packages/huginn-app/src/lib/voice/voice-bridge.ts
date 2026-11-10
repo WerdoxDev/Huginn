@@ -296,13 +296,13 @@ export class VoiceBridge extends Voice {
       const environment = windowStore.getState().environment;
       const difference = diff(current, previous);
 
-      if (difference.outputVolume) {
+      if (difference.outputVolume !== undefined) {
          for (const player of this.audioSourcePlayers) {
             player.setGain(difference.outputVolume, undefined);
          }
       }
 
-      if (difference.inputVolume) {
+      if (difference.inputVolume !== undefined) {
          this.inputDevice.setGain(difference.inputVolume);
       }
 

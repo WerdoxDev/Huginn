@@ -83,6 +83,7 @@ export type SettingsTabType = {
    children?: Omit<SettingsTabType, "children">[];
    icon?: ReactNode;
    component?: (props: SettingsTabProps) => React.JSX.Element | undefined;
+   condition?: boolean;
 };
 
 export type SettingsTabProps = {

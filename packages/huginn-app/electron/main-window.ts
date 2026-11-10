@@ -109,7 +109,12 @@ export class MainWindow extends BaseWindow {
          };
       });
 
+      let quitting = false;
+      app.on("before-quit", () => {
+         quitting = true;
+      });
       window.on("close", (e) => {
+         if (quitting) return;
          e.preventDefault();
          window.hide();
       });
@@ -271,7 +276,7 @@ export class MainWindow extends BaseWindow {
       ipcMain.on("window:relaunch", () => {
          if (app.isPackaged) {
             app.relaunch({ args: process.argv.filter((x) => !x.includes("silent")) });
-            app.exit();
+            app.quit();
          } else {
             window.webContents.reload();
          }

@@ -74,7 +74,7 @@ const tabs: SettingsTabType[] = [
             icon: <IconMingcuteSpeakerFill />,
             component: SettingsAudioVideoTab,
          },
-         { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab },
+         { name: "keybind", text: "Keybinds", icon: <IconMingcuteHotkeyFill />, component: SettingsKeybindsTab, condition: __IS_ELECTRON__ },
          {
             name: "system",
             text: "System",
@@ -237,6 +237,7 @@ export default function SettingsModal() {
 
 function SettingsTabs() {
    const client = useClient();
+   console.log(tabs);
 
    return (
       <div className="scroll-surface scroll-thin flex h-full w-full flex-col overflow-y-scroll pb-2 lg:w-56">
@@ -249,27 +250,29 @@ function SettingsTabs() {
                      {tab.text}
                   </div>
                   <div className="bg-surface ml-2.5 flex flex-col gap-y-1 rounded-lg p-2.5 lg:bg-transparent lg:p-0">
-                     {tab.children?.map((child) => (
-                        <div className="w-full" key={child.name}>
-                           <SettingsTab.Tab>
-                              {({ selected }) => (
-                                 <button
-                                    type="button"
-                                    className={clsx(
-                                       "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:p-2 lg:active:bg-white/3",
-                                       selected
-                                          ? "bg-white/10 text-white transition-colors duration-300"
-                                          : "text-white/70 hover:bg-white/3 hover:text-white",
-                                    )}
-                                 >
-                                    <div className="shrink-0">{child.icon}</div>
-                                    <span>{child.text}</span>
-                                    <IconMingcuteRightFill className="ml-auto lg:hidden" />
-                                 </button>
-                              )}
-                           </SettingsTab.Tab>
-                        </div>
-                     ))}
+                     {tab.children
+                        ?.filter((x) => x.condition === undefined || x.condition === true)
+                        ?.map((child) => (
+                           <div className="w-full" key={child.name}>
+                              <SettingsTab.Tab>
+                                 {({ selected }) => (
+                                    <button
+                                       type="button"
+                                       className={clsx(
+                                          "text-text flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 text-left text-base whitespace-nowrap outline-hidden active:bg-white/10 active:text-white lg:p-2 lg:active:bg-white/3",
+                                          selected
+                                             ? "bg-white/10 text-white transition-colors duration-300"
+                                             : "text-white/70 hover:bg-white/3 hover:text-white",
+                                       )}
+                                    >
+                                       <div className="shrink-0">{child.icon}</div>
+                                       <span>{child.text}</span>
+                                       <IconMingcuteRightFill className="ml-auto lg:hidden" />
+                                    </button>
+                                 )}
+                              </SettingsTab.Tab>
+                           </div>
+                        ))}
                   </div>
                </Fragment>
             ))}
