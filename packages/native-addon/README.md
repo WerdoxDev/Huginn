@@ -14,6 +14,14 @@ The Electron backend uses Hyprland's command and event sockets to follow the tar
 
 This backend requires Hyprland, layer-shell, viewporter, and named Wayland outputs. Bitmap copies are used initially; GPU texture sharing is not implemented. Frame queues are bounded and superseded paints are discarded when the helper falls behind. Desktop software outside the compositor, such as a nested Gamescope session, needs separate integration to identify its individual windows.
 
+## Global shortcuts on Hyprland
+
+The Electron app registers shortcuts automatically through Hyprland's runtime Lua API (tested on Hyprland 0.56.2). Users configure mute/deafen in Huginn; no additions to their Hyprland configuration are needed. Older Hyprland configurations without the Lua API are not supported by this shortcut backend.
+
+Bindings exist only in the compositor's running configuration. Huginn listens for shortcut actions on the Hyprland event socket, restores bindings after a configuration reload, and disables them while the Keybinds settings page is open. Conflicting compositor shortcuts and a second Huginn instance are rejected instead of replacing existing bindings. Normal quit removes Huginn's bindings. If the app crashes, a compositor-side lease disables its orphaned bindings within 15 seconds; they are removed when Huginn next registers shortcuts or the compositor configuration reloads.
+
+This backend uses only Hyprland's local IPC sockets, with no extra packages, keyboard-device permissions, or changes to user configuration files. Other platforms retain Electron's `globalShortcut` implementation. Regression tests are in `packages/huginn-app/electron/hyprland-keybinds.test.ts` and `keybinds-controller.test.ts`; the socket tests require local Unix socket access.
+
 ## Protocol sources
 
 The XML files in `src/platform/linux/protocols` retain their upstream licenses:
