@@ -54,6 +54,12 @@ import { ws } from "#routes/gateway";
 import { getGifCategories } from "#routes/gifs/categories.get";
 import { getSearchGifs } from "#routes/gifs/search.get";
 import { getTrendingGifs } from "#routes/gifs/trending.get";
+import { getTrendingStickers } from "#routes/stickers/trending.get";
+import { getSearchStickers } from "#routes/stickers/search.get";
+import { getStickerCategories } from "#routes/stickers/categories.get";
+import { getUserStickers } from "#routes/users/@me/stickers.get";
+import { postSticker } from "#routes/stickers/index.post";
+import { deleteUserSticker } from "#routes/users/@me/stickers/[id].delete";
 import { getInstance } from "#routes/instance.get";
 import { getLatestRelease } from "#routes/latest-release.get";
 import { postLog } from "#routes/log.post";
@@ -263,4 +269,12 @@ export const app = new Elysia({
    // gifs
    .use(getGifCategories)
    .use(getTrendingGifs)
-   .use(getSearchGifs);
+   .use(getSearchGifs)
+
+   // stickers
+   .use(getTrendingStickers)
+   .use(getSearchStickers)
+   .use(getStickerCategories)
+   .use(getUserStickers)
+   .use(postSticker)
+   .use(deleteUserSticker);

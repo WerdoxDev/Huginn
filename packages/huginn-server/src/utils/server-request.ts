@@ -1,6 +1,8 @@
 import { createToken } from "@huginn/backend-shared";
 import {
    HTTPError,
+   HuginnAPIError,
+   type HuginnErrorData,
    type InternalRequest,
    type RequestData,
    type RequestMethod,
@@ -68,6 +70,10 @@ export async function request(options: InternalRequest & { throw?: boolean }): P
    if (response.ok || !options.throw) return parseResponse(response);
 
    if (response.status >= 400 && response.status < 600) {
+      if (response.headers.get("content-type")?.includes("application/json")) {
+         const error = await response.json() as HuginnErrorData;
+         throw new HuginnAPIError(error, error.code, response.status, options.method, url, fetchOptions);
+      }
       throw new HTTPError(response.status, response.statusText, options.method, url, fetchOptions);
    }
 

@@ -16,6 +16,7 @@ import {
    analytics,
    type APIContribution,
    type APIMessage,
+   type APISticker,
    type APIMessageCall,
    type APIMessageReference,
    type APIReaction,
@@ -150,6 +151,7 @@ export async function filterMessage<T extends MessagePayload<{ select: typeof se
       }),
       ...(reactions.length > 0 && { reactions }),
       embeds: nullToUndefined(message.embeds),
+      stickers: (message.stickers ?? []) as APISticker[],
       attachments: nullToUndefined(signedAttachments),
    };
 }
