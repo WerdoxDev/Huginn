@@ -6,6 +6,7 @@ import type { RemoveChannelRecipientMutationVars } from "@hooks/mutations/useRem
 import type { HuginnButtonProps } from "@huginn/frontend-shared";
 import type {
    APICallMessage,
+   APISticker,
    APIDefaultMessage,
    APIGetApplicationCatalogResult,
    APIRelationshipWithoutOwner,
@@ -182,6 +183,7 @@ export enum MessageErrorType {
 }
 
 export type PreviewAppMessage = {
+   stickers?: APISticker[];
    isPreview: true;
    id: Snowflake;
    timestamp: string;

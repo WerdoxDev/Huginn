@@ -1,3 +1,4 @@
+import type { APISticker } from "@huginnjs/shared";
 import { createContext, type MouseEvent, type ReactNode, useContext, useMemo } from "react";
 import { createStore, useStore } from "zustand";
 
@@ -15,6 +16,7 @@ const store = createStore(() => ({
    dm_channel: undefined as ContextMenuStateProps<ContextMenuDMChannel> | undefined,
    dm_channel_recipient: undefined as ContextMenuStateProps<ContextMenuDMChannelRecipient> | undefined,
    gif: undefined as ContextMenuStateProps<ContextMenuGif> | undefined,
+   sticker: undefined as ContextMenuStateProps<{ sticker: APISticker; onDelete: () => Promise<void> }> | undefined,
    relationship_more: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
    relationship: undefined as ContextMenuStateProps<ContextMenuRelationship> | undefined,
    voice_element: undefined as ContextMenuStateProps<ContextMenuVoiceElement> | undefined,

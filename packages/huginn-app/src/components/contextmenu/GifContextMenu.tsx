@@ -25,7 +25,7 @@ export function GifFavoriteContextMenuItem(props: { gif: ContextMenuGif }) {
    }
 
    return (
-      <ContextMenu.Item label={isFavorite ? "Remove from GIFs" : "Add to GIFs"} onClick={handleFavorite}>
+      <ContextMenu.Item label={isFavorite ? "Remove from GIFs" : "Add to GIFs"} color="negative" onClick={handleFavorite}>
          <IconMingcuteStarFill />
       </ContextMenu.Item>
    );

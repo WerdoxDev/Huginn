@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 
 interface FileDialogResult {
+   file: File;
    dataUrl: string;
    mimeType: string;
 }
@@ -24,6 +25,7 @@ export function useFileDialog(accept: keyof typeof accepts) {
             }
 
             resolve({
+               file,
                dataUrl: URL.createObjectURL(file),
                mimeType: file.type,
             });

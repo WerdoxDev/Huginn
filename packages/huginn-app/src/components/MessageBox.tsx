@@ -9,12 +9,12 @@ import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { HuginnButton } from "@huginn/frontend-shared";
-import { formatSeconds } from "@huginnjs/shared";
+import { formatSeconds, type APISticker } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Editable, Slate, ReactEditor, type RenderPlaceholderProps } from "slate-react";
 
 import type { AppMessage, AutocompleteItem } from "@/types";
@@ -97,6 +97,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       resetState,
       insertEmoji,
       sendGif,
+      sendSticker,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, autocompleteKeyIntercept });
 
    const { toggle: toggleExpression, popover: expressionPopover } = usePopover("expression");
@@ -186,6 +187,11 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       handleAutocompleteSelect(item);
    }
 
+   function handleSendSticker(sticker: APISticker) {
+      sendSticker(sticker);
+      setActiveMobilePanel(null);
+   }
+
    function handleSendGif(url: string) {
       sendGif(url);
       setActiveMobilePanel(null);
@@ -193,6 +199,16 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    function handleCancelVoiceRecordingClick() {
       setIsRecordingVoice(false);
+   }
+
+   function handleToggleExpression(e: MouseEvent<HTMLElement>, activeTab: "emoji" | "gif" | "sticker") {
+      toggleExpression(e, {
+         type: "full",
+         onEmojiSelect: insertEmoji,
+         onGifSelect: handleSendGif,
+         onStickerSelect: handleSendSticker,
+         activeTab,
+      });
    }
 
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
@@ -298,9 +314,15 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                      {!isMobileEnvironment && !isRecordingVoice && (
                         <>
                            <ExpressionButton
-                              onClick={(e) =>
-                                 toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: handleSendGif, activeTab: "gif" })
+                              onClick={(e) => handleToggleExpression(e, "sticker")}
+                              isActive={
+                                 expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "sticker"
                               }
+                           >
+                              <IconMingcuteStickerFill className="text-text size-full" />
+                           </ExpressionButton>
+                           <ExpressionButton
+                              onClick={(e) => handleToggleExpression(e, "gif")}
                               // The !messageid is to differentiate between the emoji picker being open for a specific message (context menu) vs the message box
                               isActive={
                                  expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "gif"
@@ -309,9 +331,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                               <span className="box-exact text-sm">GIF</span>
                            </ExpressionButton>
                            <ExpressionButton
-                              onClick={(e) =>
-                                 toggleExpression(e, { type: "full", onEmojiSelect: insertEmoji, onGifSelect: handleSendGif, activeTab: "emoji" })
-                              }
+                              onClick={(e) => handleToggleExpression(e, "emoji")}
                               isActive={
                                  expressionPopover?.isOpen && !expressionPopover.data?.messageId && expressionPopover.data?.activeTab === "emoji"
                               }
@@ -325,7 +345,9 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                </div>
             </div>
             <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
-               {activeMobilePanel === "expression" && <ExpressionRawPanel onEmojiSelect={insertEmoji} onGifSelect={handleSendGif} type="full" />}
+               {activeMobilePanel === "expression" && (
+                  <ExpressionRawPanel onEmojiSelect={insertEmoji} onGifSelect={handleSendGif} onStickerSelect={handleSendSticker} type="full" />
+               )}
             </div>
             <FilePickerDrawer
                attachments={attachments}

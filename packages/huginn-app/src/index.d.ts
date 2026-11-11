@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginnjs/shared";
+import type { APISticker, Snowflake } from "@huginnjs/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
@@ -32,6 +32,12 @@ type CodeElement = {
 
 type CodespanElement = {
    type: "codespan";
+   children: Descendant[];
+};
+
+type StickerElement = {
+   type: "sticker";
+   sticker: APISticker;
    children: Descendant[];
 };
 
@@ -103,6 +109,7 @@ export type ListItemElement = {
 type CustomElement =
    | ParagraphElement
    | SpoilerElement
+   | StickerElement
    | EmbedElement
    | LinkElement
    | CodeElement

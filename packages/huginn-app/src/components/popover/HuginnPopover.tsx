@@ -68,9 +68,9 @@ export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
    return (
       <Popover.Root open={isOpen} onOpenChange={handleOpenChange} modal={props.modal}>
          <Popover.Portal keepMounted={props.keepMounted}>
-            <Popover.Backdrop className="fixed inset-0 z-20" />
+            <Popover.Backdrop className="fixed inset-0 z-10" />
             <Popover.Positioner
-               className="z-20"
+               className="z-10"
                anchor={anchor}
                align={props.align ?? "end"}
                side={props.side ?? "bottom"}

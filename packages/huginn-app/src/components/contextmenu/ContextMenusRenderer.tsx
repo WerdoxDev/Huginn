@@ -1,3 +1,4 @@
+import StickerContextMenu from "./StickerContextMenu";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useThisUser } from "@stores/userStore";
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ export default function ContextMenusRenderer() {
    const { context: dm_channel_context, close: dm_channel_close } = useContextMenu("dm_channel");
    const { context: dm_channel_recipient_context, close: dm_channel_recipient_close } = useContextMenu("dm_channel_recipient");
    const { context: gif_context, close: gif_close } = useContextMenu("gif");
+   const { context: sticker_context, close: sticker_close } = useContextMenu("sticker");
    const { context: relationship_context, close: relationship_close } = useContextMenu("relationship");
    const { context: relationship_more_context, close: relationship_more_close } = useContextMenu("relationship_more");
    const { context: voice_element_context, close: voice_user_close } = useContextMenu("voice_element");
@@ -50,6 +52,7 @@ export default function ContextMenusRenderer() {
             />
 
             <ContextMenu renderChildren={<GifContextMenu />} onClose={gif_close} contextMenu={gif_context} />
+            <ContextMenu renderChildren={<StickerContextMenu />} onClose={sticker_close} contextMenu={sticker_context} />
 
             <ContextMenu renderChildren={<RelationshipContextMenu />} onClose={relationship_close} contextMenu={relationship_context} />
 

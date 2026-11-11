@@ -24,6 +24,8 @@ export default function ImageCropModal() {
 
    const isBanner = modal.cropType === "banner";
    const isChatBackground = modal.cropType === "chat-background";
+   const isSticker = modal.cropType === "sticker";
+   const isFreeCrop = isChatBackground || isSticker;
    const profilePreview = modal.profilePreview;
    const imageAspectRatio = imageSize?.src === modal.originalImageData ? imageSize.aspectRatio : undefined;
 
@@ -50,15 +52,15 @@ export default function ImageCropModal() {
             let data: string;
 
             if (modal.mimeType !== "image/gif" || isChatBackground) {
-               if (isChatBackground) {
+               if (isFreeCrop) {
                   data = cropperRef.current.cropper
                      .getCroppedCanvas({
-                        maxWidth: 2000,
-                        maxHeight: 2000,
+                        maxWidth: isSticker ? 512 : 2000,
+                        maxHeight: isSticker ? 512 : 2000,
                         imageSmoothingEnabled: true,
                         imageSmoothingQuality: "high",
                      })
-                     .toDataURL("image/webp");
+                     .toDataURL(isSticker ? "image/png" : "image/webp");
                } else {
                   const canvasSize = isBanner ? { width: 444, height: 128 } : { width: 512, height: 512 };
                   data = cropperRef.current.cropper.getCroppedCanvas(canvasSize).toDataURL();
@@ -154,9 +156,9 @@ export default function ImageCropModal() {
                      <Cropper
                         ref={cropperRef}
                         src={modal.originalImageData}
-                        initialAspectRatio={isChatBackground ? imageAspectRatio : isBanner ? 444 / 128 : 1}
-                        className={clsx("h-full w-full", isBanner && "banner-crop", isChatBackground && "background-crop")}
-                        aspectRatio={isChatBackground ? Number.NaN : isBanner ? 444 / 128 : 1}
+                        initialAspectRatio={isFreeCrop ? imageAspectRatio : isBanner ? 444 / 128 : 1}
+                        className={clsx("h-full w-full", isBanner && "banner-crop", isFreeCrop && "background-crop")}
+                        aspectRatio={isFreeCrop ? Number.NaN : isBanner ? 444 / 128 : 1}
                         movable={true}
                         unselectable="off"
                         zoomable={true}
@@ -167,8 +169,8 @@ export default function ImageCropModal() {
                         modal={false}
                         scalable={false}
                         autoCropArea={1}
-                        cropBoxResizable={isChatBackground}
-                        cropBoxMovable={isChatBackground}
+                        cropBoxResizable={isFreeCrop}
+                        cropBoxMovable={isFreeCrop}
                         toggleDragModeOnDblclick={false}
                         ready={updatePreview}
                         crop={updatePreview}

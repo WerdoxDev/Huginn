@@ -86,6 +86,7 @@ export function useSendMessage() {
                        }))
                      : undefined,
                content: data.previewMessage.content,
+               stickers: previewMessage.stickers?.map(({ source, id }) => ({ source, id })),
                flags: data.previewMessage.flags,
                nonce: previewMessage.nonce,
                messageReference,

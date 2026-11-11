@@ -305,6 +305,21 @@ export function getSearchGifsOptions(client: HuginnClient, query: string, limit 
    });
 }
 
+export function getStickersOptions(client: HuginnClient | undefined, userId: Snowflake | undefined, tab: string, query: string, limit = 24) {
+   return infiniteQueryOptions({
+      queryKey: ["stickers", userId, tab, query],
+      enabled: !!client,
+      queryFn: ({ pageParam }) =>
+         tab === "your"
+            ? client!.stickers.getMine(query, limit, pageParam)
+            : query
+              ? client!.stickers.search(query, limit, pageParam)
+              : client!.stickers.getTrending(limit, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, _pages, page) => (lastPage.length < limit ? undefined : page + 1),
+   });
+}
+
 export const editSettingsOptions = defineMutation("edit-settings", async (settings: APIPatchUserSettingsJSONBody) =>
    getClient().users.editSettings(settings),
 );

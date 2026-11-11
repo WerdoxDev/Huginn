@@ -1,3 +1,5 @@
+import type { APISticker } from "@huginnjs/shared";
+
 import { useIsMobile } from "@hooks/useIsMobile";
 import { usePopover } from "@stores/popoverStore";
 
@@ -22,6 +24,11 @@ export default function ExpressionPanel() {
       setData({ ...popover?.data, type: popover?.data?.type || "full", activeTab: tab });
    }
 
+   function handleStickerSelect(sticker: APISticker) {
+      popover?.data?.onStickerSelect?.(sticker);
+      close();
+   }
+
    return (
       <HuginnPopover.Panel
          className="bg-surface flex h-120 max-h-full min-h-0 flex-col overflow-hidden rounded-lg"
@@ -30,6 +37,7 @@ export default function ExpressionPanel() {
          <ExpressionRawPanel
             onEmojiSelect={handleEmojiSelect}
             onGifSelect={handleGifSelect}
+            onStickerSelect={handleStickerSelect}
             type={popover?.data?.type || "full"}
             activePanel={popover?.data?.activeTab}
             onTabChange={handleTabChange}

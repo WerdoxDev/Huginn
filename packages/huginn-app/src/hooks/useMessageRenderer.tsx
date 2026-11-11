@@ -1,3 +1,4 @@
+import StickerElement from "@components/editor/StickerElement";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
 import CodespanElement from "@components/editor/CodespanElement";
@@ -67,6 +68,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <CodespanElement key={key}>{children}</CodespanElement>;
             case "attachment":
                return <AttachmentElement {...node} key={key} />;
+            case "sticker":
+               return <StickerElement sticker={node.sticker} key={key} />;
             case "embed":
                return <EmbedElement {...node} key={key} />;
             case "ordered-list":
@@ -278,7 +281,8 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
 
       nodes.push(lineElement);
 
-      if (message.isPreview) return nodes;
+      const stickerNodes: Descendant[] = (message.stickers ?? []).map((sticker) => ({ type: "sticker", sticker, children: [{ text: "" }] }));
+      if (message.isPreview) return [...nodes, ...stickerNodes];
 
       // Only render the embeds if the message content is exactly the embed url
       const firstEmbed = message.embeds[0];
@@ -299,7 +303,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          });
       }
 
-      return nodes;
+      return [...nodes, ...stickerNodes];
    }, [message]);
 
    const children = useMemo(() => {

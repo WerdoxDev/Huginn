@@ -37,7 +37,9 @@ declare global {
   const IconMingcuteCornerUpLeftFill: typeof import('~icons/mingcute/corner-up-left-fill.jsx').default
   const IconMingcuteCornerUpLeftLine: typeof import('~icons/mingcute/corner-up-left-line.jsx').default
   const IconMingcuteCornerUpRightLine: typeof import('~icons/mingcute/corner-up-right-line.jsx').default
+  const IconMingcuteDelete2Fill: typeof import('~icons/mingcute/delete2-fill.jsx').default
   const IconMingcuteDelete3Fill: typeof import('~icons/mingcute/delete3-fill.jsx').default
+  const IconMingcuteDeleteFill: typeof import('~icons/mingcute/delete-fill.jsx').default
   const IconMingcuteDiamondSquareFill: typeof import('~icons/mingcute/diamond-square-fill.jsx').default
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx').default
   const IconMingcuteDownload2Fill: typeof import('~icons/mingcute/download2-fill.jsx').default
@@ -107,6 +109,7 @@ declare global {
   const IconMingcuteSortDescendingFill: typeof import('~icons/mingcute/sort-descending-fill.jsx').default
   const IconMingcuteSpeakerFill: typeof import('~icons/mingcute/speaker-fill.jsx').default
   const IconMingcuteStarFill: typeof import('~icons/mingcute/star-fill.jsx').default
+  const IconMingcuteStickerFill: typeof import('~icons/mingcute/sticker-fill.jsx').default
   const IconMingcuteTransfer3Fill: typeof import('~icons/mingcute/transfer3-fill.jsx').default
   const IconMingcuteTrendingUpFill: typeof import('~icons/mingcute/trending-up-fill.jsx').default
   const IconMingcuteUnlockFill: typeof import('~icons/mingcute/unlock-fill.jsx').default
