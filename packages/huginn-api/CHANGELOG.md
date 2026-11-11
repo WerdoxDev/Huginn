@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.47.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.47.0...api@v0.47.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **api:** inverted camera in voice state ([9230906](https://github.com/WerdoxDev/Huginn/commit/9230906e01b3909112bf7a95b760409ab13a429d))
+
 ## [0.47.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.46.1...api@v0.47.0) (2026-10-25)
 
 
