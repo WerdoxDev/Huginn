@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.56.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.55.0...server@v0.56.0) (2026-11-11)
+
+
+### Features
+
+* **server:** sync invert camera voice state ([92b2439](https://github.com/WerdoxDev/Huginn/commit/92b2439179a389fa4a244398c4b4974675e92a94))
+
 ## [0.55.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.54.1...server@v0.55.0) (2026-10-25)
 
 

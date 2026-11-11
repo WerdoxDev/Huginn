@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.4...native-addon@v0.9.0) (2026-11-11)
+
+
+### Features
+
+* **native:** add native window move, close and focus callback events for overlay ([2532c5a](https://github.com/WerdoxDev/Huginn/commit/2532c5aabec0a017083d417c022ead34bb90049a))
+* **native:** overlay support for linux ([f85d9aa](https://github.com/WerdoxDev/Huginn/commit/f85d9aadc90c7e07e7742ab85cd04d355c66f008))
+
 ## [0.8.4](https://github.com/WerdoxDev/Huginn/compare/native-addon@v0.8.3...native-addon@v0.8.4) (2026-10-24)
 
 

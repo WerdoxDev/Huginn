@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.95.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.94.0...app@v0.95.0) (2026-11-11)
+
+
+### Features
+
+* **app:** add initial overlay implementation with call status ([c50f495](https://github.com/WerdoxDev/Huginn/commit/c50f4951c32021fa8583672b162f6262b046ee2d))
+* **app:** add overlay feature for linux ([d64584e](https://github.com/WerdoxDev/Huginn/commit/d64584e14f3e9b4a5346a187d73f242891a7077b))
+* **app:** conditional setting tabs + hyprland keybind support ([b0ba5b9](https://github.com/WerdoxDev/Huginn/commit/b0ba5b93fcc7cfa5317e7160c8fef1915d15e60f))
+* **app:** implement inverted camera syncing ([29c4e76](https://github.com/WerdoxDev/Huginn/commit/29c4e7609cae27b756abc128698a6c596cb21882))
+* **app:** overlay settings ([9d35c19](https://github.com/WerdoxDev/Huginn/commit/9d35c193d3cf8a9efb7e1868884f0a2395cdfe21))
+
 ## [0.94.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.93.0...app@v0.94.0) (2026-11-05)
 
 
