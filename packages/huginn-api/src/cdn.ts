@@ -31,6 +31,10 @@ export class CDN {
       return this.makeURL(`/emoji/${id}`, { format: "svg" });
    }
 
+   public sticker(id: string): string {
+      return this.makeURL(`/stickers/${id}`, { format: "webp" });
+   }
+
    public channelBackground(scope: Snowflake | "global", userId: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
       return this.dynamicMakeURL(`/channel-backgrounds/${scope}/${userId}/${hash}`, hash, options);
    }
