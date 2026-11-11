@@ -1,3 +1,4 @@
+import type { APISticker } from "@huginnjs/shared";
 import { sql } from "drizzle-orm";
 import {
    pgTable,
@@ -17,6 +18,16 @@ import {
    pgEnum,
    uuid,
 } from "drizzle-orm/pg-core";
+
+export const sticker = pgTable("Sticker", {
+   id: bigint({ mode: "bigint" }).primaryKey().notNull(),
+   userId: bigint({ mode: "bigint" }).notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+   title: text().notNull(),
+   asset: text().notNull(),
+   width: integer().notNull(),
+   height: integer().notNull(),
+   createdAt: timestamp({ precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [index("Sticker_userId_id_idx").on(table.userId, table.id)]);
 
 export const authSession = pgTable(
    "AuthSession",
@@ -158,6 +169,7 @@ export const message = pgTable(
          .notNull()
          .references((): AnyPgColumn => channel.id, { onUpdate: "cascade", onDelete: "cascade" }),
       content: text().notNull(),
+      stickers: jsonb().$type<APISticker[]>().default(sql`'[]'::jsonb`).notNull(),
       timestamp: timestamp({ precision: 3, mode: "date" }).notNull(),
       editedTimestamp: timestamp({ precision: 3, mode: "date" }),
       pinned: boolean().notNull(),

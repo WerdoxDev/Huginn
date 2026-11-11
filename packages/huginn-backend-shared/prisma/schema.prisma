@@ -45,6 +45,21 @@ model User {
   pinnedMessages       MessagePin[]
   notificationTokens   NotificationToken[]
   reactions            Reaction[]
+  stickers             Sticker[]
+}
+
+model Sticker {
+  id        BigInt   @id
+  userId    BigInt
+  title     String
+  asset     String
+  width     Int
+  height    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, id])
 }
 
 model EmailVerification {
@@ -144,6 +159,7 @@ model Message {
   content             String
   timestamp           DateTime
   editedTimestamp     DateTime?
+  stickers            Json         @default("[]")
   embeds              Embed[]
   attachments         Attachment[]
   call                Call?

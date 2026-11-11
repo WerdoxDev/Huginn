@@ -1,4 +1,4 @@
-import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginnjs/shared";
+import type { APISticker, APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginnjs/shared";
 
 import { WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginnjs/shared";
 import { MessageType } from "@huginnjs/shared";
@@ -134,6 +134,7 @@ export const messagesExtension = Prisma.defineExtension({
                channelId: Snowflake;
                type: MessageType;
                content?: string;
+               stickers?: APISticker[];
                attachments?: DBAttachment[];
                embeds?: DBEmbed[];
                messageReference?: APIPostMessageReferenceJSONBody;
@@ -210,6 +211,7 @@ export const messagesExtension = Prisma.defineExtension({
                         type: options.type,
                         channelId: BigInt(options.channelId),
                         content: options.content ?? "",
+                        stickers: options.stickers ?? [],
                         attachments: options.attachments ? { connect: createdAttachments.map((x) => ({ id: x.id })) } : undefined,
                         mentions: { connect: options.mentions?.map((x) => ({ id: BigInt(x) })) },
                         authorId: BigInt(options.authorId),

@@ -1,4 +1,4 @@
-import { analytics, idFix, MessageType, recordSpanError, snowflake, WorkerID, type APIPostMessageReferenceJSONBody, type Snowflake } from "@huginnjs/shared";
+import { analytics, idFix, MessageType, recordSpanError, snowflake, WorkerID, type APISticker, type APIPostMessageReferenceJSONBody, type Snowflake } from "@huginnjs/shared";
 import { PaginationType, type ScalarWhereField } from "better-drizzle";
 
 import { assertExists, assertId, assertObj } from "#database/error";
@@ -150,6 +150,7 @@ export const messageRepo = {
          channelId: Snowflake;
          type: MessageType;
          content?: string;
+         stickers?: APISticker[];
          attachments?: DBAttachment[];
          embeds?: DBEmbed[];
          messageReference?: APIPostMessageReferenceJSONBody;
@@ -222,6 +223,7 @@ export const messageRepo = {
                   type: options.type,
                   channelId: BigInt(options.channelId),
                   content: options.content ?? "",
+                  stickers: options.stickers ?? [],
                   attachments: options.attachments ? { connect: createdAttachments.map((x) => ({ id: BigInt(x.id) })) } : undefined,
                   mentions: { connect: options.mentions?.map((x) => ({ id: BigInt(x) })) },
                   authorId: BigInt(options.authorId),
