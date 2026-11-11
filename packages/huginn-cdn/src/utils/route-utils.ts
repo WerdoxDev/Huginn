@@ -1,4 +1,8 @@
-import { type ImageFormats } from "@huginnjs/shared";
+import type { Context } from "elysia";
+
+import { singleError } from "@huginn/backend-shared";
+import { CONSTANTS, Errors, type ImageFormats } from "@huginnjs/shared";
+import sharp from "sharp";
 
 import type { FileCategory } from "#utils/types";
 
@@ -47,4 +51,40 @@ export function getCacheKey(name: string, format: string, options?: { width?: nu
    }
 
    return keys.join("_") + `.${format}`;
+}
+
+// Decode and re-encode uploads rather than trusting file names or MIME types.
+// Animated WebP retains both GIF animation and transparent backgrounds.
+export async function prepareStickerImage(input: Blob, status: Context["status"]) {
+   if (input.size > CONSTANTS.STICKER_MAX_BYTES) return singleError(Errors.fileTooLarge(input.size, CONSTANTS.STICKER_MAX_BYTES), status, "Bad Request");
+   if (!input.size) return singleError(Errors.invalidFileFormat(), status, "Bad Request");
+
+   try {
+      const image = sharp(Buffer.from(await input.arrayBuffer()), { animated: true, limitInputPixels: 40_000_000 });
+      const metadata = await image.metadata();
+      if (!metadata.format || !CONSTANTS.ALLOWED_STICKER_FORMATS.includes(metadata.format)) {
+         return singleError(Errors.invalidFileFormat(), status, "Bad Request");
+      }
+      const frames = metadata.pages ?? 1;
+      const height = metadata.pageHeight ?? metadata.height ?? 0;
+      if (!metadata.width || !height || metadata.width * height * frames > 40_000_000 || frames > 300) {
+         return singleError(Errors.invalidFileFormat(), status, "Bad Request");
+      }
+
+      const { data, info } = await image
+         .rotate()
+         .resize({ width: 512, height: 512, fit: "inside", withoutEnlargement: true })
+         .webp({ quality: 85, effort: 3 })
+         .toBuffer({ resolveWithObject: true });
+      if (data.byteLength > CONSTANTS.STICKER_MAX_BYTES)
+         return singleError(Errors.fileTooLarge(data.byteLength, CONSTANTS.STICKER_MAX_BYTES), status, "Bad Request");
+
+      return {
+         file: new Blob([new Uint8Array(data)], { type: "image/webp" }),
+         width: info.width,
+         height: info.pageHeight ?? info.height,
+      };
+   } catch {
+      return singleError(Errors.invalidFileFormat(), status, "Bad Request");
+   }
 }
