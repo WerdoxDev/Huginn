@@ -256,6 +256,7 @@ export type APIBaseMessage = {
    editedTimestamp: Date | string | null;
    attachments: APIAttachment[];
    embeds: APIEmbed[];
+   stickers?: APISticker[];
    pinned: boolean;
    mentions: APIMessageUser[];
    mentionEveryone: boolean;
@@ -302,6 +303,7 @@ export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date |
 
 export type APIPostMessageJSONBody = {
    content?: string;
+   stickers?: APIStickerReference[];
    attachments?: APIPostAttachmentJSONBody[];
    embeds?: APIEmbed[];
    flags?: MessageFlags;
@@ -706,6 +708,26 @@ export type APIGetGifCategoriesResult = {
 
 export type APIGetTrendingGifsResult = APIGif[];
 export type APIGetSearchGifsResult = APIGif[];
+
+export type APIStickerReference = { source: "klipy" | "custom"; id: string };
+
+export type APISticker = APIStickerReference & {
+   title: string;
+   src: string;
+   url: string;
+   width: number;
+   height: number;
+   preview?: string;
+};
+
+export type APIGetStickerCategoriesResult = {
+   categories: Array<{ name: string; src: string }>;
+   trendingSticker?: APISticker;
+};
+export type APIGetTrendingStickersResult = APISticker[];
+export type APIGetSearchStickersResult = APISticker[];
+export type APIGetUserStickersResult = APISticker[];
+export type APIPostStickerResult = APISticker;
 
 export type APIContribution = {
    id: number;

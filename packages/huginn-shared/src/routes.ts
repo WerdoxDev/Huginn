@@ -4,6 +4,24 @@ import type { Snowflake } from "./snowflake";
 export type RouteLike = `/${string}`;
 
 export const Routes = {
+   stickerCategories() {
+      return "/stickers/categories" as const;
+   },
+   trendingStickers() {
+      return "/stickers/trending" as const;
+   },
+   searchStickers() {
+      return "/stickers/search" as const;
+   },
+   userStickers() {
+      return "/users/@me/stickers" as const;
+   },
+   stickers() {
+      return "/stickers" as const;
+   },
+   userSticker(id: string) {
+      return `/users/@me/stickers/${id}` as const;
+   },
    /**
     * Route for:
     * - POST '/auth/login'
@@ -363,6 +381,9 @@ export const Routes = {
 };
 
 export const CDNRoutes = {
+   uploadSticker(id: string) {
+      return `/stickers/${id}` as const;
+   },
    /**
     * Route for:
     * - POST '/avatars/{user.id}'

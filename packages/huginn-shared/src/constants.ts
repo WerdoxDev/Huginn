@@ -26,6 +26,7 @@ export const CONSTANTS = {
    WEBSOCKET_SESSION_SENT_MESSAGES_LIMIT: 20,
    ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif", "svg"] as const,
+   ALLOWED_STICKER_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,
    ALLOWED_AUDIO_FORMATS: ["mp3", "wav", "ogg"] as const,
    CHANNEL_NAME_MAX_LENGTH: 100,
@@ -48,6 +49,7 @@ export const CONSTANTS = {
    PASSWORD_RESET_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
    EMAIL_VERIFICATION_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
    PASSWORD_RESET_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
+   STICKER_MAX_BYTES: (10 * 1024 * 1024) as number, // 10MB
    AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
    BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
    BIO_MAX_LENGTH: 190,
