@@ -20,6 +20,7 @@ The root client exposes lower-level CDN and HTTP helpers for features that do no
 | `banner(id, hash, options?)`      | Build a banner URL.       |
 | `channelIcon(id, hash, options?)` | Build a channel icon URL. |
 | `emoji(id)`                       | Build an SVG emoji URL.   |
+| `asset(path)`                     | Resolve or rebase an asset URL onto the configured CDN, preserving signed query parameters. |
 
 ```ts
 const avatarUrl = client.cdn.avatar(user.id, user.avatar, {
@@ -27,6 +28,8 @@ const avatarUrl = client.cdn.avatar(user.id, user.avatar, {
    size: 256,
 });
 ```
+
+The SDK and app share `resolveCdnUrl(value, cdnBase)` from `@huginnjs/shared`. It accepts bare asset paths, `/cdn/...` paths, and absolute CDN URLs, and uses the selected CDN host and path prefix. Queries and fragments are preserved. `client.cdn.asset(value)` delegates to it using the client's configured CDN. Non-HTTP URLs and invalid inputs are returned unchanged.
 
 ### Generic URL builders
 
@@ -107,3 +110,15 @@ handleErrors(
 ### Upload progress
 
 When request data contains enabled `xhr` options and the code runs in a browser, REST uses `XMLHttpRequest`. This provides `onUploadProgress` and `AbortSignal` support. Other calls use the configured `makeRequest`.
+
+## GIF and sticker assets
+
+`client.cdn.gif(id, ex, hm)` and `client.cdn.sticker(id, ex, hm)` build signed
+asset URLs while preserving the configured CDN origin and path prefix.
+`client.cdn.asset(path)` also preserves signatures returned by the server.
+
+`GET /cdn/gifs/:id.gif?ex=…&hm=…` and
+`GET /cdn/stickers/:id.webp?ex=…&hm=…` require a valid, unexpired signature
+bound to the exact asset path. Both return `Cache-Control: private, no-store`.
+Uploads to `POST /cdn/gifs/:id` and `/cdn/stickers/:id` require server CDN
+tokens. Clients upload through the app server's `/gifs` and `/stickers` routes.

@@ -54,7 +54,7 @@ All supplied filters are combined with **AND**. Every user in `mentions` must be
 | `pinned`              | `boolean`            | `true` for pinned messages, `false` for unpinned messages. Omit for either.                                                                                     |
 | `attachmentFilename`  | `string`             | Nonempty, case-insensitive literal substring of an attachment filename.                                                                                         |
 | `attachmentExtension` | `string`             | Case-insensitive filename suffix, with or without a leading dot, such as `png`, `.png`, or `tar.gz`. Only alphanumeric segments separated by dots are accepted. |
-| `embedType`           | `string`             | Nonempty, case-insensitive exact embed type, such as `image`, `video`, `rich`, or `gifv`.                                                                       |
+| `embedType`           | `string`             | Nonempty, case-insensitive exact embed type, such as `image`, `video`, `rich`, `gif`, or `sticker`.                                                                       |
 | `minId`               | `Snowflake`          | Exclusive **before** bound: `message.id < minId`.                                                                                                               |
 | `maxId`               | `Snowflake`          | Exclusive **after** bound: `message.id > maxId`.                                                                                                                |
 | `repliedToUserId`     | `Snowflake`          | Only replies whose referenced message was authored by this user.                                                                                                |
@@ -72,8 +72,8 @@ When `attachmentFilename` and `attachmentExtension` are both supplied, a single 
 
 | `has` value | Matches                                                                                         |
 | ----------- | ----------------------------------------------------------------------------------------------- |
-| `image`     | An attachment with an `image/` MIME type, or an `image` or `gifv` embed.                        |
-| `video`     | An attachment with a `video/` MIME type, or a `video` or `gifv` embed.                          |
+| `image`     | An attachment with an `image/` MIME type, or an `image`, `gif`, or `sticker` embed.                        |
+| `video`     | An attachment with a `video/` MIME type, or a `video` embed or a `gif` embed with video media.                          |
 | `audio`     | An attachment with an `audio/` MIME type.                                                       |
 | `file`      | Any attachment, including images, videos, and audio.                                            |
 | `link`      | Content containing `http://` or `https://` (case-insensitive), or an embed with a non-null URL. |
