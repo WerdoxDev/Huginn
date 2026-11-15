@@ -1,4 +1,4 @@
-import type { APISticker } from "@huginnjs/shared";
+import type { APIExpression } from "@huginnjs/shared";
 
 import { useIsMobile } from "@hooks/useIsMobile";
 import { usePopover } from "@stores/popoverStore";
@@ -15,8 +15,8 @@ export default function ExpressionPanel() {
       close();
    }
 
-   function handleGifSelect(url: string) {
-      popover?.data?.onGifSelect?.(url);
+   function handleGifSelect(gif: APIExpression) {
+      popover?.data?.onGifSelect?.(gif);
       close();
    }
 
@@ -24,7 +24,7 @@ export default function ExpressionPanel() {
       setData({ ...popover?.data, type: popover?.data?.type || "full", activeTab: tab });
    }
 
-   function handleStickerSelect(sticker: APISticker) {
+   function handleStickerSelect(sticker: APIExpression) {
       popover?.data?.onStickerSelect?.(sticker);
       close();
    }
@@ -35,6 +35,7 @@ export default function ExpressionPanel() {
          style={{ width: isMobile ? "100%" : 340 }}
       >
          <ExpressionRawPanel
+            isOpen={popover?.isOpen ?? false}
             onEmojiSelect={handleEmojiSelect}
             onGifSelect={handleGifSelect}
             onStickerSelect={handleStickerSelect}

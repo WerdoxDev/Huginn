@@ -7,7 +7,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { useMessageWidths } from "@hooks/useMessageWidths";
 import { useSwipeToReply } from "@hooks/useSwipeToReply";
-import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
+import { getMessageSummary, clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
@@ -210,7 +210,9 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
-         content: props.referencedMessage.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`"),
+         content: getMessageSummary(props.referencedMessage)
+            .replaceAll("\n", " ")
+            .replaceAll(/```(?:\S*)?/g, "`"),
       }),
       [props.referencedMessage],
    );
@@ -232,12 +234,12 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
       <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pr-2 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
-            <div className="flex items-center gap-x-1 text-nowrap">
+            <div className="flex items-center gap-x-1.5 text-nowrap">
                <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
-            {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
-            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text shrink-0" />}
+            {message.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
+            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="shrink-0 text-white" />}
          </div>
       </div>
    );

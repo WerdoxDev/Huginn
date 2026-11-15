@@ -7,6 +7,7 @@ interface FileDialogResult {
 }
 
 const accepts = {
+   gif: "image/gif",
    image: "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif,image/svg+xml",
 } as const;
 

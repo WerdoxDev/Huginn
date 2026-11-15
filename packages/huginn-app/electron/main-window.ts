@@ -497,11 +497,13 @@ export class MainWindow extends BaseWindow {
    private registerOverlayEvents() {
       this.window.once("closed", () => this.closeOverlay());
       ipcMain.on("overlay:open", async (_event, input: { hwnd?: number; hyprlandAddress?: string; hostId: string }) => {
-         await analytics.startActiveSpan("electronMain.overlay.open", async (span) => {
+         await analytics.startActiveSpan("electronMain.overlay.open", async (_span) => {
             if (isLinux) {
                this.closeOverlay();
+
                if (!input.hyprlandAddress || this.window.isDestroyed()) return;
                let overlay: HyprlandOverlay | undefined;
+
                try {
                   overlay = new HyprlandOverlay(input.hostId, input.hyprlandAddress);
                   this.overlayWindow = overlay;
@@ -515,6 +517,7 @@ export class MainWindow extends BaseWindow {
                }
                return;
             }
+
             if (input.hwnd === undefined) return;
             const applications = await native.getOpenApplications();
             const appInfo = applications.find((app) => app.hwnd === input.hwnd);

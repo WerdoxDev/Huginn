@@ -16,15 +16,15 @@ import {
    type UserPresence,
    VoiceSignallingErrorCode,
    omit,
+   resolveCdnUrl,
    toDataUrl,
 } from "@huginnjs/shared";
-import { changeCdnUrlBase } from "@lib/instances";
 import { clientStore } from "@stores/clientStoreState";
 import { ALL_FORMATS, BlobSource, CanvasSink, Input } from "mediabunny";
 import { Children, isValidElement } from "react";
 import { Element, Text, type Descendant } from "slate";
 
-import type { AppDirectChannel, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
+import type { AppDirectChannel, AppExpression, AppMessage, AppPresence, AppRelationship, AppUser, AppUserProfile, InputMessage } from "@/types";
 
 import { APIMessages } from "./error-messages";
 
@@ -158,7 +158,7 @@ export function convertToAppPresence(presence: UserPresence): AppPresence {
    const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().urls?.cdn}/cdn`;
    const activities = presence.activities.map((x) => ({
       ...x,
-      iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
+      iconUrl: x.iconUrl ? resolveCdnUrl(x.iconUrl, cdn) : undefined,
    }));
    return { ...omit(presence, ["user"]), userId: presence.user.id, activities };
 }
@@ -167,7 +167,7 @@ export function convertToAppSession(session: GatewaySession): GatewaySession {
    const cdn = clientStore.getState().urls?.cdn ?? `${clientStore.getState().urls?.cdn}/cdn`;
    const activities = session.activities.map((x) => ({
       ...x,
-      iconUrl: x.iconUrl ? changeCdnUrlBase(x.iconUrl, cdn) : undefined,
+      iconUrl: x.iconUrl ? resolveCdnUrl(x.iconUrl, cdn) : undefined,
    }));
    return { ...session, activities };
 }
@@ -339,4 +339,9 @@ export async function getAudioCovertArt(blob: Blob) {
    if (!coverImage) return undefined;
 
    return toDataUrl(coverImage?.data, "image/jpeg");
+}
+
+export function getExpressionSourceKey(expression: Partial<AppExpression>) {
+   const sourceKey = expression.attachmentId ? `attachment:${expression.attachmentId}` : expression.url ? `url:${expression.url}` : undefined;
+   return sourceKey;
 }

@@ -77,7 +77,7 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
             >
                <Drawer.Portal container={props.contextMenu?.parent ?? undefined}>
                   <DrawerBackdrop forceRender />
-                  <DrawerPopup>{children}</DrawerPopup>
+                  <DrawerPopup finalFocus={props.contextMenu?.finalFocus}>{children}</DrawerPopup>
                </Drawer.Portal>
             </Drawer.Root>
          ) : (
@@ -91,7 +91,7 @@ export default function ContextMenu<T>(props: ContextMenuProps<T>) {
             >
                <BaseMenu.Portal container={props.contextMenu?.parent ?? undefined}>
                   <BaseMenu.Positioner anchor={anchor} sideOffset={2} align="start" className="z-998">
-                     <BaseMenu.Popup className={popupClass}>{children}</BaseMenu.Popup>
+                     <BaseMenu.Popup className={popupClass} finalFocus={props.contextMenu?.finalFocus}>{children}</BaseMenu.Popup>
                   </BaseMenu.Positioner>
                </BaseMenu.Portal>
             </BaseMenu.Root>
@@ -140,7 +140,7 @@ function Item(
       return (
          <button ref={props.ref} type="button" disabled={props.disabled || isLoading} onClick={handleClick} className={itemClass}>
             {props.label}
-            {isLoading ? <HuginnLoadingIcon /> : props.children}
+            {isLoading ? <HuginnLoadingIcon className="size-5 shrink-0" /> : props.children}
          </button>
       );
    }
@@ -155,7 +155,7 @@ function Item(
          className={itemClass}
       >
          {props.label}
-         {isLoading ? <HuginnLoadingIcon /> : props.children}
+         {isLoading ? <HuginnLoadingIcon className="size-5 shrink-0" /> : props.children}
       </BaseMenu.Item>
    );
 }

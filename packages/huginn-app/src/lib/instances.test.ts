@@ -1,13 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-   changeCdnUrlBase,
-   defaultInstanceUrls,
-   fetchInstanceUrls,
-   normalizeAccessAddress,
-   switchInstanceTokens,
-   tryAccessAddresses,
-} from "./instances";
+import { defaultInstanceUrls, fetchInstanceUrls, normalizeAccessAddress, switchInstanceTokens, tryAccessAddresses } from "./instances";
 
 const first = "https://first.example";
 const second = "https://second.example";
@@ -25,11 +18,6 @@ describe("instance access addresses", () => {
          voice: "wss://first.example/voice",
       });
       expect(() => normalizeAccessAddress(`${first}/api`)).toThrow();
-   });
-   it("uses a custom CDN path", () => {
-      expect(changeCdnUrlBase("https://first.example/cdn/avatars/1.png?size=64", "https://second.example/assets")).toBe(
-         "https://second.example/assets/avatars/1.png?size=64",
-      );
    });
    it("uses only the selected address overrides", async () => {
       vi.stubGlobal(

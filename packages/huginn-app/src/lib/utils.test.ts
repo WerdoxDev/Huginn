@@ -96,7 +96,7 @@ describe("utils", () => {
                 "width": 100,
               },
               "title": "Embed 1",
-              "type": "gifv",
+              "type": "gif",
               "url": "https://example.com/embed1.gif",
               "video": {
                 "height": 360,
@@ -146,7 +146,7 @@ describe("utils", () => {
                 "width": 100,
               },
               "title": "Embed 1",
-              "type": "gifv",
+              "type": "gif",
               "url": "https://example.com/embed1.gif",
               "video": {
                 "height": 360,

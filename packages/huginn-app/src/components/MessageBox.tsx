@@ -9,7 +9,7 @@ import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { HuginnButton } from "@huginn/frontend-shared";
-import { formatSeconds, type APISticker } from "@huginnjs/shared";
+import { formatSeconds, type APIExpression } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
@@ -187,13 +187,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       handleAutocompleteSelect(item);
    }
 
-   function handleSendSticker(sticker: APISticker) {
+   function handleSendSticker(sticker: APIExpression) {
       sendSticker(sticker);
       setActiveMobilePanel(null);
    }
 
-   function handleSendGif(url: string) {
-      sendGif(url);
+   function handleSendGif(gif: APIExpression) {
+      sendGif(gif);
       setActiveMobilePanel(null);
    }
 
@@ -346,7 +346,13 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             </div>
             <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
                {activeMobilePanel === "expression" && (
-                  <ExpressionRawPanel onEmojiSelect={insertEmoji} onGifSelect={handleSendGif} onStickerSelect={handleSendSticker} type="full" />
+                  <ExpressionRawPanel
+                     isOpen={shouldShowMobilePanel}
+                     onEmojiSelect={insertEmoji}
+                     onGifSelect={handleSendGif}
+                     onStickerSelect={handleSendSticker}
+                     type="full"
+                  />
                )}
             </div>
             <FilePickerDrawer

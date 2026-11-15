@@ -1,4 +1,4 @@
-import type { APISticker, Snowflake } from "@huginnjs/shared";
+import type { APIEmbed, APIExpression, Snowflake } from "@huginnjs/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
@@ -35,15 +35,10 @@ type CodespanElement = {
    children: Descendant[];
 };
 
-type StickerElement = {
-   type: "sticker";
-   sticker: APISticker;
-   children: Descendant[];
-};
-
 type EmbedElement = {
+   media?: APIExpression;
    type: "embed";
-   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
+   embedType: APIEmbed["type"];
    thumbnail?: { url: string; width?: number; height?: number };
    video?: { url: string; width?: number; height?: number };
    title?: string;
@@ -54,6 +49,7 @@ type EmbedElement = {
 
 type AttachmentElement = {
    type: "attachment";
+   id: string;
    description?: string;
    url: string;
    width?: number;
@@ -109,7 +105,6 @@ export type ListItemElement = {
 type CustomElement =
    | ParagraphElement
    | SpoilerElement
-   | StickerElement
    | EmbedElement
    | LinkElement
    | CodeElement

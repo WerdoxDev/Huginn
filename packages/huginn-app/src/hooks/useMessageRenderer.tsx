@@ -1,4 +1,3 @@
-import StickerElement from "@components/editor/StickerElement";
 import AttachmentElement from "@components/editor/AttachmentElement";
 import CodeElement from "@components/editor/CodeElement";
 import CodespanElement from "@components/editor/CodespanElement";
@@ -68,8 +67,6 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
                return <CodespanElement key={key}>{children}</CodespanElement>;
             case "attachment":
                return <AttachmentElement {...node} key={key} />;
-            case "sticker":
-               return <StickerElement sticker={node.sticker} key={key} />;
             case "embed":
                return <EmbedElement {...node} key={key} />;
             case "ordered-list":
@@ -174,6 +171,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          for (const attachment of message.attachments) {
             nodes.push({
                type: "attachment",
+               id: attachment.id,
                url: attachment.url,
                description: attachment.description,
                children: [{ text: "" }],
@@ -281,12 +279,17 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
 
       nodes.push(lineElement);
 
-      const stickerNodes: Descendant[] = (message.stickers ?? []).map((sticker) => ({ type: "sticker", sticker, children: [{ text: "" }] }));
-      if (message.isPreview) return [...nodes, ...stickerNodes];
+      if (message.isPreview) {
+         for (const kind of ["gifs", "stickers"] as const) {
+            for (const media of message[kind] ?? [])
+               nodes.push({ type: "embed", embedType: kind === "gifs" ? "gif" : "sticker", media, children: [{ text: "" }] });
+         }
+         return nodes;
+      }
 
       // Only render the embeds if the message content is exactly the embed url
       const firstEmbed = message.embeds[0];
-      if (message.embeds.length === 1 && message.content.startsWith(firstEmbed.url ?? "") && firstEmbed.type !== "rich") {
+      if (message.embeds.length === 1 && !!firstEmbed.url && message.content.trim() === firstEmbed.url && firstEmbed.type !== "rich") {
          nodes = [];
       }
 
@@ -294,6 +297,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          nodes.push({
             type: "embed",
             embedType: embed.type,
+            media: embed.media,
             thumbnail: embed.thumbnail,
             video: embed.video,
             url: embed.url,
@@ -303,7 +307,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          });
       }
 
-      return [...nodes, ...stickerNodes];
+      return nodes;
    }, [message]);
 
    const children = useMemo(() => {

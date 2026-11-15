@@ -1,32 +1,36 @@
-import { useFavoriteGifs } from "@hooks/useFavoriteGifs";
+import { useExpressions } from "@hooks/useExpressions";
+import { resolveExpression } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 
-import type { ContextMenuGif } from "@/types";
+import type { ContextMenuExpression } from "@/types";
 
 import ContextMenu from "./ContextMenu";
 
 export default function GifContextMenu() {
    const { data } = useContextMenu("gif");
-
    if (!data) return;
 
-   return <GifFavoriteContextMenuItem gif={data} />;
+   return <GifSaveContextMenuItem gif={data} />;
 }
 
-export function GifFavoriteContextMenuItem(props: { gif: ContextMenuGif }) {
-   const { favoriteGifs, addFavorite, removeFavorite } = useFavoriteGifs();
+export function GifSaveContextMenuItem(props: { gif: ContextMenuExpression }) {
+   const { find, remove, add, downloadAndUpload, isPending } = useExpressions("gifs");
+   const expression = resolveExpression(props.gif);
+   const isSaved = find(props.gif);
 
-   const gif = props.gif;
-   const isFavorite = favoriteGifs.some((favoriteGif) => favoriteGif.url === gif.url);
-
-   function handleFavorite() {
-      if (isFavorite) return removeFavorite(gif.url);
-      return addFavorite({ ...gif, timestamp: Date.now() });
+   function handleToggle() {
+      if (isSaved) return remove(isSaved).catch(() => {});
+      return (expression ? add(expression) : downloadAndUpload(props.gif)).catch(() => {});
    }
 
    return (
-      <ContextMenu.Item label={isFavorite ? "Remove from GIFs" : "Add to GIFs"} color="negative" onClick={handleFavorite}>
-         <IconMingcuteStarFill />
+      <ContextMenu.Item
+         label={isSaved ? "Remove from GIFs" : "Add to GIFs"}
+         color={isSaved ? "negative" : "default"}
+         disabled={isPending}
+         onClick={handleToggle}
+      >
+         <IconMingcuteStarFill className="size-5 shrink-0" />
       </ContextMenu.Item>
    );
 }

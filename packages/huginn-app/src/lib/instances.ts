@@ -22,20 +22,6 @@ export function defaultInstanceUrls(address: string): InstanceUrls {
    };
 }
 
-export function changeCdnUrlBase(value: string, cdnBase: string): string {
-   try {
-      const original = new URL(value, cdnBase);
-      const target = new URL(cdnBase);
-      const path = original.pathname.replace(/^\/cdn\/?/, "").replace(/^\/+/, "");
-      target.pathname = `${target.pathname.replace(/\/$/, "")}/${path}`;
-      target.search = original.search;
-      target.hash = original.hash;
-      return target.toString();
-   } catch {
-      return value;
-   }
-}
-
 export function switchInstanceTokens(fromId: string, toId: string): void {
    if (fromId === toId) return;
    const current = { access: localStorage.getItem("access-token"), refresh: localStorage.getItem("refresh-token") };

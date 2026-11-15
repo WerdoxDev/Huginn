@@ -23,7 +23,7 @@ async function reinitializeRendererAnalytics(): Promise<void> {
 
    await reinitializeAnalytics(
       () =>
-         new WebAnalytics(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
+         new WebAnalytics(import.meta.env.VITE_PUBLIC_POSTHOG_KEY!, {
             otlpTraceUrl: `${urls.otlp}/v1/traces`,
             otlpLogUrl: `${urls.otlp}/v1/logs`,
             posthogHost: urls.posthog,

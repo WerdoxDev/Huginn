@@ -1,10 +1,12 @@
 import { Drawer, Popover } from "@base-ui/react";
+import ContextMenusRenderer from "@components/contextmenu/ContextMenusRenderer";
 import { DrawerBackdrop, DrawerPopup } from "@components/Drawer";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useStackBackHandler } from "@hooks/useStackBackHandler";
 import { snowflake, WorkerID } from "@huginnjs/shared";
+import { ContextMenuProvider } from "@stores/contextMenuStore";
 import clsx from "clsx";
-import { createContext, type CSSProperties, type ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, type CSSProperties, type ReactNode, type RefObject, useContext, useMemo, useRef, useState } from "react";
 
 import type { PopoverStateProps } from "@/types";
 
@@ -22,11 +24,12 @@ export type HuginnPopoverProps<T> = {
    keepMounted?: boolean;
 };
 
-const PopoverContext = createContext<{ isMobile: boolean } | null>(undefined!);
+const PopoverContext = createContext<{ isMobile: boolean; popupRef: RefObject<HTMLDivElement | null> } | null>(undefined!);
 
 export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
    const [id] = useState(() => snowflake.generateString(WorkerID.APP));
    const isMobile = useIsMobile();
+   const popupRef = useRef<HTMLDivElement>(null);
 
    const anchor = useMemo(
       () => ({
@@ -52,7 +55,13 @@ export default function HuginnPopover<T>(props: HuginnPopoverProps<T>) {
 
    useStackBackHandler(`popover-${id}`, () => props.onClose?.(), isOpen);
 
-   const children = <PopoverContext.Provider value={{ isMobile }}>{props.renderChildren}</PopoverContext.Provider>;
+   const children = (
+      <PopoverContext.Provider value={{ isMobile, popupRef }}>
+         <ContextMenuProvider active={isOpen} focusFallback={popupRef}>
+            {props.renderChildren}
+         </ContextMenuProvider>
+      </PopoverContext.Provider>
+   );
 
    if (isMobile) {
       return (
@@ -88,14 +97,16 @@ function Panel(props: { children?: ReactNode; className?: string; style?: CSSPro
 
    if (context?.isMobile) {
       return (
-         <DrawerPopup behindModal className={props.className}>
+         <DrawerPopup ref={context.popupRef} behindModal className={props.className}>
             {props.children}
+            <ContextMenusRenderer />
          </DrawerPopup>
       );
    }
 
    return (
       <Popover.Popup
+         ref={context?.popupRef}
          className={clsx(
             props.className,
             "border-surface bg-surface-void z-40 rounded-lg border shadow-xl transition-[opacity_transform] duration-200 outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:blur-xl data-starting-style:scale-90 data-starting-style:opacity-0 data-starting-style:blur-xl",
@@ -103,6 +114,8 @@ function Panel(props: { children?: ReactNode; className?: string; style?: CSSPro
          style={props.style}
       >
          {props.children}
+         {/* Keep menu roots in the popup's React tree so Base UI can coordinate dismissal. */}
+         <ContextMenusRenderer />
       </Popover.Popup>
    );
 }

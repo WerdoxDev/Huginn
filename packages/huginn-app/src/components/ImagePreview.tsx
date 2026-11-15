@@ -1,9 +1,7 @@
-import { MessageContext } from "@contexts/MessageProvider";
-import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useContext, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import LoadingBackground from "./LoadingBackground";
 
@@ -16,15 +14,13 @@ export default function ImagePreview(props: {
    filename?: string;
    disableQuery?: boolean;
    contentType?: string;
-   onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void;
+   onContextMenu?: (event: MouseEvent<HTMLImageElement>) => void;
 }) {
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
    const [useCors, setUseCors] = useState(false);
    const imgRef = useRef<HTMLImageElement>(null);
    const { updateModals } = useModals();
-   const { open } = useContextMenu("message");
-   const context = useContext(MessageContext);
    const aspectRatio = props.originalWidth && props.originalHeight ? props.originalWidth / props.originalHeight : 1;
    const huginnWindow = useHuginnWindow();
 

@@ -4,7 +4,7 @@ import type { Descendant, TextUnitAdjustment } from "slate";
 import { useEditMessage } from "@hooks/mutations/useEditMessage";
 import { useSendMessage } from "@hooks/mutations/useSendMessage";
 import { useSendTyping } from "@hooks/mutations/useSendTyping";
-import { MessageFlags, MessageReferenceType, MessageType, type APISticker } from "@huginnjs/shared";
+import { MessageFlags, MessageReferenceType, MessageType, type APIExpression } from "@huginnjs/shared";
 import Inset from "@lib/capacitor/inset-plugin";
 import { createPreviewMessage } from "@lib/query-utils";
 import { serializeSlate } from "@lib/utils";
@@ -73,7 +73,7 @@ export function useMessageBoxActions(options: {
       }
    });
 
-   function sendExpression(content: string, stickers?: APISticker[]) {
+   function sendExpression(kind: "gifs" | "stickers", media: APIExpression) {
       const channelId = params.channelId;
       if (!user || !channelId || !client) return;
 
@@ -89,14 +89,14 @@ export function useMessageBoxActions(options: {
       const previewMessage = createPreviewMessage(queryClient, {
          authorId: user.id,
          channelId,
-         content,
+         content: "",
          nonce,
          flags: MessageFlags.NONE,
          messageReference,
       });
 
       sendMessageMutation.mutate({
-         previewMessage: { ...previewMessage, stickers },
+         previewMessage: { ...previewMessage, [kind]: [media] },
       });
 
       if (currentReplyingMessageId) {
@@ -504,8 +504,8 @@ export function useMessageBoxActions(options: {
 
    return {
       content,
-      sendGif: (url: string) => sendExpression(url),
-      sendSticker: (sticker: APISticker) => sendExpression("", [sticker]),
+      sendGif: (gif: APIExpression) => sendExpression("gifs", gif),
+      sendSticker: (sticker: APIExpression) => sendExpression("stickers", sticker),
       submitMessage,
       insertEmoji,
       cancelEditMessage,

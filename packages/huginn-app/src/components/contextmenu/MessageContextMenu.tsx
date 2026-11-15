@@ -16,7 +16,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import ContextMenu from "./ContextMenu";
-import { GifFavoriteContextMenuItem } from "./GifContextMenu";
+import { GifSaveContextMenuItem } from "./GifContextMenu";
+import { StickerSaveContextMenuItem } from "./StickerContextMenu";
 
 export default function MessageContextMenu() {
    const { data, close } = useContextMenu("message");
@@ -236,7 +237,13 @@ export default function MessageContextMenu() {
          {data.gif && (
             <>
                <ContextMenu.Divider />
-               <GifFavoriteContextMenuItem gif={data.gif} />
+               <GifSaveContextMenuItem gif={data.gif} />
+            </>
+         )}
+         {data.sticker && (
+            <>
+               <ContextMenu.Divider />
+               <StickerSaveContextMenuItem sticker={data.sticker} />
             </>
          )}
          {data.url && (

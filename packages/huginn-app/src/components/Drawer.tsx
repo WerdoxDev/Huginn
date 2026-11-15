@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode, Ref } from "react";
 
 import { Drawer } from "@base-ui/react";
 import { useInset } from "@contexts/InsetContext";
@@ -67,7 +67,14 @@ export function DrawerBackdrop(props: { forceRender?: boolean; passThrough?: boo
    );
 }
 
-export function DrawerPopup(props: { children: ReactNode; className?: string; behindModal?: boolean; passThrough?: boolean }) {
+export function DrawerPopup(props: {
+   children: ReactNode;
+   className?: string;
+   behindModal?: boolean;
+   passThrough?: boolean;
+   ref?: Ref<HTMLDivElement>;
+   finalFocus?: Drawer.Popup.Props["finalFocus"];
+}) {
    const { lastNavBarHeight, shouldResizeWindow, lastKeyboardHeight, isKeyboardOpen } = useInset();
    const bottomOffset = shouldResizeWindow && isKeyboardOpen ? lastKeyboardHeight + lastNavBarHeight : lastNavBarHeight;
 
@@ -82,6 +89,8 @@ export function DrawerPopup(props: { children: ReactNode; className?: string; be
          data-ignore-swipe
       >
          <Drawer.Popup
+            ref={props.ref}
+            finalFocus={props.finalFocus}
             className={clsx(drawerPopupClass, props.className)}
             style={
                {

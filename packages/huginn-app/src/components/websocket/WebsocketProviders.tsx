@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import ApplicationContributionsProvider from "./ApplicationContributionsProvider";
 import ChannelsProvider from "./ChannelsProvider";
+import ExpressionsProvider from "./ExpressionsProvider";
 import FriendsProvider from "./FriendsProvider";
 import MessageWebsocketProvider from "./MessageWebsocketProvider";
 
@@ -10,7 +11,9 @@ export default function WebsocketProviders(props: { children?: ReactNode }) {
       <ApplicationContributionsProvider>
          <ChannelsProvider>
             <MessageWebsocketProvider>
-               <FriendsProvider>{props.children}</FriendsProvider>
+               <FriendsProvider>
+                  <ExpressionsProvider>{props.children}</ExpressionsProvider>
+               </FriendsProvider>
             </MessageWebsocketProvider>
          </ChannelsProvider>
       </ApplicationContributionsProvider>

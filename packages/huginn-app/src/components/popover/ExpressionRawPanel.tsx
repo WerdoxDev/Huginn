@@ -1,4 +1,4 @@
-import type { APISticker } from "@huginnjs/shared";
+import type { APIExpression } from "@huginnjs/shared";
 
 import { HuginnTab } from "@huginn/frontend-shared";
 import { useState } from "react";
@@ -9,8 +9,9 @@ import StickerPickerPanel from "./StickerPickerPanel";
 
 export function ExpressionRawPanel(props: {
    onEmojiSelect: (emoji: string) => void;
-   onGifSelect?: (url: string) => void;
-   onStickerSelect?: (sticker: APISticker) => void;
+   onGifSelect?: (gif: APIExpression) => void;
+   isOpen?: boolean;
+   onStickerSelect?: (sticker: APIExpression) => void;
    onTabChange?: (tab: "emoji" | "gif" | "sticker") => void;
    type: "full" | "emoji";
    activePanel?: "emoji" | "gif" | "sticker";
@@ -35,10 +36,10 @@ export function ExpressionRawPanel(props: {
             </HuginnTab.TabPanel>
 
             <HuginnTab.TabPanel value="gif">
-               <GifPickerPanel onGifSelect={props.onGifSelect} />
+               <GifPickerPanel onGifSelect={props.onGifSelect} isOpen={(props.isOpen ?? true) && activePanel === "gif"} />
             </HuginnTab.TabPanel>
             <HuginnTab.TabPanel value="sticker" className="text-white">
-               <StickerPickerPanel onStickerSelect={props.onStickerSelect} />
+               <StickerPickerPanel isOpen={(props.isOpen ?? true) && activePanel === "sticker"} onStickerSelect={props.onStickerSelect} />
             </HuginnTab.TabPanel>
          </HuginnTab.TabPanels>
       </HuginnTab>

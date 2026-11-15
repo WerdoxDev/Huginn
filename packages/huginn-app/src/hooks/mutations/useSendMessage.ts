@@ -1,5 +1,5 @@
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
-import { MessageReferenceType, type APIPostMessageReferenceJSONBody } from "@huginnjs/shared";
+import { expressionReference, MessageReferenceType, type APIPostMessageReferenceJSONBody } from "@huginnjs/shared";
 import { dispatchEvent } from "@lib/event-handler";
 import { appendAppMessage, deleteAppMessage, findChannel, getChannels, updateAppMessage } from "@lib/query-utils";
 import { useChannelStore } from "@stores/channelStore";
@@ -86,7 +86,8 @@ export function useSendMessage() {
                        }))
                      : undefined,
                content: data.previewMessage.content,
-               stickers: previewMessage.stickers?.map(({ source, id }) => ({ source, id })),
+               gifs: previewMessage.gifs?.map(expressionReference),
+               stickers: previewMessage.stickers?.map(expressionReference),
                flags: data.previewMessage.flags,
                nonce: previewMessage.nonce,
                messageReference,
