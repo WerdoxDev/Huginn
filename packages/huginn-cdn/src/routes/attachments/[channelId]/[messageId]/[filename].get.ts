@@ -2,15 +2,15 @@ import type { S3Stats } from "bun";
 
 import { fileNotFound, globalPlugin } from "@huginn/backend-shared";
 import { type ImageFormats, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
-import Elysia, { env, StatusMap, t } from "elysia";
+import Elysia, { StatusMap, t } from "elysia";
 
 import { storage } from "#server";
 import { extractFileInfo } from "#utils/file-utils";
 import { tryResolveImage } from "#utils/route-utils";
+import { hasValidSignature, signatureQuery } from "#utils/signature";
 
 const querySchema = t.Object({
-   hm: t.String(),
-   ex: t.Number(),
+   ...signatureQuery,
    format: t.Optional(t.String()),
    quality: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
    width: t.Optional(t.Number()),
@@ -20,18 +20,7 @@ const querySchema = t.Object({
 export const getMessageAttachment = new Elysia().use(globalPlugin).get(
    "/cdn/attachments/:channelId/:messageId/:filename",
    async ({ status, path, params: { channelId, filename, messageId }, headers, global, query: { ex, hm, format, height, quality, width } }) => {
-      const hasher = new Bun.CryptoHasher("sha256", env.CDN_HMAC_SECRET);
-
-      const hashPath = decodeURIComponent(path.replace("/cdn/", ""));
-      hasher.update(`${hashPath}:${ex}`);
-      const expectedSignature = hasher.digest("hex");
-
-      if (expectedSignature !== hm) {
-         return fileNotFound(status);
-      }
-
-      const now = Math.floor(Date.now() / 1000);
-      if (ex < now) {
+      if (!hasValidSignature(path, { ex, hm })) {
          return fileNotFound(status);
       }
 

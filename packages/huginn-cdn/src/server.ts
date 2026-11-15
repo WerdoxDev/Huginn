@@ -20,6 +20,8 @@ import { postChannelIcon } from "#routes/channel-icons/[channelId].post";
 import { getChannelIcon } from "#routes/channel-icons/[channelId]/[iconHash].get";
 import { getEmoji } from "#routes/emoji/[id].get";
 import { getAllExternal } from "#routes/external/all.get";
+import { getGif } from "#routes/gifs/[filename].get";
+import { postGif } from "#routes/gifs/[id].post";
 import { getSticker } from "#routes/stickers/[filename].get";
 import { postSticker } from "#routes/stickers/[id].post";
 import { env } from "#setup";
@@ -75,6 +77,8 @@ export const app = new Elysia({ normalize: "typebox" })
    // Uncached routes
    .use(getMessageAttachment)
    .use(postMessageAttachment)
+   .use(getGif)
+   .use(postGif)
    .use(getIndex)
 
    // Cached routes
