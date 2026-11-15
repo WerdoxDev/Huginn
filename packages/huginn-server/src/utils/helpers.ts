@@ -1,3 +1,4 @@
+import { signCdnPath } from "@huginn/backend-shared/cdn-signature";
 import { prisma } from "@huginn/backend-shared/database";
 import {
    selectApplicationMatcher,
@@ -14,14 +15,14 @@ import {
 import { logger } from "@huginn/backend-shared/logger";
 import {
    analytics,
+   getMessageSummary,
    type APIContribution,
    type APIMessage,
-   type APISticker,
+   type APIExpressionReference,
    type APIMessageCall,
    type APIMessageReference,
    type APIReaction,
    ChannelType,
-   CONSTANTS,
    decodeEmojiKey,
    type DirectChannel,
    type GatewayWebsocketEvents,
@@ -36,6 +37,7 @@ import {
 
 import { env } from "#setup";
 
+import { expressionEmbeds } from "./expressions";
 import { dispatchToTopic } from "./gateway-utils";
 import { sendPushNotification } from "./route-utils";
 
@@ -98,11 +100,22 @@ export function dispatchChannel(
    dispatchToTopic(userId, topic, channelWithoutRecipient(channel, userId));
 }
 
-export async function filterMessage<T extends MessagePayload<{ select: typeof selectAllMessage }>>(
-   message: T,
-   options?: { receiverId?: Snowflake },
-): Promise<APIMessage> {
+type MessageToFilter = Omit<MessagePayload<{ select: typeof selectAllMessage }>, "messageReference"> & {
+   messageReference:
+      | (Pick<NonNullable<MessagePayload<{ select: typeof selectAllMessage }>["messageReference"]>, "type" | "messageId" | "channelId"> & {
+           message?: MessageToFilter | null;
+        })
+      | null;
+};
+
+export async function filterMessage(message: MessageToFilter, options?: { receiverId?: Snowflake }): Promise<APIMessage> {
    const signedAttachments = message.attachments.map(signAttachment);
+   const content = message.content;
+   const embeds = [
+      ...message.embeds,
+      ...(await expressionEmbeds("gifs", (message.gifs ?? []) as APIExpressionReference[])),
+      ...(await expressionEmbeds("stickers", (message.stickers ?? []) as APIExpressionReference[])),
+   ];
 
    const reactions: APIReaction[] = [];
    if (message.reactionAggregates && message.reactionAggregates.length > 0 && options?.receiverId) {
@@ -147,11 +160,13 @@ export async function filterMessage<T extends MessagePayload<{ select: typeof se
          messageReference: omit(message.messageReference, ["message"]) as APIMessageReference,
       }),
       ...(message.messageReference?.message !== undefined && {
-         referencedMessage: !message.messageReference.message ? null : message.messageReference?.message,
+         referencedMessage: !message.messageReference.message ? null : await filterMessage(message.messageReference.message, options),
       }),
       ...(reactions.length > 0 && { reactions }),
-      embeds: nullToUndefined(message.embeds),
-      stickers: (message.stickers ?? []) as APISticker[],
+      content,
+      embeds: nullToUndefined(embeds),
+      gifs: (message.gifs ?? []) as APIExpressionReference[],
+      stickers: (message.stickers ?? []) as APIExpressionReference[],
       attachments: nullToUndefined(signedAttachments),
    };
 }
@@ -215,14 +230,7 @@ export function filterContribution<T extends ContributionPayload<{ select: typeo
 }
 
 export function signAttachment<A extends { url: string }>(attachment: A): A {
-   const ttlSeconds = CONSTANTS.CDN_HMAC_EXPIRE_TIME;
-   const expiry = Math.floor(Date.now() / 1000) + ttlSeconds;
-
-   const hasher = new Bun.CryptoHasher("sha256", env.CDN_HMAC_SECRET);
-   hasher.update(`${attachment.url}:${expiry}`);
-   const signature = hasher.digest("hex");
-
-   return { ...attachment, url: `${attachment.url}?ex=${expiry}&hm=${signature}` };
+   return { ...attachment, url: signCdnPath(attachment.url, env.CDN_HMAC_SECRET) };
 }
 
 export async function sendAddMessagePushNotification(channelId: Snowflake, message: MessagePayload<{ select: typeof selectAllMessage }>) {
@@ -269,7 +277,7 @@ export async function sendAddMessagePushNotification(channelId: Snowflake, messa
                .map((user) =>
                   sendPushNotification(user.id, "add_message", {
                      data: {
-                        content: message.content,
+                        content: getMessageSummary(message),
                         channelId,
                         messageId: message.id,
                         authorId: message.author.id,

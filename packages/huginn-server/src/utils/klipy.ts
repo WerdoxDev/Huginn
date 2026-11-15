@@ -1,4 +1,4 @@
-import type { APIGif, APISticker, Snowflake } from "@huginnjs/shared";
+import { ExpressionType, type APIExpression, type Snowflake } from "@huginnjs/shared";
 
 import { env } from "#setup";
 
@@ -74,7 +74,15 @@ export function filterGifs(gifs: MediaPage<GifItem>, options: { quality: MediaQu
    return gifs.data.flatMap((item) => {
       const file = item.file[options.quality]?.[options.format];
       if (!file?.url || !file.width || !file.height) return [];
-      return [{ ...formatMedia(item, "gifs", file), id: item.id, preview: item.blur_preview }];
+      return [
+         {
+            ...formatMedia(item, "gifs", file),
+            id: item.slug.split("--")[0],
+            type: ExpressionType.KLIPY,
+            contentType: `${["gif", "webp", "jpg"].includes(options.format) ? "image" : "video"}/${options.format === "jpg" ? "jpeg" : options.format}`,
+            preview: item.blur_preview,
+         },
+      ];
    });
 }
 
@@ -93,10 +101,18 @@ export async function fetchStickerItem(slug: string) {
    return filterStickers(result.data.data)[0];
 }
 
-export function filterStickers(items: MediaItem[]): APISticker[] {
+export function filterStickers(items: MediaItem[]): APIExpression[] {
    return items.flatMap((item) => {
       const file = item.file.sm?.webp ?? item.file.sm?.gif ?? item.file.md?.webp ?? item.file.md?.gif ?? item.file.hd?.webp ?? item.file.hd?.gif;
       if (!file?.url || !file.width || !file.height) return [];
-      return [{ ...formatMedia(item, "stickers", file), source: "klipy" as const, id: item.slug, preview: item.blur_preview }];
+      return [
+         {
+            ...formatMedia(item, "stickers", file),
+            type: ExpressionType.KLIPY,
+            contentType: file.url.includes(".gif") ? "image/gif" : "image/webp",
+            id: item.slug.split("--")[0],
+            preview: item.blur_preview,
+         },
+      ];
    });
 }

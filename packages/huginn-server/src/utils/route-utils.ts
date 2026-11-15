@@ -221,7 +221,7 @@ export async function generateEmbedsFromContent(tokens: MarkedToken[]) {
          const gif = filterGifs((await fetchGifItems([slug!])).data, { format: "webm", quality: "md" })[0];
 
          embeds.push({
-            type: "gifv",
+            type: "gif",
             title: gif.title,
             url: gif.url,
             video: { url: gif.src, width: gif.width, height: gif.height },
@@ -236,7 +236,7 @@ export async function generateEmbedsFromContent(tokens: MarkedToken[]) {
       if (contentType && isImageMediaType(contentType)) {
          const thumbnailData = await getImageData(await response.arrayBuffer());
          embeds.push({
-            type: "image",
+            type: contentType === "image/gif" ? "gif" : "image",
             url: response.url,
             thumbnail: {
                width: thumbnailData?.width ?? 0,

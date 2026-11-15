@@ -19,29 +19,37 @@ function escapeLikePattern(value: string): string {
    return value.replace(/[\\%_]/g, "\\$&");
 }
 
+const hasGifs: Prisma.MessageWhereInput = { gifs: { not: [] } };
+const hasStickers: Prisma.MessageWhereInput = { stickers: { not: [] } };
+
 const hasConditions: Record<MessageSearchHas, Prisma.MessageWhereInput> = {
    image: {
       OR: [
+         hasGifs,
+         hasStickers,
          { attachments: { some: { contentType: { startsWith: "image/", mode: "insensitive" } } } },
-         { embeds: { some: { type: { in: ["image", "gifv"] } } } },
+         { embeds: { some: { type: { in: ["image", "gif", "sticker"] } } } },
       ],
    },
    video: {
       OR: [
+         { gifs: { array_contains: [{ type: 0 }] } },
          { attachments: { some: { contentType: { startsWith: "video/", mode: "insensitive" } } } },
-         { embeds: { some: { type: { in: ["video", "gifv"] } } } },
+         { embeds: { some: { OR: [{ type: "video" }, { type: "gif", video: { isNot: null } }] } } },
       ],
    },
    audio: { attachments: { some: { contentType: { startsWith: "audio/", mode: "insensitive" } } } },
    file: { attachments: { some: {} } },
    link: {
       OR: [
+         hasGifs,
+         hasStickers,
          { content: { contains: "http://", mode: "insensitive" } },
          { content: { contains: "https://", mode: "insensitive" } },
          { embeds: { some: { url: { not: null } } } },
       ],
    },
-   embed: { embeds: { some: {} } },
+   embed: { OR: [hasGifs, hasStickers, { embeds: { some: {} } }] },
 };
 
 export function buildMessageSearchWhere(userId: Snowflake, body: APIPostChannelSearchJSONBody): Prisma.MessageWhereInput {
@@ -75,7 +83,11 @@ export function buildMessageSearchWhere(userId: Snowflake, body: APIPostChannelS
       conditions.push({ attachments: { some: { AND: attachmentConditions } } });
    }
 
-   if (body.embedType !== undefined) conditions.push({ embeds: { some: { type: { equals: body.embedType, mode: "insensitive" } } } });
+   if (body.embedType !== undefined) {
+      const type = body.embedType.toLowerCase();
+      const storedEmbed = { embeds: { some: { type: { equals: body.embedType, mode: "insensitive" as const } } } };
+      conditions.push(type === "gif" ? { OR: [hasGifs, storedEmbed] } : type === "sticker" ? { OR: [hasStickers, storedEmbed] } : storedEmbed);
+   }
    if (body.repliedToUserId !== undefined || body.repliedToMessageId !== undefined) {
       conditions.push({
          type: MessageType.REPLY,
