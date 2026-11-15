@@ -3,6 +3,8 @@ import type {
    APIChannelUser,
    APIContribution,
    APIEmoji,
+   APIExpression,
+   ExpressionKind,
    APIMessage,
    APIReadStateWithoutUser,
    APIRelationshipWithoutOwner,
@@ -47,6 +49,7 @@ export type GatewayWebsocketEvents = {
    message_delete: GatewayMessageDeleteData;
    message_update: GatewayMessageUpdateData;
    message_ack: GatewayMessageAckData;
+   expression_update: GatewayExpressionUpdatedData;
    typing_start: GatewayTypingStartData;
    relationship_add: GatewayRelationshipCreateData;
    relationship_remove: Snowflake;
@@ -192,6 +195,8 @@ type GatewayMessageEventExtraFields = {
 };
 
 export type GatewayMessageAckData = { channelId: Snowflake; messageId: Snowflake };
+
+export type GatewayExpressionUpdatedData = { kind: ExpressionKind; expression: APIExpression };
 
 export type GatewayRelationshipCreateData = APIRelationshipWithoutOwner;
 export type GatewayDMChannelCreateData = DirectChannel;

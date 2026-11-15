@@ -16,6 +16,7 @@ export const CONSTANTS = {
    OAUTH_HANDOFF_EXPIRE_TIME_MS: (2 * 60 * 1000) as number, // 2 minutes
    CDN_TOKEN_EXPIRE_TIME: "10mins",
    CDN_HMAC_EXPIRE_TIME: 86400,
+   GIF_MAX_BYTES: 26_214_400,
    EMAIL_REGEX:
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ as RegExp,
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
@@ -34,6 +35,8 @@ export const CONSTANTS = {
    ATTACHMENT_MEDIA_MAX_HEIGHT: 350,
    EMBED_MEDIA_MAX_WIDTH: 400,
    EMBED_MEDIA_MAX_HEIGHT: 300,
+   STICKER_MEDIA_MAX_WIDTH: 160,
+   STICKER_MEDIA_MAX_HEIGHT: 160,
    CALL_RINGING_TIMEOUT: 10000,
    KNOWN_APPLICATION_SIMILARITY_THRESHOLD: 90,
    KNOWN_APPLICATION_IGNORED_SUBTITLES: ["demo", "trailer", "teaser", "preview", "beta", "alpha", "early access", "game", "launcher"] as string[],
@@ -88,7 +91,6 @@ export const DEFAULT_SERVER_SETTINGS: UserSettings = {
    status: "online",
    theme: undefined,
    pinnedChannels: [],
-   favoriteGifs: [],
    channelBackgrounds: [],
    globalChannelBackground: undefined,
    voicePreferences: undefined,
