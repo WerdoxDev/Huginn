@@ -1,4 +1,14 @@
-import { analytics, idFix, MessageType, recordSpanError, snowflake, WorkerID, type APISticker, type APIPostMessageReferenceJSONBody, type Snowflake } from "@huginnjs/shared";
+import {
+   analytics,
+   idFix,
+   MessageType,
+   recordSpanError,
+   snowflake,
+   WorkerID,
+   type APIExpressionReference,
+   type APIPostMessageReferenceJSONBody,
+   type Snowflake,
+} from "@huginnjs/shared";
 import { PaginationType, type ScalarWhereField } from "better-drizzle";
 
 import { assertExists, assertId, assertObj } from "#database/error";
@@ -150,7 +160,8 @@ export const messageRepo = {
          channelId: Snowflake;
          type: MessageType;
          content?: string;
-         stickers?: APISticker[];
+         gifs?: APIExpressionReference[];
+         stickers?: APIExpressionReference[];
          attachments?: DBAttachment[];
          embeds?: DBEmbed[];
          messageReference?: APIPostMessageReferenceJSONBody;
@@ -223,6 +234,7 @@ export const messageRepo = {
                   type: options.type,
                   channelId: BigInt(options.channelId),
                   content: options.content ?? "",
+                  gifs: options.gifs ?? [],
                   stickers: options.stickers ?? [],
                   attachments: options.attachments ? { connect: createdAttachments.map((x) => ({ id: BigInt(x.id) })) } : undefined,
                   mentions: { connect: options.mentions?.map((x) => ({ id: BigInt(x) })) },
@@ -277,6 +289,8 @@ export const messageRepo = {
       id: Snowflake,
       options: {
          content?: string;
+         gifs?: APIExpressionReference[];
+         stickers?: APIExpressionReference[];
          embeds?: DBEmbed[];
          attachments?: DBAttachment[];
          call?: { participants: Snowflake[]; setEndedTimestamp: boolean };
@@ -316,7 +330,9 @@ export const messageRepo = {
                   where: { id: BigInt(id) },
                   data: {
                      content: options.content,
-                     embeds: options.embeds ? { set: createdEmbeds.map((x) => ({ id: BigInt(x.id) })) } : { set: [] },
+                     gifs: options.gifs,
+                     stickers: options.stickers,
+                     embeds: options.embeds === undefined ? undefined : { set: createdEmbeds.map((x) => ({ id: BigInt(x.id) })) },
                      editedTimestamp: new Date(),
                      call: options.call
                         ? {

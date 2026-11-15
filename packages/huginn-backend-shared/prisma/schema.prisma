@@ -45,21 +45,38 @@ model User {
   pinnedMessages       MessagePin[]
   notificationTokens   NotificationToken[]
   reactions            Reaction[]
-  stickers             Sticker[]
+  expressions          UserExpression[]
 }
 
-model Sticker {
-  id        BigInt   @id
-  userId    BigInt
-  title     String
-  asset     String
-  width     Int
-  height    Int
-  createdAt DateTime @default(now())
+model Expression {
+  kind         String
+  type         Int      @db.SmallInt
+  id           String
+  title        String
+  url          String
+  src          String
+  contentType  String
+  width        Int
+  height       Int
+  sourceKey    String? @unique
+  users        UserExpression[]
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([kind, type, id])
+}
 
-  @@index([userId, id])
+model UserExpression {
+  userId       BigInt
+  kind         String
+  type         Int      @db.SmallInt
+  expressionId String
+  usageCount   Int      @default(0)
+  lastUsedAt   DateTime?
+  createdAt    DateTime @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expression   Expression @relation(fields: [kind, type, expressionId], references: [kind, type, id], onDelete: Cascade)
+
+  @@id([userId, kind, type, expressionId])
+  @@index([userId, kind, usageCount, lastUsedAt])
 }
 
 model EmailVerification {
@@ -159,6 +176,7 @@ model Message {
   content             String
   timestamp           DateTime
   editedTimestamp     DateTime?
+  gifs                Json         @default("[]")
   stickers            Json         @default("[]")
   embeds              Embed[]
   attachments         Attachment[]

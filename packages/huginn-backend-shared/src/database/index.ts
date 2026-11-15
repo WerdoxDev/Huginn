@@ -8,6 +8,7 @@ import { authSessionExtension } from "./authSession";
 import { channelExtension } from "./channel";
 import { contributionExtension } from "./contribution";
 import { embedExtension } from "./embed";
+import { expressionExtension } from "./expression";
 import { messagesExtension } from "./message";
 import { messagePinExtension } from "./messagePin";
 import { notificationTokenExtension } from "./notificationToken";
@@ -16,6 +17,7 @@ import { readStateExtension } from "./readState";
 import { relationshipExtension } from "./relationship";
 import { settingsExtension } from "./settings";
 import { userExtension } from "./user";
+import { userExpressionExtension } from "./userExpression";
 
 // export const prismaBase = new PrismaClient({ omit: { user: { password: true } } }).$extends({
 const adapter = new PrismaPg({ connectionString: process.env.POSTGRESQL_URL });
@@ -37,12 +39,14 @@ export const prisma = prismaBase
    })
    .$extends(assertExtension)
    .$extends(userExtension)
+   .$extends(userExpressionExtension)
    .$extends(channelExtension)
    .$extends(messagesExtension)
    .$extends(messagePinExtension)
    .$extends(relationshipExtension)
    .$extends(readStateExtension)
    .$extends(embedExtension)
+   .$extends(expressionExtension)
    .$extends(attachmentExtension)
    .$extends(settingsExtension)
    .$extends(notificationTokenExtension)
