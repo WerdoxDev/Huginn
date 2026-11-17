@@ -11,10 +11,10 @@ import {
    MessageType,
 } from "@huginnjs/shared";
 import { clientStore } from "@stores/clientStoreState";
-import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { experimental_createQueryPersister } from "@tanstack/query-persist-client-core";
 import { infiniteQueryOptions, QueryClient, queryOptions } from "@tanstack/react-query";
 
+import { broadcastQueryClient } from "./broadcast-query-client";
 import { BroadcastStorage } from "./broadcast-storage";
 import { Gallery } from "./capacitor/gallery-plugin";
 import { getHostId, isChildWindow } from "./child-window";

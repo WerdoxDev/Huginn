@@ -38,7 +38,7 @@ const initialStore = () => ({
    imageCrop: { isOpen: false, originalImageData: "", mimeType: "", cropType: "avatar", callback: undefined } as DefaultModal & {
       originalImageData: string;
       mimeType: string;
-      cropType?: "avatar" | "banner" | "chat-background" | "sticker";
+      cropType?: "avatar" | "banner" | "chat-background" | "sticker" | "gif";
       callback?: (data: string) => Promise<void> | void;
       profilePreview?: {
          userId: Snowflake;

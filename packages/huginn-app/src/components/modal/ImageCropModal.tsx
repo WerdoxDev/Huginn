@@ -25,7 +25,7 @@ export default function ImageCropModal() {
    const isBanner = modal.cropType === "banner";
    const isChatBackground = modal.cropType === "chat-background";
    const isSticker = modal.cropType === "sticker";
-   const isFreeCrop = isChatBackground || isSticker;
+   const isFreeCrop = isChatBackground || isSticker || modal.cropType === "gif";
    const profilePreview = modal.profilePreview;
    const imageAspectRatio = imageSize?.src === modal.originalImageData ? imageSize.aspectRatio : undefined;
 

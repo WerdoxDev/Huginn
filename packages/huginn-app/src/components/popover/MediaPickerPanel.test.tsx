@@ -1,19 +1,24 @@
-import { ExpressionType, type APIExpression, type ExpressionKind } from "@huginnjs/shared";
+import { CONSTANTS, ExpressionType, type APIExpression, type ExpressionKind } from "@huginnjs/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import MediaPickerPanel from "./MediaPickerPanel";
 
 const mocks = vi.hoisted(() => ({
    gifs: { getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
    stickers: { getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
+   openFileDialog: vi.fn(),
+   upload: vi.fn(),
+   updateModals: vi.fn(),
+   showError: vi.fn(),
+   revokeObjectURL: vi.fn(),
 }));
 
 vi.mock("@hooks/useContainerWidth", () => ({ useContainerWidth: () => [undefined, 360] }));
-vi.mock("@hooks/useFileDialog", () => ({ useFileDialog: () => ({ openFileDialog: vi.fn() }) }));
+vi.mock("@hooks/useFileDialog", () => ({ useFileDialog: () => ({ openFileDialog: mocks.openFileDialog }) }));
 vi.mock("@hooks/useExpressions", () => ({
-   useExpressions: () => ({ items: [media("Saved cat")], isLoading: false, isError: false, isPending: false }),
+   useExpressions: () => ({ items: [media("Saved cat")], isLoading: false, isError: false, isPending: false, upload: mocks.upload }),
 }));
 vi.mock("@stores/clientStore", async (importOriginal) => ({
    ...(await importOriginal<typeof import("@stores/clientStore")>()),
@@ -22,7 +27,7 @@ vi.mock("@stores/clientStore", async (importOriginal) => ({
 }));
 vi.mock("@stores/userStore", () => ({ useThisUser: () => ({ user: { id: "1" } }) }));
 vi.mock("@stores/contextMenuStore", () => ({ useContextMenu: () => ({ open: vi.fn() }) }));
-vi.mock("@stores/modalsStore", () => ({ useModals: () => ({ showError: vi.fn() }) }));
+vi.mock("@stores/modalsStore", () => ({ useModals: () => ({ showError: mocks.showError, updateModals: mocks.updateModals }) }));
 
 function media(title: string): APIExpression {
    return {
@@ -171,4 +176,70 @@ it("keeps sticker Trending available when there is no preview", async () => {
    fireEvent.click(screen.getByRole("tab", { name: "All Stickers" }));
    fireEvent.click(await screen.findByRole("button", { name: "Trending" }));
    expect(await screen.findByRole("button", { name: "Trending result" })).toBeTruthy();
+});
+
+describe.each([
+   ["gifs", "Upload GIF", "image/gif", "image/gif", "gif"],
+   ["stickers", "Upload sticker", "image/jpeg", "image/png", "sticker"],
+   ["stickers", "Upload sticker", "image/gif", "image/gif", "sticker"],
+] as const)("%s uploads (%s, %s)", (kind, button, mimeType, croppedMimeType, cropType) => {
+   beforeEach(() => {
+      vi.stubGlobal(
+         "URL",
+         class extends URL {
+            static revokeObjectURL = mocks.revokeObjectURL;
+         },
+      );
+      mocks.openFileDialog.mockResolvedValue({
+         file: new File(["original"], "cat", { type: mimeType }),
+         dataUrl: "blob:selected-media",
+         mimeType,
+      });
+   });
+
+   afterEach(() => vi.unstubAllGlobals());
+
+   it("waits for crop confirmation, then uploads the cropped bytes and content type", async () => {
+      setup(kind);
+      fireEvent.click(screen.getByRole("button", { name: button }));
+
+      await waitFor(() => expect(mocks.updateModals).toHaveBeenCalledOnce());
+      const modal = mocks.updateModals.mock.calls[0][0].imageCrop;
+      expect(modal).toMatchObject({ isOpen: true, originalImageData: "blob:selected-media", mimeType, cropType });
+      expect(mocks.upload).not.toHaveBeenCalled();
+      expect(mocks.revokeObjectURL).not.toHaveBeenCalled();
+
+      await act(() => modal.callback(`data:${croppedMimeType};base64,AQID`));
+
+      expect(mocks.upload).toHaveBeenCalledOnce();
+      const upload = mocks.upload.mock.calls[0][0];
+      expect(upload).toMatchObject({ name: "cat", contentType: croppedMimeType });
+      expect(new Uint8Array(upload.data)).toEqual(new Uint8Array([1, 2, 3]));
+      expect(mocks.showError).not.toHaveBeenCalled();
+   });
+
+   it("releases oversized files without opening the cropper or uploading", async () => {
+      const max = kind === "gifs" ? CONSTANTS.GIF_MAX_BYTES : CONSTANTS.STICKER_MAX_BYTES;
+      const file = new File(["original"], "cat", { type: mimeType });
+      Object.defineProperty(file, "size", { value: max + 1 });
+      mocks.openFileDialog.mockResolvedValue({ file, dataUrl: "blob:oversized", mimeType });
+      setup(kind);
+      fireEvent.click(screen.getByRole("button", { name: button }));
+
+      await waitFor(() => expect(mocks.showError).toHaveBeenCalledOnce());
+      expect(mocks.revokeObjectURL).toHaveBeenCalledWith("blob:oversized");
+      expect(mocks.updateModals).not.toHaveBeenCalled();
+      expect(mocks.upload).not.toHaveBeenCalled();
+   });
+
+   it("does nothing when file selection is cancelled", async () => {
+      mocks.openFileDialog.mockResolvedValue(null);
+      setup(kind);
+      fireEvent.click(screen.getByRole("button", { name: button }));
+
+      await waitFor(() => expect(mocks.openFileDialog).toHaveResolvedWith(null));
+      expect(mocks.updateModals).not.toHaveBeenCalled();
+      expect(mocks.upload).not.toHaveBeenCalled();
+      expect(mocks.revokeObjectURL).not.toHaveBeenCalled();
+   });
 });

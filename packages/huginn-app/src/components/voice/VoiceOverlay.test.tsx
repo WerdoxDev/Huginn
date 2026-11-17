@@ -31,7 +31,7 @@ function participant(userId: string, channelId: string) {
 }
 
 describe("voice overlay", () => {
-   test.each([false, true])("sorts speakers first without remounting avatars (only speaking: %s)", (voiceOverlayOnlySpeaking) => {
+   test.each([false, true])("orders participants without remounting avatars (only speaking: %s)", (voiceOverlayOnlySpeaking) => {
       storageStore.getState().setCachedValue("settings", { ...storageStore.getState().cache.settings, voiceOverlayOnlySpeaking });
       queryClient.setQueryData(["user", "charlie"], { id: "charlie", displayName: "Charlie" });
       queryClient.setQueryData(["user", "dave"], { id: "dave", displayName: "Dave" });
@@ -56,13 +56,13 @@ describe("voice overlay", () => {
       const dave = screen.getByRole("listitem", { name: "Dave, Muted" });
       const aliceAvatar = alice.firstElementChild;
       const bobAvatar = bob.firstElementChild;
-      expect(screen.getAllByRole("listitem")).toEqual([bob, charlie, alice, dave]);
+      expect(screen.getAllByRole("listitem")).toEqual(voiceOverlayOnlySpeaking ? [bob, charlie, alice, dave] : [alice, bob, charlie, dave]);
 
       act(() => {
          voiceStore.getState().updateSpeakingState("alice", true);
          voiceStore.getState().updateSpeakingState("bob", false);
       });
-      expect(screen.getAllByRole("listitem")).toEqual([alice, charlie, bob, dave]);
+      expect(screen.getAllByRole("listitem")).toEqual(voiceOverlayOnlySpeaking ? [alice, charlie, bob, dave] : [alice, bob, charlie, dave]);
       expect(alice.firstElementChild).toBe(aliceAvatar);
       expect(bob.firstElementChild).toBe(bobAvatar);
       expect(voiceStore.getState().voiceStates.map((state) => state.userId)).toEqual(["alice", "bob", "charlie", "dave"]);

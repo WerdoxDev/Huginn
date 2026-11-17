@@ -2,14 +2,14 @@ import PickerMessage from "@components/PickerMessage";
 import { useExpressions } from "@hooks/useExpressions";
 import { useFileDialog } from "@hooks/useFileDialog";
 import { HuginnButton, HuginnInput, HuginnTab } from "@huginn/frontend-shared";
-import { CDNRoutes, CONSTANTS, ExpressionType, resolveCdnUrl, type APIExpression, type ExpressionKind } from "@huginnjs/shared";
+import { CDNRoutes, CONSTANTS, ExpressionType, resolveCdnUrl, toArrayBuffer, type APIExpression, type ExpressionKind } from "@huginnjs/shared";
 import { useClient, useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useThisUser } from "@stores/userStore";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import GifPickerGrid from "./GifPickerGrid";
 
@@ -27,16 +27,25 @@ export default function MediaPickerPanel({
    const { urls } = useClientStore();
    const { user } = useThisUser();
    const expressions = useExpressions(kind, isOpen);
-   const { showError } = useModals();
+   const { showError, updateModals } = useModals();
    const { openFileDialog } = useFileDialog(kind === "gifs" ? "gif" : "image");
    const { open: openGifMenu } = useContextMenu("gif");
    const { open: openStickerMenu } = useContextMenu("sticker");
    const [tab, setTab] = useState("your");
+   // input is directly what user types
    const [input, setInput] = useState("");
+   // search is debounced version of input every 300ms
    const [search, setSearch] = useState("");
    const [category, setCategory] = useState<{ name: string; isTrending: boolean } | null>(null);
    const showCategories = tab === "all" && !category && !search;
+
    const query = search || (category?.isTrending ? "" : (category?.name ?? ""));
+
+   useEffect(() => {
+      if (tab === "your" && search) {
+         setTab("all");
+      }
+   }, [search]);
 
    useEffect(() => {
       const timer = setTimeout(() => setSearch(input.trim()), 300);
@@ -58,16 +67,33 @@ export default function MediaPickerPanel({
 
    const browse = useInfiniteQuery({
       queryKey: ["expression-browse", user?.id, kind, query],
-      enabled: !!client && isOpen && tab === "all" && !showCategories,
+      enabled: !!client && isOpen && (tab === "all" || !!query) && !showCategories,
       queryFn: ({ pageParam }) => (query ? client![kind].search(query, 24, pageParam) : client![kind].getTrending(24, pageParam)),
       initialPageParam: 1,
       getNextPageParam: (page, _pages, pageParam) => (page.length < 24 ? undefined : pageParam + 1),
    });
 
-   const items =
-      tab === "your"
-         ? expressions.items.filter((item) => item.title.toLowerCase().includes(search.toLowerCase()))
-         : (browse.data?.pages.flat() ?? []);
+   const items = useMemo(
+      () =>
+         !search
+            ? tab === "your"
+               ? expressions.items
+               : (browse.data?.pages.flat() ?? [])
+            : [...expressions.items, ...(browse.data?.pages.flat() ?? [])]
+                 .filter((x) => x.title.toLowerCase().includes(search.toLowerCase()))
+                 .reduce((acc, item) => {
+                    if (!acc.find((x) => x.id === item.id && x.type === item.type)) acc.push(item);
+                    return acc;
+                 }, [] as APIExpression[]),
+      [search, tab, browse.data, expressions],
+   );
+
+   console.log(items);
+
+   // const items =
+   //    tab === "your"
+   //       ? expressions.items.filter((item) => item.title.toLowerCase().includes(search.toLowerCase()))
+   //       : (browse.data?.pages.flat() ?? []);
    const loading = tab === "your" ? expressions.isLoading : showCategories ? categories.isPending : browse.isPending;
    const error = tab === "your" ? expressions.isError : showCategories ? categories.isError : browse.isError;
 
@@ -91,20 +117,35 @@ export default function MediaPickerPanel({
       const result = await openFileDialog();
       if (!result) return;
 
-      URL.revokeObjectURL(result.dataUrl);
-
       const max = kind === "gifs" ? CONSTANTS.GIF_MAX_BYTES : CONSTANTS.STICKER_MAX_BYTES;
       if (!result.file.size || result.file.size > max) {
+         URL.revokeObjectURL(result.dataUrl);
          showError(`Choose a file smaller than ${Math.floor(max / 1024 / 1024)} MB.`);
          return;
       }
 
-      try {
-         await expressions.upload({ data: await result.file.arrayBuffer(), name: result.file.name, contentType: result.mimeType });
-         setInput("");
-         setSearch("");
-         setTab("your");
-      } catch {}
+      updateModals({
+         imageCrop: {
+            isOpen: true,
+            originalImageData: result.dataUrl,
+            mimeType: result.mimeType,
+            cropType: kind === "gifs" ? "gif" : "sticker",
+            callback: async (image) => {
+               const data = toArrayBuffer(image);
+               if (!data.byteLength || data.byteLength > max) {
+                  showError(`Choose a file smaller than ${Math.floor(max / 1024 / 1024)} MB.`);
+                  return;
+               }
+
+               try {
+                  await expressions.upload({ data, name: result.file.name, contentType: image.slice(5, image.indexOf(";")) });
+                  setInput("");
+                  setSearch("");
+                  setTab("your");
+               } catch {}
+            },
+         },
+      });
    }
 
    const createButton =
@@ -112,6 +153,7 @@ export default function MediaPickerPanel({
          <div className="flex aspect-square w-full items-center justify-center p-2">
             <HuginnButton
                type="button"
+               aria-label={kind === "gifs" ? "Upload GIF" : "Upload sticker"}
                color="primary"
                onClick={handleUploadClick}
                disabled={expressions.isPending}
@@ -166,7 +208,7 @@ export default function MediaPickerPanel({
                      setInput(event.target.value);
                      setCategory(null);
                   }}
-                  placeholder={tab === "your" ? `Search your ${label}...` : "Search Klipy..."}
+                  placeholder={`Search ${label}...`}
                   className="min-w-0 flex-1"
                >
                   <HuginnInput.Wrapper className="bg-surface-deep!">

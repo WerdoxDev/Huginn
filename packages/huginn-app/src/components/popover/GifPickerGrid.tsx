@@ -5,26 +5,18 @@ import { useContainerWidth } from "@hooks/useContainerWidth";
 import { HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { useMemo } from "react";
 
-export default function GifPickerGrid({
-   gifs,
-   createButton,
-   renderGif,
-}: {
-   gifs: APIExpression[];
-   createButton?: ReactNode;
-   renderGif: (gif: APIExpression) => ReactNode;
-}) {
+export default function GifPickerGrid(props: { gifs: APIExpression[]; createButton?: ReactNode; renderGif: (gif: APIExpression) => ReactNode }) {
    const [containerRef, width] = useContainerWidth();
    const gap = 4;
    const rows = useMemo(() => {
       if (!width) return [];
-      const items: { gif?: APIExpression; aspectRatio: number }[] = gifs.map((gif) => ({
+      const items: { gif?: APIExpression; aspectRatio: number }[] = props.gifs.map((gif) => ({
          gif,
          aspectRatio: gif.width > 0 && gif.height > 0 ? gif.width / gif.height : 1,
       }));
-      if (createButton) items.unshift({ aspectRatio: 1 });
+      if (props.createButton) items.unshift({ aspectRatio: 1 });
       return computeJustifiedRows({ items, containerWidth: width, gap, minPerRow: 2, targetHeight: 100 });
-   }, [gifs, width, !!createButton]);
+   }, [props.gifs, width, !!props.createButton]);
 
    return (
       <div ref={containerRef} className="flex w-full flex-col" style={{ gap }}>
@@ -37,7 +29,7 @@ export default function GifPickerGrid({
                      className="min-w-0 shrink-0"
                      style={{ width: row.height * aspectRatio, height: row.height }}
                   >
-                     {gif ? renderGif(gif) : createButton}
+                     {gif ? props.renderGif(gif) : props.createButton}
                   </div>
                ))}
             </div>

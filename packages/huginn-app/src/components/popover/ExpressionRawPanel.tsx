@@ -30,7 +30,10 @@ export function ExpressionRawPanel(props: {
             <HuginnTab.Tab value="gif">GIFs</HuginnTab.Tab>
             <HuginnTab.Tab value="sticker">Stickers</HuginnTab.Tab>
          </HuginnTab.TabList>
-         <HuginnTab.TabPanels className="flex min-h-0 w-full flex-1 overflow-hidden" panelClassName="h-full min-h-0 w-full overflow-hidden">
+         <HuginnTab.TabPanels
+            className="flex min-h-0 w-full flex-1 overflow-hidden"
+            panelClassName="h-full min-h-0 w-full overflow-hidden data-ending-style:hidden"
+         >
             <HuginnTab.TabPanel value="emoji">
                <EmojiPickerPanel onEmojiSelect={props.onEmojiSelect} />
             </HuginnTab.TabPanel>

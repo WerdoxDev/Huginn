@@ -82,10 +82,13 @@ describe("ImageCropModal sticker cropping", () => {
       expect(mocks.revokeObjectURL).toHaveBeenCalledWith("blob:sticker");
    });
 
-   it("uses the animated cropper for GIF stickers", async () => {
+   it.each(["gif", "sticker"])("preserves animation and allows a free crop for %s uploads", async (cropType) => {
       mocks.modal.mimeType = "image/gif";
+      mocks.modal.cropType = cropType;
       render(<ImageCropModal />);
       await screen.findByTestId("cropper");
+      expect(mocks.props).toMatchObject({ initialAspectRatio: 2, cropBoxResizable: true, cropBoxMovable: true });
+      expect(mocks.props.aspectRatio).toBeNaN();
       fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
       await waitFor(() => expect(mocks.modal.callback).toHaveBeenCalledWith("data:image/gif;base64,R0lGODlh"));
       expect(mocks.cropGif).toHaveBeenCalledWith(expect.objectContaining({ outputType: "base64", src: "blob:sticker" }));
