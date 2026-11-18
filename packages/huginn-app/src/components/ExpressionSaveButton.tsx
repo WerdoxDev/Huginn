@@ -18,7 +18,7 @@ export default function ExpressionSaveButton(props: { media: ContextMenuExpressi
          <Tooltip.Trigger
             type="button"
             disabled={expressions.isPending}
-            className="absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-black/80 text-white opacity-0 transition-[colors,opacity] group-hover:opacity-100 hover:bg-black focus-visible:opacity-100 disabled:cursor-wait"
+            className="absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-black/80 text-white opacity-0 transition-[colors,opacity] group-hover/expression:opacity-100 hover:bg-black focus-visible:opacity-100 disabled:cursor-wait"
             onClick={(event) => {
                event.stopPropagation();
                if (saved) void expressions.remove(saved).catch(() => {});

@@ -23,6 +23,11 @@ import AttachmentUploadProgress from "./AttachmentUploadProgress";
 import { MessageActions } from "./MessageActions";
 import MessageReactions from "./MessageReactions";
 
+function hasSticker(message?: AppMessage) {
+   if (!message) return false;
+   return message.isPreview ? (message.stickers?.length ?? 0) > 0 : message.embeds.some((x) => x.type === "sticker");
+}
+
 export default function DefaultMessage() {
    const { user } = useThisUser();
    const context = useContext(MessageContext);
@@ -52,7 +57,13 @@ export default function DefaultMessage() {
          : undefined;
 
    const isLastAction = context.lastMessage?.isActionType === true;
-   const isSeparate = context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
+   const isSticker = hasSticker(context.message);
+   const isSeparate =
+      context.message.hasNewAuthor ||
+      context.message.hasNewMinute ||
+      context.message.hasNewDate ||
+      context.message.isReplyType ||
+      isSticker !== hasSticker(context.lastMessage);
    const isEditing = context.message.isEditing;
    const isReplying = context.message.isReplying;
    const isJumpHighlighted = context.message.isJumpHighlighted;
@@ -62,6 +73,7 @@ export default function DefaultMessage() {
    const nextError = context.nextMessage?.isPreview ? context.nextMessage.error : undefined;
    const isNextPreview = context.nextMessage?.isPreview;
    const isNextSeparate =
+      isSticker !== hasSticker(context.nextMessage) ||
       !context.nextMessage ||
       context.nextMessage?.hasNewAuthor ||
       context.nextMessage?.hasNewMinute ||
@@ -162,6 +174,7 @@ export default function DefaultMessage() {
          <div className={clsx("flex w-full items-start font-light text-white", (isSeparate || isLastAction) && "mt-2")}>
             <DefaultRenderer
                isNextSeparate={isNextSeparate}
+               isSticker={isSticker}
                isSelf={isSelf}
                isSeparate={isSeparate}
                isUnread={isUnread}
@@ -253,6 +266,7 @@ function DefaultRenderer(props: {
    isNextPreview?: boolean;
    isNextSeparate: boolean;
    isLastAction: boolean;
+   isSticker: boolean;
    isPreview: boolean;
    isEdited?: boolean;
    hasReactions: boolean;
@@ -283,13 +297,15 @@ function DefaultRenderer(props: {
                <div
                   className={clsx(
                      "pointer-events-none z-0 h-full w-full transition-[shadow] group-hover:shadow-sm",
-                     props.error === undefined && props.isPreview
-                        ? "bg-surface"
-                        : props.error !== undefined
-                          ? "bg-negative-700"
-                          : props.isSelf
-                            ? "bg-primary-800"
-                            : "bg-surface",
+                     props.isSticker
+                        ? "bg-transparent"
+                        : props.error === undefined && props.isPreview
+                          ? "bg-surface"
+                          : props.error !== undefined
+                            ? "bg-negative-700"
+                            : props.isSelf
+                              ? "bg-primary-800"
+                              : "bg-surface",
                      props.isUnread && !props.isSeparate && "rounded-t-none!",
                      (props.isSeparate || props.isLastAction || props.hasLastReactions) && "rounded-t-xl!",
                      props.isNextSeparate && !props.hasReactions && "rounded-b-xl!",
@@ -301,7 +317,7 @@ function DefaultRenderer(props: {
                      borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
                   }}
                >
-                  {!props.isSeparate && props.widths.lastWidth > props.widths.width && !props.hasLastReactions && (
+                  {!props.isSticker && !props.isSeparate && props.widths.lastWidth > props.widths.width && !props.hasLastReactions && (
                      <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                         <div
                            className={clsx(
@@ -322,7 +338,7 @@ function DefaultRenderer(props: {
                      </div>
                   )}
                </div>
-               {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && !props.hasReactions && (
+               {!props.isSticker && !props.isNextSeparate && props.widths.nextWidth > props.widths.width && !props.hasReactions && (
                   <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(

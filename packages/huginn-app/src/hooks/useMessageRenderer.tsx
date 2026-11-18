@@ -38,7 +38,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             ? parentKey + `-${node.type}-${index}`
             : parentKey + `-text-${index}`
          : Element.isElement(node)
-           ? `${message.id}_${node.type}-${index}`
+           ? `${message.nonce ?? message.id}_${node.type}-${index}`
            : "";
 
       if (Element.isElement(node) && !excludeElements?.includes(node.type)) {

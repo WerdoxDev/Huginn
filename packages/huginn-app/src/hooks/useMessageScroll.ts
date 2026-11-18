@@ -132,6 +132,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
       const ghostTopHeight = options.ghostTopRef.current?.offsetHeight ?? 0;
       const ghostBottomHeight = options.ghostBottomRef.current?.offsetHeight ?? 0;
+      const listPaddingBottom = Number.parseFloat(getComputedStyle(listRef.current).paddingBottom) || 0;
 
       const viewportTop = scrollRef.current.scrollTop;
       const viewportBottom = viewportTop + scrollRef.current.clientHeight;
@@ -146,7 +147,8 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          messageId: messageElement.id,
          height: messageElement.clientHeight,
          distanceToTop: scrollRef.current.scrollTop - ghostTopHeight,
-         distanceToBottom: scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - 28 - ghostBottomHeight,
+         distanceToBottom:
+            scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight - listPaddingBottom - ghostBottomHeight,
          viewportInGhosts,
       };
    }

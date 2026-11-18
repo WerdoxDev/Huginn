@@ -7,6 +7,7 @@ import LoadingBackground from "./LoadingBackground";
 
 export default function ImagePreview(props: {
    url: string;
+   playbackUrl?: string;
    width: number;
    height: number;
    originalWidth: number;
@@ -25,9 +26,10 @@ export default function ImagePreview(props: {
    const huginnWindow = useHuginnWindow();
 
    const src = useMemo(() => {
-      if (props.contentType === "image/gif" && huginnWindow.focused) return props.url;
-      return `${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`;
-   }, [props.url, props.width, props.height, props.disableQuery, huginnWindow.focused]);
+      const url = props.playbackUrl ?? props.url;
+      if (props.contentType === "image/gif" && huginnWindow.focused) return url;
+      return `${url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`;
+   }, [props.url, props.playbackUrl, props.width, props.height, props.disableQuery, props.contentType, huginnWindow.focused]);
 
    useEffect(() => {
       if (imgRef.current?.complete) {

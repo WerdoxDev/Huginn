@@ -80,6 +80,73 @@ afterEach(() => {
 });
 
 describe("EmbedElement", () => {
+   it.each(["gif", "sticker"] as const)("keeps the loaded %s when acknowledgement refreshes its signature", (embedType) => {
+      const { rerender } = render(embed({ embedType, media: uploaded }, { preview: true }));
+      const image = screen.getByRole("img");
+      const src = image.getAttribute("src");
+      fireEvent.load(image);
+      const refreshed = { ...uploaded, src: "gifs/123.gif?ex=2000003600&hm=new-signature" };
+
+      rerender(embed({ embedType, media: refreshed }));
+
+      expect(screen.getByRole("img")).toBe(image);
+      expect(image.getAttribute("src")).toBe(src);
+      fireEvent.click(image);
+      expect(mocks.updateModals.mock.lastCall?.[0].magnifiedMedia.url).toBe(`https://cdn.example/cdn/${refreshed.src}`);
+      fireEvent.contextMenu(image);
+      expect(mocks.openMenu.mock.lastCall?.[0][embedType]).toBe(refreshed);
+   });
+   it("retries the latest signed URL if the retained image fails to load", () => {
+      const { rerender } = render(embed({ embedType: "gif", media: uploaded }, { preview: true }));
+      const image = screen.getByRole("img");
+      const refreshed = { ...uploaded, src: "gifs/123.gif?ex=2000003600&hm=new-signature" };
+      rerender(embed({ embedType: "gif", media: refreshed }));
+
+      fireEvent.error(image);
+
+      expect(image.getAttribute("src")).toBe(`https://cdn.example/cdn/${refreshed.src}`);
+      fireEvent.load(image);
+      expect(image.classList.contains("hidden")).toBe(false);
+   });
+   it("uses a refreshed URL when the preview already failed before acknowledgement", () => {
+      const { rerender } = render(embed({ embedType: "gif", media: uploaded }, { preview: true }));
+      const image = screen.getByRole("img");
+      fireEvent.error(image);
+      const refreshed = { ...uploaded, src: "gifs/123.gif?ex=2000003600&hm=new-signature" };
+
+      rerender(embed({ embedType: "gif", media: refreshed }));
+
+      expect(image.getAttribute("src")).toBe(`https://cdn.example/cdn/${refreshed.src}`);
+      fireEvent.load(image);
+      expect(image.classList.contains("hidden")).toBe(false);
+   });
+   it("changes playback URLs when the asset or its transformation changes", () => {
+      const { rerender } = render(embed({ embedType: "gif", media: uploaded }));
+      const image = screen.getByRole("img");
+      const transformed = { ...uploaded, src: `${uploaded.src}&width=100` };
+      rerender(embed({ embedType: "gif", media: transformed }));
+      expect(image.getAttribute("src")).toBe(`https://cdn.example/cdn/${transformed.src}`);
+
+      const different = { ...uploaded, id: "456", src: "gifs/456.gif?ex=2000003600&hm=new-signature" };
+      rerender(embed({ embedType: "gif", media: different }));
+      expect(image.getAttribute("src")).toBe(`https://cdn.example/cdn/${different.src}`);
+   });
+   it("keeps video playback when signatures refresh and retries the latest URL on error", () => {
+      const media = { ...uploaded, src: "gifs/123.webm?ex=2000000000&hm=signature", contentType: "video/webm" };
+      const { container, rerender } = render(embed({ embedType: "gif", media }, { preview: true }));
+      const video = container.querySelector("video")!;
+      const src = video.getAttribute("src");
+      video.currentTime = 3;
+      const refreshed = { ...media, src: "gifs/123.webm?ex=2000003600&hm=new-signature" };
+
+      rerender(embed({ embedType: "gif", media: refreshed }));
+
+      expect(container.querySelector("video")).toBe(video);
+      expect(video.getAttribute("src")).toBe(src);
+      expect(video.currentTime).toBe(3);
+      fireEvent.error(video);
+      expect(video.getAttribute("src")).toBe(`https://cdn.example/cdn/${refreshed.src}`);
+   });
    it("preserves signed uploaded GIF URLs for playback, magnification, saving and context menus", () => {
       render(embed({ embedType: "gif", media: uploaded }));
       const image = screen.getByRole("img");

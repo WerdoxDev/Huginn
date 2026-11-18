@@ -1,8 +1,7 @@
-import type { ExpressionKind } from "@huginnjs/shared";
-
+import { ExpressionType, type ExpressionKind } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useEffect, useRef, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import type { AppExpression } from "@/types";
 
@@ -32,6 +31,28 @@ export default function ExpressionPlayer(
    const huginnWindow = useHuginnWindow();
    const videoRef = useRef<HTMLVideoElement>(null);
 
+   // A refreshed signature still points to the same uploaded asset. Keep its
+   // playback URL for this mount so acknowledging a message doesn't restart it.
+   let assetKey = props.src;
+   if (props.media.type === ExpressionType.UPLOADED) {
+      const assetUrl = new URL(props.src);
+      assetUrl.searchParams.delete("ex");
+      assetUrl.searchParams.delete("hm");
+      assetKey = assetUrl.href;
+   }
+   const playbackKey = `${props.kind}:${!!props.isImage}:${assetKey}`;
+   const [playback, setPlayback] = useState({ key: playbackKey, src: props.src, hasError: false });
+   let playbackSrc = playback.src;
+   if (playback.key !== playbackKey || (playback.hasError && playback.src !== props.src)) {
+      playbackSrc = props.src;
+      setPlayback({ key: playbackKey, src: props.src, hasError: false });
+   }
+
+   function handlePlaybackError() {
+      // The retained URL may have expired before it finished loading.
+      setPlayback({ key: playbackKey, src: props.src, hasError: playbackSrc === props.src });
+   }
+
    useEffect(() => {
       if (huginnWindow.focused) videoRef.current?.play();
       else videoRef.current?.pause();
@@ -53,12 +74,17 @@ export default function ExpressionPlayer(
    return (
       <div
          style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
-         className="group relative overflow-hidden rounded-md select-none"
+         onErrorCapture={handlePlaybackError}
+         onLoadCapture={() => {
+            if (playback.hasError) setPlayback({ ...playback, hasError: false });
+         }}
+         className="group/expression relative overflow-hidden rounded-md select-none"
       >
          {props.isImage ? (
             <ImagePreview
                filename={props.filename}
                url={props.src}
+               playbackUrl={playbackSrc}
                width={props.width}
                height={props.height}
                originalWidth={props.originalWidth}
@@ -71,7 +97,7 @@ export default function ExpressionPlayer(
             <video
                className="h-full w-full cursor-pointer"
                ref={videoRef}
-               src={props.src}
+               src={playbackSrc}
                onContextMenu={props.onContextMenu}
                autoPlay={huginnWindow.focused}
                muted

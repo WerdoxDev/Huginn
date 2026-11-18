@@ -214,9 +214,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const hasAddon = !!(currentEditingMessageId || currentReplyingMessageId || attachments.length);
 
    return (
-      <div className="bg-surface-deep relative shrink-0">
-         <div className="to-surface-deep pointer-events-none absolute inset-x-0 -top-10 z-10 h-10 bg-linear-to-b from-transparent" />
-
+      <div className="relative shrink-0 pt-2">
          <ChannelTypingIndicator channelId={channelId!} />
          <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
@@ -344,7 +342,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                   </div>
                </div>
             </div>
-            <div style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
+            <div className="bg-surface-deep" style={{ height: shouldShowMobilePanel ? lastKeyboardHeight : undefined }}>
                {activeMobilePanel === "expression" && (
                   <ExpressionRawPanel
                      isOpen={shouldShowMobilePanel}
