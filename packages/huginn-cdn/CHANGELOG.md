@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.26.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.25.0...cdn@v0.26.0) (2026-11-19)
+
+
+### Features
+
+* **cdn:** add sticker uploading and fetching routes ([9833aa4](https://github.com/WerdoxDev/Huginn/commit/9833aa475a2576a9caf6ac84a3cd08907674eeef))
+* **cdn:** routes to upload/fetch gifs and stickers ([683781a](https://github.com/WerdoxDev/Huginn/commit/683781a6ec3fbb854d848cacb17cc5d6877c93f7))
+
 ## [0.25.0](https://github.com/WerdoxDev/Huginn/compare/cdn@v0.24.0...cdn@v0.25.0) (2026-10-08)
 
 
