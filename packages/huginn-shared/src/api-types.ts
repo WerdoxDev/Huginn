@@ -256,6 +256,8 @@ export type APIBaseMessage = {
    editedTimestamp: Date | string | null;
    attachments: APIAttachment[];
    embeds: APIEmbed[];
+   gifs?: APIExpressionReference[];
+   stickers?: APIExpressionReference[];
    pinned: boolean;
    mentions: APIMessageUser[];
    mentionEveryone: boolean;
@@ -302,6 +304,8 @@ export type APIMessageCall = { participants: Snowflake[]; endedTimestamp: Date |
 
 export type APIPostMessageJSONBody = {
    content?: string;
+   gifs?: APIExpressionReference[];
+   stickers?: APIExpressionReference[];
    attachments?: APIPostAttachmentJSONBody[];
    embeds?: APIEmbed[];
    flags?: MessageFlags;
@@ -322,8 +326,9 @@ export type APIMessageReference = {
 };
 
 export type APIEmbed = {
+   media?: APIExpression;
    title?: string;
-   type: "rich" | "video" | "image" | "gifv" | (string & {});
+   type: "rich" | "video" | "image" | "gif" | "sticker" | (string & {});
    description?: string;
    url?: string;
    timestamp?: string;
@@ -369,7 +374,9 @@ export type APIPatchMessageResult = APIDefaultMessage;
 
 export type APIPatchMessageJSONBody = {
    content?: string;
-   embeds?: APIEmbed;
+   gifs?: APIExpressionReference[];
+   stickers?: APIExpressionReference[];
+   embeds?: APIEmbed[];
    attachments?: APIPostAttachmentJSONBody[];
 };
 
@@ -459,7 +466,33 @@ export type UserPresence = {
 
 export type PresenceUser<U extends APIBaseUser = APIPublicUser> = Partial<U> & { id: Snowflake };
 
-export type FavoriteGif = { url: string; src: string; width: number; height: number; timestamp: number };
+/** Provider IDs are Klipy slugs; uploaded IDs are immutable Snowflakes. */
+export enum ExpressionType {
+   KLIPY = 0,
+   UPLOADED = 1,
+}
+export { ExpressionType as GifType, ExpressionType as StickerType };
+export type ExpressionKind = "gifs" | "stickers";
+export type APIExpressionReference = { id: string; type: ExpressionType; ex?: number; hm?: string };
+export type APIExpression = APIExpressionReference & {
+   title: string;
+   url: string;
+   src: string;
+   width: number;
+   height: number;
+   contentType: string;
+   preview?: string;
+   usageCount?: number;
+   lastUsedAt?: string | null;
+   sourceKey?: string;
+};
+export type GifMedia = Pick<APIExpression, "url" | "src" | "width" | "height"> & { contentType?: string };
+export type APIPostExpressionAddJSONBody = APIExpressionReference;
+export type APIPostExpressionAddResult = APIExpression;
+export type APIDeleteExpressionJSONBody = Pick<APIExpressionReference, "type" | "id">;
+export type APIPostExpressionUploadBody = { sourceKey?: string };
+export type APIPostExpressionUploadResult = APIExpression;
+export type APIGetUserExpressionsResult = APIExpression[];
 
 export type VoicePreference = {
    userId: Snowflake;
@@ -487,7 +520,6 @@ export type UserSettings = {
    theme?: "plum" | "cerulean" | "pine-green" | "coffee" | "violet" | "rose";
    status: PresenceStatus;
    pinnedChannels?: Snowflake[];
-   favoriteGifs?: FavoriteGif[];
    voicePreferences?: VoicePreference[];
    channelBackgrounds: ChannelBackground[];
    globalChannelBackground?: BackgroundStyle | null;
@@ -529,7 +561,7 @@ export type APIReadState = {
 
 export type APIReadStateWithoutUser = Omit<APIReadState, "userId">;
 
-export type APIPatchUserSettingsJSONBody = Partial<Omit<UserSettings, "favoriteGifs"> & { favoriteGifs?: FavoriteGif[] }>;
+export type APIPatchUserSettingsJSONBody = Partial<UserSettings>;
 export type APIPatchUserSettingsResult = UserSettings;
 
 export type ApplicationMatcherStatus = "pending" | "verified" | "rejected";
@@ -689,23 +721,22 @@ export type APIReaction = {
    me: boolean;
 };
 
-export type APIGif = {
-   id: number;
-   title: string;
-   url: string;
-   src: string;
-   width: number;
-   height: number;
-   preview: string;
-};
-
 export type APIGetGifCategoriesResult = {
    categories: Array<{ name: string; src: string }>;
-   trendingGif: APIGif;
+   trendingGif: APIExpression;
 };
 
-export type APIGetTrendingGifsResult = APIGif[];
-export type APIGetSearchGifsResult = APIGif[];
+export type APIGetTrendingGifsResult = APIExpression[];
+export type APIGetSearchGifsResult = APIExpression[];
+
+export type APIGetStickerCategoriesResult = {
+   categories: Array<{ name: string; src: string }>;
+   trendingSticker?: APIExpression;
+};
+export type APIGetTrendingStickersResult = APIExpression[];
+export type APIGetSearchStickersResult = APIExpression[];
+export type APIGetUserStickersResult = APIExpression[];
+export type APIPostStickerResult = APIExpression;
 
 export type APIContribution = {
    id: number;

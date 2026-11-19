@@ -318,7 +318,7 @@ describe("Connection", () => {
             expectChannelExactRecipients(data.d.privateChannels[0], [user2]);
             expectRelationshipExactSchema(data.d.relationships[0], { type: RelationshipType.FRIEND, user: user2 });
             expectUserExactSchema(data.d.user, user);
-            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [], favoriteGifs: [], channelBackgrounds: [] });
+            expectUserSettingsExactSchema(data.d.userSettings, { status: "online", pinnedChannels: [], channelBackgrounds: [] });
             done();
          }
       };

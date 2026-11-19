@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { analytics, ChannelType, MessageType, recordSpanError, RelationshipType, type Snowflake } from "@huginnjs/shared";
+import { getMessageSummary, analytics, ChannelType, MessageType, recordSpanError, RelationshipType, type Snowflake } from "@huginnjs/shared";
 import { playAudio } from "@lib/audio-player";
 import { listenEvent } from "@lib/event-handler";
 import { sendNotification } from "@lib/notification";
@@ -125,8 +125,8 @@ export function initReadStateStore() {
                   switch (data.message.type) {
                      case MessageType.DEFAULT:
                      case MessageType.REPLY:
-                        if (data.message.content) {
-                           content = data.message.content;
+                        if (getMessageSummary(data.message)) {
+                           content = getMessageSummary(data.message);
                         } else if (data.message.attachments.length !== 0) {
                            content = `Uploaded ${data.message.attachments[0].filename}`;
                         }

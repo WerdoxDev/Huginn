@@ -1,4 +1,4 @@
-import type { OAuthProvider } from "./api-types";
+import type { ExpressionKind, ExpressionType, OAuthProvider } from "./api-types";
 import type { Snowflake } from "./snowflake";
 
 export type RouteLike = `/${string}`;
@@ -241,6 +241,33 @@ export const Routes = {
    },
 
    /**
+    * Route for:
+    * - GET  '/users/@me/gifs'
+    * - POST '/users/@me/gifs'
+    * - GET  '/users/@me/stickers'
+    * - POST '/users/@me/stickers'
+    */
+   userExpressions(kind: ExpressionKind): `/users/@me/${ExpressionKind}` {
+      return `/users/@me/${kind}` as const;
+   },
+
+   /**
+    * Route for:
+    * - POST '/users/@me/{expression.kind}/upload'
+    */
+   uploadExpression(kind: ExpressionKind): `/users/@me/${ExpressionKind}/upload` {
+      return `/users/@me/${kind}/upload` as const;
+   },
+
+   /**
+    * Route for:
+    * - DELETE '/users/@me/{expression.kind}/{type}/{id}'
+    */
+   deleteExpression(kind: ExpressionKind, type: ExpressionType, id: string): `/users/@me/${ExpressionKind}/${ExpressionType}/${string}` {
+      return `/users/@me/${kind}/${type}/${id}` as const;
+   },
+
+   /**
     * Route for
     * - POST '/log'
     */
@@ -360,9 +387,49 @@ export const Routes = {
    searchGifs() {
       return "/gifs/search" as const;
    },
+
+   /**
+    * Route for:
+    * - GET '/stickers/categories'
+    */
+   stickerCategories() {
+      return "/stickers/categories" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/stickers/trending'
+    */
+   trendingStickers() {
+      return "/stickers/trending" as const;
+   },
+
+   /**
+    * Route for:
+    * - GET '/stickers/search'
+    */
+   searchStickers() {
+      return "/stickers/search" as const;
+   },
 };
 
 export const CDNRoutes = {
+   /**
+    * Route for:
+    * - POST '/gifs/{gif.id}'
+    */
+   uploadGif(id: string): `/gifs/${string}` {
+      return `/gifs/${id}` as const;
+   },
+
+   /**
+    * Route for:
+    * - POST '/stickers/{sticker.id}'
+    */
+   uploadSticker(id: string): `/stickers/${string}` {
+      return `/stickers/${id}` as const;
+   },
+
    /**
     * Route for:
     * - POST '/avatars/{user.id}'

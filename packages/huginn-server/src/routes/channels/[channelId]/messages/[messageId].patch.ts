@@ -4,6 +4,7 @@ import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { expressionListSchema, resolveExpressions } from "#utils/expressions";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { filterMessage } from "#utils/helpers";
 import { generateEmbedsFromContent, getMessageTokens, processEmbeds } from "#utils/route-utils";
@@ -11,6 +12,8 @@ import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
    content: t.Optional(t.String()),
+   gifs: expressionListSchema,
+   stickers: expressionListSchema,
    attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String() }))),
    embeds: t.Optional(
       t.Array(
@@ -47,14 +50,24 @@ export const patchMessage = new Elysia()
          }
 
          const messageToCheck = await prisma.message.getById(channelId, messageId, {
-            select: { author: { select: { id: true } } },
+            select: {
+               author: { select: { id: true } },
+               content: true,
+               gifs: true,
+               stickers: true,
+               attachments: { select: { id: true } },
+               embeds: { select: { id: true } },
+            },
          });
          if (messageToCheck.author.id !== tokenPayload.id) {
             return missingPermission(status);
          }
 
-         // Body must have either content, attachment or embeds
-         if (!body.content && !body.attachments && !body.embeds) {
+         const effectiveContent = body.content ?? messageToCheck.content;
+         const effectiveGifs = body.gifs ?? (messageToCheck.gifs as unknown[]);
+         const effectiveStickers = body.stickers ?? (messageToCheck.stickers as unknown[]);
+         const effectiveEmbeds = body.embeds ?? (body.content === undefined ? messageToCheck.embeds : []);
+         if (!effectiveContent && !effectiveGifs.length && !effectiveStickers.length && !effectiveEmbeds.length && !messageToCheck.attachments.length) {
             return invalidBody(status);
          }
 
@@ -64,12 +77,21 @@ export const patchMessage = new Elysia()
             return createHuginnError(formError, status);
          }
 
-         const processedEmbeds = await processEmbeds(body.embeds);
+         const gifs = body.gifs === undefined ? undefined : await resolveExpressions("gifs", body.gifs);
+         const stickers = body.stickers === undefined ? undefined : await resolveExpressions("stickers", body.stickers);
+         if ((body.gifs && !gifs) || (body.stickers && !stickers)) return invalidBody(status);
+         const processedEmbeds = body.embeds === undefined ? (body.content === undefined ? undefined : []) : await processEmbeds(body.embeds);
 
          const tokens = body.content ? getMessageTokens(body.content) : [];
          const dbMessage = await prisma.message.updateMessage(
             messageId,
-            { content: body.content, embeds: processedEmbeds, setEditedTimestamp: true },
+            {
+               content: body.content,
+               embeds: processedEmbeds,
+               gifs: gifs?.map(({ id, type }) => ({ id, type })),
+               stickers: stickers?.map(({ id, type }) => ({ id, type })),
+               setEditedTimestamp: true,
+            },
             { select: selectAllMessage },
          );
 

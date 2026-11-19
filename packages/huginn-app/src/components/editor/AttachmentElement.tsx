@@ -1,4 +1,5 @@
 import AudioPlayer from "@components/AudioPlayer";
+import ExpressionPlayer from "@components/ExpressionPlayer";
 import ImagePreview from "@components/ImagePreview";
 import Tooltip from "@components/tooltip/Tooltip";
 import VideoPlayer from "@components/VideoPlayer";
@@ -6,8 +7,7 @@ import VoicePlayer from "@components/VoicePlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
 import { hasFlag, MessageFlags } from "@huginnjs/api";
-import { CONSTANTS, constrainImageSize, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
-import { changeCdnUrlBase } from "@lib/instances";
+import { CONSTANTS, constrainImageSize, resolveCdnUrl, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { getSizeText } from "@lib/utils";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
@@ -15,6 +15,7 @@ import clsx from "clsx";
 import { useContext, useMemo, type MouseEvent } from "react";
 
 export default function AttachmentElement(props: {
+   id: string;
    description?: string;
    url: string;
    width?: number;
@@ -26,21 +27,38 @@ export default function AttachmentElement(props: {
    waveform?: string;
 }) {
    const { openUrl } = useOpen();
+   const isGif = props.contentType === "image/gif" || props.contentType === "video/webm";
    const dimensions = useMemo(
-      () => constrainImageSize(props.width ?? 0, props.height ?? 0, CONSTANTS.ATTACHMENT_MEDIA_MAX_WIDTH, CONSTANTS.ATTACHMENT_MEDIA_MAX_HEIGHT),
-      [props.width, props.height],
+      () =>
+         constrainImageSize(
+            props.width ?? 0,
+            props.height ?? 0,
+            isGif ? CONSTANTS.EMBED_MEDIA_MAX_WIDTH : CONSTANTS.ATTACHMENT_MEDIA_MAX_WIDTH,
+            isGif ? CONSTANTS.EMBED_MEDIA_MAX_HEIGHT : CONSTANTS.ATTACHMENT_MEDIA_MAX_HEIGHT,
+         ),
+      [props.width, props.height, isGif],
    );
    const context = useContext(MessageContext);
    const { open } = useContextMenu("message");
    const { urls } = useClientStore();
-   const basedUrl = useMemo(() => changeCdnUrlBase(props.url, urls!.cdn), [props.url, urls?.cdn]);
+   const basedUrl = useMemo(() => resolveCdnUrl(props.url, urls!.cdn), [props.url, urls?.cdn]);
 
    const isImage = isImageMediaType(props.contentType);
+   const gif = isGif
+      ? {
+           url: basedUrl,
+           src: basedUrl,
+           width: props.width ?? 1,
+           height: props.height ?? 1,
+           contentType: props.contentType,
+           attachmentId: props.id,
+        }
+      : undefined;
    const isVideo = isVideoMediaType(props.contentType);
    const isAudio = isAudioMediaType(props.contentType);
    const isVoice = context.message.flags ? hasFlag(context.message.flags, MessageFlags.VOICE_MESSAGE) : false;
 
-   function handleImageContextMenu(e: MouseEvent<HTMLDivElement>) {
+   function handleImageContextMenu(e: MouseEvent<HTMLImageElement>) {
       e.stopPropagation();
       open(
          {
@@ -48,6 +66,7 @@ export default function AttachmentElement(props: {
             imgElement: e.currentTarget as HTMLImageElement,
             mediaUrl: basedUrl,
             mediaFilename: props.filename,
+            gif,
          },
          e,
       );
@@ -87,15 +106,29 @@ export default function AttachmentElement(props: {
       >
          <div className="relative my-1 flex w-full flex-col items-start">
             {props.description && <span className={clsx("text-sm")}>{props.description}</span>}
-            {isImage ? (
+            {gif ? (
+               <ExpressionPlayer
+                  kind="gifs"
+                  isImage
+                  media={gif}
+                  filename={props.filename}
+                  src={basedUrl}
+                  width={dimensions.width}
+                  height={dimensions.height}
+                  originalWidth={props.width ?? 0}
+                  originalHeight={props.height ?? 0}
+                  disableQuery={false}
+                  onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
+               />
+            ) : isImage ? (
                <ImagePreview
+                  url={basedUrl}
                   filename={props.filename}
                   width={dimensions.width}
                   height={dimensions.height}
                   originalWidth={props.width ?? 0}
                   originalHeight={props.height ?? 0}
                   contentType={props.contentType}
-                  url={basedUrl}
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
                />
             ) : isVideo ? (

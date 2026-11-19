@@ -1,3 +1,5 @@
+import type { APIExpressionReference } from "@huginnjs/shared";
+
 import { sql } from "drizzle-orm";
 import {
    pgTable,
@@ -18,6 +20,44 @@ import {
    uuid,
 } from "drizzle-orm/pg-core";
 
+export const expression = pgTable(
+   "Expression",
+   {
+      kind: text().notNull(),
+      type: smallint().notNull(),
+      id: text().notNull(),
+      title: text().notNull(),
+      url: text().notNull(),
+      src: text().notNull(),
+      contentType: text().notNull(),
+      width: integer().notNull(),
+      height: integer().notNull(),
+      attachmentId: bigint({ mode: "bigint" }),
+   },
+   (table) => [primaryKey({ columns: [table.kind, table.type, table.id] })],
+);
+export const userExpression = pgTable(
+   "UserExpression",
+   {
+      userId: bigint({ mode: "bigint" })
+         .notNull()
+         .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+      kind: text().notNull(),
+      type: smallint().notNull(),
+      expressionId: text().notNull(),
+      usageCount: integer().notNull().default(0),
+      lastUsedAt: timestamp({ precision: 3, mode: "date" }),
+      createdAt: timestamp({ precision: 3, mode: "date" })
+         .notNull()
+         .default(sql`CURRENT_TIMESTAMP`),
+   },
+   (table) => [
+      primaryKey({ columns: [table.userId, table.kind, table.type, table.expressionId] }),
+      foreignKey({ columns: [table.kind, table.type, table.expressionId], foreignColumns: [expression.kind, expression.type, expression.id] }),
+      index("UserExpression_userId_kind_usageCount_lastUsedAt_idx").on(table.userId, table.kind, table.usageCount, table.lastUsedAt),
+   ],
+);
+
 export const authSession = pgTable(
    "AuthSession",
    {
@@ -29,15 +69,21 @@ export const authSession = pgTable(
       authenticatedAt: timestamp({ precision: 3, mode: "date" }).notNull(),
       userAgent: text(),
       deviceName: text(),
-      createdAt: timestamp({ precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-      lastSeenAt: timestamp({ precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+      createdAt: timestamp({ precision: 3, mode: "date" })
+         .default(sql`CURRENT_TIMESTAMP`)
+         .notNull(),
+      lastSeenAt: timestamp({ precision: 3, mode: "date" })
+         .default(sql`CURRENT_TIMESTAMP`)
+         .notNull(),
       expiresAt: timestamp({ precision: 3, mode: "date" }).notNull(),
       revokedAt: timestamp({ precision: 3, mode: "date" }),
    },
    (table) => [
       uniqueIndex("AuthSession_refreshTokenHash_key").on(table.refreshTokenHash),
       index("AuthSession_userId_revokedAt_expiresAt_idx").on(table.userId, table.revokedAt, table.expiresAt),
-      foreignKey({ columns: [table.userId], foreignColumns: [user.id], name: "AuthSession_userId_fkey" }).onUpdate("cascade").onDelete("cascade"),
+      foreignKey({ columns: [table.userId], foreignColumns: [user.id], name: "AuthSession_userId_fkey" })
+         .onUpdate("cascade")
+         .onDelete("cascade"),
    ],
 );
 
@@ -158,6 +204,14 @@ export const message = pgTable(
          .notNull()
          .references((): AnyPgColumn => channel.id, { onUpdate: "cascade", onDelete: "cascade" }),
       content: text().notNull(),
+      gifs: jsonb()
+         .$type<APIExpressionReference[]>()
+         .default(sql`'[]'::jsonb`)
+         .notNull(),
+      stickers: jsonb()
+         .$type<APIExpressionReference[]>()
+         .default(sql`'[]'::jsonb`)
+         .notNull(),
       timestamp: timestamp({ precision: 3, mode: "date" }).notNull(),
       editedTimestamp: timestamp({ precision: 3, mode: "date" }),
       pinned: boolean().notNull(),

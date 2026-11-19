@@ -118,19 +118,50 @@ Accessed through `client.applications`.
 | `submitKnown(body)`         | `APIPostKnownApplicationResult` | Submit the observed process metadata for IGDB verification.          |
 | `uploadIcon(body)`          | `APIPostApplicationIconResult`  | Upload an application icon.                                          |
 
-## GIFs
+## GIFs and stickers
 
-Accessed through `client.gifs`.
+`client.gifs` and `client.stickers` expose the same collection methods:
 
-| Method                         | Returns                     | Description           |
-| ------------------------------ | --------------------------- | --------------------- |
-| `getCategories()`              | `APIGetGifCategoriesResult` | Fetch GIF categories. |
-| `getTrending(limit?, page?)`   | `APIGetTrendingGifsResult`  | Fetch trending GIFs.  |
-| `search(query, limit?, page?)` | `APIGetSearchGifsResult`    | Search GIFs.          |
+| Method | Returns | Description |
+| --- | --- | --- |
+| `getMine()` | `APIExpression[]` | Your uploaded or added media, ordered by send count, then last use and creation time. |
+| `add(reference)` | `APIExpression` | Add Klipy media or a signed upload using an expression reference. |
+| `remove({ type, id })` | `void` | Remove media from your collection; shared assets and sent messages remain available. |
+| `upload({ data, name, contentType? }, title?)` | `APIExpression` | Upload a GIF, or an image/animation for stickers. Adds it to your collection. |
+| `getCategories()` | Category response | Browse Klipy categories. |
+| `getTrending(limit?, page?)` | `APIExpression[]` | Browse Klipy media. |
+| `search(query, limit?, page?)` | `APIExpression[]` | Search Klipy media. |
+
+Collections use authenticated `GET`/`POST /users/@me/gifs` and `/users/@me/stickers`.
+Removal uses `DELETE /users/@me/{gifs|stickers}/:type/:id`. Uploads use multipart
+`POST /gifs` or `/stickers` with one file. Collection additions require an
+expression reference; attachment IDs are not accepted.
+
+Send media through `gifs` or `stickers`, each containing up to three references:
 
 ```ts
-const results = await client.gifs.search("raven", 30, 1);
+import { expressionReference } from "@huginnjs/api";
+const [trendingGif] = await client.gifs.getTrending();
+const gif = await client.gifs.add(expressionReference(trendingGif));
+await client.channels.createMessage(channel.id, { gifs: [expressionReference(gif)] });
+const sticker = (await client.stickers.getMine())[0];
+await client.channels.createMessage(channel.id, { stickers: [expressionReference(sticker)] });
 ```
+
+A reference is `{ id, type, ex?, hm? }`. `ExpressionType.KLIPY = 0` uses the
+provider slug as ID; `ExpressionType.UPLOADED = 1` uses an immutable Snowflake
+and requires an unexpired `ex` (Unix seconds) and `hm` signature. The server
+resolves provider metadata and verifies uploaded references; client URLs and
+dimensions are never accepted as authority. The same reference format is accepted
+on message edits; omitted lists are preserved, and empty lists clear that media.
+
+Responses include embeds of type `gif` or `sticker` with resolved metadata in
+`embed.media`, plus a video or thumbnail. Uploaded URLs and `embed.media.ex/hm`
+are freshly signed on every message or collection fetch. Use `embed.media` when
+adding or resending media from another message. Refresh the collection/message
+before expiry. Successful sends add media to the sender's collection and increment
+usage once per unique item per message; edits, browsing, and adding do not count.
+
 
 ## Common
 

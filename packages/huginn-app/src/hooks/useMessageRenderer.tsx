@@ -38,7 +38,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
             ? parentKey + `-${node.type}-${index}`
             : parentKey + `-text-${index}`
          : Element.isElement(node)
-           ? `${message.id}_${node.type}-${index}`
+           ? `${message.nonce ?? message.id}_${node.type}-${index}`
            : "";
 
       if (Element.isElement(node) && !excludeElements?.includes(node.type)) {
@@ -171,6 +171,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          for (const attachment of message.attachments) {
             nodes.push({
                type: "attachment",
+               id: attachment.id,
                url: attachment.url,
                description: attachment.description,
                children: [{ text: "" }],
@@ -278,11 +279,17 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
 
       nodes.push(lineElement);
 
-      if (message.isPreview) return nodes;
+      if (message.isPreview) {
+         for (const kind of ["gifs", "stickers"] as const) {
+            for (const media of message[kind] ?? [])
+               nodes.push({ type: "embed", embedType: kind === "gifs" ? "gif" : "sticker", media, children: [{ text: "" }] });
+         }
+         return nodes;
+      }
 
       // Only render the embeds if the message content is exactly the embed url
       const firstEmbed = message.embeds[0];
-      if (message.embeds.length === 1 && message.content.startsWith(firstEmbed.url ?? "") && firstEmbed.type !== "rich") {
+      if (message.embeds.length === 1 && !!firstEmbed.url && message.content.trim() === firstEmbed.url && firstEmbed.type !== "rich") {
          nodes = [];
       }
 
@@ -290,6 +297,7 @@ export function useMessageRenderer(message: AppMessage, excludeElements?: Custom
          nodes.push({
             type: "embed",
             embedType: embed.type,
+            media: embed.media,
             thumbnail: embed.thumbnail,
             video: embed.video,
             url: embed.url,

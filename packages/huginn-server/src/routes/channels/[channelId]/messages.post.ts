@@ -4,6 +4,7 @@ import { selectAllMessage } from "@huginn/backend-shared/database/common";
 import { type APIMessage, Errors, MessageType, WorkerID, snowflake } from "@huginnjs/shared";
 import Elysia, { t } from "elysia";
 
+import { expressionListSchema, expressionToAPI, resolveExpressions } from "#utils/expressions";
 import { dispatchToTopic } from "#utils/gateway-utils";
 import { filterMessage, sendAddMessagePushNotification } from "#utils/helpers";
 import { getMessageTokens, generateEmbedsFromContent, processAttachments, processEmbeds, processMentions } from "#utils/route-utils";
@@ -11,6 +12,8 @@ import { validateEmbeds } from "#utils/validation";
 
 const schema = t.Object({
    content: t.Optional(t.String()),
+   gifs: expressionListSchema,
+   stickers: expressionListSchema,
    attachments: t.Optional(t.Array(t.Object({ id: t.Number(), description: t.Optional(t.String()), filename: t.String(), waveform: t.Optional(t.String()) }))),
    embeds: t.Optional(
       t.Array(
@@ -50,7 +53,7 @@ export const postChannelMessage = new Elysia()
          }
 
          // Body must have either content, attachment or embeds
-         if (!body.content && !body.attachments && !body.embeds) {
+         if (!body.content && !body.attachments?.length && !body.embeds?.length && !body.stickers?.length && !body.gifs?.length) {
             return invalidBody(status);
          }
 
@@ -71,6 +74,10 @@ export const postChannelMessage = new Elysia()
          const tokens = body.content ? getMessageTokens(body.content) : [];
          const messageId = snowflake.generate(WorkerID.MESSAGE);
 
+         const gifs = await resolveExpressions("gifs", body.gifs);
+         const stickers = await resolveExpressions("stickers", body.stickers);
+         if (!gifs || !stickers) return invalidBody(status);
+
          const processedAttachments = await processAttachments(body.attachments, body.files, channelId, messageId.toString());
          const processedEmbeds = await processEmbeds(body.embeds);
          const processedMentions = await processMentions(tokens);
@@ -82,6 +89,8 @@ export const postChannelMessage = new Elysia()
                channelId,
                type: body.messageReference ? MessageType.REPLY : MessageType.DEFAULT,
                content: body.content,
+               gifs: gifs.map(({ id, type }) => ({ id, type })),
+               stickers: stickers.map(({ id, type }) => ({ id, type })),
                attachments: processedAttachments,
                messageReference: body.messageReference,
                embeds: processedEmbeds.length === 0 ? undefined : processedEmbeds,
@@ -91,6 +100,27 @@ export const postChannelMessage = new Elysia()
                flags: body.flags,
             },
             { select: selectAllMessage },
+         );
+
+         await Promise.all(
+            (
+               [
+                  ["gifs", gifs],
+                  ["stickers", stickers],
+               ] as const
+            ).map(async ([kind, expressions]) => {
+               const updated = await prisma.userExpression.recordUsage(tokenPayload.id, kind, expressions);
+               for (const item of updated) {
+                  dispatchToTopic(tokenPayload.id, "expression_update", {
+                     kind,
+                     expression: {
+                        ...expressionToAPI(kind, item.expression),
+                        usageCount: item.usageCount,
+                        lastUsedAt: item.lastUsedAt?.toISOString() ?? null,
+                     },
+                  });
+               }
+            }),
          );
 
          const message: APIMessage = await filterMessage(dbMessage, { receiverId: tokenPayload.id });

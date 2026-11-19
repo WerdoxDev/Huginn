@@ -30,6 +30,18 @@ export type DBAttachment = Omit<APIPostAttachmentJSONBody, "id"> & {
    flags: number;
 };
 
+export type DBExpression = {
+   id: string;
+   type: number;
+   title: string;
+   src: string;
+   url: string;
+   width: number;
+   height: number;
+   contentType: string;
+   sourceKey?: string | null;
+};
+
 export type TwitchOAuthResult = { access_token: string; expires_in: number };
 export type IGDBSearchResult = {
    id: number;

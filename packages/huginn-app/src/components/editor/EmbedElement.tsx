@@ -1,18 +1,20 @@
-import GifPlayer from "@components/GifPlayer";
+import type { APIEmbed } from "@huginnjs/shared";
+
+import ExpressionPlayer from "@components/ExpressionPlayer";
 import ImagePreview from "@components/ImagePreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
-import { CDNRoutes, CONSTANTS, constrainImageSize } from "@huginnjs/shared";
-import { changeCdnUrlBase } from "@lib/instances";
+import { CDNRoutes, CONSTANTS, ExpressionType, constrainImageSize, resolveCdnUrl } from "@huginnjs/shared";
 import { useClientStore } from "@stores/clientStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import clsx from "clsx";
-import { useContext, useMemo, type MouseEvent } from "react";
+import { useContext, type MouseEvent } from "react";
 
 export default function EmbedElement(props: {
-   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
-   thumbnail?: { url: string; width?: number; height?: number };
+   media?: APIEmbed["media"];
+   embedType: APIEmbed["type"];
+   thumbnail?: APIEmbed["thumbnail"];
    video?: { url: string; width?: number; height?: number };
    title?: string;
    description?: string;
@@ -20,126 +22,92 @@ export default function EmbedElement(props: {
 }) {
    const { open } = useContextMenu("message");
    const { openUrl } = useOpen();
-   const context = useContext(MessageContext);
-   const barebone = useMemo(
-      () => props.embedType === "gifv" || (props.description === undefined && props.title === undefined && (props.thumbnail || props.video)),
-      [props.embedType, props.description, props.title, props.thumbnail, props.video],
-   );
+   const { message, options } = useContext(MessageContext);
    const { urls } = useClientStore();
+   const media = props.media;
+   const isSticker = props.embedType === "sticker";
+   const isGif = props.embedType === "gif";
+   const isExpression = isGif || isSticker;
+   const barebone = isExpression || (props.description === undefined && props.title === undefined && !!(props.thumbnail || props.video));
+   const thumbnail = media ? (media.contentType.startsWith("image/") ? { ...media, url: media.src } : undefined) : props.thumbnail;
+   const video = media ? (media.contentType.startsWith("video/") ? { ...media, url: media.src } : undefined) : props.video;
+   const width = media?.width ?? thumbnail?.width ?? video?.width ?? 0;
+   const height = media?.height ?? thumbnail?.height ?? video?.height ?? 0;
+   const maxWidth = isSticker ? CONSTANTS.STICKER_MEDIA_MAX_WIDTH : CONSTANTS.EMBED_MEDIA_MAX_WIDTH;
+   const maxHeight = isSticker ? CONSTANTS.STICKER_MEDIA_MAX_HEIGHT : CONSTANTS.EMBED_MEDIA_MAX_HEIGHT;
+   const scale = isExpression && width > 0 && height > 0 ? Math.max(1, Math.min(maxWidth / width, maxHeight / height)) : 1;
+   const dimensions = constrainImageSize(Math.round(width * scale), Math.round(height * scale), maxWidth, maxHeight);
 
-   const dimensions = useMemo(
-      () =>
-         constrainImageSize(
-            props.thumbnail?.width ?? props.video?.width ?? 0,
-            props.thumbnail?.height ?? props.video?.height ?? 0,
-            CONSTANTS.EMBED_MEDIA_MAX_WIDTH,
-            CONSTANTS.EMBED_MEDIA_MAX_HEIGHT,
-         ),
-      [props.thumbnail, props.video],
-   );
+   function resolveMediaUrl(url: string) {
+      return resolveCdnUrl(media?.type === ExpressionType.UPLOADED ? url : CDNRoutes.getExternal(url), urls!.cdn);
+   }
 
-   const thumbnailUrl = useMemo(
-      () => (props.thumbnail?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.thumbnail.url), urls!.cdn) : undefined),
-      [props.thumbnail, urls?.cdn],
-   );
+   const thumbnailUrl = thumbnail ? resolveMediaUrl(thumbnail.url) : undefined;
+   const videoUrl = video ? resolveMediaUrl(video.url) : undefined;
+   const isImageGif = media ? media.contentType === "image/gif" : !!thumbnail && /\.gif(?:[?#]|$)/i.test(thumbnail.url);
+   const expression =
+      media ??
+      (isExpression || isImageGif
+         ? { url: props.url ?? video?.url ?? thumbnail?.url ?? "", src: video?.url ?? thumbnail?.url ?? "", width, height }
+         : undefined);
 
-   const videoUrl = useMemo(
-      () => (props.video?.url ? changeCdnUrlBase(CDNRoutes.getExternal(props.video.url), urls!.cdn) : undefined),
-      [props.video, urls?.cdn],
-   );
-
-   function handleGifContextMenu(e: MouseEvent<HTMLVideoElement>) {
-      e.stopPropagation();
+   function handleMediaContextMenu(event: MouseEvent<HTMLImageElement | HTMLVideoElement>) {
+      event.stopPropagation();
+      const target = event.currentTarget;
       open(
          {
-            message: context.message,
-            gif: {
-               url: props.url ?? props.video?.url ?? "",
-               src: props.video?.url ?? "",
-               width: props.video?.width ?? 0,
-               height: props.video?.height ?? 0,
-            },
+            message,
+            mediaUrl: target instanceof HTMLVideoElement ? videoUrl : thumbnailUrl,
+            ...(target instanceof HTMLVideoElement ? { videoElement: target } : { imgElement: target }),
+            ...(isSticker ? { sticker: media } : isGif ? { gif: expression } : {}),
          },
-         e,
+         event,
       );
    }
 
-   function handleImageContextMenu(e: MouseEvent<HTMLDivElement>) {
-      e.stopPropagation();
-      open(
-         {
-            message: context.message,
-            imgElement: e.currentTarget as HTMLImageElement,
-            mediaUrl: props.thumbnail?.url ?? "",
-         },
-         e,
-      );
+   function handleContextMenu(event: MouseEvent<HTMLSpanElement>) {
+      event.stopPropagation();
+      open({ message, url: props.url }, event);
    }
 
-   function handleVideoContextMenu(e: MouseEvent<HTMLVideoElement>) {
-      e.stopPropagation();
-      open(
-         {
-            message: context.message,
-            videoElement: e.currentTarget,
-            mediaUrl: props.video?.url ?? "",
-         },
-         e,
-      );
-   }
-
-   function handleContextMenu(e: MouseEvent<HTMLDivElement>) {
-      e.stopPropagation();
-      open({ message: context.message, url: props.url }, e);
-   }
+   const playerProps = {
+      width: dimensions.width,
+      height: dimensions.height,
+      onContextMenu: options?.disableContextMenu ? undefined : handleMediaContextMenu,
+   };
+   const expressionProps = {
+      ...playerProps,
+      originalWidth: width,
+      originalHeight: height,
+      kind: isSticker ? ("stickers" as const) : ("gifs" as const),
+      showSaveButton: !message.isPreview,
+      contentType: media?.contentType,
+      filename: media?.title,
+   };
 
    return (
       <div contentEditable={false} style={{ maxWidth: barebone ? `${dimensions.width}px` : `${CONSTANTS.EMBED_MEDIA_MAX_WIDTH + 16}px` }}>
-         <div className={clsx("mt-1 mb-1 flex flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
-            {props.title && props.embedType !== "gifv" && (
+         <div className={clsx("my-1 flex flex-col items-start", !barebone && "bg-surface-deep rounded-lg p-2")}>
+            {props.title && !isExpression && (
                <span
-                  onContextMenu={context.options?.disableContextMenu ? undefined : handleContextMenu}
+                  onContextMenu={options?.disableContextMenu ? undefined : handleContextMenu}
                   className={clsx(props.url && "text-primary-500 cursor-pointer hover:underline", props.description ? "mb-1" : "mb-2")}
                   onClick={props.url ? () => openUrl(props.url!) : undefined}
                >
                   {props.title}
                </span>
             )}
-            {props.description && props.embedType !== "gifv" && (
-               <span className={clsx("text-sm", props.thumbnail && "mb-2")}>{props.description}</span>
-            )}
+            {props.description && !isExpression && <span className={clsx("text-sm", thumbnail && "mb-2")}>{props.description}</span>}
 
-            {props.embedType === "gifv" && props.video && videoUrl ? (
-               <GifPlayer
-                  originalWidth={props.video.width ?? 0}
-                  originalHeight={props.video.height ?? 0}
-                  height={dimensions.height}
-                  width={dimensions.width}
-                  src={videoUrl}
-                  url={props.url ?? props.video.url}
-                  onContextMenu={context.options?.disableContextMenu ? undefined : handleGifContextMenu}
-               />
-            ) : props.thumbnail && thumbnailUrl ? (
-               <ImagePreview
-                  width={dimensions.width}
-                  height={dimensions.height}
-                  originalWidth={props.thumbnail.width ?? 0}
-                  originalHeight={props.thumbnail.height ?? 0}
-                  url={thumbnailUrl}
-                  disableQuery
-                  onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
-               />
-            ) : (
-               props.video &&
-               videoUrl && (
-                  <VideoPlayer
-                     url={videoUrl}
-                     width={dimensions.width}
-                     height={dimensions.height}
-                     onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
-                  />
-               )
-            )}
+            {expression && videoUrl ? (
+               <ExpressionPlayer {...expressionProps} media={expression} src={videoUrl} />
+            ) : expression && thumbnailUrl ? (
+               <ExpressionPlayer {...expressionProps} isImage media={expression} src={thumbnailUrl} />
+            ) : thumbnailUrl ? (
+               <ImagePreview {...playerProps} originalWidth={width} originalHeight={height} url={thumbnailUrl} disableQuery />
+            ) : videoUrl ? (
+               <VideoPlayer {...playerProps} url={videoUrl} />
+            ) : null}
          </div>
       </div>
    );

@@ -7,7 +7,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageRenderer } from "@hooks/useMessageRenderer";
 import { useMessageWidths } from "@hooks/useMessageWidths";
 import { useSwipeToReply } from "@hooks/useSwipeToReply";
-import { clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
+import { getMessageSummary, clamp, hasFlag, MessageFlags, MessageType, type Snowflake } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
@@ -22,6 +22,11 @@ import type { AppMessage, MessageErrorType, ProcessedAppMessage } from "@/types"
 import AttachmentUploadProgress from "./AttachmentUploadProgress";
 import { MessageActions } from "./MessageActions";
 import MessageReactions from "./MessageReactions";
+
+function hasSticker(message?: AppMessage) {
+   if (!message) return false;
+   return message.isPreview ? (message.stickers?.length ?? 0) > 0 : message.embeds.some((x) => x.type === "sticker");
+}
 
 export default function DefaultMessage() {
    const { user } = useThisUser();
@@ -52,7 +57,13 @@ export default function DefaultMessage() {
          : undefined;
 
    const isLastAction = context.lastMessage?.isActionType === true;
-   const isSeparate = context.message.hasNewAuthor || context.message.hasNewMinute || context.message.hasNewDate || context.message.isReplyType;
+   const isSticker = hasSticker(context.message);
+   const isSeparate =
+      context.message.hasNewAuthor ||
+      context.message.hasNewMinute ||
+      context.message.hasNewDate ||
+      context.message.isReplyType ||
+      isSticker !== hasSticker(context.lastMessage);
    const isEditing = context.message.isEditing;
    const isReplying = context.message.isReplying;
    const isJumpHighlighted = context.message.isJumpHighlighted;
@@ -62,6 +73,7 @@ export default function DefaultMessage() {
    const nextError = context.nextMessage?.isPreview ? context.nextMessage.error : undefined;
    const isNextPreview = context.nextMessage?.isPreview;
    const isNextSeparate =
+      isSticker !== hasSticker(context.nextMessage) ||
       !context.nextMessage ||
       context.nextMessage?.hasNewAuthor ||
       context.nextMessage?.hasNewMinute ||
@@ -95,7 +107,7 @@ export default function DefaultMessage() {
          data-context={hasContext === true ? true : undefined}
          data-swipe={swipeX !== 0 ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start py-2 pr-0 select-none lg:select-auto",
+            "group relative flex flex-col items-start rounded-r-lg py-2 pr-0 select-none lg:select-auto",
             !context.options?.equalPadding ? "pl-4" : "py-2.5! pl-2.5",
             swipeX === 0 ? "transition-[transform_150ms,color_150ms]" : "transition-colors",
             !context.options?.hideBackground &&
@@ -107,8 +119,8 @@ export default function DefaultMessage() {
                     ? "bg-primary-900/50 hover:bg-primary-900/70 active:bg-primary-900/70 data-context:bg-primary-900/70 data-swipe:bg-primary-900/70"
                     : "hover:bg-surface-alt/70 active:bg-surface-alt/70 data-context:bg-surface-alt/70 data-swipe:bg-surface-alt/70"),
             isJumpHighlighted && "animate-pulse",
-            (isSeparate || isLastAction) && "rounded-tr-lg",
-            isNextSeparate && "rounded-br-lg",
+            // (isSeparate || isLastAction) && "rounded-tr-lg",
+            // isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0!",
             hasReactions && "pb-2",
             !isNextSeparate && "pb-0",
@@ -126,7 +138,6 @@ export default function DefaultMessage() {
                <IconMingcuteCornerUpLeftLine className="text-caution-300 size-5" />
             </div>
          </div>
-         {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[width]",
@@ -138,30 +149,36 @@ export default function DefaultMessage() {
          ></div>
          {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
-            <div className="flex items-center gap-x-2">
+            <div className="flex w-full items-center gap-x-2 pr-2">
                <button
                   type="button"
-                  className="cursor-pointer rounded-full"
+                  className="shrink-0 cursor-pointer rounded-full"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
                   <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
                </button>
                <button
                   type="button"
-                  className="text-text cursor-pointer text-sm hover:underline"
+                  className="text-text cursor-pointer truncate text-sm hover:underline"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
                   {author?.displayName}
                </button>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                  <IconMingcuteNotificationOffFill className="text-text size-4" />
+                  <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
                ) : null}
-               <div className="text-text/50 text-xs">{formattedFullTime}</div>
+               <div className="text-text/50 shrink-0 text-xs">{formattedFullTime}</div>
+               {!context.message.isPreview && !context.options?.hideActions && (
+                  <div className="ml-auto shrink-0">
+                     <MessageActions message={context.message} />
+                  </div>
+               )}
             </div>
          )}
          <div className={clsx("flex w-full items-start font-light text-white", (isSeparate || isLastAction) && "mt-2")}>
             <DefaultRenderer
                isNextSeparate={isNextSeparate}
+               isSticker={isSticker}
                isSelf={isSelf}
                isSeparate={isSeparate}
                isUnread={isUnread}
@@ -177,13 +194,30 @@ export default function DefaultMessage() {
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
-               <div className="mx-2.5 mt-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-                  <div className="text-text/50 text-xs opacity-0 transition-opacity group-hover:opacity-100">{formattedTime}</div>
+               <div className="flex shrink-0 self-stretch px-2 select-none">
+                  {/* Limit the top offset to the space remaining below the 34px controls. */}
+                  <div className="relative flex h-8.5 items-center gap-x-2 lg:top-[clamp(0px,calc(100%-2.125rem),0.5rem)]">
+                     <div
+                        className={clsx(
+                           "text-text/50 bg-surface-alt/70 box-exact rounded px-1.5 py-1.5 text-xs transition-opacity group-hover:opacity-100 group-data-context:opacity-100 lg:bg-transparent lg:p-0",
+                           isMobile ? "opacity-100" : "opacity-0",
+                        )}
+                     >
+                        {formattedTime}
+                     </div>
+                     {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
+                  </div>
                </div>
             )}
          </div>
          {!context.message.isPreview && (
-            <MessageReactions message={context.message} messageWidth={widths.width} ref={reactionsRef} disabled={context.options?.disableReactions} />
+            <MessageReactions
+               message={context.message}
+               messageWidth={widths.width}
+               ref={reactionsRef}
+               disabled={context.options?.disableReactions}
+               isSticker={isSticker}
+            />
          )}
       </div>
    );
@@ -210,7 +244,9 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const message = useMemo<ProcessedAppMessage>(
       () => ({
          ...props.referencedMessage,
-         content: props.referencedMessage.content.replaceAll("\n", " ").replaceAll(/```(?:\S*)?/g, "`"),
+         content: getMessageSummary(props.referencedMessage)
+            .replaceAll("\n", " ")
+            .replaceAll(/```(?:\S*)?/g, "`"),
       }),
       [props.referencedMessage],
    );
@@ -232,12 +268,12 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
       <div className="group/reply flex w-full cursor-pointer items-center gap-x-1 pr-2 pl-2 select-none" onClick={handleClick}>
          <IconMingcuteCornerUpRightLine className="size-7 shrink-0 text-white/50 transition-colors group-hover/reply:text-white" />
          <div className="mb-2 flex items-center gap-x-2 overflow-hidden">
-            <div className="flex items-center gap-x-1 text-nowrap">
+            <div className="flex items-center gap-x-1.5 text-nowrap">
                <UserAvatar userId={user.id} avatarHash={user.avatar} size={1.25} hideStatus />
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
-            {props.referencedMessage.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
-            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="text-text shrink-0" />}
+            {message.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
+            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="shrink-0 text-white" />}
          </div>
       </div>
    );
@@ -251,6 +287,7 @@ function DefaultRenderer(props: {
    isNextPreview?: boolean;
    isNextSeparate: boolean;
    isLastAction: boolean;
+   isSticker: boolean;
    isPreview: boolean;
    isEdited?: boolean;
    hasReactions: boolean;
@@ -272,7 +309,7 @@ function DefaultRenderer(props: {
    return (
       <div
          className={clsx(
-            "group relative w-full px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
+            "group relative w-full min-w-0 px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
             props.isPreview && props.error === undefined && "text-white/50",
          )}
       >
@@ -281,13 +318,15 @@ function DefaultRenderer(props: {
                <div
                   className={clsx(
                      "pointer-events-none z-0 h-full w-full transition-[shadow] group-hover:shadow-sm",
-                     props.error === undefined && props.isPreview
-                        ? "bg-surface"
-                        : props.error !== undefined
-                          ? "bg-negative-700"
-                          : props.isSelf
-                            ? "bg-primary-800"
-                            : "bg-surface",
+                     props.isSticker
+                        ? "bg-transparent"
+                        : props.error === undefined && props.isPreview
+                          ? "bg-surface"
+                          : props.error !== undefined
+                            ? "bg-negative-700"
+                            : props.isSelf
+                              ? "bg-primary-800"
+                              : "bg-surface",
                      props.isUnread && !props.isSeparate && "rounded-t-none!",
                      (props.isSeparate || props.isLastAction || props.hasLastReactions) && "rounded-t-xl!",
                      props.isNextSeparate && !props.hasReactions && "rounded-b-xl!",
@@ -299,7 +338,7 @@ function DefaultRenderer(props: {
                      borderTopRightRadius: `${clamp((props.widths.width - props.widths.lastWidth) / 2, 0, 12)}px`,
                   }}
                >
-                  {!props.isSeparate && props.widths.lastWidth > props.widths.width && !props.hasLastReactions && (
+                  {!props.isSticker && !props.isSeparate && props.widths.lastWidth > props.widths.width && !props.hasLastReactions && (
                      <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                         <div
                            className={clsx(
@@ -320,7 +359,7 @@ function DefaultRenderer(props: {
                      </div>
                   )}
                </div>
-               {!props.isNextSeparate && props.widths.nextWidth > props.widths.width && !props.hasReactions && (
+               {!props.isSticker && !props.isNextSeparate && props.widths.nextWidth > props.widths.width && !props.hasReactions && (
                   <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(
@@ -342,7 +381,7 @@ function DefaultRenderer(props: {
                )}
             </div>
             {(context.message.isEditing || context.message.isReplying || props.isEdited || props.error !== undefined) && (
-               <div className={clsx("z-20 flex shrink-0 items-center gap-x-1", props.isSeparate ? "px-2" : "pl-2")} ref={props.extrasRef}>
+               <div className="z-20 flex shrink-0 items-center gap-x-1 px-2" ref={props.extrasRef}>
                   {props.error !== undefined && (
                      <div className="flex h-full items-center justify-center">
                         <Tooltip>
@@ -359,11 +398,6 @@ function DefaultRenderer(props: {
 
                   {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
                      <div className="flex shrink-0 items-center gap-x-1">
-                        {context.message.isEditing ? (
-                           <IconMingcuteEdit2Fill className="text-positive-300 size-4" />
-                        ) : context.message.isReplying ? (
-                           <IconMingcuteCornerUpLeftFill className="text-caution-300 size-4" />
-                        ) : null}
                         {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
                      </div>
                   )}

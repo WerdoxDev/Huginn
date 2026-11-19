@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginnjs/shared";
+import type { APIEmbed, APIExpression, Snowflake } from "@huginnjs/shared";
 import type { BaseEditor, BaseRange, Descendant } from "slate";
 import type { ReactEditor } from "slate-react";
 
@@ -36,8 +36,9 @@ type CodespanElement = {
 };
 
 type EmbedElement = {
+   media?: APIExpression;
    type: "embed";
-   embedType: "rich" | "video" | "image" | "gifv" | (string & {});
+   embedType: APIEmbed["type"];
    thumbnail?: { url: string; width?: number; height?: number };
    video?: { url: string; width?: number; height?: number };
    title?: string;
@@ -48,6 +49,7 @@ type EmbedElement = {
 
 type AttachmentElement = {
    type: "attachment";
+   id: string;
    description?: string;
    url: string;
    width?: number;

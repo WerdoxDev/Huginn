@@ -1,4 +1,4 @@
-import type { Snowflake } from "@huginnjs/shared";
+import type { Snowflake, APIExpression } from "@huginnjs/shared";
 
 import { createContext, type MouseEvent, type ReactNode, useEffect } from "react";
 import { createStore, useStore } from "zustand";
@@ -13,7 +13,8 @@ const initialStore = () => ({
       | PopoverStateProps<{
            type: "full" | "emoji";
            onEmojiSelect?: (slug: string, unicode?: string) => void;
-           onGifSelect?: (url: string) => void;
+           onGifSelect?: (gif: APIExpression) => void;
+           onStickerSelect?: (sticker: APIExpression) => void;
            messageId?: Snowflake;
            activeTab?: "emoji" | "gif" | "sticker";
         }>

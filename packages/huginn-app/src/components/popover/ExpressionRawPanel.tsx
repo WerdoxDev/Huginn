@@ -1,12 +1,17 @@
+import type { APIExpression } from "@huginnjs/shared";
+
 import { HuginnTab } from "@huginn/frontend-shared";
 import { useState } from "react";
 
 import EmojiPickerPanel from "./EmojiPickerPanel";
 import GifPickerPanel from "./GifPickerPanel";
+import StickerPickerPanel from "./StickerPickerPanel";
 
 export function ExpressionRawPanel(props: {
    onEmojiSelect: (emoji: string) => void;
-   onGifSelect?: (url: string) => void;
+   onGifSelect?: (gif: APIExpression) => void;
+   isOpen?: boolean;
+   onStickerSelect?: (sticker: APIExpression) => void;
    onTabChange?: (tab: "emoji" | "gif" | "sticker") => void;
    type: "full" | "emoji";
    activePanel?: "emoji" | "gif" | "sticker";
@@ -25,16 +30,19 @@ export function ExpressionRawPanel(props: {
             <HuginnTab.Tab value="gif">GIFs</HuginnTab.Tab>
             <HuginnTab.Tab value="sticker">Stickers</HuginnTab.Tab>
          </HuginnTab.TabList>
-         <HuginnTab.TabPanels className="flex min-h-0 w-full flex-1 overflow-hidden" panelClassName="h-full min-h-0 w-full overflow-hidden">
+         <HuginnTab.TabPanels
+            className="flex min-h-0 w-full flex-1 overflow-hidden"
+            panelClassName="h-full min-h-0 w-full overflow-hidden data-ending-style:hidden"
+         >
             <HuginnTab.TabPanel value="emoji">
                <EmojiPickerPanel onEmojiSelect={props.onEmojiSelect} />
             </HuginnTab.TabPanel>
 
             <HuginnTab.TabPanel value="gif">
-               <GifPickerPanel onGifSelect={props.onGifSelect} />
+               <GifPickerPanel onGifSelect={props.onGifSelect} isOpen={(props.isOpen ?? true) && activePanel === "gif"} />
             </HuginnTab.TabPanel>
             <HuginnTab.TabPanel value="sticker" className="text-white">
-               Soon bro... sooooon...
+               <StickerPickerPanel isOpen={(props.isOpen ?? true) && activePanel === "sticker"} onStickerSelect={props.onStickerSelect} />
             </HuginnTab.TabPanel>
          </HuginnTab.TabPanels>
       </HuginnTab>

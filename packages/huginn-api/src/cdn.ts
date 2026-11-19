@@ -1,4 +1,4 @@
-import { CONSTANTS, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginnjs/shared";
+import { CONSTANTS, resolveCdnUrl, type ImageFormats, type ImageURLOptions, type Snowflake } from "@huginnjs/shared";
 
 import type { CDNOptions } from "./types";
 
@@ -29,6 +29,19 @@ export class CDN {
 
    public emoji(id: string): string {
       return this.makeURL(`/emoji/${id}`, { format: "svg" });
+   }
+
+   public sticker(id: string, ex: number, hm: string): string {
+      return this.asset(`stickers/${id}.webp?${new URLSearchParams({ ex: String(ex), hm })}`);
+   }
+
+   public gif(id: string, ex: number, hm: string): string {
+      return this.asset(`gifs/${id}.gif?${new URLSearchParams({ ex: String(ex), hm })}`);
+   }
+
+   /** Resolve an asset path or rebase a CDN URL, preserving its signature. */
+   public asset(path: string): string {
+      return resolveCdnUrl(path, this.options.url);
    }
 
    public channelBackground(scope: Snowflake | "global", userId: Snowflake, hash: string, options?: Readonly<ImageURLOptions>): string {
@@ -63,7 +76,7 @@ export class CDN {
          throw new RangeError(`Invalid size provided: ${size}\nMust be one of: ${CONSTANTS.ALLOWED_IMAGE_SIZES.join(", ")}`);
       }
 
-      const url = new URL(`${this.options.url}${route}.${format}`);
+      const url = new URL(this.asset(`${route}.${format}`));
 
       if (size) {
          url.searchParams.set("size", String(size));

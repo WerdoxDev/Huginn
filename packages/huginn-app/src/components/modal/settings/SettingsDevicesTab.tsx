@@ -93,7 +93,7 @@ export default function SettingsDevicesTab() {
 
    return (
       <div className="flex w-full flex-col items-center">
-         <div className="mt-0.5 flex w-full max-w-xl flex-col gap-y-4">
+         <div className="flex w-full max-w-xl flex-col gap-y-4">
             {!devices && !isError && (
                <div className="flex items-center justify-center gap-x-2">
                   <div className="text-text">Loading devices…</div>
@@ -103,7 +103,10 @@ export default function SettingsDevicesTab() {
             {devices?.map((device) => (
                <div
                   key={device.id}
-                  className={clsx("bg-surface-alt flex items-center gap-x-4 rounded-lg p-4", device.current && "ring-primary-700 ring-2")}
+                  className={clsx(
+                     "bg-surface-alt grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 rounded-lg p-4 lg:flex lg:items-center",
+                     device.current && "border-primary-700 border-2",
+                  )}
                >
                   {device.clientOs === "linux" ? (
                      <IconMingcuteLinuxFill className="text-text size-8 shrink-0" />
@@ -114,13 +117,13 @@ export default function SettingsDevicesTab() {
                   ) : (
                      <IconMingcuteQuestion2Fill className="text-text size-8 shrink-0" />
                   )}
-                  <div className="flex flex-col gap-y-1">
-                     <div className="flex gap-x-2">
-                        <div className="text-text font-medium">
+                  <div className="flex min-w-0 flex-1 flex-col gap-y-1">
+                     <div className="flex flex-col items-start gap-2 lg:flex-row lg:flex-wrap lg:items-center">
+                        <div className="text-text font-medium wrap-anywhere">
                            {device.clientName ?? "Unknown"} - {device.clientOs ?? "Unknown"} - "{device.deviceName ?? "Unknown"}"
                         </div>
                         {device.current && (
-                           <div className="bg-primary-700 flex items-center justify-center rounded px-1.5 text-xs font-bold text-white uppercase">
+                           <div className="bg-primary-700 flex shrink-0 items-center justify-center rounded px-1.5 py-1 text-xs font-bold whitespace-nowrap text-white uppercase">
                               Your Device
                            </div>
                         )}
@@ -136,7 +139,7 @@ export default function SettingsDevicesTab() {
                   </div>
                   <HuginnLoadingButton
                      color="negative"
-                     className="ml-auto shrink-0 px-2 py-1"
+                     className="col-span-2 h-10 w-full shrink-0 px-2 py-1 lg:ml-auto lg:h-auto lg:w-auto"
                      disabled={removeMutation.isPending}
                      isLoading={removeMutation.isPending && removeMutation.variables?.id === device.id}
                      onClick={() => confirmSignOut(device)}

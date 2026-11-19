@@ -50,6 +50,7 @@ import { putChannelMessagePin } from "#routes/channels/[channelId]/messages/pins
 import { deleteChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].delete";
 import { putChannelRecipient } from "#routes/channels/[channelId]/recipients/[recipientId].put";
 import { postTyping } from "#routes/channels/[channelId]/typing.post";
+import { expressionRoutes } from "#routes/expressions/expression";
 import { ws } from "#routes/gateway";
 import { getGifCategories } from "#routes/gifs/categories.get";
 import { getSearchGifs } from "#routes/gifs/search.get";
@@ -67,6 +68,9 @@ import { deleteStaffKnownGame } from "#routes/staff/known-games/[gameId].delete"
 import { patchStaffKnownGame } from "#routes/staff/known-games/[gameId].patch";
 import { patchStaffApplicationMatcher } from "#routes/staff/known-games/[gameId]/matchers/[matcherId].patch";
 import { getStaffMe } from "#routes/staff/me.get";
+import { getStickerCategories } from "#routes/stickers/categories.get";
+import { getSearchStickers } from "#routes/stickers/search.get";
+import { getTrendingStickers } from "#routes/stickers/trending.get";
 import { postUniqueUsername } from "#routes/unique-username.post";
 import { getAndroidUpdate } from "#routes/update/android.get";
 import { getDesktopUpdate } from "#routes/update/desktop";
@@ -260,7 +264,15 @@ export const app = new Elysia({
    .use(getIndex)
    .use(getChangelog)
 
+   // expression
+   .use(expressionRoutes)
+
    // gifs
    .use(getGifCategories)
    .use(getTrendingGifs)
-   .use(getSearchGifs);
+   .use(getSearchGifs)
+
+   // stickers
+   .use(getTrendingStickers)
+   .use(getSearchStickers)
+   .use(getStickerCategories);

@@ -2,6 +2,8 @@ import { relations } from "drizzle-orm/relations";
 
 import {
    user,
+   expression,
+   userExpression,
    identityProvider,
    message,
    embed,
@@ -36,6 +38,7 @@ export const identityProviderRelations = relations(identityProvider, ({ one }) =
 }));
 
 export const userRelations = relations(user, ({ many }) => ({
+   expressions: many(userExpression),
    identityProviders: many(identityProvider),
    relationships: many(relationship, {
       relationName: "relationship_ownerId_user_id",
@@ -63,6 +66,16 @@ export const userRelations = relations(user, ({ many }) => ({
    participatedCalls: many(participatedCalls),
    readStates: many(readState),
    reactions: many(reaction),
+}));
+
+export const expressionRelations = relations(expression, ({ many }) => ({ users: many(userExpression) }));
+
+export const userExpressionRelations = relations(userExpression, ({ one }) => ({
+   user: one(user, { fields: [userExpression.userId], references: [user.id] }),
+   expression: one(expression, {
+      fields: [userExpression.kind, userExpression.type, userExpression.expressionId],
+      references: [expression.kind, expression.type, expression.id],
+   }),
 }));
 
 export const embedRelations = relations(embed, ({ one }) => ({

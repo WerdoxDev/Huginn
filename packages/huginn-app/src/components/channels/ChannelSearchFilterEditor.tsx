@@ -29,7 +29,7 @@ const pinnedOptions = [
 const textOptions = [
    { value: "attachmentFilename", text: "Attachment filename", placeholder: "e.g. my_nice_photo", pattern: undefined },
    // { value: "attachmentExtension", text: "Attachment extension", placeholder: "e.g. png or .png", pattern: "^\\.?[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*$" },
-   // { value: "embedType", text: "Embed type", placeholder: "e.g. image, video, rich or gifv", pattern: undefined },
+   // { value: "embedType", text: "Embed type", placeholder: "e.g. image, video, rich, gif or sticker", pattern: undefined },
    // { value: "repliedToMessageId", text: "Reply to message", placeholder: "Message ID", pattern: "[0-9]{1,19}" },
 ] as const;
 

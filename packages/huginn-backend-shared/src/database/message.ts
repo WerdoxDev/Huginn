@@ -1,4 +1,4 @@
-import type { APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginnjs/shared";
+import type { APIExpressionReference, APIPostMessageReferenceJSONBody, BigIntToString, Snowflake } from "@huginnjs/shared";
 
 import { WorkerID, analytics, idFix, recordSpanError, snowflake } from "@huginnjs/shared";
 import { MessageType } from "@huginnjs/shared";
@@ -134,6 +134,8 @@ export const messagesExtension = Prisma.defineExtension({
                channelId: Snowflake;
                type: MessageType;
                content?: string;
+               gifs?: APIExpressionReference[];
+               stickers?: APIExpressionReference[];
                attachments?: DBAttachment[];
                embeds?: DBEmbed[];
                messageReference?: APIPostMessageReferenceJSONBody;
@@ -210,6 +212,8 @@ export const messagesExtension = Prisma.defineExtension({
                         type: options.type,
                         channelId: BigInt(options.channelId),
                         content: options.content ?? "",
+                        gifs: options.gifs ?? [],
+                        stickers: options.stickers ?? [],
                         attachments: options.attachments ? { connect: createdAttachments.map((x) => ({ id: x.id })) } : undefined,
                         mentions: { connect: options.mentions?.map((x) => ({ id: BigInt(x) })) },
                         authorId: BigInt(options.authorId),
@@ -278,6 +282,8 @@ export const messagesExtension = Prisma.defineExtension({
             id: Snowflake,
             options: {
                content?: string;
+               gifs?: APIExpressionReference[];
+               stickers?: APIExpressionReference[];
                embeds?: DBEmbed[];
                attachments?: DBAttachment[];
                call?: { participants: Snowflake[]; setEndedTimestamp: boolean };
@@ -317,7 +323,9 @@ export const messagesExtension = Prisma.defineExtension({
                      where: { id: BigInt(id) },
                      data: {
                         content: options.content,
-                        embeds: options.embeds ? { set: createdEmbeds.map((x) => ({ id: x.id })) } : { set: [] },
+                        gifs: options.gifs,
+                        stickers: options.stickers,
+                        embeds: options.embeds === undefined ? undefined : { set: createdEmbeds.map((x) => ({ id: x.id })) },
                         editedTimestamp: options.setEditedTimestamp ? new Date() : undefined,
                         call: options.call
                            ? {

@@ -22,7 +22,7 @@ import type {
    MessageFlags,
    ThemeType,
    ChannelType,
-   FavoriteGif,
+   APIExpression,
 } from "@huginnjs/shared";
 import type { AUDIO_QUALITIES, SCREEN_SHARE_FRAME_RATES, SCREEN_SHARE_QUALITIES } from "@lib/constants";
 import type { ProcessInfo } from "native-addon";
@@ -108,6 +108,7 @@ export type ContextMenuStateProps<T = unknown> = {
    isOpen?: boolean;
    position?: [number, number];
    parent?: HTMLElement | null;
+   finalFocus?: () => HTMLElement | null;
 };
 
 export type ContextMenuItemProps = {
@@ -120,7 +121,7 @@ export type ContextMenuItemProps = {
 export type ContextMenuRelationship = { user: AppUser; type: RelationshipType };
 export type ContextMenuDMChannel = AppDirectChannel;
 export type ContextMenuDMChannelRecipient = { channelId: Snowflake; recipient: AppUser };
-export type ContextMenuGif = Omit<FavoriteGif, "timestamp">;
+export type ContextMenuExpression = Partial<AppExpression>;
 export type ContextMenuVoiceElement = {
    user: AppUser;
    guildId: Snowflake | null;
@@ -130,7 +131,8 @@ export type ContextMenuVoiceElement = {
 };
 export type ContextMenuMessage = {
    message: AppMessage;
-   gif?: ContextMenuGif;
+   gif?: ContextMenuExpression;
+   sticker?: ContextMenuExpression;
    url?: string;
    imgElement?: HTMLImageElement;
    mediaUrl?: string;
@@ -177,11 +179,15 @@ export type AppUser<U = PresenceUser> = U & {
 export type AppPresence = Omit<UserPresence, "user"> & { userId: Snowflake };
 export type AppUserProfile = Omit<APIUserProfile, "user"> & { userId: Snowflake };
 
+export type AppExpression = APIExpression & { attachmentId?: Snowflake };
+
 export enum MessageErrorType {
    FAILED_TO_SEND = 0,
 }
 
 export type PreviewAppMessage = {
+   gifs?: APIExpression[];
+   stickers?: APIExpression[];
    isPreview: true;
    id: Snowflake;
    timestamp: string;

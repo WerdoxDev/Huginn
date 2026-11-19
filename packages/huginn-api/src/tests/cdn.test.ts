@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { HuginnClient } from "../huginn-client";
 
+describe("CDN asset resolution", () => {
+   it("uses the configured prefix for both existing asset URLs and generated image URLs", () => {
+      const client = new HuginnClient({ cdn: { url: "https://current.example/media/" } });
+      expect(client.cdn.asset("https://old.example/cdn/gifs/123.gif?ex=100&hm=signature")).toBe(
+         "https://current.example/media/gifs/123.gif?ex=100&hm=signature",
+      );
+      expect(client.cdn.avatar("123", "hash", { size: 128 })).toBe("https://current.example/media/avatars/123/hash.webp?size=128");
+   });
+});
+
 describe("dynamicMakeURL()", () => {
    it("should resolve a CDN gif request url", async () => {
       const client = new HuginnClient({ cdn: { url: "https://test.com" } });

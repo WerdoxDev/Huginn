@@ -1,11 +1,13 @@
 import { useCallback } from "react";
 
 interface FileDialogResult {
+   file: File;
    dataUrl: string;
    mimeType: string;
 }
 
 const accepts = {
+   gif: "image/gif",
    image: "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif,image/svg+xml",
 } as const;
 
@@ -24,6 +26,7 @@ export function useFileDialog(accept: keyof typeof accepts) {
             }
 
             resolve({
+               file,
                dataUrl: URL.createObjectURL(file),
                mimeType: file.type,
             });

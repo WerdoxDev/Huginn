@@ -87,6 +87,8 @@ export const selectMessageCall = {
 } satisfies MessageSelect;
 
 export const selectMessageDefaults = {
+   gifs: true,
+   stickers: true,
    channelId: true,
    content: true,
    timestamp: true,

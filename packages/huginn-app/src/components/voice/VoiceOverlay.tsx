@@ -6,10 +6,20 @@ import { useStorage } from "@stores/storageStore";
 import { useVoiceStore } from "@stores/voiceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
+import { useMemo } from "react";
 
 export default function VoiceOverlay() {
    const { voiceState, voiceStates, speakingStates } = useVoiceStore();
    const settings = useStorage("settings");
+   const ourVoiceStates = useMemo(
+      () =>
+         settings.voiceOverlayOnlySpeaking
+            ? voiceStates
+                 .filter((state) => state.channelId === voiceState.channelId)
+                 .toSorted((a, b) => Number(isSpeaking(b)) - Number(isSpeaking(a)))
+            : voiceStates.filter((state) => state.channelId === voiceState.channelId),
+      [settings.voiceOverlayOnlySpeaking, voiceStates, speakingStates, voiceState.channelId],
+   );
 
    if (!voiceState.channelId || settings?.overlayEnabled === false) return null;
 
@@ -23,17 +33,14 @@ export default function VoiceOverlay() {
 
    return (
       <ul className="pointer-events-none absolute top-3 left-3 flex max-w-64 flex-col gap-y-1.5 select-none">
-         {voiceStates
-            .filter((state) => state.channelId === voiceState.channelId)
-            .toSorted((a, b) => Number(isSpeaking(b)) - Number(isSpeaking(a)))
-            .map((state) => (
-               <VoiceOverlayParticipant
-                  key={state.userId}
-                  voiceState={state}
-                  isSpeaking={isSpeaking(state)}
-                  onlySpeaking={settings?.voiceOverlayOnlySpeaking ?? false}
-               />
-            ))}
+         {ourVoiceStates.map((state) => (
+            <VoiceOverlayParticipant
+               key={state.userId}
+               voiceState={state}
+               isSpeaking={isSpeaking(state)}
+               onlySpeaking={settings?.voiceOverlayOnlySpeaking ?? false}
+            />
+         ))}
       </ul>
    );
 }

@@ -3,12 +3,11 @@ import { useAddReaction } from "@hooks/mutations/useAddReaction";
 import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useThisUser } from "@stores/userStore";
-import { clsx } from "clsx";
 import { useMemo, type MouseEvent } from "react";
 
 import type { ProcessedAppMessage } from "@/types";
 
-const iconClassName = "text-text/80 group-hover/button:text-text size-5 ";
+const iconClassName = "text-white/70 group-hover/button:text-white size-5 ";
 
 export function MessageActions(props: { message: ProcessedAppMessage }) {
    const { setReplyingMessageId, setEditingMessageId } = useChannelStore();
@@ -38,11 +37,7 @@ export function MessageActions(props: { message: ProcessedAppMessage }) {
    }
 
    return (
-      <div
-         className={clsx(
-            "bg-surface-void pointer-events-none absolute -top-8 right-5 z-20 flex h-10 items-center justify-center rounded-lg p-1 opacity-0 shadow-md transition-[opacity,box-shadow] duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:opacity-100 hover:shadow-xl",
-         )}
-      >
+      <div className="pointer-events-none flex shrink-0 items-center opacity-0 transition-opacity duration-150 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 group-data-context:pointer-events-auto group-data-context:opacity-100">
          <ActionButton
             tooltip="Add Reaction"
             onClick={(e) => toggle(e, { type: "emoji", onEmojiSelect: handleEmojiSelect, messageId: props.message.id })}
@@ -65,7 +60,7 @@ function ActionButton(props: { onClick?: (e: MouseEvent<HTMLButtonElement>) => v
    return (
       <Tooltip>
          <Tooltip.Trigger asChild>
-            <button className="hover:bg-surface-alt group/button rounded-md p-1.5" onClick={props.onClick}>
+            <button className="hover:bg-surface-alt group/button rounded-md p-1.75" onClick={props.onClick}>
                {props.children}
             </button>
          </Tooltip.Trigger>

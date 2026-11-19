@@ -1,14 +1,13 @@
-import { MessageContext } from "@contexts/MessageProvider";
-import { useContextMenu } from "@stores/contextMenuStore";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useContext, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 
 import LoadingBackground from "./LoadingBackground";
 
 export default function ImagePreview(props: {
    url: string;
+   playbackUrl?: string;
    width: number;
    height: number;
    originalWidth: number;
@@ -16,22 +15,21 @@ export default function ImagePreview(props: {
    filename?: string;
    disableQuery?: boolean;
    contentType?: string;
-   onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void;
+   onContextMenu?: (event: MouseEvent<HTMLImageElement>) => void;
 }) {
    const [isLoaded, setIsLoaded] = useState(false);
    const [hasError, setHasError] = useState(false);
    const [useCors, setUseCors] = useState(false);
    const imgRef = useRef<HTMLImageElement>(null);
    const { updateModals } = useModals();
-   const { open } = useContextMenu("message");
-   const context = useContext(MessageContext);
    const aspectRatio = props.originalWidth && props.originalHeight ? props.originalWidth / props.originalHeight : 1;
    const huginnWindow = useHuginnWindow();
 
    const src = useMemo(() => {
-      if (props.contentType === "image/gif" && huginnWindow.focused) return props.url;
-      return `${props.url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`;
-   }, [props.url, props.width, props.height, props.disableQuery, huginnWindow.focused]);
+      const url = props.playbackUrl ?? props.url;
+      if (props.contentType === "image/gif" && huginnWindow.focused) return url;
+      return `${url}${!props.disableQuery ? `&${new URLSearchParams({ format: "webp", width: props.width.toString(), height: props.height.toString() }).toString()}` : ""}`;
+   }, [props.url, props.playbackUrl, props.width, props.height, props.disableQuery, props.contentType, huginnWindow.focused]);
 
    useEffect(() => {
       if (imgRef.current?.complete) {

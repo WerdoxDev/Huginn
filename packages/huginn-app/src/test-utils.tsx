@@ -93,7 +93,7 @@ export function createTestMessage(options: {
       editedTimestamp: null,
       embeds: options.embeds
          ? (Array.from({ length: options.embeds }, (_, i) => ({
-              type: "gifv",
+              type: "gif",
               url: `https://example.com/embed${i + 1}.gif`,
               thumbnail: { url: `https://example.com/embed${i + 1}-thumbnail.gif`, width: 100, height: 100 },
               title: `Embed ${i + 1}`,

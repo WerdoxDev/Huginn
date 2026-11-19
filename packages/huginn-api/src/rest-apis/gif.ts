@@ -2,11 +2,12 @@ import { Routes, type APIGetGifCategoriesResult, type APIGetSearchGifsResult, ty
 
 import type { REST } from "../rest";
 
-export class GifAPI {
-   private readonly rest: REST;
+import { CDN } from "../cdn";
+import { ExpressionAPI } from "./expression";
 
-   public constructor(rest: REST) {
-      this.rest = rest;
+export class GifAPI extends ExpressionAPI {
+   constructor(rest: REST, cdn: CDN = new CDN()) {
+      super(rest, cdn, "gifs");
    }
 
    public async getCategories(): Promise<APIGetGifCategoriesResult> {

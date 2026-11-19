@@ -46,7 +46,7 @@ User options are merged with the defaults. A custom `Voice` subclass can be supp
 | `messages`      | Message reactions.                                                |
 | `relationships` | Fetch, create, and remove relationships.                          |
 | `applications`  | Known applications and application icons.                         |
-| `gifs`          | Categories, trending GIFs, and search.                            |
+| `gifs`          | GIF discovery, uploads, and your collection sorted by usage.            |
 | `common`        | Unique usernames and changelog.                                   |
 | `oauth`         | OAuth confirmation and authorization URL generation.              |
 

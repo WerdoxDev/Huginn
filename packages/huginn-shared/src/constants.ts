@@ -16,6 +16,7 @@ export const CONSTANTS = {
    OAUTH_HANDOFF_EXPIRE_TIME_MS: (2 * 60 * 1000) as number, // 2 minutes
    CDN_TOKEN_EXPIRE_TIME: "10mins",
    CDN_HMAC_EXPIRE_TIME: 86400,
+   GIF_MAX_BYTES: 26_214_400,
    EMAIL_REGEX:
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ as RegExp,
    USERNAME_REGEX: /^[a-zA-Z0-9_.]*$/ as RegExp,
@@ -26,6 +27,7 @@ export const CONSTANTS = {
    WEBSOCKET_SESSION_SENT_MESSAGES_LIMIT: 20,
    ALLOWED_IMAGE_SIZES: [16, 32, 64, 128, 256, 512, 1_024] as const,
    ALLOWED_IMAGE_FORMATS: ["webp", "png", "jpg", "jpeg", "gif", "svg"] as const,
+   ALLOWED_STICKER_FORMATS: ["webp", "png", "jpg", "jpeg", "gif"] as const,
    ALLOWED_VIDEO_FORMATS: ["gifv", "mp4", "webm"] as const,
    ALLOWED_AUDIO_FORMATS: ["mp3", "wav", "ogg"] as const,
    CHANNEL_NAME_MAX_LENGTH: 100,
@@ -33,6 +35,8 @@ export const CONSTANTS = {
    ATTACHMENT_MEDIA_MAX_HEIGHT: 350,
    EMBED_MEDIA_MAX_WIDTH: 400,
    EMBED_MEDIA_MAX_HEIGHT: 300,
+   STICKER_MEDIA_MAX_WIDTH: 160,
+   STICKER_MEDIA_MAX_HEIGHT: 160,
    CALL_RINGING_TIMEOUT: 10000,
    KNOWN_APPLICATION_SIMILARITY_THRESHOLD: 90,
    KNOWN_APPLICATION_IGNORED_SUBTITLES: ["demo", "trailer", "teaser", "preview", "beta", "alpha", "early access", "game", "launcher"] as string[],
@@ -48,6 +52,7 @@ export const CONSTANTS = {
    PASSWORD_RESET_WINDOW: (10 * 60 * 1000) as number, // 10 minutes
    EMAIL_VERIFICATION_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
    PASSWORD_RESET_RESEND_COOLDOWN: (30 * 1000) as number, // 30 seconds
+   STICKER_MAX_BYTES: (10 * 1024 * 1024) as number, // 10MB
    AVATAR_MAX_FILE_SIZE: (8 * 1024 * 1024) as number, // 8MB
    BANNER_MAX_FILE_SIZE: (10 * 1024 * 1024) as number, // 10MB
    BIO_MAX_LENGTH: 190,
@@ -86,7 +91,6 @@ export const DEFAULT_SERVER_SETTINGS: UserSettings = {
    status: "online",
    theme: undefined,
    pinnedChannels: [],
-   favoriteGifs: [],
    channelBackgrounds: [],
    globalChannelBackground: undefined,
    voicePreferences: undefined,

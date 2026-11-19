@@ -71,6 +71,7 @@ unlisten();
 | Area          | Events                                                                                                    |
 | ------------- | --------------------------------------------------------------------------------------------------------- |
 | Messages      | `message_create`, `message_delete`, `message_update`, `message_ack`                                       |
+| Expressions   | `expression_update`                                                                                       |
 | Reactions     | `message_reaction_add`, `message_reaction_remove`                                                         |
 | Channels      | `channel_create`, `channel_update`, `channel_delete`, `channel_recipient_add`, `channel_recipient_remove` |
 | Users         | `user_update`, `presence_update`, `typing_start`                                                          |
@@ -79,6 +80,8 @@ unlisten();
 | Account       | `settings_update`, `session_update`                                                                       |
 
 Event payload types are defined in `@huginnjs/shared` as `GatewayWebsocketEvents`.
+
+`expression_updated` sends `{ kind, expression }` to the sending user’s sessions after a successful GIF or sticker send. The expression includes the updated `usageCount` and `lastUsedAt`; each distinct expression in the message emits one event.
 
 ## Presence
 

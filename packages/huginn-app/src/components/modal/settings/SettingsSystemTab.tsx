@@ -1,7 +1,6 @@
 import { HuginnCheckbox } from "@huginn/frontend-shared";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
-import { useState } from "react";
 
 import type { SettingsTabProps } from "@/types";
 

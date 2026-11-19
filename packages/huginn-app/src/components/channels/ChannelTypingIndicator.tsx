@@ -34,11 +34,11 @@ export default function ChannelTypingIndicator(props: { channelId: Snowflake }) 
 
    return (
       <Transition show={channelTypings.length > 0 && channelId === props.channelId}>
-         <div className="to-surface-deep pointer-events-none absolute -top-10 right-5 left-0 z-20 flex items-end bg-linear-to-b from-transparent pt-4 pb-1 pl-4 text-sm transition-opacity data-closed:opacity-0">
-            <span className="text-text font-bold">{recipientsText}&nbsp;</span>
-            {count === 1 && <span className="text-text/70">is typing</span>}
-            {count > 1 && <span className="text-text/70">are typing</span>}
-            <LoadingDot loadingClassName="w-1 h-1" className="mb-1.5 ml-1 gap-x-0.5" />
+         <div className="bg-surface-deep pointer-events-none absolute bottom-full left-2 z-20 flex max-w-[calc(100%-1rem)] items-center gap-x-1 rounded-lg px-2 py-1 text-sm transition-opacity data-closed:opacity-0">
+            <span className="text-text min-w-0 truncate font-medium">{recipientsText}</span>
+            {count === 1 && <span className="text-text/70 shrink-0">is typing</span>}
+            {count > 1 && <span className="text-text/70 shrink-0">are typing</span>}
+            <LoadingDot loadingClassName="w-1 h-1" className="ml-0.5 shrink-0 gap-x-0.5" />
          </div>
       </Transition>
    );
