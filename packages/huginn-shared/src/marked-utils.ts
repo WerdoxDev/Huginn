@@ -1,6 +1,6 @@
 import type { Token, Tokens, TokensList } from "marked";
 
-import hljs from "highlight.js";
+import { highlightCode } from "./code-highlight";
 
 export type MarkedToken = {
    type: string;
@@ -270,7 +270,7 @@ export function getCodeLanguage(language: string): string {
 }
 
 function tokenizeHighlightJS(code: string, language: string): Array<MarkedCodeToken> {
-   const highlighted = hljs.highlight(code, { language }).value;
+   const highlighted = highlightCode(code, language);
 
    if (typeof DOMParser === "undefined") return [];
 

@@ -24,3 +24,4 @@ export * from "./emoji";
 export * from "./color";
 export * from "./marked";
 export * from "./marked-utils";
+export * from "./code-highlight";
