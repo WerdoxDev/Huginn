@@ -247,7 +247,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
          >
             <div className="flex min-h-full flex-col justify-end">
                {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
-               <ol className="min-h-0 pr-0 pb-5" ref={listRef}>
+               <ol className="min-h-0 pr-0 pb-9" ref={listRef}>
                   {props.messages.length === 0 && (
                      <div className="flex h-full w-full shrink-0 items-center justify-center">
                         <div className="bg-surface text-text flex items-center justify-center gap-x-2 rounded-lg p-2 pr-3 italic underline">

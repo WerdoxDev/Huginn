@@ -147,31 +147,44 @@ export default function DefaultMessage() {
                isMentioned && "bg-primary-500",
             )}
          ></div>
-         {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
-         {(isSeparate || isLastAction) && (
-            <div className="flex w-full items-center gap-x-2 pr-2">
-               <button
-                  type="button"
-                  className="shrink-0 cursor-pointer rounded-full"
-                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
-               >
-                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
-               </button>
-               <button
-                  type="button"
-                  className="text-text cursor-pointer truncate text-sm hover:underline"
-                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
-               >
-                  {author?.displayName}
-               </button>
-               {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                  <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
-               ) : null}
-               <div className="text-text/50 shrink-0 text-xs">{formattedFullTime}</div>
-               {!context.message.isPreview && !context.options?.hideActions && (
-                  <div className="ml-auto shrink-0">
-                     <MessageActions message={context.message} />
-                  </div>
+         {(referencedMessage !== undefined || isSeparate || isLastAction) && (
+            <div className="flex w-full items-start gap-x-2 pr-2">
+               <div className="min-w-0 flex-1">
+                  {referencedMessage !== undefined && (
+                     <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />
+                  )}
+                  {(isSeparate || isLastAction) && (
+                     <div
+                        className={clsx(
+                           "flex w-full items-center gap-x-2",
+                           !context.message.isPreview && !context.options?.hideActions && "min-h-8.5",
+                        )}
+                     >
+                        <button
+                           type="button"
+                           className="shrink-0 cursor-pointer rounded-full"
+                           onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+                        >
+                           <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
+                        </button>
+                        <button
+                           type="button"
+                           className="text-text cursor-pointer truncate text-sm hover:underline"
+                           onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+                        >
+                           {author?.displayName}
+                        </button>
+                        {!context.message.isPreview &&
+                        context.message.flags &&
+                        hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+                           <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
+                        ) : null}
+                        <div className="text-text/50 shrink-0 text-xs">{formattedFullTime}</div>
+                     </div>
+                  )}
+               </div>
+               {(isSeparate || isLastAction) && !context.message.isPreview && !context.options?.hideActions && (
+                  <MessageActions message={context.message} />
                )}
             </div>
          )}

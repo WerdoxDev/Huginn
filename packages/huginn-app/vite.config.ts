@@ -10,7 +10,6 @@ import IconsResolver from "unplugin-icons/resolver";
 import Icons from "unplugin-icons/vite";
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
-import { VitePWA } from "vite-plugin-pwa";
 import "dotenv/config";
 
 import { version } from "./package.json" with { type: "json" };
@@ -56,42 +55,6 @@ export default defineConfig(({ mode }) => {
          AutoImport({
             resolvers: [IconsResolver({ prefix: "Icon", extension: "jsx" })],
             include: [/\.[jt]sx?$/, /tsr-split/],
-         }),
-         VitePWA({
-            strategies: "injectManifest",
-            srcDir: "src",
-            filename: "sw.ts",
-            registerType: "autoUpdate",
-            injectRegister: false,
-
-            pwaAssets: {
-               disabled: false,
-               config: true,
-            },
-            workbox: {
-               maximumFileSizeToCacheInBytes: 4194304,
-               globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-               globIgnores: ["**/electron/**"],
-               cleanupOutdatedCaches: true,
-               clientsClaim: true,
-            },
-            injectManifest: {
-               maximumFileSizeToCacheInBytes: 149437184,
-               globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-               globIgnores: ["**/electron/**"],
-            },
-            manifest: {
-               name: "Huginn",
-               short_name: "Huginn",
-               theme_color: "#EBEBD3",
-               background_color: "#EBEBD3",
-            },
-            devOptions: {
-               enabled: false,
-               navigateFallback: "index.html",
-               suppressWarnings: true,
-               type: "module",
-            },
          }),
          posthog({
             personalApiKey: process.env.POSTHOG_CLI_API_KEY!,
@@ -143,7 +106,6 @@ export default defineConfig(({ mode }) => {
       },
       clearScreen: false,
       build: {
-         // sourcemap: true,
          target: "esnext",
          outDir: "./dist",
       },

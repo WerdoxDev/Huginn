@@ -45,15 +45,17 @@ export default {
    },
 
    npmRebuild: false,
-   asarUnpack: ["node_modules/native-addon/build/Release/huginn-hyprland-overlay"],
+   asarUnpack: ["**/*.node", "node_modules/native-addon/build/Release/huginn-hyprland-overlay"],
    artifactName: "${productName}_${version}_${arch}-setup.${ext}",
    files: [
       "dist/**/*",
       "!dist/electron",
       "!node_modules",
-      "node_modules/loopback-capture/**/*",
-      "node_modules/native-addon/**/*",
-      "node_modules/emojibase-data/**/*",
+      "node_modules/loopback-capture/prebuilds/${platform}-${arch}/loopback_capture_addon.node",
+      "node_modules/native-addon/build/Release/huginn_addon.node",
+      "node_modules/native-addon/build/Release/huginn-hyprland-overlay",
+      // Vite bundles the imported emoji JSON into the renderer.
+      "!node_modules/emojibase-data/**/*",
       ".electron/**/*",
    ],
    directories: {

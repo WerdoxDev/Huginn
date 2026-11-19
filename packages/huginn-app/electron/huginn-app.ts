@@ -1,5 +1,5 @@
 import { analytics, analyticsShim, reinitializeAnalytics } from "@huginnjs/shared";
-import { RuntimeAnalytics } from "@huginnjs/shared/runtime-analytics";
+import { ElectronAnalytics } from "@huginnjs/shared/electron-analytics";
 import { Tray, app, Menu, ipcMain, nativeImage, session } from "electron";
 import updater from "electron-updater";
 import path from "node:path";
@@ -91,7 +91,7 @@ export class HuginnApp {
 
       await reinitializeAnalytics(
          () =>
-            new RuntimeAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
+            new ElectronAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
                serviceName: "app-electron",
                posthogHost: settings.currentUrls.posthog,
                otlpTraceUrl: `${settings.currentUrls.posthog}/i/v1/traces`,
