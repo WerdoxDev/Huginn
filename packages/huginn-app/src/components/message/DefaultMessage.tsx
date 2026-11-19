@@ -107,7 +107,7 @@ export default function DefaultMessage() {
          data-context={hasContext === true ? true : undefined}
          data-swipe={swipeX !== 0 ? true : undefined}
          className={clsx(
-            "group relative flex flex-col items-start py-2 pr-0 select-none lg:select-auto",
+            "group relative flex flex-col items-start rounded-r-lg py-2 pr-0 select-none lg:select-auto",
             !context.options?.equalPadding ? "pl-4" : "py-2.5! pl-2.5",
             swipeX === 0 ? "transition-[transform_150ms,color_150ms]" : "transition-colors",
             !context.options?.hideBackground &&
@@ -119,8 +119,8 @@ export default function DefaultMessage() {
                     ? "bg-primary-900/50 hover:bg-primary-900/70 active:bg-primary-900/70 data-context:bg-primary-900/70 data-swipe:bg-primary-900/70"
                     : "hover:bg-surface-alt/70 active:bg-surface-alt/70 data-context:bg-surface-alt/70 data-swipe:bg-surface-alt/70"),
             isJumpHighlighted && "animate-pulse",
-            (isSeparate || isLastAction) && "rounded-tr-lg",
-            isNextSeparate && "rounded-br-lg",
+            // (isSeparate || isLastAction) && "rounded-tr-lg",
+            // isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0!",
             hasReactions && "pb-2",
             !isNextSeparate && "pb-0",
@@ -138,7 +138,6 @@ export default function DefaultMessage() {
                <IconMingcuteCornerUpLeftLine className="text-caution-300 size-5" />
             </div>
          </div>
-         {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
          <div
             className={clsx(
                "absolute inset-y-0 left-0 h-full transition-[width]",
@@ -150,25 +149,30 @@ export default function DefaultMessage() {
          ></div>
          {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
          {(isSeparate || isLastAction) && (
-            <div className="flex items-center gap-x-2">
+            <div className="flex w-full items-center gap-x-2 pr-2">
                <button
                   type="button"
-                  className="cursor-pointer rounded-full"
+                  className="shrink-0 cursor-pointer rounded-full"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
                   <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
                </button>
                <button
                   type="button"
-                  className="text-text cursor-pointer text-sm hover:underline"
+                  className="text-text cursor-pointer truncate text-sm hover:underline"
                   onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
                >
                   {author?.displayName}
                </button>
                {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                  <IconMingcuteNotificationOffFill className="text-text size-4" />
+                  <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
                ) : null}
-               <div className="text-text/50 text-xs">{formattedFullTime}</div>
+               <div className="text-text/50 shrink-0 text-xs">{formattedFullTime}</div>
+               {!context.message.isPreview && !context.options?.hideActions && (
+                  <div className="ml-auto shrink-0">
+                     <MessageActions message={context.message} />
+                  </div>
+               )}
             </div>
          )}
          <div className={clsx("flex w-full items-start font-light text-white", (isSeparate || isLastAction) && "mt-2")}>
@@ -190,13 +194,30 @@ export default function DefaultMessage() {
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
-               <div className="mx-2.5 mt-2.5 flex h-full shrink-0 items-center justify-center gap-x-2 select-none">
-                  <div className="text-text/50 text-xs opacity-0 transition-opacity group-hover:opacity-100">{formattedTime}</div>
+               <div className="flex shrink-0 self-stretch px-2 select-none">
+                  {/* Limit the top offset to the space remaining below the 34px controls. */}
+                  <div className="relative flex h-8.5 items-center gap-x-2 lg:top-[clamp(0px,calc(100%-2.125rem),0.5rem)]">
+                     <div
+                        className={clsx(
+                           "text-text/50 bg-surface-alt/70 box-exact rounded px-1.5 py-1.5 text-xs transition-opacity group-hover:opacity-100 group-data-context:opacity-100 lg:bg-transparent lg:p-0",
+                           isMobile ? "opacity-100" : "opacity-0",
+                        )}
+                     >
+                        {formattedTime}
+                     </div>
+                     {!context.message.isPreview && !context.options?.hideActions && <MessageActions message={context.message} />}
+                  </div>
                </div>
             )}
          </div>
          {!context.message.isPreview && (
-            <MessageReactions message={context.message} messageWidth={widths.width} ref={reactionsRef} disabled={context.options?.disableReactions} />
+            <MessageReactions
+               message={context.message}
+               messageWidth={widths.width}
+               ref={reactionsRef}
+               disabled={context.options?.disableReactions}
+               isSticker={isSticker}
+            />
          )}
       </div>
    );
@@ -288,7 +309,7 @@ function DefaultRenderer(props: {
    return (
       <div
          className={clsx(
-            "group relative w-full px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
+            "group relative w-full min-w-0 px-2.5 py-1.5 font-normal wrap-anywhere whitespace-break-spaces text-white",
             props.isPreview && props.error === undefined && "text-white/50",
          )}
       >
@@ -360,7 +381,7 @@ function DefaultRenderer(props: {
                )}
             </div>
             {(context.message.isEditing || context.message.isReplying || props.isEdited || props.error !== undefined) && (
-               <div className={clsx("z-20 flex shrink-0 items-center gap-x-1", props.isSeparate ? "px-2" : "pl-2")} ref={props.extrasRef}>
+               <div className="z-20 flex shrink-0 items-center gap-x-1 px-2" ref={props.extrasRef}>
                   {props.error !== undefined && (
                      <div className="flex h-full items-center justify-center">
                         <Tooltip>
@@ -377,11 +398,6 @@ function DefaultRenderer(props: {
 
                   {(context.message.isEditing || context.message.isReplying || props.isEdited) && (
                      <div className="flex shrink-0 items-center gap-x-1">
-                        {context.message.isEditing ? (
-                           <IconMingcuteEdit2Fill className="text-positive-300 size-4" />
-                        ) : context.message.isReplying ? (
-                           <IconMingcuteCornerUpLeftFill className="text-caution-300 size-4" />
-                        ) : null}
                         {props.isEdited && <div className="text-xs text-white/50">(edited)</div>}
                      </div>
                   )}

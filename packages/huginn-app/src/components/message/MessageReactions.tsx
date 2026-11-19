@@ -11,6 +11,7 @@ export default function MessageReactions(props: {
    message: ProcessedAppMessage;
    messageWidth: number;
    ref: RefObject<HTMLDivElement | null>;
+   isSticker: boolean;
    disabled?: boolean;
 }) {
    const addMutation = useAddReaction();
@@ -38,10 +39,13 @@ export default function MessageReactions(props: {
 
    return (
       <div
-         className={clsx("mt-0.5 flex items-center justify-center gap-x-0.5 overflow-hidden rounded-lg rounded-tl-none select-none")}
+         className={clsx(
+            "mt-0.5 flex items-center justify-center gap-x-0.5 overflow-hidden rounded-lg select-none",
+            !props.isSticker && "rounded-t-none",
+         )}
          ref={props.ref}
          style={{
-            borderTopRightRadius: `${clamp((props.ref.current?.clientWidth ?? 0) - (props.messageWidth + 20), 0, 8)}px`,
+            borderTopRightRadius: props.isSticker ? 8 : `${clamp((props.ref.current?.clientWidth ?? 0) - (props.messageWidth + 20), 0, 8)}px`,
          }}
       >
          {props.message.reactions?.map((x) => (
