@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.57.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.56.0...server@v0.57.0) (2026-11-19)
+
+
+### Features
+
+* **server:** add all required sticker routes + message sticker handling ([4a4fa82](https://github.com/WerdoxDev/Huginn/commit/4a4fa82429a708f25d3c0c455fc8572bcb8ee499))
+* **server:** bunch of routes for stickers and gifs to upload, get, post... ([df94071](https://github.com/WerdoxDev/Huginn/commit/df94071f028b4aa22ce4ed3753338a274c9eed67))
+
 ## [0.56.0](https://github.com/WerdoxDev/Huginn/compare/server@v0.55.0...server@v0.56.0) (2026-11-11)
 
 

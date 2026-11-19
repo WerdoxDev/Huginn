@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.50.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.49.0...shared@v0.50.0) (2026-11-19)
+
+
+### Features
+
+* **shared:** add types and constants for stickers ([9fd8232](https://github.com/WerdoxDev/Huginn/commit/9fd8232c68d0e63af04572b705c158e7472e22b0))
+* **shared:** bunch of new types and utilities for expressions ([18075c1](https://github.com/WerdoxDev/Huginn/commit/18075c17ec5a31199a31cb394ba380b82cef9fb9))
+
 ## [0.49.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.48.0...shared@v0.49.0) (2026-10-25)
 
 

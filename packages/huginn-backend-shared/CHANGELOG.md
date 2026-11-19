@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.35.0](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.34.1...backend-shared@v0.35.0) (2026-11-19)
+
+
+### Features
+
+* **backend-shared:** add stickers to database schema ([c929f35](https://github.com/WerdoxDev/Huginn/commit/c929f359fb3540bc6a3b45a27c2aa07841f45afb))
+* **backend-shared:** schema changes for expressions and user expressions ([197b900](https://github.com/WerdoxDev/Huginn/commit/197b9002ab72c3e0696f34ee007e32f8567ec7a1))
+
 ## [0.34.1](https://github.com/WerdoxDev/Huginn/compare/backend-shared@v0.34.0...backend-shared@v0.34.1) (2026-10-25)
 
 

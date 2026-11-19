@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.48.0](https://github.com/WerdoxDev/Huginn/compare/api@v0.47.1...api@v0.48.0) (2026-11-19)
+
+
+### Features
+
+* **api:** add expressions api for gifs and stickers ([3cf0a8e](https://github.com/WerdoxDev/Huginn/commit/3cf0a8e292af627325eab721c86562560dc80957))
+* **api:** add sticker routes ([6a4eeee](https://github.com/WerdoxDev/Huginn/commit/6a4eeee0f69a3b84f853f3603201a48df894b488))
+
 ## [0.47.1](https://github.com/WerdoxDev/Huginn/compare/api@v0.47.0...api@v0.47.1) (2026-11-11)
 
 

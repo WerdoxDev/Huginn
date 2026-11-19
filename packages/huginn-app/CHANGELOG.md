@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.96.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.95.0...app@v0.96.0) (2026-11-19)
+
+
+### Features
+
+* **app:** add sticker panel + sticker rendering + sticker sending ([87f2c86](https://github.com/WerdoxDev/Huginn/commit/87f2c8635c59f2e9ec49ca853e2f719772510df2))
+* **app:** better placement for message actions ([1b927ec](https://github.com/WerdoxDev/Huginn/commit/1b927ec14333b2404bb744c8e3c4b708c43e985f))
+* **app:** completely revamp how expressions work with gifs and stickers ([1d11913](https://github.com/WerdoxDev/Huginn/commit/1d11913092636ec4a13490b4b9d4be3e6e2b01be))
+* **app:** sticker & gif UX fixes + overlay bug fixes ([ca34ca6](https://github.com/WerdoxDev/Huginn/commit/ca34ca6ed8b77e95e539d7c6d6f4ac9b8e03ef3c))
+
+
+### Bug Fixes
+
+* **app:** bunch of rendering fixes ([6ebe1e6](https://github.com/WerdoxDev/Huginn/commit/6ebe1e6ae4aad9bb4e53053748d7568c4d968cba))
+
 ## [0.95.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.94.0...app@v0.95.0) (2026-11-11)
 
 
