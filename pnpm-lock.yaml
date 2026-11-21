@@ -257,6 +257,9 @@ importers:
       emojibase-data:
         specifier: ^17.0.0
         version: 17.0.0(emojibase@17.0.0)
+      gifenc:
+        specifier: ^1.0.3
+        version: 1.0.3
       highlight.js:
         specifier: ^11.12.0
         version: 11.12.0
@@ -7394,6 +7397,9 @@ packages:
 
   gif.js@0.2.0:
     resolution: {integrity: sha512-bYxCoT8OZKmbxY8RN4qDiYuj4nrQDTzgLRcFVovyona1PTWNePzI4nzOmotnlOFIzTk/ZxAHtv+TfVLiBWj/hw==}
+
+  gifenc@1.0.3:
+    resolution: {integrity: sha512-xdr6AdrfGBcfzncONUOlXMBuc5wJDtOueE3c5rdG0oNgtINLD+f2iFZltrBRZYzACRbKr+mSVU/x98zv2u3jmw==}
 
   gifuct-js@2.1.2:
     resolution: {integrity: sha512-rI2asw77u0mGgwhV3qA+OEgYqaDn5UNqgs+Bx0FGwSpuqfYn+Ir6RQY5ENNQ8SbIiG/m5gVa7CD5RriO4f4Lsg==}
@@ -17252,6 +17258,8 @@ snapshots:
       rollup: 4.60.4
 
   gif.js@0.2.0: {}
+
+  gifenc@1.0.3: {}
 
   gifuct-js@2.1.2:
     dependencies:
