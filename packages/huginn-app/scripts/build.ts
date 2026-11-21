@@ -40,7 +40,7 @@ await build({
          projectId: process.env.POSTHOG_PROJECT_ID,
          host: "https://eu.posthog.com",
          sourcemaps: {
-            enabled: true,
+            enabled: isProd,
             releaseName: `huginn-app-desktop`,
             releaseVersion: version.toString(),
          },
@@ -49,7 +49,7 @@ await build({
 
    deps: {
       neverBundle: external,
-      alwaysBundle: isProd ? noExternal : ["@huginnjs/shared", "native-addon", "loopback-capture"],
+      alwaysBundle: isProd ? noExternal : ["@huginnjs/shared", "@huginnjs/shared/electron-analytics", "native-addon", "loopback-capture"],
 
       onlyBundle: false,
    },
