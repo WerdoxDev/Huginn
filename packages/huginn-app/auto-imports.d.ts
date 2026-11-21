@@ -13,7 +13,6 @@ declare global {
   const IconLogosGoogleIcon: typeof import('~icons/logos/google-icon.jsx').default
   const IconMingcuteAddFill: typeof import('~icons/mingcute/add-fill.jsx').default
   const IconMingcuteAirplaneFill: typeof import('~icons/mingcute/airplane-fill.jsx').default
-  const IconMingcuteAlertFill: typeof import('~icons/mingcute/alert-fill.jsx').default
   const IconMingcuteAlertLine: typeof import('~icons/mingcute/alert-line.jsx').default
   const IconMingcuteAndroidFill: typeof import('~icons/mingcute/android-fill.jsx').default
   const IconMingcuteArrowLeftFill: typeof import('~icons/mingcute/arrow-left-fill.jsx').default
@@ -37,9 +36,7 @@ declare global {
   const IconMingcuteCornerUpLeftFill: typeof import('~icons/mingcute/corner-up-left-fill.jsx').default
   const IconMingcuteCornerUpLeftLine: typeof import('~icons/mingcute/corner-up-left-line.jsx').default
   const IconMingcuteCornerUpRightLine: typeof import('~icons/mingcute/corner-up-right-line.jsx').default
-  const IconMingcuteDelete2Fill: typeof import('~icons/mingcute/delete2-fill.jsx').default
   const IconMingcuteDelete3Fill: typeof import('~icons/mingcute/delete3-fill.jsx').default
-  const IconMingcuteDeleteFill: typeof import('~icons/mingcute/delete-fill.jsx').default
   const IconMingcuteDiamondSquareFill: typeof import('~icons/mingcute/diamond-square-fill.jsx').default
   const IconMingcuteDownFill: typeof import('~icons/mingcute/down-fill.jsx').default
   const IconMingcuteDownload2Fill: typeof import('~icons/mingcute/download2-fill.jsx').default
@@ -83,7 +80,6 @@ declare global {
   const IconMingcuteMinimizeFill: typeof import('~icons/mingcute/minimize-fill.jsx').default
   const IconMingcuteMonitorFill: typeof import('~icons/mingcute/monitor-fill.jsx').default
   const IconMingcuteMore1Fill: typeof import('~icons/mingcute/more1-fill.jsx').default
-  const IconMingcuteMore2Fill: typeof import('~icons/mingcute/more2-fill.jsx').default
   const IconMingcuteNotificationFill: typeof import('~icons/mingcute/notification-fill.jsx').default
   const IconMingcuteNotificationOffFill: typeof import('~icons/mingcute/notification-off-fill.jsx').default
   const IconMingcutePaintFill: typeof import('~icons/mingcute/paint-fill.jsx').default
@@ -118,14 +114,12 @@ declare global {
   const IconMingcuteUserAdd2Fill: typeof import('~icons/mingcute/user-add2-fill.jsx').default
   const IconMingcuteUserFollow2Fill: typeof import('~icons/mingcute/user-follow2-fill.jsx').default
   const IconMingcuteUserXFill: typeof import('~icons/mingcute/user-x-fill.jsx').default
-  const IconMingcuteVideoCamera2Fill: typeof import('~icons/mingcute/video-camera2-fill.jsx').default
   const IconMingcuteVideoFill: typeof import('~icons/mingcute/video-fill.jsx').default
   const IconMingcuteVolumeFill: typeof import('~icons/mingcute/volume-fill.jsx').default
   const IconMingcuteVolumeMuteFill: typeof import('~icons/mingcute/volume-mute-fill.jsx').default
   const IconMingcuteVolumeOffFill: typeof import('~icons/mingcute/volume-off-fill.jsx').default
   const IconMingcuteWarningFill: typeof import('~icons/mingcute/warning-fill.jsx').default
   const IconMingcuteWaveHandFill: typeof import('~icons/mingcute/wave-hand-fill.jsx').default
-  const IconMingcuteWebFill: typeof import('~icons/mingcute/web-fill.jsx').default
   const IconMingcuteWifiLine: typeof import('~icons/mingcute/wifi-line.jsx').default
   const IconMingcuteWifiOffLine: typeof import('~icons/mingcute/wifi-off-line.jsx').default
   const IconMingcuteWindowsFill: typeof import('~icons/mingcute/windows-fill.jsx').default
