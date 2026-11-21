@@ -3,6 +3,12 @@
    "private": "true",
    "type": "module",
    "scripts": {
+      "check": "node scripts/check.mjs",
+      "check:lint": "node scripts/check.mjs lint",
+      "check:format": "node scripts/check.mjs format",
+      "check:whitespace": "node scripts/check.mjs whitespace",
+      "check:typecheck": "node scripts/check.mjs typecheck",
+      "check:test": "node scripts/check.mjs test",
       "dev:browser": "bun run --parallel dev:browser:*",
       "dev:browser:app": "bun run --cwd packages/huginn-app vite:dev",
       "dev:browser:website": "bun run --cwd packages/huginn-website dev",
