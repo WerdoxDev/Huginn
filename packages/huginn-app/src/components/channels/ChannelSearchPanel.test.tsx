@@ -6,13 +6,14 @@ import { ChannelType, MessageType } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppDirectChannel, AppMessage } from "@/types";
 
 import ChannelSearchPanel from "./ChannelSearchPanel";
 
-const mocks = vi.hoisted(() => ({ searchMessages: vi.fn(), isMobile: false }));
+const mocks = vi.hoisted(() => ({ searchMessages: vi.fn(), isMobile: false, handleError: vi.fn() }));
 const author = { id: "1", username: "matin", displayName: "Matin", avatar: null, banner: null, bio: null, flags: 0 };
 const recipient = { id: "2", username: "alex", displayName: "Alex", avatar: null };
 
@@ -25,6 +26,7 @@ vi.mock("@stores/userStore", async (importOriginal) => ({
    useThisUser: () => ({ user: author }),
 }));
 vi.mock("@hooks/api-hooks/userHooks", () => ({ useUsers: () => [recipient] }));
+vi.mock("@hooks/useErrorHandler", () => ({ useErrorHandler: () => mocks.handleError }));
 vi.mock("@hooks/useIsMobile", () => ({ useIsMobile: () => mocks.isMobile }));
 vi.mock("@contexts/MessageProvider", () => ({ MessageProvider: ({ message }: { message: AppMessage }) => <li>{message.content}</li> }));
 
@@ -96,20 +98,27 @@ function renderPanel(onClose = vi.fn()) {
 }
 
 function submitSearch() {
-   fireEvent.submit(screen.getByRole("form", { name: "Search messages" }));
+   fireEvent.click(screen.getByRole("button", { name: "Search" }));
 }
 function addFilter() {
-   fireEvent.submit(screen.getByRole("form", { name: "Add search filter" }));
+   fireEvent.click(screen.getByRole("button", { name: "Add filter" }));
 }
 
 beforeEach(() => {
    mocks.searchMessages.mockReset().mockResolvedValue([]);
    mocks.isMobile = false;
+   mocks.handleError.mockReset();
+   vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+   );
    useChannelStore.getState().clearJumpToMessageRequest();
 });
 
+afterEach(() => vi.unstubAllGlobals());
+
 describe("channel message search", () => {
-   it("adds missing filters without submitting search or nesting forms", async () => {
+   it("adds supported filters without submitting search or nesting forms", async () => {
       const { container } = renderPanel();
       fireEvent.change(screen.getByPlaceholderText("Search messages..."), { target: { value: "hello" } });
       fireEvent.click(screen.getByRole("button", { name: "Mentions" }));
@@ -118,19 +127,11 @@ describe("channel message search", () => {
       fireEvent.click(screen.getByRole("button", { name: "Pinned" }));
       fireEvent.change(screen.getByRole("combobox", { name: "Pinned" }), { target: { value: "false" } });
       addFilter();
-      for (const [label, value] of [
-         ["Attachment filename", "holiday"],
-         ["Attachment extension", ".png"],
-         ["Embed type", "image"],
-         ["Reply to message", "123456"],
-      ]) {
+      for (const [label, value] of [["Attachment filename", "holiday"]]) {
          fireEvent.click(screen.getByRole("button", { name: label }));
          fireEvent.change(screen.getByLabelText(new RegExp(`^${label}`)), { target: { value } });
          addFilter();
       }
-      fireEvent.click(screen.getByRole("button", { name: "Reply to user" }));
-      fireEvent.change(screen.getByRole("combobox", { name: "Reply to user" }), { target: { value: "1" } });
-      addFilter();
       fireEvent.click(screen.getByRole("button", { name: "Has" }));
       fireEvent.change(screen.getByRole("combobox", { name: "Has" }), { target: { value: "embed" } });
       expect(container.querySelector("form form")).toBeNull();
@@ -147,14 +148,11 @@ describe("channel message search", () => {
             mentions: ["2"],
             pinned: false,
             attachmentFilename: "holiday",
-            attachmentExtension: ".png",
-            embedType: "image",
-            repliedToMessageId: "123456",
-            repliedToUserId: "1",
             has: ["embed"],
+            types: [MessageType.DEFAULT, MessageType.REPLY],
          }),
       );
-      await screen.findByText("No messages matched your search.");
+      await screen.findByText("No results. Try lowering your expectations? :P");
    });
 
    it("paginates the submitted search and resets to the first page for new searches", async () => {
@@ -169,12 +167,13 @@ describe("channel message search", () => {
       expect(mocks.searchMessages).toHaveBeenLastCalledWith(expect.objectContaining({ offset: 25, limit: 25 }));
       expect(screen.getByRole("button", { name: "Next" }).hasAttribute("disabled")).toBe(true);
       fireEvent.change(screen.getByPlaceholderText("Search messages..."), { target: { value: "new search" } });
-      fireEvent.change(screen.getByRole("combobox", { name: "Sort order" }), { target: { value: "asc" } });
-      fireEvent.change(screen.getByRole("combobox", { name: "Per page" }), { target: { value: "10" } });
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "Sort results" }));
+      await user.click(await screen.findByRole("menuitem", { name: "Oldest first" }));
       submitSearch();
       await waitFor(() =>
          expect(mocks.searchMessages).toHaveBeenLastCalledWith(
-            expect.objectContaining({ content: "new search", offset: 0, sortOrder: "asc", limit: 10 }),
+            expect.objectContaining({ content: "new search", offset: 0, sortOrder: "asc", limit: 25 }),
          ),
       );
       await screen.findByText("Message 1");
@@ -189,31 +188,37 @@ describe("channel message search", () => {
             }),
       );
       renderPanel();
+      const searchButton = screen.getByRole("button", { name: "Search" });
       submitSearch();
-      await screen.findByText("Searching messages...");
-      await act(async () => reject(new Error("Network error")));
-      await screen.findByText("Failed to search messages.");
-      fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-      await screen.findByText("No messages matched your search.");
+      await waitFor(() => expect(searchButton.hasAttribute("disabled")).toBe(true));
+      const error = new Error("Network error");
+      await act(async () => reject(error));
+      await waitFor(() => expect(mocks.handleError).toHaveBeenCalledExactlyOnceWith(error));
+      fireEvent.click(screen.getByRole("button", { name: "Search" }));
+      await screen.findByText("No results. Try lowering your expectations? :P");
       expect(mocks.searchMessages).toHaveBeenCalledTimes(2);
    });
 
-   it("rejects invalid reply IDs and lets filters be removed or cleared", () => {
+   it("requires a filename, prevents duplicate filters, and lets filters be removed or cleared", () => {
       renderPanel();
-      fireEvent.click(screen.getByRole("button", { name: "Reply to message" }));
-      fireEvent.change(screen.getByLabelText(/^Reply to message/), { target: { value: "9223372036854775808" } });
-      expect(screen.getByText("Enter a valid message ID.")).toBeTruthy();
+      fireEvent.click(screen.getByRole("button", { name: "Attachment filename" }));
+      expect(screen.getByRole("button", { name: "Add filter" }).hasAttribute("disabled")).toBe(true);
+      fireEvent.change(screen.getByLabelText(/^Attachment filename/), { target: { value: "holiday" } });
+      addFilter();
+      fireEvent.click(screen.getByRole("button", { name: "Attachment filename" }));
+      fireEvent.change(screen.getByLabelText(/^Attachment filename/), { target: { value: "holiday" } });
       expect(screen.getByRole("button", { name: "Add filter" }).hasAttribute("disabled")).toBe(true);
       fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      fireEvent.click(within(screen.getByText("Attachment filename: holiday").closest("li")!).getByRole("button"));
       fireEvent.click(screen.getByRole("button", { name: "Has" }));
       addFilter();
-      fireEvent.click(screen.getByRole("button", { name: "Remove filter Has: Image" }));
-      expect(screen.queryByRole("list", { name: "Search filters" })).toBeNull();
+      fireEvent.click(within(screen.getByText("Has: Image").closest("li")!).getByRole("button"));
+      expect(screen.queryByRole("list")).toBeNull();
       fireEvent.click(screen.getByRole("button", { name: "Pinned" }));
       addFilter();
-      expect(within(screen.getByRole("list", { name: "Search filters" })).getAllByRole("listitem")).toHaveLength(1);
+      expect(within(screen.getByRole("list")).getAllByRole("listitem")).toHaveLength(1);
       fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
-      expect(screen.queryByRole("list", { name: "Search filters" })).toBeNull();
+      expect(screen.queryByRole("list")).toBeNull();
       expect(mocks.searchMessages).not.toHaveBeenCalled();
    });
 
@@ -227,7 +232,7 @@ describe("channel message search", () => {
       submitSearch();
       await waitFor(() => expect(mocks.searchMessages).toHaveBeenCalledTimes(2));
       await screen.findByText("Message 42");
-      fireEvent.click(screen.getByRole("button", { name: "Jump to message 42" }));
+      fireEvent.click(screen.getByRole("button", { name: "Jump" }));
       expect(useChannelStore.getState().jumpToMessageRequest).toMatchObject({ channelId: "100", messageId: "42" });
       expect(onClose).toHaveBeenCalledOnce();
    });
