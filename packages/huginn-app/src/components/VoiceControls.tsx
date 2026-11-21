@@ -213,7 +213,7 @@ export default function VoiceControls(props: {
                               </VoiceControlButton>
                               {voiceState.isCameraOn && (
                                  <HuginnMenu.Trigger
-                                    aria-label="Camera options"
+                                    title="Camera options"
                                     disabled={props.isMobile && props.isMobileControlsHidden}
                                     className="bg-primary-800 hover:bg-primary-600 ml-0.5 flex h-full items-center justify-center rounded-r-lg px-1 transition-colors"
                                     render={(props, state) => (

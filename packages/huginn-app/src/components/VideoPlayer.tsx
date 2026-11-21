@@ -198,7 +198,7 @@ export default function VideoPlayer(props: {
          {isLoaded && !hasError && isMobileFullscreen && areControlsVisible && (
             <button
                type="button"
-               aria-label={isPlaying ? "Pause" : "Play"}
+               title={isPlaying ? "Pause" : "Play"}
                className="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white"
                onClick={(event) => {
                   event.stopPropagation();
@@ -228,7 +228,7 @@ export default function VideoPlayer(props: {
                {!isMobileFullscreen && (
                   <button
                      type="button"
-                     aria-label={isPlaying ? "Pause" : "Play"}
+                     title={isPlaying ? "Pause" : "Play"}
                      onClick={togglePlaying}
                      className="shrink-0 cursor-pointer text-white/80 hover:text-white"
                   >

@@ -60,7 +60,7 @@ function VoiceOverlayParticipant({
    const status = voiceState.isAudioDeafened ? "Deafened" : voiceState.isAudioMuted ? "Muted" : speaking ? "Speaking" : "Not speaking";
 
    return (
-      <li aria-label={`${name}, ${status}`} className={clsx("flex min-w-0 items-center gap-x-2", onlySpeaking && !speaking && "opacity-0")}>
+      <li title={`${name}, ${status}`} className={clsx("flex min-w-0 items-center gap-x-2", onlySpeaking && !speaking && "opacity-0")}>
          <UserAvatar
             userId={voiceState.userId}
             avatarHash={user?.avatar}

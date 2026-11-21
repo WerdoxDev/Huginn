@@ -50,10 +50,10 @@ describe("voice overlay", () => {
          ],
       });
       renderOverlay();
-      const alice = screen.getByRole("listitem", { name: "Alice, Not speaking" });
-      const bob = screen.getByRole("listitem", { name: "Bob, Speaking" });
-      const charlie = screen.getByRole("listitem", { name: "Charlie, Speaking" });
-      const dave = screen.getByRole("listitem", { name: "Dave, Muted" });
+      const alice = screen.getByTitle("Alice, Not speaking");
+      const bob = screen.getByTitle("Bob, Speaking");
+      const charlie = screen.getByTitle("Charlie, Speaking");
+      const dave = screen.getByTitle("Dave, Muted");
       const aliceAvatar = alice.firstElementChild;
       const bobAvatar = bob.firstElementChild;
       expect(screen.getAllByRole("listitem")).toEqual(voiceOverlayOnlySpeaking ? [bob, charlie, alice, dave] : [alice, bob, charlie, dave]);
@@ -76,8 +76,8 @@ describe("voice overlay", () => {
       });
       renderOverlay();
       expect(screen.getAllByRole("listitem")).toHaveLength(2);
-      const alice = screen.getByRole("listitem", { name: "Alice, Speaking" });
-      const bob = screen.getByRole("listitem", { name: "Bob, Not speaking" });
+      const alice = screen.getByTitle("Alice, Speaking");
+      const bob = screen.getByTitle("Bob, Not speaking");
       const aliceAvatar = alice.firstElementChild;
       const bobAvatar = bob.firstElementChild;
 
@@ -90,8 +90,8 @@ describe("voice overlay", () => {
       expect(alice.classList.contains("opacity-0")).toBe(true);
       act(() => voiceStore.getState().updateSpeakingState("bob", false));
       expect(bob.classList.contains("opacity-0")).toBe(true);
-      expect(screen.getByRole("listitem", { name: "Alice, Not speaking" })).toBe(alice);
-      expect(screen.getByRole("listitem", { name: "Bob, Not speaking" })).toBe(bob);
+      expect(screen.getByTitle("Alice, Not speaking")).toBe(alice);
+      expect(screen.getByTitle("Bob, Not speaking")).toBe(bob);
       expect(alice.firstElementChild).toBe(aliceAvatar);
       expect(bob.firstElementChild).toBe(bobAvatar);
 
@@ -112,7 +112,7 @@ describe("voice overlay", () => {
       const row = screen.getByRole("listitem");
       expect(row.classList.contains("opacity-0")).toBe(true);
       act(() => voiceStore.getState().updateVoiceState(participant("alice", "first")));
-      expect(screen.getByRole("listitem", { name: "Alice, Speaking" })).toBe(row);
+      expect(screen.getByTitle("Alice, Speaking")).toBe(row);
       expect(row.classList.contains("opacity-0")).toBe(false);
    });
 
@@ -134,15 +134,15 @@ describe("voice overlay", () => {
       });
       renderOverlay();
 
-      expect(screen.getByRole("listitem", { name: "Alice, Not speaking" })).toBeTruthy();
+      expect(screen.getByTitle("Alice, Not speaking")).toBeTruthy();
       expect(screen.queryByText("Bob")).toBeNull();
 
       act(() => voiceStore.getState().updateSpeakingState("alice", true));
-      expect(screen.getByRole("listitem", { name: "Alice, Speaking" })).toBeTruthy();
+      expect(screen.getByTitle("Alice, Speaking")).toBeTruthy();
 
       act(() => voiceStore.setState({ voiceState: participant("alice", "second") }));
       expect(screen.queryByText("Alice")).toBeNull();
-      expect(screen.getByRole("listitem", { name: "Bob, Not speaking" })).toBeTruthy();
+      expect(screen.getByTitle("Bob, Not speaking")).toBeTruthy();
 
       act(() => voiceStore.setState({ voiceState: initialState.voiceState }));
       expect(screen.queryByRole("list")).toBeNull();
@@ -167,9 +167,9 @@ describe("voice overlay", () => {
          speakingStates: [{ userId: "alice", speaking: true }],
       });
       renderOverlay();
-      expect(screen.getByRole("listitem", { name: "Alice, Muted" })).toBeTruthy();
+      expect(screen.getByTitle("Alice, Muted")).toBeTruthy();
 
       act(() => voiceStore.getState().updateVoiceState({ ...participant("alice", "first"), isAudioDeafened: true }));
-      expect(screen.getByRole("listitem", { name: "Alice, Deafened" })).toBeTruthy();
+      expect(screen.getByTitle("Alice, Deafened")).toBeTruthy();
    });
 });
