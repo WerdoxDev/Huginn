@@ -6,10 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MediaPickerPanel from "./MediaPickerPanel";
 
 const mocks = vi.hoisted(() => ({
-   gifs: { getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
-   stickers: { getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
+   gifs: { getAll: vi.fn(), upload: vi.fn(), getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
+   stickers: { getAll: vi.fn(), upload: vi.fn(), getCategories: vi.fn(), getTrending: vi.fn(), search: vi.fn() },
    openFileDialog: vi.fn(),
-   upload: vi.fn(),
    updateModals: vi.fn(),
    showError: vi.fn(),
    revokeObjectURL: vi.fn(),
@@ -17,9 +16,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@hooks/useContainerWidth", () => ({ useContainerWidth: () => [undefined, 360] }));
 vi.mock("@hooks/useFileDialog", () => ({ useFileDialog: () => ({ openFileDialog: mocks.openFileDialog }) }));
-vi.mock("@hooks/useExpressions", () => ({
-   useExpressions: () => ({ items: [media("Saved cat")], isLoading: false, isError: false, isPending: false, upload: mocks.upload }),
-}));
 vi.mock("@stores/clientStore", async (importOriginal) => ({
    ...(await importOriginal<typeof import("@stores/clientStore")>()),
    useClient: () => mocks,
@@ -42,9 +38,16 @@ function media(title: string): APIExpression {
    };
 }
 
+const caches: QueryClient[] = [];
+
+afterEach(() => {
+   for (const cache of caches.splice(0)) cache.clear();
+});
+
 function setup(kind: ExpressionKind, isOpen = true) {
    const onSelect = vi.fn();
-   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
+   caches.push(queryClient);
    const panel = (open: boolean) => (
       <QueryClientProvider client={queryClient}>
          <MediaPickerPanel kind={kind} isOpen={open} onSelect={onSelect} />
@@ -65,6 +68,13 @@ beforeEach(() => {
       trendingSticker: media("Trending preview"),
    });
    for (const kind of ["gifs", "stickers"] as const) {
+      const items = [media("Saved cat")];
+      mocks[kind].getAll.mockImplementation(async () => [...items]);
+      mocks[kind].upload.mockImplementation(async () => {
+         const uploaded = { ...media("Uploaded cat"), type: ExpressionType.UPLOADED };
+         items.push(uploaded);
+         return uploaded;
+      });
       mocks[kind].getTrending.mockResolvedValue([media("Trending result")]);
       mocks[kind].search.mockResolvedValue([media("Search result")]);
    }
@@ -113,7 +123,7 @@ describe.each([
       fireEvent.click(await screen.findByRole("button", { name: "Trending" }));
 
       const item = await screen.findByRole("button", { name: "Trending 0" });
-      expect(screen.getByText(`Trending ${label}`)).toBeTruthy();
+      expect(screen.getByText("Trending Gifs")).toBeTruthy();
       expect(mocks[kind].getTrending).toHaveBeenCalledWith(24, 1);
       fireEvent.scroll(item.closest(".overflow-y-scroll")!);
 
@@ -122,17 +132,19 @@ describe.each([
       expect(mocks[kind].search).not.toHaveBeenCalled();
    });
 
-   it("supports typed searches from Trending and clears back to categories", async () => {
+   it("supports typed searches after leaving Trending and clears back to categories", async () => {
       setup(kind);
       fireEvent.click(screen.getByRole("tab", { name: `All ${label}` }));
       fireEvent.click(await screen.findByRole("button", { name: "Trending" }));
       await screen.findByRole("button", { name: "Trending result" });
 
-      const input = screen.getByPlaceholderText("Search Klipy...");
+      fireEvent.click(screen.getByRole("button", { name: "Back to categories" }));
+      const input = screen.getByPlaceholderText(`Search ${label}...`);
+      mocks[kind].search.mockResolvedValue([media("Cats result")]);
       fireEvent.change(input, { target: { value: "cats" } });
       await waitFor(() => expect(mocks[kind].search).toHaveBeenCalledWith("cats", 24, 1));
-      expect(await screen.findByRole("button", { name: "Search result" })).toBeTruthy();
-      expect(screen.queryByText(`Trending ${label}`)).toBeNull();
+      expect(await screen.findByRole("button", { name: "Cats result" })).toBeTruthy();
+      expect(screen.queryByText("Trending Gifs")).toBeNull();
 
       fireEvent.change(input, { target: { value: "" } });
       expect(await screen.findByRole("button", { name: "Happy" })).toBeTruthy();
@@ -206,22 +218,58 @@ describe.each([
       await waitFor(() => expect(mocks.updateModals).toHaveBeenCalledOnce());
       const modal = mocks.updateModals.mock.calls[0][0].imageCrop;
       expect(modal).toMatchObject({ isOpen: true, originalImageData: "blob:selected-media", mimeType, cropType });
-      expect(mocks.upload).not.toHaveBeenCalled();
+      expect(mocks[kind].upload).not.toHaveBeenCalled();
       expect(mocks.revokeObjectURL).not.toHaveBeenCalled();
 
       await act(() => modal.callback(`data:${croppedMimeType};base64,AQID`));
 
-      expect(mocks.upload).toHaveBeenCalledOnce();
-      const upload = mocks.upload.mock.calls[0][0];
+      expect(mocks[kind].upload).toHaveBeenCalledOnce();
+      const upload = mocks[kind].upload.mock.calls[0][0];
       expect(upload).toMatchObject({ name: "cat", contentType: croppedMimeType });
       expect(new Uint8Array(upload.data)).toEqual(new Uint8Array([1, 2, 3]));
+      expect(await screen.findByRole("button", { name: "Uploaded cat" })).toBeTruthy();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
       expect(mocks.showError).not.toHaveBeenCalled();
    });
 
-   it("releases oversized files without opening the cropper or uploading", async () => {
+   it("disables uploads while pending, reports failure once, and lets the user retry", async () => {
+      const upload = Promise.withResolvers<APIExpression>();
+      mocks[kind].upload.mockReturnValueOnce(upload.promise);
+      setup(kind);
+      await screen.findByRole("button", { name: "Saved cat" });
+      const buttonElement = screen.getByRole("button", { name: button });
+      fireEvent.click(buttonElement);
+      await waitFor(() => expect(mocks.updateModals).toHaveBeenCalledOnce());
+      let confirmation: Promise<void>;
+
+      act(() => {
+         confirmation = mocks.updateModals.mock.calls[0][0].imageCrop.callback(`data:${croppedMimeType};base64,AQID`);
+      });
+
+      await waitFor(() => expect(buttonElement.hasAttribute("disabled")).toBe(true));
+      expect(screen.queryByRole("button", { name: "Uploaded cat" })).toBeNull();
+      await act(async () => {
+         upload.reject(new Error("Upload failed"));
+         await confirmation;
+      });
+      await waitFor(() => expect(buttonElement.hasAttribute("disabled")).toBe(false));
+      expect(mocks.showError).toHaveBeenCalledExactlyOnceWith("Upload failed");
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole("button", { name: "Uploaded cat" })).toBeNull();
+
+      fireEvent.click(buttonElement);
+      await waitFor(() => expect(mocks.updateModals).toHaveBeenCalledTimes(2));
+      await act(() => mocks.updateModals.mock.calls[1][0].imageCrop.callback(`data:${croppedMimeType};base64,AQID`));
+
+      expect(await screen.findByRole("button", { name: "Uploaded cat" })).toBeTruthy();
+      expect(mocks[kind].upload).toHaveBeenCalledTimes(2);
+      expect(mocks.showError).toHaveBeenCalledTimes(1);
+   });
+
+   it.each(["empty", "oversized"])("releases %s files without opening the cropper or uploading", async (failure) => {
       const max = kind === "gifs" ? CONSTANTS.GIF_MAX_BYTES : CONSTANTS.STICKER_MAX_BYTES;
       const file = new File(["original"], "cat", { type: mimeType });
-      Object.defineProperty(file, "size", { value: max + 1 });
+      Object.defineProperty(file, "size", { value: failure === "empty" ? 0 : max + 1 });
       mocks.openFileDialog.mockResolvedValue({ file, dataUrl: "blob:oversized", mimeType });
       setup(kind);
       fireEvent.click(screen.getByRole("button", { name: button }));
@@ -229,7 +277,21 @@ describe.each([
       await waitFor(() => expect(mocks.showError).toHaveBeenCalledOnce());
       expect(mocks.revokeObjectURL).toHaveBeenCalledWith("blob:oversized");
       expect(mocks.updateModals).not.toHaveBeenCalled();
-      expect(mocks.upload).not.toHaveBeenCalled();
+      expect(mocks[kind].upload).not.toHaveBeenCalled();
+   });
+
+   it.each(["empty", "oversized"])("rejects %s cropped bytes before uploading", async (failure) => {
+      setup(kind);
+      fireEvent.click(screen.getByRole("button", { name: button }));
+      await waitFor(() => expect(mocks.updateModals).toHaveBeenCalledOnce());
+      const max = kind === "gifs" ? CONSTANTS.GIF_MAX_BYTES : CONSTANTS.STICKER_MAX_BYTES;
+      const encoded = failure === "empty" ? "" : "AAAA".repeat(Math.ceil((max + 1) / 3));
+
+      await act(() => mocks.updateModals.mock.calls[0][0].imageCrop.callback(`data:${croppedMimeType};base64,${encoded}`));
+
+      expect(mocks.showError).toHaveBeenCalledExactlyOnceWith(`Choose a file smaller than ${kind === "gifs" ? 25 : 10} MB.`);
+      expect(mocks[kind].upload).not.toHaveBeenCalled();
+      expect(screen.queryByRole("button", { name: "Uploaded cat" })).toBeNull();
    });
 
    it("does nothing when file selection is cancelled", async () => {
@@ -239,7 +301,7 @@ describe.each([
 
       await waitFor(() => expect(mocks.openFileDialog).toHaveResolvedWith(null));
       expect(mocks.updateModals).not.toHaveBeenCalled();
-      expect(mocks.upload).not.toHaveBeenCalled();
+      expect(mocks[kind].upload).not.toHaveBeenCalled();
       expect(mocks.revokeObjectURL).not.toHaveBeenCalled();
    });
 });

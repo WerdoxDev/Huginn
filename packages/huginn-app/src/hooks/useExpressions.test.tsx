@@ -2,7 +2,7 @@ import type { APIExpression, APIExpressionReference, ExpressionKind, GatewayExpr
 import type { PropsWithChildren } from "react";
 
 import { CONSTANTS, EventEmitter, ExpressionType, resolveCdnUrl } from "@huginnjs/shared";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, onlineManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -11,7 +11,8 @@ import { useExpressions, useExpressionUpdates } from "./useExpressions";
 const mocks = vi.hoisted(() => ({
    gifs: { getAll: vi.fn(), add: vi.fn(), remove: vi.fn(), upload: vi.fn() },
    stickers: { getAll: vi.fn(), add: vi.fn(), remove: vi.fn(), upload: vi.fn() },
-   user: { id: "user-1" },
+   user: { id: "user-1" } as { id: string } | undefined,
+   clientAvailable: true,
    showError: vi.fn(),
    fetch: vi.fn<typeof fetch>(),
    gateway: undefined as unknown as EventEmitter<{ expression_update: GatewayExpressionUpdatedData }>,
@@ -26,7 +27,7 @@ vi.mock("@stores/clientStore", async (importOriginal) => {
       },
       cdn: { asset: (path: string) => resolveCdnUrl(path, "https://cdn.example/cdn") },
    };
-   return { ...(await importOriginal<typeof import("@stores/clientStore")>()), useClient: () => client };
+   return { ...(await importOriginal<typeof import("@stores/clientStore")>()), useClient: () => (mocks.clientAvailable ? client : undefined) };
 });
 vi.mock("@stores/userStore", () => ({ useThisUser: () => ({ user: mocks.user }) }));
 vi.mock("@stores/modalsStore", () => ({ useModals: () => ({ showError: mocks.showError }) }));
@@ -48,28 +49,32 @@ function expression(overrides: Partial<APIExpression> = {}): APIExpression {
 const collections = new Map<string, APIExpression[]>();
 const caches: QueryClient[] = [];
 
-function setup(kind: ExpressionKind, items: APIExpression[] = []) {
-   collections.set(`${mocks.user.id}:${kind}`, items);
+function setup(kind: ExpressionKind, items: APIExpression[] = [], isOpen = false) {
+   collections.set(`${mocks.user?.id}:${kind}`, items);
    const cache = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
    caches.push(cache);
    const wrapper = ({ children }: PropsWithChildren) => <QueryClientProvider client={cache}>{children}</QueryClientProvider>;
-   return renderHook(
-      ({ kind }) => {
+   const hook = renderHook(
+      ({ kind, isOpen }) => {
          useExpressionUpdates();
-         return useExpressions(kind);
+         return useExpressions(kind, isOpen);
       },
-      { wrapper, initialProps: { kind } },
+      { wrapper, initialProps: { kind, isOpen } },
    );
+   return { ...hook, rerender: (props: { kind?: ExpressionKind; isOpen?: boolean } = {}) => hook.rerender({ kind, isOpen, ...props }) };
 }
 
 beforeEach(() => {
    vi.resetAllMocks();
    mocks.user = { id: "user-1" };
+   mocks.clientAvailable = true;
+   focusManager.setFocused(true);
+   onlineManager.setOnline(true);
    mocks.gateway = new EventEmitter();
    collections.clear();
    vi.stubGlobal("fetch", mocks.fetch);
    for (const kind of ["gifs", "stickers"] as const) {
-      const key = () => `${mocks.user.id}:${kind}`;
+      const key = () => `${mocks.user?.id}:${kind}`;
       mocks[kind].getAll.mockImplementation(async () => [...(collections.get(key()) ?? [])]);
       mocks[kind].add.mockImplementation(async (ref: APIExpressionReference) => {
          const added = expression(ref);
@@ -92,7 +97,186 @@ beforeEach(() => {
 
 afterEach(() => {
    for (const cache of caches.splice(0)) cache.clear();
+   vi.useRealTimers();
+   focusManager.setFocused(undefined);
+   onlineManager.setOnline(true);
    vi.unstubAllGlobals();
+});
+
+async function advanceTime(milliseconds = 1) {
+   await act(() => vi.advanceTimersByTimeAsync(milliseconds));
+}
+
+describe.each(["gifs", "stickers"] as const)("%s collection refresh", (kind) => {
+   beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-11-21T12:00:00Z"));
+   });
+
+   it("refreshes at the earliest signed link's thirty-second margin and exposes renewed metadata", async () => {
+      const first = expression({ type: ExpressionType.UPLOADED, ex: Date.now() / 1000 + 120, hm: "old", src: "/old.gif" });
+      const later = expression({ id: "later", type: ExpressionType.UPLOADED, ex: Date.now() / 1000 + 300 });
+      const { result } = setup(kind, [later, first], true);
+      await advanceTime();
+      expect(result.current.items).toEqual([later, first]);
+      const renewed = { ...first, ex: first.ex! + 600, hm: "renewed", src: "/renewed.gif" };
+      collections.set(`user-1:${kind}`, [later, renewed]);
+
+      await advanceTime(89_998);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(result.current.items).toEqual([later, first]);
+      await advanceTime(2);
+
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+      expect(result.current.items).toEqual([later, renewed]);
+   });
+
+   it.each(["closed", "no expiry"])("avoids periodic requests when %s but still refreshes on reopening", async (condition) => {
+      const saved = expression(condition === "closed" ? { type: ExpressionType.UPLOADED, ex: Date.now() / 1000 + 120 } : {});
+      const { result, rerender } = setup(kind, [saved], true);
+      await advanceTime();
+      if (condition === "closed") rerender({ isOpen: false });
+      const updated = { ...saved, title: "Changed while away", ex: undefined };
+      collections.set(`user-1:${kind}`, [updated]);
+
+      await advanceTime(180_000);
+
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(result.current.items).toEqual([saved]);
+      rerender({ isOpen: false });
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([updated]);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+   });
+
+   it.each(["focus", "reconnect"] as const)("refreshes stale data on %s only while open, preserving freshness rules", async (trigger) => {
+      const saved = expression();
+      const { result, rerender } = setup(kind, [saved], true);
+      await advanceTime();
+      const notify = async () => {
+         act(() => {
+            if (trigger === "focus") {
+               focusManager.setFocused(false);
+               focusManager.setFocused(true);
+            } else {
+               onlineManager.setOnline(false);
+               onlineManager.setOnline(true);
+            }
+         });
+         await advanceTime();
+      };
+      const updated = { ...saved, title: "Refreshed" };
+      collections.set(`user-1:${kind}`, [updated]);
+
+      await notify();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(result.current.items).toEqual([saved]);
+      await advanceTime(60_000);
+      await notify();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+      expect(result.current.items).toEqual([updated]);
+
+      rerender({ isOpen: false });
+      collections.set(`user-1:${kind}`, []);
+      await advanceTime(60_000);
+      await notify();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+      expect(result.current.items).toEqual([updated]);
+   });
+
+   it("refreshes on opening and reopening even while the previous response is fresh", async () => {
+      const saved = expression();
+      const { result, rerender } = setup(kind, [saved]);
+      await advanceTime();
+      const opened = { ...saved, title: "Opened" };
+      collections.set(`user-1:${kind}`, [opened]);
+
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([opened]);
+      const reopened = { ...saved, title: "Reopened" };
+      collections.set(`user-1:${kind}`, [reopened]);
+      rerender({ isOpen: false });
+      rerender({ isOpen: true });
+      await advanceTime();
+
+      expect(result.current.items).toEqual([reopened]);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(3);
+   });
+
+   it.each(["client", "user"] as const)("gates fetching and scheduled refresh while the %s is unavailable", async (dependency) => {
+      const setAvailable = (available: boolean) => {
+         if (dependency === "client") mocks.clientAvailable = available;
+         else mocks.user = available ? { id: "user-1" } : undefined;
+      };
+      setAvailable(false);
+      const { result, rerender } = setup(kind, [], true);
+
+      await advanceTime(180_000);
+      expect(mocks[kind].getAll).not.toHaveBeenCalled();
+      expect(result.current.items).toEqual([]);
+      const saved = expression({ type: ExpressionType.UPLOADED, ex: Date.now() / 1000 + 120 });
+      collections.set(`user-1:${kind}`, [saved]);
+      setAvailable(true);
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([saved]);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+
+      setAvailable(false);
+      rerender({ isOpen: true });
+      await advanceTime(180_000);
+      act(() => {
+         focusManager.setFocused(false);
+         focusManager.setFocused(true);
+         onlineManager.setOnline(false);
+         onlineManager.setOnline(true);
+      });
+      await advanceTime();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+
+      const renewed = { ...saved, ex: Date.now() / 1000 + 600, hm: "renewed" };
+      collections.set(`user-1:${kind}`, [renewed]);
+      setAvailable(true);
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([renewed]);
+   });
+
+   it("stops refreshing the previous user's collection on user changes and stops all refresh on unmount", async () => {
+      const saved = expression({ type: ExpressionType.UPLOADED, ex: Date.now() / 1000 + 120 });
+      const otherUser = expression({ id: "other-user" });
+      const { result, rerender, unmount } = setup(kind, [saved], true);
+      collections.set(`user-2:${kind}`, [otherUser]);
+      await advanceTime();
+
+      mocks.user = { id: "user-2" };
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([otherUser]);
+      await advanceTime(180_000);
+      expect(result.current.items).toEqual([otherUser]);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+
+      const renewed = { ...saved, ex: Date.now() / 1000 + 120, hm: "renewed" };
+      collections.set(`user-1:${kind}`, [renewed]);
+      mocks.user = { id: "user-1" };
+      rerender({ isOpen: true });
+      await advanceTime();
+      expect(result.current.items).toEqual([renewed]);
+      const requests = mocks[kind].getAll.mock.calls.length;
+      unmount();
+      await advanceTime(180_000);
+      act(() => {
+         focusManager.setFocused(false);
+         focusManager.setFocused(true);
+         onlineManager.setOnline(false);
+         onlineManager.setOnline(true);
+      });
+      await advanceTime();
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(requests);
+   });
 });
 
 describe.each(["gifs", "stickers"] as const)("%s collection", (kind) => {
@@ -358,23 +542,28 @@ describe.each(["gifs", "stickers"] as const)("%s collection", (kind) => {
       },
    );
 
-   it.each(["add", "remove", "import"] as const)("allows retry after a failed %s with one error notification", async (action) => {
-      const media = action === "import" ? { url: "https://media.example/cat.gif" } : expression();
+   it.each(["add", "remove", "import", "upload"] as const)("allows retry after a failed %s with one error notification", async (action) => {
+      const media =
+         action === "import"
+            ? { url: "https://media.example/cat.gif" }
+            : expression(action === "upload" ? { id: "imported", type: ExpressionType.UPLOADED } : {});
       const operation = action === "import" ? "upload" : action;
+      const file = { data: new Uint8Array([1, 2, 3]).buffer, name: "selected.gif", contentType: "image/gif" };
       mocks[kind][operation].mockRejectedValueOnce(new Error("Write failed"));
       mocks.fetch.mockImplementation(async () => new Response(new Uint8Array([1, 2, 3])));
       const { result } = setup(kind, action === "remove" ? [expression()] : []);
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      const save = () => (action === "upload" ? result.current.upload(file) : result.current.toggle(media));
 
       await act(async () => {
-         await expect(result.current.toggle(media)).rejects.toThrow("Write failed");
+         await expect(save()).rejects.toThrow("Write failed");
       });
 
       await waitFor(() => expect(result.current.isPending).toBe(false));
       expect(mocks.showError).toHaveBeenCalledExactlyOnceWith("Write failed");
       expect(result.current.items).toHaveLength(action === "remove" ? 1 : 0);
 
-      await act(() => result.current.toggle(media));
+      await act(() => save());
 
       await waitFor(() => expect(result.current.items).toHaveLength(action === "remove" ? 0 : 1));
       expect(!!result.current.find(media)).toBe(action !== "remove");
@@ -474,15 +663,36 @@ describe.each(["gifs", "stickers"] as const)("%s collection", (kind) => {
       expect(mocks[kind].add).not.toHaveBeenCalled();
    });
 
-   it("preserves direct file uploads for the picker", async () => {
+   it("keeps direct file uploads pending through the upload and refresh, then exposes the created expression", async () => {
       const file = { data: new Uint8Array([1, 2, 3]).buffer, name: "selected.gif", contentType: "image/gif" };
       const { result } = setup(kind);
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      const upload = Promise.withResolvers<APIExpression>();
+      const refresh = Promise.withResolvers<APIExpression[]>();
+      const created = expression({ id: "created", type: ExpressionType.UPLOADED });
+      mocks[kind].upload.mockReturnValueOnce(upload.promise);
+      mocks[kind].getAll.mockReturnValueOnce(refresh.promise);
+      let pending: Promise<unknown>;
 
-      await act(() => result.current.upload(file));
+      act(() => {
+         pending = result.current.upload(file);
+      });
 
-      await waitFor(() => expect(result.current.items).toHaveLength(1));
+      await waitFor(() => expect(result.current.isPending).toBe(true));
       expect(mocks[kind].upload).toHaveBeenCalledExactlyOnceWith(file);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(result.current.items).toEqual([]);
+      await act(async () => upload.resolve(created));
+      await waitFor(() => expect(mocks[kind].getAll).toHaveBeenCalledTimes(2));
+      expect(result.current.isPending).toBe(true);
+      expect(result.current.items).toEqual([]);
+      await act(async () => {
+         refresh.resolve([created]);
+         await pending;
+      });
+
+      await waitFor(() => expect(result.current.isPending).toBe(false));
+      expect(result.current.items).toEqual([created]);
       expect(mocks.fetch).not.toHaveBeenCalled();
    });
 });

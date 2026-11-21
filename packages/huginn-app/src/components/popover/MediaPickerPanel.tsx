@@ -197,7 +197,11 @@ export default function MediaPickerPanel({
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden" data-ignore-swipe>
          <div className="flex items-center gap-2 p-2">
             {tab === "all" && (category || search) && (
-               <button className="size cursor-pointer p-2 text-white/70 hover:text-white" onClick={() => handleResetBrowse()}>
+               <button
+                  aria-label="Back to categories"
+                  className="size cursor-pointer p-2 text-white/70 hover:text-white"
+                  onClick={() => handleResetBrowse()}
+               >
                   <IconMingcuteArrowLeftFill className="size-6" />
                </button>
             )}
