@@ -17,6 +17,11 @@ export const useSidebarStore = create(
       (set) => ({
          setIsDragging: (isDragging: boolean) => set({ isDragging }),
          setLeftOffset: (offset: number) => set({ leftOffset: offset }),
+         cancelDrag: () =>
+            set((state) => ({
+               isDragging: false,
+               leftOffset: state.isLeftOpen ? state.leftSidebarWidth : 0,
+            })),
 
          resetToCenter: () => set({ isLeftOpen: false, isRightOpen: false, leftOffset: 0 }),
 
