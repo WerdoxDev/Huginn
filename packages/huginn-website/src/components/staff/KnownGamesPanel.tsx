@@ -142,7 +142,7 @@ export default function KnownGamesPanel() {
                {saveMessage ? (
                   <div role="status" className="bg-positive-500/10 text-positive-300 mx-3 mb-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
                      <span className="flex-1">{saveMessage}</span>
-                     <button type="button" aria-label="Dismiss update message" className="cursor-pointer" onClick={() => setSaveMessage("")}>
+                     <button type="button" title="Dismiss update message" className="cursor-pointer" onClick={() => setSaveMessage("")}>
                         <IconMingcuteCloseFill className="size-4" />
                      </button>
                   </div>
@@ -216,7 +216,6 @@ export default function KnownGamesPanel() {
                                              type="button"
                                              color="surface"
                                              className="ml-auto flex h-8 shrink-0 items-center gap-1.5 px-2 text-xs"
-                                             aria-label={`Edit matcher #${matcher.id} for ${game.canonicalName}`}
                                              onClick={() => setMatcherToEdit({ game, matcher })}
                                           >
                                              <IconMingcuteEdit2Fill className="size-3.5" />

@@ -156,7 +156,6 @@ export default function KnownGameMatcherEditor({
                               type="file"
                               accept="image/png,image/jpeg,image/webp"
                               className="hidden"
-                              aria-label="Upload matcher icon"
                               disabled={busy}
                               onChange={(event) => {
                                  void selectIcon(event.target.files?.[0]);
