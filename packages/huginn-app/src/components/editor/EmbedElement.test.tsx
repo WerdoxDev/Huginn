@@ -11,8 +11,7 @@ const mocks = vi.hoisted(() => ({
    openMenu: vi.fn(),
    openUrl: vi.fn(),
    updateModals: vi.fn(),
-   add: vi.fn().mockResolvedValue(undefined),
-   remove: vi.fn().mockResolvedValue(undefined),
+   toggle: vi.fn().mockResolvedValue(undefined),
    find: vi.fn(),
    useExpressions: vi.fn(),
 }));
@@ -69,7 +68,7 @@ function embed(props: ComponentProps<typeof EmbedElement>, options: { preview?: 
 beforeEach(() => {
    vi.clearAllMocks();
    mocks.find.mockReturnValue(undefined);
-   mocks.useExpressions.mockReturnValue({ find: mocks.find, add: mocks.add, remove: mocks.remove, isPending: false });
+   mocks.useExpressions.mockReturnValue({ find: mocks.find, toggle: mocks.toggle, isPending: false });
    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
 });
@@ -162,7 +161,7 @@ describe("EmbedElement", () => {
       expect(menu.imgElement).toBe(image);
       expect(menu.gif).toBe(uploaded);
       fireEvent.click(screen.getByRole("button", { name: "Add to GIFs" }));
-      expect(mocks.add).toHaveBeenCalledWith({ id: uploaded.id, type: uploaded.type, ex: uploaded.ex, hm: uploaded.hm });
+      expect(mocks.toggle).toHaveBeenCalledWith(uploaded);
    });
    it("sizes stickers to 160px and uses the sticker collection", () => {
       const sticker = { ...uploaded, src: "stickers/123.webp?ex=2000000000&hm=signature", contentType: "image/webp" };
@@ -178,9 +177,9 @@ describe("EmbedElement", () => {
       expect(menu.imgElement).toBe(image);
       expect(mocks.useExpressions).toHaveBeenCalledWith("stickers");
       fireEvent.click(screen.getByRole("button", { name: "Remove from Stickers" }));
-      expect(mocks.remove).toHaveBeenCalledWith(sticker);
+      expect(mocks.toggle).toHaveBeenCalledWith(sticker);
    });
-   it("loops video GIFs and resolves Klipy save references without media metadata", () => {
+   it("loops video GIFs and delegates saving without media metadata", () => {
       const { container } = render(
          embed({
             embedType: "gif",
@@ -198,7 +197,12 @@ describe("EmbedElement", () => {
       expect(screen.queryByText("Hidden title")).toBeNull();
       expect(screen.queryByText("Hidden description")).toBeNull();
       fireEvent.click(screen.getByRole("button", { name: "Add to GIFs" }));
-      expect(mocks.add).toHaveBeenCalledWith({ id: "cat", type: ExpressionType.KLIPY });
+      expect(mocks.toggle).toHaveBeenCalledWith({
+         url: "https://klipy.com/gifs/cat",
+         src: "https://media.example/cat.webm",
+         width: 640,
+         height: 320,
+      });
       fireEvent.click(video);
       expect(mocks.updateModals.mock.calls[0][0].magnifiedMedia.type).toBe("video");
    });

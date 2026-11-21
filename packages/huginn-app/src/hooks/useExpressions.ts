@@ -91,14 +91,21 @@ export function useExpressions(kind: ExpressionKind, isOpen = false) {
       );
    }
 
+   async function toggle(media: Partial<AppExpression>) {
+      const saved = find(media);
+      if (saved) return removeMutation.mutateAsync(saved);
+
+      const reference = resolveExpression(media);
+      if (reference) return addMutation.mutateAsync(reference);
+      return downloadAndUploadMutation.mutateAsync(media);
+   }
+
    return {
       ...query,
       items: query.data ?? [],
       find,
-      add: addMutation.mutateAsync,
-      remove: removeMutation.mutateAsync,
+      toggle,
       upload: uploadMutation.mutateAsync,
-      downloadAndUpload: downloadAndUploadMutation.mutateAsync,
       isPending: addMutation.isPending || removeMutation.isPending || uploadMutation.isPending || downloadAndUploadMutation.isPending,
    };
 }
