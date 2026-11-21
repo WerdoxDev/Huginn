@@ -13,7 +13,7 @@ import { getMessagesOptions, queryClient } from "@lib/queries";
 import { getVoiceConnectionErrorMessage } from "@lib/voice/voice-errors";
 import { clientStore, useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
-import { useSidebarStore, type ChannelSidebarPanel } from "@stores/sidebarStore";
+import { useSidebarStore } from "@stores/sidebarStore";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -21,6 +21,8 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useMemo, type MouseEvent } from "react";
+
+import type { ChannelSidebarPanel } from "@/types";
 
 export const Route = createFileRoute("/_app/_main/_home/channels/@me/$channelId")({
    component: ChannelWithIdComponent,
