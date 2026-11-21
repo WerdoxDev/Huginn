@@ -126,7 +126,6 @@ function List({
    startIcon,
    triggerClassName,
 }: {
-   ariaLabel?: string;
    className?: string;
    children?: ReactNode;
    hideValue?: boolean;
