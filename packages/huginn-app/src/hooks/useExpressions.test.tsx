@@ -1,12 +1,12 @@
-import type { APIExpression, APIExpressionReference, ExpressionKind, RawFile } from "@huginnjs/shared";
+import type { APIExpression, APIExpressionReference, ExpressionKind, GatewayExpressionUpdatedData, RawFile } from "@huginnjs/shared";
 import type { PropsWithChildren } from "react";
 
-import { CONSTANTS, ExpressionType, resolveCdnUrl } from "@huginnjs/shared";
+import { CONSTANTS, EventEmitter, ExpressionType, resolveCdnUrl } from "@huginnjs/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useExpressions } from "./useExpressions";
+import { useExpressions, useExpressionUpdates } from "./useExpressions";
 
 const mocks = vi.hoisted(() => ({
    gifs: { getAll: vi.fn(), add: vi.fn(), remove: vi.fn(), upload: vi.fn() },
@@ -14,12 +14,20 @@ const mocks = vi.hoisted(() => ({
    user: { id: "user-1" },
    showError: vi.fn(),
    fetch: vi.fn<typeof fetch>(),
+   gateway: undefined as unknown as EventEmitter<{ expression_update: GatewayExpressionUpdatedData }>,
 }));
 
-vi.mock("@stores/clientStore", async (importOriginal) => ({
-   ...(await importOriginal<typeof import("@stores/clientStore")>()),
-   useClient: () => ({ ...mocks, cdn: { asset: (path: string) => resolveCdnUrl(path, "https://cdn.example/cdn") } }),
-}));
+vi.mock("@stores/clientStore", async (importOriginal) => {
+   const client = {
+      gifs: mocks.gifs,
+      stickers: mocks.stickers,
+      get gateway() {
+         return mocks.gateway;
+      },
+      cdn: { asset: (path: string) => resolveCdnUrl(path, "https://cdn.example/cdn") },
+   };
+   return { ...(await importOriginal<typeof import("@stores/clientStore")>()), useClient: () => client };
+});
 vi.mock("@stores/userStore", () => ({ useThisUser: () => ({ user: mocks.user }) }));
 vi.mock("@stores/modalsStore", () => ({ useModals: () => ({ showError: mocks.showError }) }));
 
@@ -42,15 +50,22 @@ const caches: QueryClient[] = [];
 
 function setup(kind: ExpressionKind, items: APIExpression[] = []) {
    collections.set(`${mocks.user.id}:${kind}`, items);
-   const cache = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
+   const cache = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
    caches.push(cache);
    const wrapper = ({ children }: PropsWithChildren) => <QueryClientProvider client={cache}>{children}</QueryClientProvider>;
-   return renderHook(({ kind }) => useExpressions(kind), { wrapper, initialProps: { kind } });
+   return renderHook(
+      ({ kind }) => {
+         useExpressionUpdates();
+         return useExpressions(kind);
+      },
+      { wrapper, initialProps: { kind } },
+   );
 }
 
 beforeEach(() => {
    vi.resetAllMocks();
    mocks.user = { id: "user-1" };
+   mocks.gateway = new EventEmitter();
    collections.clear();
    vi.stubGlobal("fetch", mocks.fetch);
    for (const kind of ["gifs", "stickers"] as const) {
@@ -81,6 +96,121 @@ afterEach(() => {
 });
 
 describe.each(["gifs", "stickers"] as const)("%s collection", (kind) => {
+   it("replaces gateway updates and orders by usage count then last used time without refetching", async () => {
+      const first = expression({ id: "first", usageCount: 3, lastUsedAt: "2026-11-14T12:00:00.000Z" });
+      const second = expression({ id: "second", usageCount: 2, lastUsedAt: "2026-11-13T12:00:00.000Z" });
+      const third = expression({ id: "third", usageCount: 4 });
+      const { result } = setup(kind, [third, first, second]);
+      await waitFor(() => expect(result.current.items).toEqual([third, first, second]));
+      const updated = { ...second, title: "Updated", usageCount: 3, lastUsedAt: "2026-11-15T12:00:00.000Z" };
+
+      act(() => mocks.gateway.emit("expression_update", { kind, expression: updated }));
+
+      await waitFor(() => expect(result.current.items).toEqual([third, updated, first]));
+      expect(result.current.find(second)).toEqual(updated);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+   });
+
+   it("inserts newly used expressions, keeps source types distinct, and handles replay without duplicates", async () => {
+      const provider = expression({ id: "same", usageCount: 2 });
+      const unused = expression({ id: "unused", type: ExpressionType.UPLOADED, usageCount: undefined, lastUsedAt: undefined });
+      const uploaded = expression({ id: "same", type: ExpressionType.UPLOADED, usageCount: 1, lastUsedAt: "2026-11-15T12:00:00.000Z" });
+      const { result } = setup(kind, [provider, unused]);
+      await waitFor(() => expect(result.current.items).toEqual([provider, unused]));
+
+      act(() => mocks.gateway.emit("expression_update", { kind, expression: uploaded }));
+      await waitFor(() => expect(result.current.items).toEqual([provider, uploaded, unused]));
+      const updated = { ...uploaded, usageCount: 3 };
+      act(() => {
+         mocks.gateway.emit("expression_update", { kind, expression: updated });
+         mocks.gateway.emit("expression_update", { kind, expression: updated });
+      });
+
+      await waitFor(() => expect(result.current.items).toEqual([updated, provider, unused]));
+      expect(result.current.find(provider)).toEqual(provider);
+      expect(result.current.find(uploaded)).toEqual(updated);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+   });
+
+   it("leaves an unloaded collection alone so its first use fetches the complete list", async () => {
+      const otherKind = kind === "gifs" ? "stickers" : "gifs";
+      const other = expression({ title: "Other collection" });
+      const newlyUsed = expression({ id: "new", usageCount: 1 });
+      const older = expression({ id: "older" });
+      const { result, rerender } = setup(otherKind, [other]);
+      collections.set(`user-1:${kind}`, [newlyUsed, older]);
+      await waitFor(() => expect(result.current.items).toEqual([other]));
+
+      act(() => mocks.gateway.emit("expression_update", { kind, expression: newlyUsed }));
+
+      expect(mocks[kind].getAll).not.toHaveBeenCalled();
+      expect(result.current.items).toEqual([other]);
+      rerender({ kind });
+      await waitFor(() => expect(result.current.items).toEqual([newlyUsed, older]));
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(1);
+      expect(mocks[otherKind].getAll).toHaveBeenCalledTimes(1);
+   });
+
+   it.each(["reference", "import", "upload"] as const)(
+      "reconciles usage after a successful %s and still removes the saved expression",
+      async (action) => {
+         const mostUsed = expression({ id: "most-used", usageCount: 5 });
+         const older = expression({ id: "older", usageCount: 1 });
+         const saved =
+            action === "reference"
+               ? expression()
+               : expression({ id: "imported", type: ExpressionType.UPLOADED, sourceKey: action === "import" ? "attachment:123" : undefined });
+         const media = action === "import" ? { attachmentId: "123", src: "https://external.example/new.webp" } : saved;
+         mocks.fetch.mockResolvedValue(new Response(new Uint8Array([1, 2, 3])));
+         const { result } = setup(kind, [mostUsed, older]);
+         await waitFor(() => expect(result.current.items).toEqual([mostUsed, older]));
+
+         await act(() =>
+            action === "upload" ? result.current.upload({ data: new Uint8Array([1]).buffer, name: "new.gif" }) : result.current.toggle(media),
+         );
+
+         await waitFor(() => expect(result.current.find(media)).toEqual(saved));
+         expect(result.current.items).toEqual([mostUsed, older, saved]);
+         expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+         const updated = { ...saved, usageCount: 3, lastUsedAt: "2026-11-15T12:00:00.000Z" };
+         act(() => {
+            mocks.gateway.emit("expression_update", { kind, expression: updated });
+            mocks.gateway.emit("expression_update", { kind, expression: updated });
+         });
+
+         await waitFor(() => expect(result.current.items).toEqual([mostUsed, updated, older]));
+         expect(result.current.find(media)).toEqual(updated);
+         expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+
+         await act(() => result.current.toggle(media));
+
+         await waitFor(() => expect(result.current.items).toEqual([mostUsed, older]));
+         expect(result.current.find(media)).toBeUndefined();
+         expect(mocks[kind].remove).toHaveBeenCalledExactlyOnceWith(updated);
+         expect(mocks[kind].getAll).toHaveBeenCalledTimes(3);
+      },
+   );
+
+   it("reconciles later usage after a successful removal without replay duplicates", async () => {
+      const saved = expression();
+      const { result } = setup(kind, [saved]);
+      await waitFor(() => expect(result.current.find(saved)).toEqual(saved));
+
+      await act(() => result.current.toggle(saved));
+
+      await waitFor(() => expect(result.current.items).toEqual([]));
+      expect(result.current.find(saved)).toBeUndefined();
+      const usedAgain = { ...saved, usageCount: 1, lastUsedAt: "2026-11-15T12:00:00.000Z" };
+      act(() => {
+         mocks.gateway.emit("expression_update", { kind, expression: usedAgain });
+         mocks.gateway.emit("expression_update", { kind, expression: usedAgain });
+      });
+
+      await waitFor(() => expect(result.current.items).toEqual([usedAgain]));
+      expect(result.current.find(saved)).toEqual(usedAgain);
+      expect(mocks[kind].getAll).toHaveBeenCalledTimes(2);
+   });
+
    it("adds a provider reference and exposes the refreshed saved expression without downloading", async () => {
       const media = expression();
       const { result } = setup(kind);
@@ -355,6 +485,40 @@ describe.each(["gifs", "stickers"] as const)("%s collection", (kind) => {
       expect(mocks[kind].upload).toHaveBeenCalledExactlyOnceWith(file);
       expect(mocks.fetch).not.toHaveBeenCalled();
    });
+});
+
+it("isolates gateway updates between loaded GIFs, stickers, and users", async () => {
+   const gif = expression({ title: "GIF" });
+   const sticker = expression({ title: "Sticker" });
+   const otherUserGif = expression({ title: "Other user's GIF" });
+   const { result, rerender } = setup("gifs", [gif]);
+   collections.set("user-1:stickers", [sticker]);
+   collections.set("user-2:gifs", [otherUserGif]);
+   await waitFor(() => expect(result.current.items).toEqual([gif]));
+   rerender({ kind: "stickers" });
+   await waitFor(() => expect(result.current.items).toEqual([sticker]));
+   const updatedGif = { ...gif, usageCount: 2 };
+
+   act(() => mocks.gateway.emit("expression_update", { kind: "gifs", expression: updatedGif }));
+
+   expect(result.current.items).toEqual([sticker]);
+   rerender({ kind: "gifs" });
+   await waitFor(() => expect(result.current.items).toEqual([updatedGif]));
+   mocks.user = { id: "user-2" };
+   rerender({ kind: "gifs" });
+   await waitFor(() => expect(result.current.items).toEqual([otherUserGif]));
+   const updatedOtherUserGif = { ...otherUserGif, usageCount: 1 };
+
+   act(() => mocks.gateway.emit("expression_update", { kind: "gifs", expression: updatedOtherUserGif }));
+
+   await waitFor(() => expect(result.current.items).toEqual([updatedOtherUserGif]));
+   mocks.user = { id: "user-1" };
+   rerender({ kind: "gifs" });
+   await waitFor(() => expect(result.current.items).toEqual([updatedGif]));
+   rerender({ kind: "stickers" });
+   await waitFor(() => expect(result.current.items).toEqual([sticker]));
+   expect(mocks.gifs.getAll).toHaveBeenCalledTimes(2);
+   expect(mocks.stickers.getAll).toHaveBeenCalledTimes(1);
 });
 
 it("isolates GIFs, stickers, and different users through the same collection interface", async () => {

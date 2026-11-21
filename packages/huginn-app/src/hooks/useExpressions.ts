@@ -6,6 +6,7 @@ import {
    type APIExpressionReference,
    type ExpressionKind,
    type APIPostExpressionAddJSONBody,
+   type GatewayExpressionUpdatedData,
 } from "@huginnjs/shared";
 import { getExpressionSourceKey } from "@lib/utils";
 import { useClient } from "@stores/clientStore";
@@ -21,13 +22,42 @@ function refreshDelay(items: APIExpression[] | undefined) {
    return expirations.length ? Math.max(1000, Math.min(...expirations) - Date.now() - 30_000) : false;
 }
 
+function collectionKey(userId: string | undefined, kind: ExpressionKind) {
+   return ["expressions", userId, kind];
+}
+
+function sameExpression(a: APIExpressionReference, b: APIExpressionReference) {
+   return a.id === b.id && a.type === b.type;
+}
+
+export function useExpressionUpdates() {
+   const client = useClient();
+   const { user } = useThisUser();
+   const cache = useQueryClient();
+
+   useEffect(() => {
+      if (!user) return;
+
+      return client?.gateway.listen("expression_update", ({ kind, expression }: GatewayExpressionUpdatedData) => {
+         cache.setQueryData<APIExpression[]>(collectionKey(user.id, kind), (current) => {
+            // An unloaded collection must still fetch its complete list when first used.
+            if (!current) return current;
+
+            const updated = current.filter((item) => !sameExpression(item, expression));
+            updated.unshift(expression);
+            return updated.sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0) || (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? ""));
+         });
+      });
+   }, [client, cache, user?.id]);
+}
+
 export function useExpressions(kind: ExpressionKind, isOpen = false) {
    const client = useClient();
    const { user } = useThisUser();
    const { showError } = useModals();
    const cache = useQueryClient();
 
-   const queryKey = ["expressions", user?.id, kind];
+   const queryKey = collectionKey(user?.id, kind);
    const query = useQuery({
       queryKey,
       queryFn: () => client![kind].getAll(),
@@ -86,9 +116,7 @@ export function useExpressions(kind: ExpressionKind, isOpen = false) {
    function find(media: Partial<AppExpression>) {
       const ref = resolveExpression(media);
       const sourceKey = media.sourceKey ?? getExpressionSourceKey(media);
-      return query.data?.find(
-         (item) => (ref !== undefined && item.id === ref.id && item.type === ref.type) || (!!sourceKey && item.sourceKey === sourceKey),
-      );
+      return query.data?.find((item) => (ref !== undefined && sameExpression(item, ref)) || (!!sourceKey && item.sourceKey === sourceKey));
    }
 
    async function toggle(media: Partial<AppExpression>) {
