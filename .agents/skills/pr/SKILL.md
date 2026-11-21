@@ -2,11 +2,11 @@
 name: pr
 description: "Use when writing a PR body."
 metadata:
-  credits:
-    skill: show-me
-    author: Dex Horthy
-    organisation: Humanlayer
-    url: "https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md"
+   credits:
+      skill: show-me
+      author: Dex Horthy
+      organisation: Humanlayer
+      url: "https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md"
 ---
 
 Use this template for writing the PR body:
@@ -144,8 +144,8 @@ For a state or control-flow change:
 
 ```ts
 function expandSkill(command: string): string {
-  const skillName = command.slice(1);
-  return `use the ${skillName} skill`;
+   const skillName = command.slice(1);
+   return `use the ${skillName} skill`;
 }
 ```
 
