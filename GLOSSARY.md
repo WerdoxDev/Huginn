@@ -90,6 +90,10 @@ _Avoid_: Embed when referring to an attached file
 A rich presentation within a message, such as a link preview or a representation of shared media.
 _Avoid_: Attachment when referring to a rich presentation
 
+**Media viewer**:
+An enlarged view within Huginn of an image, video, GIF, or sticker.
+_Avoid_: Fullscreen when referring to enlargement within Huginn
+
 **Reaction**:
 A user's emoji response attached to a particular message.
 _Avoid_: Reply when referring to an emoji response
