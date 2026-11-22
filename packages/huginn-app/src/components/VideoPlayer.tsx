@@ -4,7 +4,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useTimeout } from "@hooks/useTimeout";
 import { formatSeconds } from "@huginnjs/shared";
 import clsx from "clsx";
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
 
 import { useStorage, useStorageStore } from "@/stores/storageStore";
 
@@ -21,6 +21,8 @@ export default function VideoPlayer(props: {
    height: number;
    duration?: number;
    active: boolean;
+   pictureStyle?: CSSProperties;
+   onLoadedData?: () => void;
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
    const containerRef = useRef<HTMLDivElement>(null);
@@ -167,8 +169,8 @@ export default function VideoPlayer(props: {
    }
 
    function togglePlaying() {
-      if (isPlaying) {
-         videoRef.current?.pause();
+      if (videoRef.current && !videoRef.current.paused && !videoRef.current.ended) {
+         videoRef.current.pause();
       } else {
          if (hasEnded && videoRef.current) videoRef.current.currentTime = 0;
          void videoRef.current?.play().catch(() => {});
@@ -184,7 +186,7 @@ export default function VideoPlayer(props: {
    return (
       <div
          ref={containerRef}
-         className={clsx("group/video relative flex w-full overflow-hidden rounded-md")}
+         className={clsx("group/video relative flex w-full", !isFullscreen && "rounded-lg")}
          style={isFullscreen ? undefined : { width: props.width, height: props.height }}
          onClick={(event) => {
             event.stopPropagation();
@@ -195,15 +197,21 @@ export default function VideoPlayer(props: {
          <video
             width={isFullscreen ? undefined : props.width}
             height={isFullscreen ? undefined : props.height}
-            className="h-full w-full object-contain"
+            className="h-full w-full rounded-lg object-contain"
+            data-media-picture
+            style={isFullscreen ? undefined : props.pictureStyle}
             src={props.url}
             ref={videoRef}
             playsInline
+            draggable={false}
             onContextMenu={isFullscreen && isMobile ? undefined : props.onContextMenu}
             onLoadedMetadata={updateVideoDuration}
             onDurationChange={updateVideoDuration}
             onEmptied={() => setVideoDuration(0)}
-            onLoadedData={() => setIsLoaded(true)}
+            onLoadedData={() => {
+               setIsLoaded(true);
+               props.onLoadedData?.();
+            }}
             onError={() => setHasError(true)}
             onEnded={() => {
                setPlaying(false);
@@ -215,8 +223,9 @@ export default function VideoPlayer(props: {
          {isLoaded && !hasError && isMobile && areControlsVisible && (
             <button
                type="button"
+               data-media-controls
                title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
-               className="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white"
+               className="absolute top-1/2 left-1/2 z-10 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white"
                onClick={(event) => {
                   event.stopPropagation();
                   togglePlaying();
@@ -227,54 +236,63 @@ export default function VideoPlayer(props: {
          )}
          {isLoaded && !hasError && (
             <div
-               onClick={(event) => {
-                  event.stopPropagation();
-                  restartControlsTimeout();
-               }}
-               onPointerDownCapture={cancelControlsTimeout}
-               onPointerUpCapture={restartControlsTimeout}
-               onPointerCancelCapture={restartControlsTimeout}
-               data-ignore-swipe
-               data-ignore-reply
                className={clsx(
-                  "bg-surface-alt/90 absolute inset-x-0 bottom-0 items-center gap-x-2 px-2 py-2 transition-[translate]",
-                  isMobile && !areControlsVisible ? "hidden" : "flex",
-                  isMobile && isFullscreen && "pb-7",
-                  isPlaying && !isMobile && "translate-y-full group-hover/video:translate-y-0",
+                  "pointer-events-none fixed inset-0 flex items-end justify-center rounded-md",
+                  isFullscreen ? "overflow-hidden" : "px-4",
                )}
             >
-               {!isMobile && (
+               <div
+                  onClick={(event) => {
+                     event.stopPropagation();
+                     restartControlsTimeout();
+                  }}
+                  onPointerDownCapture={cancelControlsTimeout}
+                  onPointerUpCapture={restartControlsTimeout}
+                  onPointerCancelCapture={restartControlsTimeout}
+                  data-media-controls
+                  data-ignore-swipe
+                  data-ignore-reply
+                  className={clsx(
+                     "bg-surface-alt/90 pointer-events-auto z-10 w-full items-center gap-x-2 px-2 py-2 transition-[translate]",
+                     isMobile && !areControlsVisible ? "hidden" : "flex",
+                     isMobile && isFullscreen && "pb-7",
+                     isFullscreen ? "" : "max-w-2xl rounded-md portrait:mb-10 landscape:mb-1 lg:landscape:mb-10",
+                     isFullscreen && isPlaying && !isMobile && "translate-y-full group-hover/video:translate-y-0",
+                  )}
+               >
+                  {!isMobile && (
+                     <button
+                        type="button"
+                        title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
+                        onClick={togglePlaying}
+                        className="shrink-0 cursor-pointer text-white/80 hover:text-white"
+                     >
+                        {isPlaying ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
+                     </button>
+                  )}
+                  {(isFullscreen || window.innerWidth >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
+                     <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm text-white">
+                        <span>{formatSeconds(currentTime)}</span>
+                        <span>/</span>
+                        <span>{formatSeconds(props.duration ?? videoDuration)}</span>
+                     </div>
+                  )}
+                  <HuginnMediaSlider
+                     orientation="horizontal"
+                     currentPercent={currentVideoPercent}
+                     bufferedPercent={bufferedPercent}
+                     onChange={updateCurrentVideoPercent}
+                  />
+                  <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateCurrentAudioPercent} />
                   <button
                      type="button"
-                     title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
-                     onClick={togglePlaying}
+                     title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                      className="shrink-0 cursor-pointer text-white/80 hover:text-white"
+                     onClick={toggleFullscreen}
                   >
-                     {isPlaying ? <IconMingcutePauseFill className="size-6" /> : <IconMingcutePlayFill className="size-6" />}
+                     {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
                   </button>
-               )}
-               {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
-                  <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm text-white">
-                     <span>{formatSeconds(currentTime)}</span>
-                     <span>/</span>
-                     <span>{formatSeconds(props.duration ?? videoDuration)}</span>
-                  </div>
-               )}
-               <HuginnMediaSlider
-                  orientation="horizontal"
-                  currentPercent={currentVideoPercent}
-                  bufferedPercent={bufferedPercent}
-                  onChange={updateCurrentVideoPercent}
-               />
-               <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateCurrentAudioPercent} />
-               <button
-                  type="button"
-                  title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-                  className="shrink-0 cursor-pointer text-white/80 hover:text-white"
-                  onClick={toggleFullscreen}
-               >
-                  {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
-               </button>
+               </div>
             </div>
          )}
       </div>

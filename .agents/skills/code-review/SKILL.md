@@ -3,7 +3,7 @@ name: code-review
 description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Two-axis review of the diff between the review target and a fixed point the user supplies:
 
 - **Standards**: does the code conform to this repo's documented coding standards?
 - **Spec**: does the code faithfully implement the originating issue / spec?
@@ -16,11 +16,15 @@ The issue tracker should have been provided to you. If not, tell the user to run
 
 ### 1. Pin the fixed point
 
+Before inspecting version-control state or choosing review refs, read and follow [`docs/agents/version-control.md`](../../../docs/agents/version-control.md) from the repo root.
+
 Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.). If they didn't specify one, ask for it.
 
-Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
+Identify the review target as well. In a GitButler workspace, inspect `but status --json` to identify the intended branch; workspace `HEAD` can include multiple applied branches. Use the intended branch ref for a branch review, and ask which branch if the request and workspace leave it ambiguous. Otherwise, use `HEAD` when it represents the requested scope.
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
+Capture the diff command once: `git diff <fixed-point>...<review-target>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..<review-target> --oneline`.
+
+Before going further, confirm both refs resolve (`git rev-parse <ref>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
 
 ### 2. Identify the spec source
 
@@ -58,6 +62,8 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 ### 4. Spawn both sub-agents in parallel
 
 Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+
+Give both sub-agents the resolved review refs and the repo's version-control doc to read and follow, so both inspect the same scope under the same workspace rules.
 
 **Standards sub-agent prompt** should include:
 
