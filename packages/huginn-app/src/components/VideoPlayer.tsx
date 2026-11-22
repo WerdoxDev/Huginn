@@ -254,7 +254,7 @@ export default function VideoPlayer(props: {
                   </button>
                )}
                {(isFullscreen || props.width >= VIDEO_TIMESTAMP_REQUIRED_WIDTH) && (
-                  <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm">
+                  <div className="font-ubuntu flex shrink-0 gap-x-1 text-sm text-white">
                      <span>{formatSeconds(currentTime)}</span>
                      <span>/</span>
                      <span>{formatSeconds(props.duration ?? videoDuration)}</span>

@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 
+import { formatSeconds } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 
 export default function VideoPreview(props: {
@@ -10,6 +11,7 @@ export default function VideoPreview(props: {
    originalWidth: number;
    originalHeight: number;
    filename?: string;
+   duration?: number;
    origin: "attachment" | "embed";
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
@@ -34,7 +36,7 @@ export default function VideoPreview(props: {
    return (
       <button
          type="button"
-         title="Open video"
+         aria-label="Open video"
          className="relative block w-full cursor-pointer overflow-hidden rounded-md"
          style={{ maxWidth: props.width || 640, aspectRatio: props.width && props.height ? props.width / props.height : 16 / 9 }}
          onClick={open}
@@ -48,9 +50,12 @@ export default function VideoPreview(props: {
             className="h-full w-full object-contain"
             onContextMenu={props.onContextMenu}
          />
-         <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10">
-            <IconMingcutePlayFill className="size-12 rounded-full bg-black/60 p-2 text-white" />
-         </span>
+         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
+            <IconMingcutePlayFill className="size-12 rounded-full bg-black/50 p-2 text-white" />
+         </div>
+         <div className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-sm text-white">
+            {props.duration ? formatSeconds(props.duration) : "0:00"}
+         </div>
       </button>
    );
 }

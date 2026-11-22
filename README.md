@@ -35,9 +35,9 @@ Open `http://localhost:5173` for the website or `http://localhost:5173/app/` for
 
 To work on the documentation, run `pnpm --filter @huginn/docs docs:dev`. Package-specific scripts and configuration are in each package's `package.json`.
 
-Run `pnpm check` for app lint, typechecking, and tests, plus formatting and whitespace checks on changed app and repository files. Individual checks are available as `pnpm check:lint`, `check:format`, `check:whitespace`, `check:typecheck`, and `check:test`. For a focused test run, use `pnpm --dir packages/huginn-app test:run <test-file>`.
+Run `pnpm --dir packages/huginn-app test:run` for the app's Vitest tests, or append `<test-file>` for a focused run. These tests run in jsdom without a browser installation. Use `pnpm --dir packages/huginn-app test` for watch mode.
 
-Changed-file checks compare against `HEAD` locally, including untracked files. Set `CHECK_BASE_REF=<commit>` to check a branch's changes; CI supplies the pull request base or previous pushed revision. Check output streams to the terminal, and any failed check stops the command with a nonzero exit code.
+The `smoke` workflow runs the app tests alongside web, desktop, and Android startup smoke tests. Playwright is used only for the web and desktop startup smoke tests, available locally as `pnpm --dir packages/huginn-app smoke:web` and `smoke:electron`.
 
 ## PostgreSQL in Docker Swarm
 

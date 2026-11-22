@@ -140,6 +140,7 @@ export default function AttachmentElement(props: {
                   height={dimensions.height}
                   originalWidth={props.width ?? 0}
                   originalHeight={props.height ?? 0}
+                  duration={props.duration ?? 0}
                   filename={props.filename}
                   origin="attachment"
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
