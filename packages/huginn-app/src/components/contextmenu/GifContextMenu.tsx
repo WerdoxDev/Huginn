@@ -1,5 +1,4 @@
 import { useExpressions } from "@hooks/useExpressions";
-import { resolveExpression } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 
 import type { ContextMenuExpression } from "@/types";
@@ -14,13 +13,11 @@ export default function GifContextMenu() {
 }
 
 export function GifSaveContextMenuItem(props: { gif: ContextMenuExpression }) {
-   const { find, remove, add, downloadAndUpload, isPending } = useExpressions("gifs");
-   const expression = resolveExpression(props.gif);
+   const { find, toggle, isPending } = useExpressions("gifs");
    const isSaved = find(props.gif);
 
    function handleToggle() {
-      if (isSaved) return remove(isSaved).catch(() => {});
-      return (expression ? add(expression) : downloadAndUpload(props.gif)).catch(() => {});
+      return toggle(props.gif).catch(() => {});
    }
 
    return (

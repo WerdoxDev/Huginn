@@ -1,6 +1,8 @@
+import { useErrorHandler } from "@hooks/useErrorHandler";
 import { HuginnCheckbox } from "@huginn/frontend-shared";
 import { useStorage, useStorageStore } from "@stores/storageStore";
 import { useHuginnWindow } from "@stores/windowStore";
+import { useMutation } from "@tanstack/react-query";
 
 import type { SettingsTabProps } from "@/types";
 
@@ -8,11 +10,15 @@ export default function SettingsSystemTab(_props: SettingsTabProps) {
    const settings = useStorage("settings");
    const { getCachedValue, setValue } = useStorageStore();
    const huginnWindow = useHuginnWindow();
+   const handleError = useErrorHandler();
 
-   async function changeAutostart(enabled: boolean) {
-      await window.electronAPI.setAutostart(enabled);
-      await setValue("settings", { ...getCachedValue("settings"), autostart: enabled });
-   }
+   const autostartMutation = useMutation({
+      async mutationFn(enabled: boolean) {
+         await window.electronAPI.setAutostart(enabled);
+         await setValue("settings", { ...getCachedValue("settings"), autostart: enabled });
+      },
+      onError: handleError,
+   });
 
    if (huginnWindow.environment !== "desktop") {
       return <div className="text-text/70 text-sm">System settings are available in the desktop app.</div>;
@@ -22,7 +28,11 @@ export default function SettingsSystemTab(_props: SettingsTabProps) {
       <div className="flex w-full flex-col items-center justify-center text-white">
          <div className="flex w-full max-w-md flex-col gap-y-5">
             <div>
-               <HuginnCheckbox checked={settings.autostart} onChange={(value) => void changeAutostart(value)}>
+               <HuginnCheckbox
+                  checked={settings.autostart}
+                  disabled={autostartMutation.isPending}
+                  onChange={(value) => autostartMutation.mutate(value)}
+               >
                   <HuginnCheckbox.Input>Start Huginn at Login</HuginnCheckbox.Input>
                </HuginnCheckbox>
                <div className="text-text/70 max-w-sm text-sm">Automatically start Huginn when you sign in to your computer.</div>

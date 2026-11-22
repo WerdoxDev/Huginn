@@ -33,7 +33,7 @@ export default function ApplicationOverlayButton(props: { applicationKey: Applic
             <HuginnButton
                color="surface"
                className="shrink-0 p-1"
-               aria-label={label}
+               title={label}
                aria-pressed={enabled}
                aria-disabled={!globallyEnabled}
                onClick={toggleOverlay}

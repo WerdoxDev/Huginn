@@ -423,7 +423,9 @@ export function useMessageBoxActions(options: {
 
       // Edit last message on ArrowUp with empty editor
       if (event.key === "ArrowUp" && isEditorEmpty()) {
-         const lastEditableMessage = options.messages.findLast((x) => x.authorId === user?.id && !x.isPreview && x.type === MessageType.DEFAULT);
+         const lastEditableMessage = options.messages.findLast(
+            (x) => x.authorId === user?.id && !x.isPreview && (x.type === MessageType.DEFAULT || x.type === MessageType.REPLY),
+         );
          setEditingMessageId(lastEditableMessage?.id);
          event.preventDefault();
       }

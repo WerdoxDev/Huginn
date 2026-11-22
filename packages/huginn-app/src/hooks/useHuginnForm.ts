@@ -8,6 +8,7 @@ import {
    type DefaultValues,
    type FieldPath,
    type FieldValues,
+   type FormState,
    type RegisterOptions,
    type UseFormHandleSubmit,
    type UseFormRegisterReturn,
@@ -26,7 +27,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       unregister,
       watch,
       getFieldState,
-      formState,
+      formState: hookFormState,
       control,
       setFocus,
    } = useForm<I>({
@@ -35,6 +36,7 @@ export function useHuginnForm<I extends FieldValues>(options?: { defaultValues?:
       defaultValues: options?.defaultValues,
    });
 
+   const formState: FormState<I> = hookFormState;
    const values = watch();
 
    const [inputMessages, setInputMessages] = useState<{ [k: string]: InputMessage }>({});

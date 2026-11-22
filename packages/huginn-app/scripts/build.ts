@@ -1,6 +1,9 @@
+import posthog from "@posthog/rollup-plugin";
 import { builtinModules } from "node:module";
-import { build } from "tsdown";
 import "dotenv/config";
+import { build } from "tsdown";
+
+import { version } from "../package.json";
 
 export const builtins = ["electron", ...builtinModules.flatMap((m) => [m, `node:${m}`])];
 export const external = [...builtins];
@@ -14,7 +17,7 @@ if (isProd && !publicPosthogKey) {
 
 const noExternal = [
    "@huginnjs/shared",
-   "@huginnjs/shared/runtime-analytics",
+   "@huginnjs/shared/electron-analytics",
    "native-addon",
    "loopback-capture",
    "electron-updater",
@@ -31,20 +34,31 @@ await build({
    define: {
       "process.env.VITE_PUBLIC_POSTHOG_KEY": JSON.stringify(publicPosthogKey ?? ""),
    },
+   plugins: [
+      posthog({
+         personalApiKey: process.env.POSTHOG_CLI_API_KEY!,
+         projectId: process.env.POSTHOG_PROJECT_ID,
+         host: "https://eu.posthog.com",
+         sourcemaps: {
+            enabled: isProd,
+            releaseName: `huginn-app-desktop`,
+            releaseVersion: version.toString(),
+         },
+      }),
+   ],
 
    deps: {
       neverBundle: external,
-      alwaysBundle: isProd ? noExternal : ["@huginnjs/shared", "native-addon", "loopback-capture"],
+      alwaysBundle: isProd ? noExternal : ["@huginnjs/shared", "@huginnjs/shared/electron-analytics", "native-addon", "loopback-capture"],
 
       onlyBundle: false,
    },
 
-   sourcemap: true,
    dts: false,
    outDir: ".electron",
    fixedExtension: true,
    target: "es2022",
-   minify: false,
+   minify: true,
    clean: true,
    shims: true,
 });

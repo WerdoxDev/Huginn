@@ -9,12 +9,12 @@
    "exports": {
       ".": "./src/index.ts",
       "./web-analytics": "./src/web-analytics.ts",
+      "./electron-analytics": "./src/electron-analytics.ts",
       "./runtime-analytics": "./src/runtime-analytics.ts"
    },
    "dependencies": {
       "@opentelemetry/api": "^1.9.1",
       "@opentelemetry/api-logs": "^0.221.0",
-      "@opentelemetry/context-zone": "^2.10.0",
       "@opentelemetry/exporter-logs-otlp-http": "^0.221.0",
       "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
       "@opentelemetry/instrumentation": "^0.221.0",
@@ -25,6 +25,7 @@
       "@opentelemetry/sdk-logs": "^0.221.0",
       "@opentelemetry/sdk-node": "^0.221.0",
       "@opentelemetry/sdk-trace-base": "^2.10.0",
+      "@opentelemetry/sdk-trace-node": "^2.10.0",
       "@opentelemetry/sdk-trace-web": "^2.10.0",
       "@sapphire/snowflake": "^3.5.3",
       "@scure/base": "^2.3.0",

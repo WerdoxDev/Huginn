@@ -34,6 +34,7 @@ function HomeLayoutComponent() {
       resetToCenter,
       isDragging,
       setIsDragging,
+      cancelDrag,
       openRight,
       closeRight,
    } = useSidebarStore();
@@ -105,6 +106,11 @@ function HomeLayoutComponent() {
    }
 
    useEffect(() => {
+      cancelDrag();
+      return cancelDrag;
+   }, [isMobile, cancelDrag]);
+
+   useEffect(() => {
       if (isMobile || !settings) return;
 
       if (settings.isChannelSidebarOpen) {
@@ -135,6 +141,7 @@ function HomeLayoutComponent() {
          onTouchStart={handleTouchStart}
          onTouchMove={handleTouchMove}
          onTouchEnd={handleTouchEnd}
+         onTouchCancel={cancelDrag}
       >
          <div
             className={clsx(

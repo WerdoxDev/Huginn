@@ -4,12 +4,12 @@ import "../../cropper.css";
 import VoiceElement from "@components/voice/VoiceElement";
 import { DialogActions, HuginnButton, HuginnDialogPanel, HuginnLabel, HuginnLoadingButton } from "@huginn/frontend-shared";
 import { analytics } from "@huginnjs/shared";
+import { cropGif } from "@lib/gif-cropper";
 import { useModals } from "@stores/modalsStore";
 import clsx from "clsx";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 // import { usePostHog } from "posthog-js/react";
 import Cropper, { type ReactCropperElement } from "react-cropper";
-import { SuperImageCropper } from "super-image-cropper";
 
 import { UserProfileCropPreview } from "./UserProfileModal";
 
@@ -66,8 +66,7 @@ export default function ImageCropModal() {
                   data = cropperRef.current.cropper.getCroppedCanvas(canvasSize).toDataURL();
                }
             } else {
-               const imageCropper = new SuperImageCropper();
-               data = (await imageCropper.crop({
+               data = (await cropGif({
                   cropperInstance: cropperRef.current.cropper,
                   outputType: "base64",
                   src: modal.originalImageData,

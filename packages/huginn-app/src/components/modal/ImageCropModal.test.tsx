@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
    props: {} as Record<string, unknown>,
    updateModals: vi.fn(),
    revokeObjectURL: vi.fn(),
+   createObjectURL: vi.fn(() => "blob:gif-worker"),
    getCroppedCanvas: vi.fn(),
    toDataURL: vi.fn(),
    cropGif: vi.fn(),
@@ -64,6 +65,7 @@ beforeEach(() => {
       "URL",
       class extends URL {
          static revokeObjectURL = mocks.revokeObjectURL;
+         static createObjectURL = mocks.createObjectURL;
       },
    );
 });
@@ -91,7 +93,14 @@ describe("ImageCropModal sticker cropping", () => {
       expect(mocks.props.aspectRatio).toBeNaN();
       fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
       await waitFor(() => expect(mocks.modal.callback).toHaveBeenCalledWith("data:image/gif;base64,R0lGODlh"));
-      expect(mocks.cropGif).toHaveBeenCalledWith(expect.objectContaining({ outputType: "base64", src: "blob:sticker" }));
+      expect(mocks.cropGif).toHaveBeenCalledWith(
+         expect.objectContaining({
+            outputType: "base64",
+            src: "blob:sticker",
+            gifJsOptions: { workerScript: "blob:gif-worker" },
+         }),
+      );
+      expect(mocks.revokeObjectURL).toHaveBeenCalledWith("blob:gif-worker");
       expect(mocks.getCroppedCanvas).not.toHaveBeenCalled();
    });
 

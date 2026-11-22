@@ -1,6 +1,5 @@
 import { context, propagation, trace, type Span } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
-import { ZoneContextManager } from "@opentelemetry/context-zone";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
@@ -59,9 +58,8 @@ export function setupWebInstrumentation(
       ],
    });
 
-   provider.register({
-      contextManager: new ZoneContextManager(),
-   });
+   // Use the default stack context manager without patching browser async APIs.
+   provider.register();
 
    const unregisterInstrumentations = registerInstrumentations({
       instrumentations: [

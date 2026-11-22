@@ -322,7 +322,7 @@ describe("utils", () => {
    test("should convert api presence to app presence", () => {
       const apiPresence: UserPresence = {
          user: createTestUser({ id: "123" }),
-         activeSessions: [{ sessionId: "123" }],
+         clientStatus: { desktop: "online" },
          activities: [
             {
                name: "Playing a game",
@@ -341,11 +341,6 @@ describe("utils", () => {
 
       expect(appPresence).toMatchInlineSnapshot(`
         {
-          "activeSessions": [
-            {
-              "sessionId": "123",
-            },
-          ],
           "activities": [
             {
               "applicationId": 123,
@@ -357,6 +352,9 @@ describe("utils", () => {
               "type": 0,
             },
           ],
+          "clientStatus": {
+            "desktop": "online",
+          },
           "status": "online",
           "userId": "123",
         }

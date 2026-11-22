@@ -71,7 +71,6 @@ export default function AndroidAudioRouteSelect(props: { compact?: boolean; clas
       >
          {!props.compact && <HuginnSelect.Label>Audio Route</HuginnSelect.Label>}
          <HuginnSelect.List
-            ariaLabel={props.compact ? "Select audio route" : undefined}
             className={props.compact ? "size-10! rounded-full! shadow-lg" : "w-full!"}
             hideArrow={props.compact}
             hideValue={props.compact}

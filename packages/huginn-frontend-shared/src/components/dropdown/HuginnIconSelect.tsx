@@ -16,7 +16,7 @@ export type HuginnIconSelectProps<T = string> = Omit<HuginnMenuProps, "children"
 } & ({ multiple?: false; value: T; onChange: (value: NoInfer<T>) => void } | { multiple: true; value: readonly T[]; onChange: (value: NoInfer<T>[]) => void });
 
 export default function HuginnIconSelect<T = string>(props: HuginnIconSelectProps<T>) {
-   const { active, className, disabled, icon, multiple, onChange, options, value, ...menuProps } = props;
+   const { active, className, disabled, icon, label, multiple, onChange, options, value, ...menuProps } = props;
    const selectedOptions = options.filter((option) =>
       multiple ? value.some((selected) => Object.is(selected, option.value)) : Object.is(value, option.value),
    );
@@ -24,6 +24,7 @@ export default function HuginnIconSelect<T = string>(props: HuginnIconSelectProp
    return (
       <HuginnMenu {...menuProps}>
          <HuginnMenu.Trigger
+            title={active ? `${label} (active)` : label}
             disabled={disabled}
             className={clsx(
                "hover:bg-surface-deep active:bg-surface-deep relative flex size-8 shrink-0 items-center justify-center rounded-md text-white transition-colors outline-none disabled:cursor-not-allowed disabled:opacity-50",

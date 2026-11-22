@@ -138,9 +138,13 @@ describe("contribution sorting and filtering", () => {
    it("sorts by submission date without changing the cached contributions", async () => {
       const user = userEvent.setup();
       render(<SettingsContributionTab />);
-      expect(visibleApplications()).toEqual(["Application 3", "Application 2", "Application 1"]);
+      expect(visibleApplications()).toEqual(["Application 1", "Application 2", "Application 3"]);
 
-      await user.click(screen.getByRole("button", { name: "Sort contributions: Newest first" }));
+      await user.click(screen.getByRole("button", { name: "Sort contributions" }));
+      await user.click(await screen.findByRole("menuitem", { name: "Newest first" }));
+      expect(visibleApplications()).toEqual(["Application 3", "Application 2", "Application 1"]);
+      await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+      await user.click(screen.getByRole("button", { name: "Sort contributions" }));
       await user.click(await screen.findByRole("menuitem", { name: "Oldest first" }));
 
       expect(visibleApplications()).toEqual(["Application 1", "Application 2", "Application 3"]);
@@ -159,15 +163,14 @@ describe("contribution sorting and filtering", () => {
       await user.click(accepted);
       expect(accepted.getAttribute("aria-checked")).toBe("true");
       expect(visibleApplications()).toEqual(["Application 1"]);
-      expect(trigger.getAttribute("aria-label")).toContain("filters active");
       expect(trigger.querySelector(".bg-primary-500")).not.toBeNull();
 
       await user.click(screen.getByRole(role, { name: "Pending" }));
-      expect(visibleApplications()).toEqual(["Application 2", "Application 1"]);
+      expect(visibleApplications()).toEqual(["Application 1", "Application 2"]);
       await user.click(screen.getByRole(role, { name: "Accepted" }));
       expect(visibleApplications()).toEqual(["Application 2"]);
       await user.click(screen.getByRole(role, { name: "Pending" }));
-      expect(visibleApplications()).toEqual(["Application 3", "Application 2", "Application 1"]);
+      expect(visibleApplications()).toEqual(["Application 1", "Application 2", "Application 3"]);
       expect(trigger.querySelector(".bg-primary-500")).toBeNull();
 
       await user.click(screen.getByRole(role, { name: "Rejected" }));

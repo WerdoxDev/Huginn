@@ -122,7 +122,7 @@ export default function DefaultMessage() {
             // (isSeparate || isLastAction) && "rounded-tr-lg",
             // isNextSeparate && "rounded-br-lg",
             !isSeparate && !isLastAction && "py-0!",
-            hasReactions && "pb-2",
+            hasReactions && "pb-2!",
             !isNextSeparate && "pb-0",
             !context.options?.equalPadding && isSeparate && !isNewDate && !isUnread && "mt-1.5",
          )}
@@ -147,31 +147,44 @@ export default function DefaultMessage() {
                isMentioned && "bg-primary-500",
             )}
          ></div>
-         {referencedMessage !== undefined && <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />}
-         {(isSeparate || isLastAction) && (
-            <div className="flex w-full items-center gap-x-2 pr-2">
-               <button
-                  type="button"
-                  className="shrink-0 cursor-pointer rounded-full"
-                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
-               >
-                  <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
-               </button>
-               <button
-                  type="button"
-                  className="text-text cursor-pointer truncate text-sm hover:underline"
-                  onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
-               >
-                  {author?.displayName}
-               </button>
-               {!context.message.isPreview && context.message.flags && hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
-                  <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
-               ) : null}
-               <div className="text-text/50 shrink-0 text-xs">{formattedFullTime}</div>
-               {!context.message.isPreview && !context.options?.hideActions && (
-                  <div className="ml-auto shrink-0">
-                     <MessageActions message={context.message} />
-                  </div>
+         {(referencedMessage !== undefined || isSeparate || isLastAction) && (
+            <div className="flex w-full items-start gap-x-2 pr-2">
+               <div className="min-w-0 flex-1">
+                  {referencedMessage !== undefined && (
+                     <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />
+                  )}
+                  {(isSeparate || isLastAction) && (
+                     <div
+                        className={clsx(
+                           "flex w-full items-center gap-x-2",
+                           !context.message.isPreview && !context.options?.hideActions && "min-h-8.5",
+                        )}
+                     >
+                        <button
+                           type="button"
+                           className="shrink-0 cursor-pointer rounded-full"
+                           onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+                        >
+                           <UserAvatar userId={context.message.authorId} avatarHash={author?.avatar} size={1.75} hovered={isHovering} />
+                        </button>
+                        <button
+                           type="button"
+                           className="text-text cursor-pointer truncate text-sm hover:underline"
+                           onClick={() => updateModals({ userProfile: { isOpen: true, userId: context.message.authorId } })}
+                        >
+                           {author?.displayName}
+                        </button>
+                        {!context.message.isPreview &&
+                        context.message.flags &&
+                        hasFlag(context.message.flags, MessageFlags.SUPPRESS_NOTIFICATIONS) ? (
+                           <IconMingcuteNotificationOffFill className="text-text size-4 shrink-0" />
+                        ) : null}
+                        <div className="text-text/70 shrink-0 text-xs">{formattedFullTime}</div>
+                     </div>
+                  )}
+               </div>
+               {(isSeparate || isLastAction) && !context.message.isPreview && !context.options?.hideActions && (
+                  <MessageActions message={context.message} />
                )}
             </div>
          )}
@@ -194,12 +207,12 @@ export default function DefaultMessage() {
                widths={widths}
             />
             {!isSeparate && !isLastAction && (
-               <div className="flex shrink-0 self-stretch px-2 select-none">
+               <div className="flex shrink-0 self-stretch pr-2 select-none">
                   {/* Limit the top offset to the space remaining below the 34px controls. */}
                   <div className="relative flex h-8.5 items-center gap-x-2 lg:top-[clamp(0px,calc(100%-2.125rem),0.5rem)]">
                      <div
                         className={clsx(
-                           "text-text/50 bg-surface-alt/70 box-exact rounded px-1.5 py-1.5 text-xs transition-opacity group-hover:opacity-100 group-data-context:opacity-100 lg:bg-transparent lg:p-0",
+                           "text-text/70 px-1.5 py-1.5 text-xs transition-opacity group-hover:opacity-100 group-data-context:opacity-100 lg:bg-transparent lg:p-0",
                            isMobile ? "opacity-100" : "opacity-0",
                         )}
                      >
@@ -254,6 +267,7 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
    const hasAttachmentsOrEmbeds =
       ("attachments" in props.referencedMessage && props.referencedMessage.attachments.length !== 0) ||
       ("embeds" in props.referencedMessage && props.referencedMessage.embeds.length !== 0);
+   const isVoiceMessage = hasFlag(props.referencedMessage.flags ?? 0, MessageFlags.VOICE_MESSAGE);
 
    const { children } = useMessageRenderer(message, ["attachment", "code", "embed"], true, true);
    const user = useUser(props.referencedMessage.authorId);
@@ -273,7 +287,11 @@ function ResolvedReplyRenderer(props: { referencedMessage: ProcessedAppMessage; 
                <div className="text-text/80 text-xs">{user.displayName}</div>
             </div>
             {message.content && <div className="overflow-hidden text-sm text-white">{children}</div>}
-            {hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="shrink-0 text-white" />}
+            {isVoiceMessage ? (
+               <IconMingcuteMicFill className="shrink-0 text-white" />
+            ) : (
+               hasAttachmentsOrEmbeds && <IconMingcutePhotoAlbum2Fill className="shrink-0 text-white" />
+            )}
          </div>
       </div>
    );

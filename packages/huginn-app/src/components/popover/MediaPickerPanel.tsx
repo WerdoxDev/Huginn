@@ -153,7 +153,7 @@ export default function MediaPickerPanel({
          <div className="flex aspect-square w-full items-center justify-center p-2">
             <HuginnButton
                type="button"
-               aria-label={kind === "gifs" ? "Upload GIF" : "Upload sticker"}
+               title={kind === "gifs" ? "Upload GIF" : "Upload sticker"}
                color="primary"
                onClick={handleUploadClick}
                disabled={expressions.isPending}
@@ -178,7 +178,7 @@ export default function MediaPickerPanel({
          >
             <button
                type="button"
-               aria-label={item.title}
+               title={item.title}
                className="hover:border-primary-700 active:border-primary-700 flex size-full cursor-pointer items-center justify-center overflow-hidden rounded-md border-2 border-transparent transition-[border]"
                onClick={() => onSelect?.(item)}
                onContextMenu={(event) => (kind === "gifs" ? openGifMenu(item, event) : openStickerMenu(item, event))}
@@ -197,7 +197,11 @@ export default function MediaPickerPanel({
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden" data-ignore-swipe>
          <div className="flex items-center gap-2 p-2">
             {tab === "all" && (category || search) && (
-               <button className="size cursor-pointer p-2 text-white/70 hover:text-white" onClick={() => handleResetBrowse()}>
+               <button
+                  title="Back to categories"
+                  className="size cursor-pointer p-2 text-white/70 hover:text-white"
+                  onClick={() => handleResetBrowse()}
+               >
                   <IconMingcuteArrowLeftFill className="size-6" />
                </button>
             )}

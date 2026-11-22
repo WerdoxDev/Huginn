@@ -7,14 +7,14 @@ Huginn is an open-source, customizable chat app. This monorepo contains its clie
 
 ## Repository
 
-| Path | Contents |
-| --- | --- |
-| [`packages/huginn-app`](packages/huginn-app) | Web, Electron desktop, and Android client |
-| [`packages/huginn-server`](packages/huginn-server), [`huginn-cdn`](packages/huginn-cdn), [`huginn-voice`](packages/huginn-voice) | API, file delivery, and voice services |
-| [`packages/huginn-api`](packages/huginn-api) | Published `@huginnjs/api` TypeScript client |
-| [`packages/huginn-website`](packages/huginn-website), [`huginn-docs`](packages/huginn-docs) | Public website and documentation |
-| [`packages/huginn-tui`](packages/huginn-tui) | Terminal client |
-| [`packages/huginn-shared`](packages/huginn-shared), [`huginn-frontend-shared`](packages/huginn-frontend-shared), [`huginn-backend-shared`](packages/huginn-backend-shared) | Shared code used across packages |
+| Path                                                                                                                                                                       | Contents                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [`packages/huginn-app`](packages/huginn-app)                                                                                                                               | Web, Electron desktop, and Android client   |
+| [`packages/huginn-server`](packages/huginn-server), [`huginn-cdn`](packages/huginn-cdn), [`huginn-voice`](packages/huginn-voice)                                           | API, file delivery, and voice services      |
+| [`packages/huginn-api`](packages/huginn-api)                                                                                                                               | Published `@huginnjs/api` TypeScript client |
+| [`packages/huginn-website`](packages/huginn-website), [`huginn-docs`](packages/huginn-docs)                                                                                | Public website and documentation            |
+| [`packages/huginn-tui`](packages/huginn-tui)                                                                                                                               | Terminal client                             |
+| [`packages/huginn-shared`](packages/huginn-shared), [`huginn-frontend-shared`](packages/huginn-frontend-shared), [`huginn-backend-shared`](packages/huginn-backend-shared) | Shared code used across packages            |
 
 ## Development
 
@@ -34,6 +34,10 @@ bun run dev:browser
 Open `http://localhost:5173` for the website or `http://localhost:5173/app/` for the app. The website dev server proxies `/app/*` to the app dev server, so both pages share cookies and browser storage. Browser OAuth callbacks use `http://localhost:5173/redirect` in development.
 
 To work on the documentation, run `pnpm --filter @huginn/docs docs:dev`. Package-specific scripts and configuration are in each package's `package.json`.
+
+Run `pnpm check` for app lint, typechecking, and tests, plus formatting and whitespace checks on changed app and repository files. Individual checks are available as `pnpm check:lint`, `check:format`, `check:whitespace`, `check:typecheck`, and `check:test`. For a focused test run, use `pnpm --dir packages/huginn-app test:run <test-file>`.
+
+Changed-file checks compare against `HEAD` locally, including untracked files. Set `CHECK_BASE_REF=<commit>` to check a branch's changes; CI supplies the pull request base or previous pushed revision. Check output streams to the terminal, and any failed check stops the command with a nonzero exit code.
 
 ## PostgreSQL in Docker Swarm
 
@@ -136,7 +140,6 @@ docker run --rm --env-file .env.postgres-backup \
 The database archive is `recovery/work/snapshot/huginn.dump`; compare its SHA-256 with `manifest.json`. Create an empty PostgreSQL 18 database and restore with `pg_restore --exit-on-error --no-owner --no-acl --dbname <empty-database> huginn.dump`. Review `roles.sql` if additional database roles are needed; it excludes role passwords. Keep the original database intact until the replacement is verified. S3 version history provides another recovery option for accidental deletion or damaged repository objects; it requires administrator access rather than the backup user's credentials.
 
 Validate worker changes with `python -m unittest discover -s ops/postgres-backup -p '*_test.py'` and a real backup/restore check against a temporary database.
-
 
 ## Voice relay
 

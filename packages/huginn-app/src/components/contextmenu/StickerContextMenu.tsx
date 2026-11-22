@@ -1,5 +1,4 @@
 import { useExpressions } from "@hooks/useExpressions";
-import { resolveExpression } from "@huginnjs/shared";
 import { useContextMenu } from "@stores/contextMenuStore";
 
 import type { ContextMenuExpression } from "@/types";
@@ -14,13 +13,11 @@ export default function StickerContextMenu() {
 }
 
 export function StickerSaveContextMenuItem(props: { sticker: ContextMenuExpression }) {
-   const { find, remove, add, downloadAndUpload, isPending } = useExpressions("stickers");
-   const expression = resolveExpression(props.sticker);
+   const { find, toggle, isPending } = useExpressions("stickers");
    const isSaved = find(props.sticker);
 
    function handleToggle() {
-      if (isSaved) return remove(isSaved).catch(() => {});
-      return (expression ? add(expression) : downloadAndUpload(props.sticker)).catch(() => {});
+      return toggle(props.sticker).catch(() => {});
    }
 
    return (

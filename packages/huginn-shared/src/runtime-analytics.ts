@@ -1,165 +1,21 @@
-import { context, propagation, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
-import { logs } from "@opentelemetry/api-logs";
-import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
-import { resourceFromAttributes } from "@opentelemetry/resources";
-import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
-import { PostHog } from "posthog-node";
 
-import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
+import { RuntimeAnalyticsBase, type RuntimeAnalyticsOptions } from "./runtime-analytics-base";
 
-type Options = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: string; serviceName: string; clientId?: string };
+export class RuntimeAnalytics extends RuntimeAnalyticsBase {
+   public constructor(posthogApiKey: string, options: RuntimeAnalyticsOptions) {
+      super(posthogApiKey, options, (config) => {
+         const pinoInstrumentation = new PinoInstrumentation();
+         const sdk = new NodeSDK({ ...config, instrumentations: [pinoInstrumentation] });
+         sdk.start();
 
-export class RuntimeAnalytics extends Analytics {
-   private readonly client: PostHog;
-   private readonly options: Options;
-   private readonly sdk: NodeSDK;
-   private readonly logRecordProcessors: BatchLogRecordProcessor[];
-   private readonly spanProcessors: BatchSpanProcessor[];
-   private readonly pinoInstrumentation: PinoInstrumentation;
-
-   public constructor(posthogApiKey: string, options: Options) {
-      super();
-      this.options = options;
-      this.client = new PostHog(posthogApiKey, { host: options.posthogHost ?? "https://eu.i.posthog.com" });
-
-      this.logRecordProcessors = [
-         new BatchLogRecordProcessor({
-            exporter: new OTLPLogExporter({
-               url: options.otlpLogUrl,
-            }),
-         }),
-         new BatchLogRecordProcessor({
-            exporter: new OTLPLogExporter({
-               url: `${options.posthogHost}/i/v1/logs`,
-               headers: {
-                  Authorization: `Bearer ${posthogApiKey}`,
-               },
-            }),
-         }),
-      ];
-      this.spanProcessors = [
-         new BatchSpanProcessor(
-            new OTLPTraceExporter({
-               url: options.otlpTraceUrl,
-            }),
-         ),
-         new BatchSpanProcessor(
-            new OTLPTraceExporter({
-               url: `${options.posthogHost}/i/v1/traces`,
-               headers: {
-                  Authorization: `Bearer ${posthogApiKey}`,
-               },
-            }),
-         ),
-      ];
-      this.pinoInstrumentation = new PinoInstrumentation();
-      this.sdk = new NodeSDK({
-         resource: resourceFromAttributes({ "service.name": options.serviceName, "client.id": options.clientId }),
-         logRecordProcessors: this.logRecordProcessors,
-         spanProcessors: this.spanProcessors,
-         instrumentations: [this.pinoInstrumentation],
+         return {
+            shutdown: async () => {
+               pinoInstrumentation.disable();
+               await sdk.shutdown();
+            },
+         };
       });
-
-      this.sdk.start();
-   }
-
-   startActiveSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T>;
-   startActiveSpan<T>(name: string, fn: (span: Span) => T): T;
-   startActiveSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
-      const tracer = trace.getTracer(this.options.serviceName);
-
-      return tracer.startActiveSpan(name, { attributes: { ...this.defaultAttributes } }, (span: Span) => {
-         let result: T | Promise<T>;
-
-         try {
-            result = fn(span);
-         } catch (error) {
-            span.end();
-            throw error;
-         }
-
-         if (result instanceof Promise) {
-            return result.then(
-               (value) => {
-                  span.end();
-                  return value;
-               },
-               (error) => {
-                  span.end();
-                  throw error;
-               },
-            );
-         }
-
-         span.end();
-         return result;
-      });
-   }
-
-   getActiveSpan(): Span | undefined {
-      return trace.getActiveSpan();
-   }
-
-   withRootContext<F extends () => ReturnType<F>>(fn: F): ReturnType<F> {
-      return context.with(ROOT_CONTEXT, fn);
-   }
-
-   public identify(id: string, properties?: Record<string, any>): void {
-      this.client.identify({ distinctId: id, properties });
-   }
-
-   public log(options: { body: string; level: LogLevel; attributes?: Record<string, any>; exception?: unknown }): void {
-      const logger = logs.getLogger(this.options.serviceName);
-
-      const mergedAttributes = { ...this.defaultAttributes, ...options.attributes };
-      logger.emit({
-         severityNumber: logLevelToSeverityNumber(options.level),
-         severityText: options.level.toUpperCase(),
-         exception: options.exception,
-         body: options.body,
-         attributes: mergedAttributes,
-      });
-
-      if (options.level === "error" || options.level === "fatal") {
-         console.error(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes, options.exception);
-      } else if (options.level === "warn") {
-         console.warn(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
-      } else {
-         console.log(`[${options.level.toUpperCase()}] ${options.body}`, mergedAttributes);
-      }
-   }
-
-   public reset(): void {
-      throw new Error("reset() is not supported in RuntimeAnalytics");
-   }
-
-   public getTraceparent(): string | undefined {
-      const carrier: { traceparent?: string } = {};
-      propagation.inject(context.active(), carrier);
-      return carrier.traceparent;
-   }
-
-   public async flush(): Promise<void> {
-      await Promise.all([
-         this.client.flush(),
-         ...this.logRecordProcessors.map((processor) => processor.forceFlush()),
-         ...this.spanProcessors.map((processor) => processor.forceFlush()),
-      ]);
-   }
-
-   public async shutdown(): Promise<void> {
-      this.pinoInstrumentation.disable();
-      try {
-         await Promise.all([this.client.shutdown(), this.sdk.shutdown()]);
-      } finally {
-         logs.disable();
-         trace.disable();
-         context.disable();
-         propagation.disable();
-      }
    }
 }
