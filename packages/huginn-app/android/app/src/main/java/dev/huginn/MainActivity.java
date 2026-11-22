@@ -30,6 +30,9 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
+        // WebView inherits Android's font scale, changing rem-based line heights but not padding.
+        getBridge().getWebView().getSettings().setTextZoom(100);
+
         clearNotificationHistory(getIntent());
 
         insetPlugin = (InsetPlugin) getBridge().getPlugin("Inset").getInstance();

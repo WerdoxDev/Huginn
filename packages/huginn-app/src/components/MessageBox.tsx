@@ -276,7 +276,7 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
                            onPaste={onPaste}
                            placeholder={`Message ${currentChannel?.name}`}
                            className={clsx(
-                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-[1.5rem] font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text lg:leading-5.5",
+                              "h-full shrink-0 py-4.25 pr-1 pl-2 text-start align-baseline leading-5.5 font-normal whitespace-break-spaces text-white caret-white outline-hidden select-text",
                               currentEditingMessageId && "pl-2.25",
                            )}
                            onClick={handleEditorClick}
