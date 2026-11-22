@@ -20,11 +20,13 @@ export default function VideoPlayer(props: {
    width: number;
    height: number;
    duration?: number;
+   active: boolean;
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
    const containerRef = useRef<HTMLDivElement>(null);
    const videoRef = useRef<HTMLVideoElement>(null);
    const [isPlaying, setPlaying] = useState(false);
+   const [hasEnded, setHasEnded] = useState(false);
    const isMobile = useIsMobile();
 
    const [currentVideoPercent, setCurrentVideoPercent] = useState(0);
@@ -35,31 +37,33 @@ export default function VideoPlayer(props: {
    const [hasError, setHasError] = useState(false);
    const [areControlsVisible, setControlsVisible] = useState(true);
    const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
-   const isMobileFullscreen = isMobile && isFullscreen;
    const { start: startControlsTimeout, cancel: cancelControlsTimeout } = useTimeout(() => setControlsVisible(false), MOBILE_CONTROLS_HIDE_DELAY);
    const settings = useStorage("settings");
    const { updateSettings } = useStorageStore();
-   const aspectRatio = props.width && props.height ? props.width / props.height : 1;
 
-   useBackHandler(BackHandlerId.VideoPlayer, () => {
-      if (isFullscreen) {
-         void toggleFullscreen();
-         return true;
-      }
-      return false;
-   });
+   useBackHandler(
+      BackHandlerId.VideoPlayer,
+      () => {
+         if (isFullscreen) {
+            void toggleFullscreen();
+            return true;
+         }
+         return false;
+      },
+      "before-stack",
+   );
 
    useEffect(() => {
       setControlsVisible(true);
-   }, [isMobileFullscreen]);
+   }, [isMobile, isFullscreen]);
 
    useEffect(() => {
-      if (isMobileFullscreen && areControlsVisible && isPlaying && isLoaded && !hasError) {
+      if (isMobile && areControlsVisible && isPlaying && isLoaded && !hasError) {
          startControlsTimeout();
       }
 
       return cancelControlsTimeout;
-   }, [isMobileFullscreen, areControlsVisible, isPlaying, isLoaded, hasError, startControlsTimeout, cancelControlsTimeout]);
+   }, [isMobile, areControlsVisible, isPlaying, isLoaded, hasError, startControlsTimeout, cancelControlsTimeout]);
 
    useEffect(() => {
       if (videoRef.current) {
@@ -74,6 +78,7 @@ export default function VideoPlayer(props: {
          "play",
          () => {
             setPlaying(true);
+            setHasEnded(false);
          },
          { signal: controller.signal },
       );
@@ -123,6 +128,21 @@ export default function VideoPlayer(props: {
       };
    }, []);
 
+   useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (props.active) {
+         video.src = props.url;
+         video.currentTime = 0;
+         void video.play().catch(() => {});
+      }
+      return () => {
+         video.pause();
+         video.removeAttribute("src");
+         video.load();
+      };
+   }, [props.active, props.url]);
+
    function updateVideoDuration() {
       const duration = videoRef.current?.duration ?? 0;
       setVideoDuration(Number.isFinite(duration) && duration > 0 ? duration : 0);
@@ -150,22 +170,14 @@ export default function VideoPlayer(props: {
       if (isPlaying) {
          videoRef.current?.pause();
       } else {
-         videoRef.current?.play();
+         if (hasEnded && videoRef.current) videoRef.current.currentTime = 0;
+         void videoRef.current?.play().catch(() => {});
       }
    }
 
    function restartControlsTimeout() {
-      if (isMobileFullscreen && areControlsVisible && isPlaying) {
+      if (isMobile && areControlsVisible && isPlaying) {
          startControlsTimeout();
-      }
-   }
-
-   async function handleMobileClick() {
-      if (!isFullscreen) {
-         await toggleFullscreen();
-         videoRef.current?.play();
-      } else {
-         setControlsVisible((visible) => !visible);
       }
    }
 
@@ -173,13 +185,17 @@ export default function VideoPlayer(props: {
       <div
          ref={containerRef}
          className={clsx("group/video relative flex w-full overflow-hidden rounded-md")}
-         style={isFullscreen ? undefined : { width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
-         onClick={isMobile ? handleMobileClick : togglePlaying}
+         style={isFullscreen ? undefined : { width: props.width, height: props.height }}
+         onClick={(event) => {
+            event.stopPropagation();
+            if (isMobile) setControlsVisible((visible) => !visible);
+            else togglePlaying();
+         }}
       >
          <video
             width={isFullscreen ? undefined : props.width}
             height={isFullscreen ? undefined : props.height}
-            className="h-full w-full"
+            className="h-full w-full object-contain"
             src={props.url}
             ref={videoRef}
             playsInline
@@ -191,14 +207,15 @@ export default function VideoPlayer(props: {
             onError={() => setHasError(true)}
             onEnded={() => {
                setPlaying(false);
+               setHasEnded(true);
                setControlsVisible(true);
             }}
          />
          <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
-         {isLoaded && !hasError && isMobileFullscreen && areControlsVisible && (
+         {isLoaded && !hasError && isMobile && areControlsVisible && (
             <button
                type="button"
-               title={isPlaying ? "Pause" : "Play"}
+               title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
                className="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white"
                onClick={(event) => {
                   event.stopPropagation();
@@ -208,7 +225,7 @@ export default function VideoPlayer(props: {
                {isPlaying ? <IconMingcutePauseFill className="size-10" /> : <IconMingcutePlayFill className="size-10" />}
             </button>
          )}
-         {isLoaded && !hasError && (!isMobileFullscreen || areControlsVisible) && (
+         {isLoaded && !hasError && (
             <div
                onClick={(event) => {
                   event.stopPropagation();
@@ -220,15 +237,16 @@ export default function VideoPlayer(props: {
                data-ignore-swipe
                data-ignore-reply
                className={clsx(
-                  "bg-surface-alt/90 absolute inset-x-0 bottom-0 flex items-center gap-x-2 px-2 py-2 transition-[translate]",
+                  "bg-surface-alt/90 absolute inset-x-0 bottom-0 items-center gap-x-2 px-2 py-2 transition-[translate]",
+                  isMobile && !areControlsVisible ? "hidden" : "flex",
                   isMobile && isFullscreen && "pb-7",
                   isPlaying && !isMobile && "translate-y-full group-hover/video:translate-y-0",
                )}
             >
-               {!isMobileFullscreen && (
+               {!isMobile && (
                   <button
                      type="button"
-                     title={isPlaying ? "Pause" : "Play"}
+                     title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
                      onClick={togglePlaying}
                      className="shrink-0 cursor-pointer text-white/80 hover:text-white"
                   >
@@ -249,7 +267,12 @@ export default function VideoPlayer(props: {
                   onChange={updateCurrentVideoPercent}
                />
                <VolumeSlider currentPercent={settings.mediaVolume} onChange={updateCurrentAudioPercent} />
-               <button type="button" className="shrink-0 cursor-pointer text-white/80 hover:text-white" onClick={toggleFullscreen}>
+               <button
+                  type="button"
+                  title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                  className="shrink-0 cursor-pointer text-white/80 hover:text-white"
+                  onClick={toggleFullscreen}
+               >
                   {isFullscreen ? <IconMingcuteFullscreenExitFill className="size-6" /> : <IconMingcuteFullscreenFill className="size-6" />}
                </button>
             </div>

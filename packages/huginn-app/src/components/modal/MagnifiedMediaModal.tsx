@@ -1,9 +1,11 @@
 import LoadingBackground from "@components/LoadingBackground";
+import VideoPlayer from "@components/VideoPlayer";
 import { useOpen } from "@hooks/useOpen";
 import { HuginnButton, ModalCloseButton } from "@huginn/frontend-shared";
 import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { clamp, constrainImageSize } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
+import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState, type TouchEvent, type WheelEvent, type MouseEvent, type Touch, type RefObject } from "react";
 
@@ -29,6 +31,15 @@ export default function MagnifiedMediaModal() {
    const pinchStartRef = useRef<{ distance: number; scale: number } | null>(null);
    const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
    const { openUrl } = useOpen();
+   const { focused } = useHuginnWindow();
+
+   useEffect(() => {
+      const video = mediaRef.current;
+      if (!(video instanceof HTMLVideoElement)) return;
+      if (modal.isOpen && focused) void video.play().catch(() => {});
+      else video.pause();
+      return () => video.pause();
+   }, [modal.isOpen, modal.url, focused]);
 
    const viewportWidth = stageSize.width || window.innerWidth;
    const viewportHeight = stageSize.height || window.innerHeight;
@@ -224,7 +235,7 @@ export default function MagnifiedMediaModal() {
             <HuginnButton className="h-8 px-2" color="surface" onClick={() => openUrl(modal.url)}>
                Open original
             </HuginnButton>
-            <ModalCloseButton className="static size-8" onClick={close} iconClassName="size-5" />
+            <ModalCloseButton title="Close media viewer" className="static size-8" onClick={close} iconClassName="size-5" />
          </div>
          <div
             ref={stageRef}
@@ -240,42 +251,47 @@ export default function MagnifiedMediaModal() {
             onTouchCancel={handleTouchEnd}
             onClick={close}
          >
-            <div
-               className={clsx(
-                  "relative origin-center overflow-hidden rounded-lg",
-                  isLoaded && (scale > MIN_SCALE ? (isDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in"),
-                  !isDragging && "transition-transform",
-               )}
-               style={{
-                  width: `${dimensions.width}px`,
-                  height: `${dimensions.height}px`,
-                  transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`,
-               }}
-               onClick={handleImageClick}
-            >
-               {modal.type === "image" ? (
-                  <img
-                     src={modal.url}
-                     ref={mediaRef as RefObject<HTMLImageElement>}
-                     onLoad={() => setIsLoaded(true)}
-                     draggable={false}
-                     className="h-full w-full object-contain"
-                     alt={modal.filename}
-                  />
-               ) : (
-                  <video
-                     src={modal.url}
-                     ref={mediaRef as RefObject<HTMLVideoElement>}
-                     onLoadedData={() => setIsLoaded(true)}
-                     draggable={false}
-                     className="h-full w-full object-contain"
-                     autoPlay
-                     muted
-                     loop
-                  />
-               )}
-               <LoadingBackground isLoaded={isLoaded} hasError={false} />
-            </div>
+            {modal.kind === "video" ? (
+               <VideoPlayer key={modal.url} url={modal.url} width={dimensions.width} height={dimensions.height} active={modal.isOpen} />
+            ) : (
+               <div
+                  className={clsx(
+                     "relative origin-center overflow-hidden rounded-lg",
+                     isLoaded && (scale > MIN_SCALE ? (isDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in"),
+                     !isDragging && "transition-transform",
+                  )}
+                  style={{
+                     width: `${dimensions.width}px`,
+                     height: `${dimensions.height}px`,
+                     transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`,
+                  }}
+                  onClick={handleImageClick}
+               >
+                  {modal.type === "image" ? (
+                     <img
+                        src={modal.url}
+                        ref={mediaRef as RefObject<HTMLImageElement>}
+                        onLoad={() => setIsLoaded(true)}
+                        draggable={false}
+                        className="h-full w-full object-contain"
+                        alt={modal.filename}
+                     />
+                  ) : (
+                     <video
+                        src={modal.url}
+                        ref={mediaRef as RefObject<HTMLVideoElement>}
+                        onLoadedData={() => setIsLoaded(true)}
+                        draggable={false}
+                        className="h-full w-full object-contain"
+                        autoPlay={focused && modal.isOpen}
+                        playsInline
+                        muted
+                        loop
+                     />
+                  )}
+                  <LoadingBackground isLoaded={isLoaded} hasError={false} />
+               </div>
+            )}
          </div>
       </HuginnDialogPanel>
    );

@@ -21,6 +21,7 @@ export default function ExpressionPlayer(
       media: Partial<AppExpression>;
       filename?: string;
       disableQuery?: boolean;
+      origin?: "attachment" | "embed";
    } & (
       | { isImage: true; onContextMenu?: (event: MouseEvent<HTMLImageElement>) => void }
       | { isImage?: false; onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void }
@@ -54,7 +55,7 @@ export default function ExpressionPlayer(
    }
 
    useEffect(() => {
-      if (huginnWindow.focused) videoRef.current?.play();
+      if (huginnWindow.focused) void videoRef.current?.play().catch(() => {});
       else videoRef.current?.pause();
    }, [huginnWindow.focused]);
 
@@ -67,6 +68,10 @@ export default function ExpressionPlayer(
             width: props.originalWidth,
             height: props.originalHeight,
             type: "video",
+            kind: props.kind === "stickers" ? "sticker" : "gif",
+            origin: props.origin,
+            provider: props.media.type,
+            filename: props.filename,
          },
       });
    }
@@ -90,6 +95,9 @@ export default function ExpressionPlayer(
                originalWidth={props.originalWidth}
                originalHeight={props.originalHeight}
                contentType={props.contentType ?? "image/gif"}
+               kind={props.kind === "stickers" ? "sticker" : "gif"}
+               origin={props.origin}
+               provider={props.media.type}
                disableQuery={props.disableQuery ?? true}
                onContextMenu={props.onContextMenu}
             />

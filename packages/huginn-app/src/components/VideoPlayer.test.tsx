@@ -15,9 +15,13 @@ vi.mock("@hooks/useFullscreen", () => ({
 import VideoPlayer from "./VideoPlayer";
 
 function renderPlayer() {
-   const result = render(<VideoPlayer url="/video.mp4" width={640} height={360} />);
+   const result = render(<VideoPlayer url="/video.mp4" width={640} height={360} active />);
    const video = result.container.querySelector("video")!;
    fireEvent.loadedData(video);
+   // These control cases begin with a paused viewer session.
+   act(() => video.pause());
+   vi.mocked(video.play).mockClear();
+   vi.mocked(video.pause).mockClear();
    return { ...result, video };
 }
 
@@ -40,6 +44,7 @@ describe("VideoPlayer mobile fullscreen controls", () => {
       vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(function (this: HTMLMediaElement) {
          this.dispatchEvent(new Event("pause"));
       });
+      vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
    });
 
    afterEach(() => {
@@ -112,7 +117,7 @@ describe("VideoPlayer mobile fullscreen controls", () => {
 
       fireEvent(video, new Event(event));
       advanceTime(5000);
-      expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: event === "ended" ? "Replay" : "Play" })).toBeTruthy();
    });
 
    it("restores controls after leaving and re-entering fullscreen", () => {
@@ -121,17 +126,17 @@ describe("VideoPlayer mobile fullscreen controls", () => {
       advanceTime(3000);
 
       mocks.isFullscreen = false;
-      rerender(<VideoPlayer url="/video.mp4" width={640} height={360} />);
+      rerender(<VideoPlayer url="/video.mp4" width={640} height={360} active />);
       expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
 
       mocks.isFullscreen = true;
-      rerender(<VideoPlayer url="/video.mp4" width={640} height={360} />);
+      rerender(<VideoPlayer url="/video.mp4" width={640} height={360} active />);
       expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
       advanceTime(3000);
       expect(screen.queryByRole("button", { name: "Pause" })).toBeNull();
    });
 
-   it("enters fullscreen and plays when tapping an inline mobile video", async () => {
+   it("toggles viewer controls when tapping a mobile video outside fullscreen", async () => {
       mocks.isFullscreen = false;
       const { video } = renderPlayer();
 
@@ -139,10 +144,12 @@ describe("VideoPlayer mobile fullscreen controls", () => {
          fireEvent.click(video);
       });
 
-      expect(mocks.toggleFullscreen).toHaveBeenCalledOnce();
-      expect(video.play).toHaveBeenCalledOnce();
+      expect(mocks.toggleFullscreen).not.toHaveBeenCalled();
+      expect(video.play).not.toHaveBeenCalled();
+      expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
+      fireEvent.click(video);
       advanceTime(5000);
-      expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
    });
 
    it("keeps desktop click-to-play behavior", () => {
