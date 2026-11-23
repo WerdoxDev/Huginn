@@ -72,7 +72,11 @@ export default function ModalsRenderer() {
             modal={verifyEmail}
             onClose={() => updateModals({ verifyEmail: { isOpen: false, pendingEmail: null, onSuccess: undefined } })}
          />
-         <BaseModal renderChildren={<PasswordResetModal />} modal={passwordReset} onClose={() => updateModals({ passwordReset: { isOpen: false } })} />
+         <BaseModal
+            renderChildren={<PasswordResetModal />}
+            modal={passwordReset}
+            onClose={() => updateModals({ passwordReset: { isOpen: false } })}
+         />
          {user && (
             <>
                <BaseModal
