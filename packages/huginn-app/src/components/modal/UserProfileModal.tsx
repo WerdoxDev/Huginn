@@ -1,4 +1,3 @@
-import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import MemberSince from "@components/MemberSince";
 import { ProfileAboutMe, ProfileActivity } from "@components/profile/ProfileComponents";
 import RoamingHuginnIcon from "@components/RoamingHuginnIcon";
@@ -11,13 +10,14 @@ import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { DialogBody, HuginnButton, HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { RelationshipType } from "@huginnjs/shared";
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo, type MouseEvent } from "react";
+import { Suspense, useMemo, useRef, type MouseEvent } from "react";
 
 function ProfileBanner(props: {
    userId: string;
@@ -102,6 +102,7 @@ function ActivityCard(props: { userId: string; accentColor: string }) {
 }
 
 function ProfileContent(props: { userId: string }) {
+   const avatarRef = useRef<HTMLButtonElement>(null);
    const profile = useUserProfile(props.userId);
    const user = useUser(profile.userId);
    const client = useClient();
@@ -175,7 +176,7 @@ function ProfileContent(props: { userId: string }) {
       const image = event.currentTarget.querySelector("img");
       updateModals({
          magnifiedMedia: {
-            source: captureMediaViewerSource(event.currentTarget),
+            source: captureMediaViewerSource(event.currentTarget, avatarRef.current),
             isOpen: true,
             url: client.cdn.banner(user.id, user.banner),
             filename: `${user.username} banner`,
@@ -200,6 +201,7 @@ function ProfileContent(props: { userId: string }) {
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <button
+                     ref={avatarRef}
                      data-media-preview-frame
                      type="button"
                      className="bg-surface-alt group cursor-pointer rounded-full p-1 disabled:cursor-default"

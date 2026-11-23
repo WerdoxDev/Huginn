@@ -1,6 +1,7 @@
 import type { MediaViewerSource } from "@lib/media-viewer-source";
 import type { RefObject } from "react";
 
+import { cloneMediaViewerForeground } from "@lib/media-viewer-source";
 import { useLayoutEffect, useRef } from "react";
 
 const DURATION = 200;
@@ -34,9 +35,35 @@ export function useMediaViewerTransition(options: {
          ],
          { duration: DURATION, easing: EASING, fill: "both" },
       );
+      const foreground = options.source?.foreground;
+      let foregroundCopy: HTMLElement | undefined;
+      let foregroundAnimation: Animation | undefined;
+      if (foreground?.isConnected && options.source?.boundsElement.isConnected) {
+         const rect = foreground.getBoundingClientRect();
+         const panelRect = panel.getBoundingClientRect();
+         foregroundCopy = cloneMediaViewerForeground(foreground);
+         Object.assign(foregroundCopy.style, {
+            position: "absolute",
+            left: `${rect.left - panelRect.left}px`,
+            top: `${rect.top - panelRect.top}px`,
+            width: `${rect.width}px`,
+            height: `${rect.height}px`,
+            margin: "0",
+            pointerEvents: "none",
+            zIndex: "20",
+         });
+         // Stay at the profile position, above the moving banner but below viewer controls.
+         panel.append(foregroundCopy);
+         foregroundAnimation = foregroundCopy.animate(
+            [{ opacity: 1 - Number(controlsOpacity.current ?? (options.isOpen ? "0" : "1")) }, { opacity: options.isOpen ? 0 : 1 }],
+            { duration: DURATION, easing: EASING, fill: "both" },
+         );
+      }
       return () => {
          controlsOpacity.current = getComputedStyle(panel).getPropertyValue("--media-viewer-controls-opacity");
          animation.cancel();
+         foregroundAnimation?.cancel();
+         foregroundCopy?.remove();
       };
    }, [options.isOpen, options.panelRef, options.source]);
 

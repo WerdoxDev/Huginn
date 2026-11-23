@@ -8,9 +8,10 @@ export type MediaViewerSource = {
    frame?: { width: number; color: string };
    preview?: MediaViewerPreview;
    overlays: HTMLElement[];
+   foreground?: HTMLElement;
 };
 
-export function captureMediaViewerSource(mediaElement: HTMLElement): MediaViewerSource {
+export function captureMediaViewerSource(mediaElement: HTMLElement, foreground?: HTMLElement | null): MediaViewerSource {
    const element = mediaElement.closest<HTMLElement>("[data-media-preview-source]") ?? mediaElement;
    const boundsElement = element.querySelector<HTMLElement>("[data-media-preview-bounds]") ?? element;
    const { left, top, width, height } = boundsElement.getBoundingClientRect();
@@ -52,5 +53,26 @@ export function captureMediaViewerSource(mediaElement: HTMLElement): MediaViewer
       clone.style.opacity = getComputedStyle(overlay).opacity;
       return clone;
    });
-   return { element, boundsElement, rect: { left, top, width, height }, borderRadius, frame, preview, overlays };
+   return { element, boundsElement, rect: { left, top, width, height }, borderRadius, frame, preview, overlays, foreground: foreground ?? undefined };
+}
+
+/** Preserve the visible avatar frame, ring, and presence indicator without restarting animated images. */
+export function cloneMediaViewerForeground(element: HTMLElement): HTMLElement {
+   const clone = element.cloneNode(true) as HTMLElement;
+   const images = clone.querySelectorAll("img");
+   element.querySelectorAll("img").forEach((image, index) => {
+      if (!image.complete || !image.naturalWidth) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.drawImage(image, 0, 0);
+      canvas.className = images[index].className;
+      canvas.style.cssText = images[index].style.cssText;
+      images[index].replaceWith(canvas);
+   });
+   clone.inert = true;
+   clone.setAttribute("aria-hidden", "true");
+   return clone;
 }
