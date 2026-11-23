@@ -18,4 +18,6 @@ Use a single-context layout: root `GLOSSARY.md` and `docs/adr/`. Before explorin
 
 ### Tests
 
-Before writing or modifying tests, read `docs/agents/testing.md`.
+Write or modify tests only when the user explicitly requests tests for the feature or fix being worked on.
+
+Before writing, modifying, or running tests, read `docs/agents/testing.md`.
