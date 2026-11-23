@@ -1,4 +1,5 @@
 import type { DeepPartial, ExpressionType, OAuthProvider, Snowflake } from "@huginnjs/shared";
+import type { MediaViewerSource } from "@lib/media-viewer-source";
 import type { ReactNode } from "react";
 
 import { produce } from "immer";
@@ -58,6 +59,7 @@ const initialStore = () => ({
       kind?: "image" | "video" | "gif" | "sticker";
       origin?: "attachment" | "embed";
       provider?: ExpressionType;
+      source?: MediaViewerSource;
    },
    news: { isOpen: false, lastVersion: undefined } as DefaultModal & { lastVersion?: string },
    screenShare: { isOpen: false, callback: undefined } as DefaultModal & {

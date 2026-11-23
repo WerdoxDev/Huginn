@@ -1,4 +1,5 @@
 import { ExpressionType, type ExpressionKind } from "@huginnjs/shared";
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
@@ -59,10 +60,11 @@ export default function ExpressionPlayer(
       else videoRef.current?.pause();
    }, [huginnWindow.focused]);
 
-   function handleClick(e: MouseEvent) {
+   function handleClick(e: MouseEvent<HTMLVideoElement>) {
       e.stopPropagation();
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(e.currentTarget),
             isOpen: true,
             url: props.src,
             width: props.originalWidth,
@@ -78,6 +80,7 @@ export default function ExpressionPlayer(
 
    return (
       <div
+         data-media-preview-source
          style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
          onErrorCapture={handlePlaybackError}
          onLoadCapture={() => {

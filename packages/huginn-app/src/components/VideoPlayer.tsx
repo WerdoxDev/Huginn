@@ -1,15 +1,18 @@
+import type { MediaViewerPreview as Preview } from "@lib/media-viewer-source";
+
 import { BackHandlerId, useBackHandler } from "@hooks/useBackHandler";
 import { useFullscreen } from "@hooks/useFullscreen";
 import { useIsMobile } from "@hooks/useIsMobile";
 import { useTimeout } from "@hooks/useTimeout";
 import { formatSeconds } from "@huginnjs/shared";
 import clsx from "clsx";
-import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, useEffect, useRef, useState, type RefObject } from "react";
 
 import { useStorage, useStorageStore } from "@/stores/storageStore";
 
 import HuginnMediaSlider from "./HuginnMediaSlider";
 import LoadingBackground from "./LoadingBackground";
+import MediaViewerPreview from "./MediaViewerPreview";
 import VolumeSlider from "./VolumeSlider";
 
 const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;
@@ -22,6 +25,8 @@ export default function VideoPlayer(props: {
    duration?: number;
    active: boolean;
    pictureStyle?: CSSProperties;
+   transitionRef?: RefObject<HTMLDivElement | null>;
+   preview?: Preview;
    onLoadedData?: () => void;
    onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void;
 }) {
@@ -133,16 +138,20 @@ export default function VideoPlayer(props: {
    useEffect(() => {
       const video = videoRef.current;
       if (!video) return;
-      if (props.active) {
-         video.src = props.url;
-         video.currentTime = 0;
-         void video.play().catch(() => {});
-      }
+      video.src = props.url;
+      video.currentTime = 0;
       return () => {
          video.pause();
          video.removeAttribute("src");
          video.load();
       };
+   }, [props.url]);
+
+   useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (props.active) void video.play().catch(() => {});
+      else video.pause();
    }, [props.active, props.url]);
 
    function updateVideoDuration() {
@@ -194,38 +203,44 @@ export default function VideoPlayer(props: {
             else togglePlaying();
          }}
       >
-         <video
-            width={isFullscreen ? undefined : props.width}
-            height={isFullscreen ? undefined : props.height}
-            className="h-full w-full rounded-lg object-contain"
-            data-media-picture
-            style={isFullscreen ? undefined : props.pictureStyle}
-            src={props.url}
-            ref={videoRef}
-            playsInline
-            draggable={false}
-            onContextMenu={isFullscreen && isMobile ? undefined : props.onContextMenu}
-            onLoadedMetadata={updateVideoDuration}
-            onDurationChange={updateVideoDuration}
-            onEmptied={() => setVideoDuration(0)}
-            onLoadedData={() => {
-               setIsLoaded(true);
-               props.onLoadedData?.();
-            }}
-            onError={() => setHasError(true)}
-            onEnded={() => {
-               setPlaying(false);
-               setHasEnded(true);
-               setControlsVisible(true);
-            }}
-         />
-         <LoadingBackground hasError={hasError} isLoaded={isLoaded} />
+         <div data-media-transition ref={props.transitionRef} className="relative h-full w-full">
+            <div className="relative h-full w-full" data-media-picture style={isFullscreen ? undefined : props.pictureStyle}>
+               <video
+                  width={isFullscreen ? undefined : props.width}
+                  height={isFullscreen ? undefined : props.height}
+                  className="h-full w-full rounded-lg object-contain"
+                  style={{ visibility: !isLoaded && props.preview ? "hidden" : undefined }}
+                  src={props.url}
+                  ref={videoRef}
+                  playsInline
+                  draggable={false}
+                  onContextMenu={isFullscreen && isMobile ? undefined : props.onContextMenu}
+                  onLoadedMetadata={updateVideoDuration}
+                  onDurationChange={updateVideoDuration}
+                  onEmptied={() => setVideoDuration(0)}
+                  onLoadedData={() => {
+                     requestAnimationFrame(() => {
+                        setIsLoaded(true);
+                        props.onLoadedData?.();
+                     });
+                  }}
+                  onError={() => setHasError(true)}
+                  onEnded={() => {
+                     setPlaying(false);
+                     setHasEnded(true);
+                     setControlsVisible(true);
+                  }}
+               />
+               {!isLoaded && props.preview && <MediaViewerPreview preview={props.preview} />}
+               {(!props.preview || hasError) && <LoadingBackground hasError={hasError} isLoaded={isLoaded} />}
+            </div>
+         </div>
          {isLoaded && !hasError && isMobile && areControlsVisible && (
             <button
                type="button"
                data-media-controls
                title={isPlaying ? "Pause" : hasEnded ? "Replay" : "Play"}
-               className="absolute top-1/2 left-1/2 z-10 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white"
+               className="absolute top-1/2 left-1/2 z-10 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white opacity-(--media-viewer-controls-opacity)"
                onClick={(event) => {
                   event.stopPropagation();
                   togglePlaying();
@@ -237,7 +252,7 @@ export default function VideoPlayer(props: {
          {isLoaded && !hasError && (
             <div
                className={clsx(
-                  "pointer-events-none fixed inset-0 flex items-end justify-center rounded-md",
+                  "pointer-events-none fixed inset-0 flex items-end justify-center rounded-md opacity-(--media-viewer-controls-opacity)",
                   isFullscreen ? "overflow-hidden" : "px-4",
                )}
             >

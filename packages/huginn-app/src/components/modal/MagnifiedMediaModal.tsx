@@ -1,19 +1,23 @@
+import { Dialog } from "@base-ui/react";
 import LoadingBackground from "@components/LoadingBackground";
+import MediaViewerPreview from "@components/MediaViewerPreview";
 import VideoPlayer from "@components/VideoPlayer";
 import { useMediaViewerGestures } from "@hooks/useMediaViewerGestures";
+import { useMediaViewerTransition } from "@hooks/useMediaViewerTransition";
 import { useOpen } from "@hooks/useOpen";
 import { HuginnButton, ModalCloseButton } from "@huginn/frontend-shared";
-import { HuginnDialogPanel } from "@huginn/frontend-shared";
 import { constrainImageSize } from "@huginnjs/shared";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 export default function MagnifiedMediaModal() {
    const { magnifiedMedia: modal, updateModals } = useModals();
    const [isLoaded, setIsLoaded] = useState(false);
    const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
+   const panelRef = useRef<HTMLDivElement>(null);
+   const transitionRef = useRef<HTMLDivElement>(null);
    const stageRef = useRef<HTMLDivElement>(null);
    const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
    const { openUrl } = useOpen();
@@ -44,13 +48,13 @@ export default function MagnifiedMediaModal() {
       stageRef,
       mediaKey: modal.url,
       isVideo: modal.kind === "video",
-      isLoaded,
+      enabled: modal.isOpen,
       ...dimensions,
       viewportWidth,
       viewportHeight,
    });
 
-   useEffect(() => {
+   useLayoutEffect(() => {
       function updateStageSize() {
          if (!stageRef.current) {
             return;
@@ -82,12 +86,14 @@ export default function MagnifiedMediaModal() {
       }
    }, [modal.url]);
 
+   useMediaViewerTransition({ panelRef, transitionRef, source: modal.source, isOpen: modal.isOpen, isLoaded });
+
    return (
-      <HuginnDialogPanel
-         className="relative flex h-full w-full max-w-none items-center justify-center overflow-hidden rounded-none select-none"
-         headless
+      <Dialog.Popup
+         ref={panelRef}
+         className="relative flex h-full w-full max-w-none items-center justify-center overflow-hidden rounded-none outline-none select-none"
       >
-         <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-end gap-x-2 p-4">
+         <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-end gap-x-2 p-4 opacity-(--media-viewer-controls-opacity)">
             <HuginnButton className="h-8 px-2" color="surface" onClick={() => openUrl(modal.url)}>
                Open original
             </HuginnButton>
@@ -108,51 +114,63 @@ export default function MagnifiedMediaModal() {
                   height={dimensions.height}
                   active={modal.isOpen}
                   pictureStyle={gestures.pictureStyle}
+                  transitionRef={transitionRef}
+                  preview={modal.source?.preview}
                   onLoadedData={() => setIsLoaded(true)}
                />
             ) : (
                <div
-                  className={clsx(
-                     "relative origin-center overflow-hidden rounded-lg",
-                     isLoaded && (gestures.scale > 1 ? (gestures.isDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in"),
-                  )}
-                  style={{
-                     width: `${dimensions.width}px`,
-                     height: `${dimensions.height}px`,
-                     ...gestures.pictureStyle,
-                  }}
-                  data-media-picture
-                  onClick={(event) => {
-                     event.stopPropagation();
-                     gestures.toggleZoom();
-                  }}
+                  ref={transitionRef}
+                  data-media-transition
+                  className="relative shrink-0"
+                  style={{ width: dimensions.width, height: dimensions.height }}
                >
-                  {modal.type === "image" ? (
-                     <img
-                        src={modal.url}
-                        ref={mediaRef as RefObject<HTMLImageElement>}
-                        onLoad={() => setIsLoaded(true)}
-                        draggable={false}
-                        className="h-full w-full object-contain"
-                        alt={modal.filename}
-                     />
-                  ) : (
-                     <video
-                        src={modal.url}
-                        ref={mediaRef as RefObject<HTMLVideoElement>}
-                        onLoadedData={() => setIsLoaded(true)}
-                        draggable={false}
-                        className="h-full w-full object-contain"
-                        autoPlay={focused && modal.isOpen}
-                        playsInline
-                        muted
-                        loop
-                     />
-                  )}
-                  <LoadingBackground isLoaded={isLoaded} hasError={false} />
+                  <div
+                     className={clsx(
+                        "relative origin-center overflow-hidden rounded-lg",
+                        gestures.scale > 1 ? (gestures.isDragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in",
+                     )}
+                     style={{
+                        width: `${dimensions.width}px`,
+                        height: `${dimensions.height}px`,
+                        ...gestures.pictureStyle,
+                     }}
+                     data-media-picture
+                     onClick={(event) => {
+                        event.stopPropagation();
+                        gestures.toggleZoom();
+                     }}
+                  >
+                     {modal.type === "image" ? (
+                        <img
+                           src={modal.url}
+                           ref={mediaRef as RefObject<HTMLImageElement>}
+                           onLoad={() => setIsLoaded(true)}
+                           draggable={false}
+                           className="h-full w-full object-contain"
+                           style={{ visibility: isLoaded ? undefined : "hidden" }}
+                           alt={modal.filename}
+                        />
+                     ) : (
+                        <video
+                           src={modal.url}
+                           ref={mediaRef as RefObject<HTMLVideoElement>}
+                           onLoadedData={() => requestAnimationFrame(() => setIsLoaded(true))}
+                           draggable={false}
+                           className="h-full w-full object-contain"
+                           style={{ visibility: isLoaded ? undefined : "hidden" }}
+                           autoPlay={focused && modal.isOpen}
+                           playsInline
+                           muted
+                           loop
+                        />
+                     )}
+                     {!isLoaded && modal.source?.preview && <MediaViewerPreview preview={modal.source.preview} />}
+                     {!modal.source?.preview && <LoadingBackground isLoaded={isLoaded} hasError={false} />}
+                  </div>
                </div>
             )}
          </div>
-      </HuginnDialogPanel>
+      </Dialog.Popup>
    );
 }

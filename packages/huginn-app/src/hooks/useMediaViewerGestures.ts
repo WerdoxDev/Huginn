@@ -12,7 +12,7 @@ export function useMediaViewerGestures(options: {
    stageRef: RefObject<HTMLDivElement | null>;
    mediaKey: string;
    isVideo: boolean;
-   isLoaded: boolean;
+   enabled: boolean;
    width: number;
    height: number;
    viewportWidth: number;
@@ -50,7 +50,7 @@ export function useMediaViewerGestures(options: {
    }
 
    const wheel = useEffectEvent((event: WheelEvent) => {
-      if (ignoresTarget(event.target) || !options.isLoaded) return;
+      if (ignoresTarget(event.target) || !options.enabled) return;
       event.preventDefault();
       updateFraming(framingRef.current.scale * (event.deltaY < 0 ? 1.1 : 0.9));
    });
@@ -91,7 +91,7 @@ export function useMediaViewerGestures(options: {
    function onPointerDown(event: PointerEvent<HTMLDivElement>) {
       // A fresh intentional interaction must never inherit a previous gesture's click guard.
       if (pointers.current.size === 0) suppressClick.current = false;
-      if (ignoresTarget(event.target) || !options.isLoaded || !(event.target instanceof Element) || !event.target.closest("[data-media-picture]"))
+      if (ignoresTarget(event.target) || !options.enabled || !(event.target instanceof Element) || !event.target.closest("[data-media-picture]"))
          return;
       const touch = event.pointerType === "touch";
       const allowedButton = event.button === 1 || (event.button === 0 && (!options.isVideo || event.ctrlKey));
@@ -149,7 +149,7 @@ export function useMediaViewerGestures(options: {
       isDragging,
       isFullscreen,
       pictureStyle: { transform: `translate3d(${framing.x}px, ${framing.y}px, 0) scale(${framing.scale})` } satisfies CSSProperties,
-      toggleZoom: () => options.isLoaded && updateFraming(framingRef.current.scale > MIN_SCALE ? MIN_SCALE : 2),
+      toggleZoom: () => options.enabled && updateFraming(framingRef.current.scale > MIN_SCALE ? MIN_SCALE : 2),
       stageHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onLostPointerCapture: onPointerUp, onClickCapture },
       // Pointer events handle touch and mouse together. Fullscreen uses normal browser input.
       stageStyle: { touchAction: isFullscreen ? "auto" : "none" } satisfies CSSProperties,

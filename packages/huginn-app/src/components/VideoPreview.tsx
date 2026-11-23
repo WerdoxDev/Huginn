@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 
 import { formatSeconds } from "@huginnjs/shared";
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import { useModals } from "@stores/modalsStore";
 
 export default function VideoPreview(props: {
@@ -17,10 +18,11 @@ export default function VideoPreview(props: {
 }) {
    const { updateModals } = useModals();
 
-   function open(event: MouseEvent) {
+   function open(event: MouseEvent<HTMLButtonElement>) {
       event.stopPropagation();
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(event.currentTarget),
             isOpen: true,
             kind: "video",
             type: "video",
@@ -50,10 +52,10 @@ export default function VideoPreview(props: {
             className="h-full w-full object-contain"
             onContextMenu={props.onContextMenu}
          />
-         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
+         <div data-media-preview-overlay className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
             <IconMingcutePlayFill className="size-12 rounded-full bg-black/50 p-2 text-white" />
          </div>
-         <div className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-sm text-white">
+         <div data-media-preview-overlay className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-sm text-white">
             {props.duration ? formatSeconds(props.duration) : "0:00"}
          </div>
       </button>

@@ -85,7 +85,11 @@ export default function UserAvatar(props: {
 
    return (
       <div className={clsx("relative shrink-0", className)} style={{ width: `${size}rem`, height: `${size}rem` }} {...hoverHandlers}>
-         <div className={clsx("relative h-full w-full overflow-hidden rounded-full", props.innerClassName)} style={appliedMaskStyle}>
+         <div
+            data-media-preview-bounds
+            className={clsx("relative h-full w-full overflow-hidden rounded-full", props.innerClassName)}
+            style={appliedMaskStyle}
+         >
             <LoadingBackground hasError={hasError} isLoaded={isLoaded || !hasImage} />
             {hasImage ? (
                <img

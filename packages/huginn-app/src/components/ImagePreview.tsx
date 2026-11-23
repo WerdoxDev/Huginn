@@ -1,3 +1,4 @@
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import type { ExpressionType } from "@huginnjs/shared";
 
 import { useModals } from "@stores/modalsStore";
@@ -52,10 +53,11 @@ export default function ImagePreview(props: {
       setUseCors(true);
    }
 
-   function handleClick(e: React.MouseEvent) {
+   function handleClick(e: MouseEvent<HTMLImageElement>) {
       e.stopPropagation();
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(e.currentTarget),
             isOpen: true,
             url: props.url,
             width: props.originalWidth,
