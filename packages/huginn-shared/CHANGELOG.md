@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.50.1](https://github.com/WerdoxDev/Huginn/compare/shared@v0.50.0...shared@v0.50.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **shared:** add voice message summary ([41d4b01](https://github.com/WerdoxDev/Huginn/commit/41d4b01b42388d0ff60975f67da39c49c1512831))
+* **shared:** better abstraction of analytics to reduce bundle size ([8aea3d9](https://github.com/WerdoxDev/Huginn/commit/8aea3d94d3583e74a48357c2156b7884d9eaaf80))
+
 ## [0.50.0](https://github.com/WerdoxDev/Huginn/compare/shared@v0.49.0...shared@v0.50.0) (2026-11-19)
 
 
