@@ -85,7 +85,10 @@ jobs:
               cmake-version: "4.x.x"
 
          - name: Install dependencies
-           run: pnpm install --frozen-lockfile
+           shell: bash
+           run: |
+              unset PSModulePath
+              pnpm install --frozen-lockfile
 
          - name: Rebuild Electron
            run: pnpm rebuild electron
