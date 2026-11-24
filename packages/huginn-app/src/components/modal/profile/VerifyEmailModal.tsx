@@ -34,14 +34,17 @@ export default function VerifyEmailModal() {
    }, [modal.isOpen, setFocus, startCountdown]);
 
    async function onSubmit(data: Inputs) {
-      await verificationMutation.mutateAsync({
-         code: data.verificationCode || "",
-         email: modal.pendingEmail || "",
-      });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await verificationMutation.mutateAsync({
+            code: data.verificationCode || "",
+            email: modal.pendingEmail || "",
+         });
+      } catch {}
    }
 
-   async function onResend() {
-      await resendMutation.mutateAsync();
+   function onResend() {
+      resendMutation.mutate();
    }
 
    return (

@@ -10,20 +10,27 @@ import { useCreateRelationship } from "@hooks/mutations/useCreateRelationship";
 import { useRemoveRelationship } from "@hooks/mutations/useRemoveRelationship";
 import { DialogBody, HuginnButton, HuginnDialogPanel, HuginnLoadingIcon } from "@huginn/frontend-shared";
 import { RelationshipType } from "@huginnjs/shared";
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import { getRelationshipsOptions } from "@lib/queries";
 import { useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { usePresence } from "@stores/presenceStore";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Suspense, useMemo, type MouseEvent } from "react";
+import { Suspense, useMemo, useRef, type MouseEvent } from "react";
 
-function ProfileBanner(props: { userId: string; banner?: string | null; bannerColor?: string | null; imageSrc?: string | null }) {
+function ProfileBanner(props: {
+   userId: string;
+   banner?: string | null;
+   bannerColor?: string | null;
+   imageSrc?: string | null;
+   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+}) {
    const hasBannerImage = props.imageSrc !== undefined ? !!props.imageSrc : !!props.banner;
    if (!hasBannerImage && !props.bannerColor) return null;
 
-   return (
-      <div className={clsx("relative w-full", hasBannerImage ? "aspect-444/128" : "h-20")}>
+   const content = (
+      <>
          <UserBanner
             userId={props.userId}
             animatedMode="always"
@@ -32,7 +39,20 @@ function ProfileBanner(props: { userId: string; banner?: string | null; bannerCo
             imageSrc={props.imageSrc}
          />
          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-      </div>
+      </>
+   );
+
+   return hasBannerImage && props.onClick ? (
+      <button
+         type="button"
+         aria-label="View banner"
+         className="relative block aspect-444/128 w-full cursor-pointer transition-opacity hover:opacity-50"
+         onClick={props.onClick}
+      >
+         {content}
+      </button>
+   ) : (
+      <div className={clsx("relative w-full", hasBannerImage ? "aspect-444/128" : "h-20")}>{content}</div>
    );
 }
 
@@ -82,6 +102,7 @@ function ActivityCard(props: { userId: string; accentColor: string }) {
 }
 
 function ProfileContent(props: { userId: string }) {
+   const avatarRef = useRef<HTMLButtonElement>(null);
    const profile = useUserProfile(props.userId);
    const user = useUser(profile.userId);
    const client = useClient();
@@ -137,11 +158,30 @@ function ProfileContent(props: { userId: string }) {
 
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(event.currentTarget),
             isOpen: true,
             url: client.cdn.avatar(user.id, user.avatar),
             filename: `${user.username} avatar`,
             width: 512,
             height: 512,
+            type: "image",
+         },
+      });
+   }
+
+   function handleBannerClick(event: MouseEvent<HTMLButtonElement>) {
+      event.stopPropagation();
+      if (!client || !user.banner) return;
+
+      const image = event.currentTarget.querySelector("img");
+      updateModals({
+         magnifiedMedia: {
+            source: captureMediaViewerSource(event.currentTarget, avatarRef.current),
+            isOpen: true,
+            url: client.cdn.banner(user.id, user.banner),
+            filename: `${user.username} banner`,
+            width: image?.naturalWidth || 444,
+            height: image?.naturalHeight || 128,
             type: "image",
          },
       });
@@ -154,13 +194,15 @@ function ProfileContent(props: { userId: string }) {
          className="bg-surface-alt relative mx-2 mb-2 flex flex-col overflow-hidden rounded-lg border-2 lg:mx-0 lg:mb-0"
          style={{ borderColor: accentColor || "transparent" }}
       >
-         <ProfileBanner userId={user?.id} banner={user?.banner} bannerColor={bannerColor} />
+         <ProfileBanner userId={user?.id} banner={user?.banner} bannerColor={bannerColor} onClick={handleBannerClick} />
          <RoamingHuginnIcon />
 
          <div className={clsx("flex items-start gap-x-4 px-5 pb-5", hasBanner ? "pt-0" : "pt-5")}>
             <div className="flex flex-col gap-y-2">
                <div className={clsx("relative z-10 w-max shrink-0", hasBanner ? "-mt-11" : "mt-0")}>
                   <button
+                     ref={avatarRef}
+                     data-media-preview-frame
                      type="button"
                      className="bg-surface-alt group cursor-pointer rounded-full p-1 disabled:cursor-default"
                      onClick={handleAvatarClick}

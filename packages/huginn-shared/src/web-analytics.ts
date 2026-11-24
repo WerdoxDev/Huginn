@@ -25,8 +25,8 @@ export const posthogClient: PostHog = new Proxy(posthogProxyTarget, {
 
 type Options = {
    posthogHost: string;
-   otlpTraceUrl: string;
-   otlpLogUrl: string;
+   otlpTraceUrl?: string;
+   otlpLogUrl?: string;
    serviceName: string;
    serviceVersion?: string;
    environment?: string;

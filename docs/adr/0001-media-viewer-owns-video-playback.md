@@ -1,0 +1,3 @@
+# Play ordinary videos in the media viewer
+
+Ordinary videos in messages show a preview and play only in the media viewer, which owns playback controls and optional native fullscreen; this gives shared media a consistent opening interaction and avoids coordinating inline and enlarged players, at the cost of inline video playback. Exiting native fullscreen returns to the active viewer without restarting playback, while closing the viewer stops playback and reopening starts from the beginning. GIFs and stickers remain silent, looping expressions in both viewing modes regardless of their underlying file format.

@@ -69,12 +69,15 @@ function RegisterComponent() {
    async function onSubmit(data: Inputs) {
       posthog.capture("register:register_button_click");
 
-      await mutation.mutateAsync({
-         email: data.email,
-         displayName: data.displayName ?? null,
-         username: data.username,
-         password: data.password,
-      });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await mutation.mutateAsync({
+            email: data.email,
+            displayName: data.displayName ?? null,
+            username: data.username,
+            password: data.password,
+         });
+      } catch {}
    }
 
    async function handleOAuth(provider: OAuthProvider) {

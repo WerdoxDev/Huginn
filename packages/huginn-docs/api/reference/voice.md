@@ -26,6 +26,7 @@ outline: deep
 | Event                | Payload                                               |
 | -------------------- | ----------------------------------------------------- |
 | `status_changed`     | `VoiceStatus`                                         |
+| `connection_error`   | `Error` from device or transport setup after signaling is ready. |
 | `ready`              | `undefined`                                           |
 | `disconnected`       | `undefined`                                           |
 | `reset`              | `undefined`                                           |
@@ -41,9 +42,13 @@ outline: deep
 
 | Method                                     | Description                                                                                                                                                    |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `connectVoice(guildId, channelId, token?)` | Join voice and resolve when transport is ready. Use `null` guild ID for a DM call. Supplying a voice token bypasses acquisition and should be used cautiously. |
-| `disconnectVoice()`                        | Send the default voice state, close signaling, and clear the cached voice token.                                                                               |
+| `connectVoice(guildId, channelId, token?)` | Join a call and resolve when transport is ready. Use `null` guild ID for a direct channel call. An optional voice token replaces token acquisition but still requires the gateway state update to complete. |
+| `disconnectVoice()`                        | Close signaling, cancel pending token requests, clear the cached voice token, and leave the call through the gateway. |
 | `applyVoiceState()`                        | Apply gateway flags, local state, and per-user preferences to transports.                                                                                      |
+
+`connectVoice()` requires an authenticated main gateway and rejects concurrent connection attempts or an attempt to join the same call again. It can reuse a cached token younger than ten minutes. Gateway state confirmation and token acquisition share a 15-second deadline; this does not impose a deadline on the entire connection. Device or transport setup failures emit `connection_error`, disconnect voice, and reject the connection promise.
+
+The instance retains one voice-signaling session per user. Identifying from another client replaces the previous session and closes its media transports. See [recovery behavior](/api/guide/voice#automatic-recovery) for resume limits.
 
 ## VoiceState
 
@@ -51,9 +56,14 @@ outline: deep
 
 ```ts
 gatewayVoiceState = {
+   userId: "",
+   guildId: null,
+   channelId: null,
+   sessionId: "",
    isAudioDeafened: false,
    isAudioMuted: false,
    isCameraOn: false,
+   isCameraInverted: false,
    isScreenSharing: false,
    isAudioStreaming: false,
 };
@@ -70,15 +80,18 @@ voicePreferences = [];
 | Method                                               | Description                                              |
 | ---------------------------------------------------- | -------------------------------------------------------- |
 | `updateGatewayVoiceState(update, optimistic = true)` | Merge server-visible flags and request a gateway update. |
-| `confirmGatewayVoiceState(confirmed)`                | Replace flags with the server-confirmed value.           |
-| `updateLocalVoiceState(update)`                      | Merge local-only playback state.                         |
+| `resendGatewayVoiceState()`                          | Resend the current gateway state and wait for the request to complete. |
+| `confirmGatewayVoiceState(confirmed)`                | Apply the confirmed `GatewayVoiceState`; preserve locally selected media flags when `channelId` is `null`. |
+| `updateLocalVoiceState(update)`                      | Merge local state; `isAudioPaused` pauses the local microphone producer. |
 | `updateVoicePreferences(preferences)`                | Replace per-user voice preferences.                      |
+
+`updateGatewayVoiceState()` accepts `Partial<GatewayUpdateVoiceStateData>`, including channel/guild IDs and media flags. It ignores unchanged state. Optimistic updates change local state immediately and resolve even if the gateway request fails; pass `false` to wait for confirmation and propagate request failures. `resendGatewayVoiceState()` requests an update even when the state is unchanged and propagates request failures.
 
 ### Events
 
 | Event                         | Payload                                                      |
 | ----------------------------- | ------------------------------------------------------------ |
-| `gateway_voice_state_updated` | `GatewayVoiceStateFlags`                                     |
+| `gateway_voice_state_updated` | `GatewayVoiceState`                                          |
 | `local_voice_state_updated`   | `LocalVoiceState`                                            |
 | `voice_preferences_updated`   | `VoicePreference[]`                                          |
 | `update_gateway_voice_state`  | Internal request/callback payload handled by `VoiceManager`. |
@@ -154,6 +167,7 @@ The transport manager is public for applications that need direct mediasoup cont
 | `consumers`       | `Map<string, Consumer>`                               |
 | `remoteProducers` | `Map<string, ProducerData>`                           |
 | `remoteConsumers` | `Map<string, ConsumerData>`                           |
+| `iceTransportPolicy` | `RTCIceTransportPolicy` (defaults to `"all"`)       |
 
 `HMediaKind` includes `microphone`, `camera`, `stream_audio`, `stream_video`, and `unknown`.
 
@@ -170,6 +184,8 @@ The transport manager is public for applications that need direct mediasoup cont
 | `reset()`                           | Close media objects and clear transport state.      |
 
 `checkDevice()`, `checkSendTransport()`, and `checkRecvTransport()` are assertion helpers that throw `TransportError` when required state is unavailable.
+
+Transport creation fetches ICE servers from the voice HTTP API. Configure the initial policy with `voice.transportOptions.iceTransportPolicy`; changing the public property affects subsequently created transports. See [ICE servers and TURN](/api/reference/configuration#ice-servers-and-turn) for authentication, timeouts, and relay errors.
 
 ### Producers
 
@@ -221,11 +237,13 @@ Application-relevant events include:
 
 | Area      | Events                                                                                                         |
 | --------- | -------------------------------------------------------------------------------------------------------------- |
-| Readiness | `send_transport_ready`, `recv_transport_ready`, `status_changed`, `transport_disconnected`, `reset`            |
+| Readiness | `send_transport_ready`, `recv_transport_ready`, `status_changed`, `reset`                                      |
 | Producers | `producer_created`, `producer_updated`, `producer_closed`, `remote_producer_created`, `remote_producer_closed` |
 | Consumers | `consumer_created`, `consumer_closed`, `remote_consumer_created`, `remote_consumer_closed`                     |
 
 The callback-bearing `connect_transport`, `restart_ice`, `create_producer`, `close_producer`, `create_consumer`, `resume_consumer`, `pause_consumer`, and `close_consumer` events are signaling hooks already handled by `Voice`.
+
+Observe `status_changed` for transport disconnections. The `transport_disconnected` event is declared in the current types but is never emitted.
 
 ## VoiceSignalingClient
 
@@ -244,11 +262,11 @@ The signaling client manages the voice WebSocket and is normally driven by `Voic
 
 | Method                               | Description                                                         |
 | ------------------------------------ | ------------------------------------------------------------------- |
-| `connect(token, channelId, guildId)` | Open voice signaling.                                               |
+| `connect(token, channelId, guildId)` | Open signaling; return `Promise<boolean>` resolving on hello (`true`) or an earlier disconnection (`false`). |
 | `close()`                            | Intentionally close it.                                             |
 | `softReset(emitEvent = true)`        | Reset socket lifecycle state while retaining the resumable session. |
 | `hardReset()`                        | Clear session and connection state.                                 |
-| `checkStatus()`                      | Assert that connection data exists.                                 |
+| `checkStatus()`                      | Require connection data and status `authenticated` or `resuming`; throw otherwise. |
 | `setVoiceToken(token)`               | Replace the token in current connection data.                       |
 
 ### Signaling requests

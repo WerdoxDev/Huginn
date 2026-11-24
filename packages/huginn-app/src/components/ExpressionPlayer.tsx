@@ -1,4 +1,5 @@
 import { ExpressionType, type ExpressionKind } from "@huginnjs/shared";
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
@@ -21,6 +22,7 @@ export default function ExpressionPlayer(
       media: Partial<AppExpression>;
       filename?: string;
       disableQuery?: boolean;
+      origin?: "attachment" | "embed";
    } & (
       | { isImage: true; onContextMenu?: (event: MouseEvent<HTMLImageElement>) => void }
       | { isImage?: false; onContextMenu?: (event: MouseEvent<HTMLVideoElement>) => void }
@@ -54,25 +56,31 @@ export default function ExpressionPlayer(
    }
 
    useEffect(() => {
-      if (huginnWindow.focused) videoRef.current?.play();
+      if (huginnWindow.focused) void videoRef.current?.play().catch(() => {});
       else videoRef.current?.pause();
    }, [huginnWindow.focused]);
 
-   function handleClick(e: MouseEvent) {
+   function handleClick(e: MouseEvent<HTMLVideoElement>) {
       e.stopPropagation();
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(e.currentTarget),
             isOpen: true,
             url: props.src,
             width: props.originalWidth,
             height: props.originalHeight,
             type: "video",
+            kind: props.kind === "stickers" ? "sticker" : "gif",
+            origin: props.origin,
+            provider: props.media.type,
+            filename: props.filename,
          },
       });
    }
 
    return (
       <div
+         data-media-preview-source
          style={{ width: `100%`, maxWidth: `${props.width}px`, height: `100%`, aspectRatio }}
          onErrorCapture={handlePlaybackError}
          onLoadCapture={() => {
@@ -90,6 +98,9 @@ export default function ExpressionPlayer(
                originalWidth={props.originalWidth}
                originalHeight={props.originalHeight}
                contentType={props.contentType ?? "image/gif"}
+               kind={props.kind === "stickers" ? "sticker" : "gif"}
+               origin={props.origin}
+               provider={props.media.type}
                disableQuery={props.disableQuery ?? true}
                onContextMenu={props.onContextMenu}
             />

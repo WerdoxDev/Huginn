@@ -144,7 +144,7 @@ export default function SettingsProfileTab() {
       setShowBanner(!!user?.banner || !!user?.bannerColor);
    }
 
-   async function handleSaveProfile() {
+   function handleSaveProfile() {
       const payload: APIPatchCurrentUserJSONBody = {};
 
       if (bannerColor !== (user?.bannerColor ?? "")) {
@@ -168,17 +168,17 @@ export default function SettingsProfileTab() {
          payload.bannerColor = null;
       }
 
-      if (Object.keys(payload).length > 0) {
-         try {
-            await mutation.mutateAsync(payload);
-         } catch {
-            return;
-         }
-      }
+      const onSuccess = () => {
+         setPendingAvatar(undefined);
+         setPendingBanner(undefined);
+         setIsEditing(false);
+      };
 
-      setPendingAvatar(undefined);
-      setPendingBanner(undefined);
-      setIsEditing(false);
+      if (Object.keys(payload).length > 0) {
+         mutation.mutate(payload, { onSuccess });
+      } else {
+         onSuccess();
+      }
    }
 
    const avatarOverride = pendingAvatar !== undefined ? pendingAvatar : undefined;

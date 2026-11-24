@@ -137,8 +137,6 @@ export default defineConfig(({ mode }) => {
                },
             },
          ],
-
-         // browser: { enabled: true, provider: playwright(), instances: [{ browser: "chromium" }] },
       },
    };
 });

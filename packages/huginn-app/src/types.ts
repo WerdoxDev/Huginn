@@ -282,7 +282,6 @@ export type InstanceUrls = {
    voice: string;
    voiceApi: string;
    posthog: string;
-   otlp: string;
 };
 
 export type InstanceProfile = {

@@ -2,7 +2,7 @@ import AudioPlayer from "@components/AudioPlayer";
 import ExpressionPlayer from "@components/ExpressionPlayer";
 import ImagePreview from "@components/ImagePreview";
 import Tooltip from "@components/tooltip/Tooltip";
-import VideoPlayer from "@components/VideoPlayer";
+import VideoPreview from "@components/VideoPreview";
 import VoicePlayer from "@components/VoicePlayer";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
@@ -27,7 +27,7 @@ export default function AttachmentElement(props: {
    waveform?: string;
 }) {
    const { openUrl } = useOpen();
-   const isGif = props.contentType === "image/gif" || props.contentType === "video/webm";
+   const isGif = props.contentType === "image/gif";
    const dimensions = useMemo(
       () =>
          constrainImageSize(
@@ -109,6 +109,7 @@ export default function AttachmentElement(props: {
             {gif ? (
                <ExpressionPlayer
                   kind="gifs"
+                  origin="attachment"
                   isImage
                   media={gif}
                   filename={props.filename}
@@ -129,14 +130,19 @@ export default function AttachmentElement(props: {
                   originalWidth={props.width ?? 0}
                   originalHeight={props.height ?? 0}
                   contentType={props.contentType}
+                  origin="attachment"
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleImageContextMenu}
                />
             ) : isVideo ? (
-               <VideoPlayer
+               <VideoPreview
                   url={basedUrl}
                   width={dimensions.width}
                   height={dimensions.height}
+                  originalWidth={props.width ?? 0}
+                  originalHeight={props.height ?? 0}
                   duration={props.duration ?? 0}
+                  filename={props.filename}
+                  origin="attachment"
                   onContextMenu={context.options?.disableContextMenu ? undefined : handleVideoContextMenu}
                />
             ) : isVoice ? (

@@ -106,7 +106,7 @@ export default function MessageContextMenu() {
       }
    }
 
-   async function deleteMessage() {
+   function deleteMessage() {
       if (deleteMessageMutation.isPending || !data) return;
 
       if (data.message.isPreview) {
@@ -114,19 +114,19 @@ export default function MessageContextMenu() {
          return;
       }
 
-      await deleteMessageMutation.mutateAsync({
+      deleteMessageMutation.mutate({
          channelId: data.message.channelId,
          messageId: data.message.id,
       });
    }
 
-   async function togglePin() {
+   function togglePin() {
       if (!data) return;
 
       if (isPinned) {
          if (unpinMessageMutation.isPending) return;
 
-         await unpinMessageMutation.mutateAsync({
+         unpinMessageMutation.mutate({
             channelId: data.message.channelId,
             messageId: data.message.id,
          });
@@ -136,7 +136,7 @@ export default function MessageContextMenu() {
 
       if (pinMessageMutation.isPending) return;
 
-      await pinMessageMutation.mutateAsync({
+      pinMessageMutation.mutate({
          channelId: data.message.channelId,
          messageId: data.message.id,
       });
@@ -148,12 +148,12 @@ export default function MessageContextMenu() {
       setReplyingMessageId(data.message.id);
    }
 
-   async function handleEmojiSelect(slug: string, unicode?: string) {
+   function handleEmojiSelect(slug: string, unicode?: string) {
       if (!unicode || !data) return;
 
       close();
       addRecentEmoji(slug);
-      await addReactionMutation.mutateAsync({
+      addReactionMutation.mutate({
          channelId: data.message.channelId,
          messageId: data.message.id,
          emojiId: null,

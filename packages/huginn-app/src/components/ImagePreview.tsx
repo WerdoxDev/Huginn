@@ -1,3 +1,6 @@
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
+import type { ExpressionType } from "@huginnjs/shared";
+
 import { useModals } from "@stores/modalsStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
@@ -15,6 +18,9 @@ export default function ImagePreview(props: {
    filename?: string;
    disableQuery?: boolean;
    contentType?: string;
+   kind?: "image" | "gif" | "sticker";
+   origin?: "attachment" | "embed";
+   provider?: ExpressionType;
    onContextMenu?: (event: MouseEvent<HTMLImageElement>) => void;
 }) {
    const [isLoaded, setIsLoaded] = useState(false);
@@ -47,16 +53,20 @@ export default function ImagePreview(props: {
       setUseCors(true);
    }
 
-   function handleClick(e: React.MouseEvent) {
+   function handleClick(e: MouseEvent<HTMLImageElement>) {
       e.stopPropagation();
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(e.currentTarget),
             isOpen: true,
             url: props.url,
             width: props.originalWidth,
             height: props.originalHeight,
             filename: props.filename,
             type: "image",
+            kind: props.kind ?? (props.contentType === "image/gif" ? "gif" : "image"),
+            origin: props.origin,
+            provider: props.provider,
          },
       });
    }

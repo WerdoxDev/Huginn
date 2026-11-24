@@ -8,7 +8,7 @@ description: Connect calls and manage microphones, cameras, streams, and remote 
 Huginn's voice stack combines gateway state, a voice-signaling WebSocket, mediasoup transports, local media producers, and remote consumers.
 
 ::: info
-Voice requires browser-compatible WebRTC APIs like `MediaStreamTrack`. Make sure your environment supports these.
+Voice requires browser-compatible WebRTC APIs like `MediaStreamTrack` and global `fetch` for ICE server requests. Make sure your environment supports these.
 :::
 
 ## Connect to a call
@@ -23,13 +23,36 @@ if (!initialized.success) throw new Error(initialized.status);
 await client.voiceManager.connectVoice(guildId, channelId);
 ```
 
-`connectVoice()` updates the gateway voice state, waits for a fresh voice token, opens signaling, creates send and receive transports, and resolves when `client.voice.status` becomes `ready`.
+`connectVoice()` updates the gateway voice state, obtains a voice token, opens signaling, creates send and receive transports, and resolves when `client.voice.status` becomes `ready`. It can reuse a cached token younger than ten minutes. An optional third argument supplies a token directly; the gateway state update must still complete.
+
+Gateway state confirmation and token acquisition share a 15-second deadline. Disconnecting cancels pending token requests. The deadline covers this initial phase, not the entire connection. If device or transport setup fails, the connection promise rejects and voice is disconnected.
+
+Only one voice-signaling session is retained per user. Joining from another client replaces the previous session and closes its media transports.
 
 Disconnecting from a voice channel is done so:
 
 ```ts
 await client.voiceManager.disconnectVoice();
 ```
+
+## Configure voice endpoints and TURN
+
+For a custom instance, configure both the signaling WebSocket and the voice HTTP API:
+
+```ts
+const client = new HuginnClient({
+   voice: {
+      url: "wss://huginn.example/voice",
+      api: "https://huginn.example/voice",
+   },
+});
+```
+
+Before creating each transport, the SDK fetches `${voice.api}/ice-servers` with the main access token and a ten-second timeout. The endpoint returns `{ iceServers }`, with an empty array when the instance has no TURN configuration. Setting only the WebSocket URL leaves the HTTP API on its default instance.
+
+ICE transport policy defaults to `"all"`, which permits direct connections and continues without fetched ICE servers if the request fails. Set `voice.transportOptions.iceTransportPolicy` to `"relay"` to require TURN. Under that policy, a failed request rejects setup with `RELAY_CREDENTIALS_UNAVAILABLE`; a response without TURN servers rejects with `RELAY_NOT_CONFIGURED`.
+
+See [VoiceOptions](/api/reference/configuration#voiceoptions) for the complete configuration, including the currently required `transportOptions.voiceApi` field, a forced-relay example, and numeric error codes.
 
 ## Observe voice status
 
@@ -40,6 +63,7 @@ client.voice.on("status_changed", (status) => {
 });
 
 client.voice.on("ready", () => startCallUI());
+client.voice.on("connection_error", (error) => showCallError(error));
 client.voice.on("disconnected", () => showReconnectState());
 client.voice.on("reset", () => clearRemoteMedia());
 ```
@@ -83,7 +107,7 @@ await client.voiceManager.voiceState.updateGatewayVoiceState({
    isAudioDeafened: false,
 });
 
-// Local state properties that only effect the client
+// Pause this client's microphone without changing the shared mute flag
 client.voiceManager.voiceState.updateLocalVoiceState({
    isAudioPaused: true,
 });
@@ -97,6 +121,16 @@ Gateway voice-state updates are optimistic by default. Pass `false` as the secon
 ```ts
 await voiceState.updateGatewayVoiceState({ isCameraOn: true }, false);
 ```
+
+The gateway flags also include `isCameraInverted`:
+
+```ts
+await client.voiceManager.voiceState.updateGatewayVoiceState({
+   isCameraInverted: true,
+});
+```
+
+Optimistic updates resolve even if the gateway request fails; use `false` to propagate failures. A confirmed disconnected state (`channelId: null`) preserves locally selected media flags for the next call. The full state and `gateway_voice_state_updated` payload also include `userId`, `sessionId`, `channelId`, and `guildId`.
 
 ## Video and audio streaming
 
@@ -174,6 +208,10 @@ client.voice.transport.getRemoteConsumers();
 
 ## Automatic recovery
 
-The signaling connection can resume after interruptions. If mediasoup disconnects while signaling remains authenticated, the client attempts ICE restart. A session or hard signaling reset clears transports and returns media state to defaults.
+The signaling connection can resume after interruptions. The instance retains stale authenticated voice sessions for 60 seconds and keeps at most 20 messages for replay. Resume requires a valid voice token, the same user's retained session, and enough replay history after the client's last sequence number. Intentional closes, invalid sessions, and going-away closes delete the session immediately.
+
+If mediasoup disconnects while signaling remains authenticated, the client attempts ICE restart. Observe `client.voice.transport`'s `status_changed` event for transport disconnections.
+
+A soft signaling reset retains the resumable session and transports. A session or hard signaling reset clears transports, producers, and consumers, and clears `isCameraOn`, `isScreenSharing`, and `isAudioStreaming`. It preserves mute, deafen, camera inversion, local microphone pause, and per-user preferences. Reopen local media producers after a session or hard reset when the call is ready again.
 
 For the low-level signaling, transport, state, and event surface, see the [Voice reference](/api/reference/voice).

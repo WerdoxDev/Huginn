@@ -13,8 +13,8 @@ export function useVoicePreferences() {
    const mutation = useEditSettings();
 
    const updateVoicePreferences = useThrottledCallback(
-      async (voicePreferences: VoicePreference[]) => {
-         await mutation.mutateAsync({ voicePreferences });
+      (voicePreferences: VoicePreference[]) => {
+         mutation.mutate({ voicePreferences });
       },
       { wait: 2000 },
    );

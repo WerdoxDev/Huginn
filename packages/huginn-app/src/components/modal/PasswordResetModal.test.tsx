@@ -53,15 +53,20 @@ vi.mock("@hooks/useHuginnForm", () => ({
    }),
 }));
 vi.mock("@hooks/useHuginnMutation", () => ({
-   useHuginnMutation: (options: { mutationFn: (input: unknown) => Promise<unknown>; onSuccess?: (result: unknown) => void }) => ({
-      mutateAsync: async (input: unknown) => {
+   useHuginnMutation: (options: { mutationFn: (input: unknown) => Promise<unknown>; onSuccess?: (result: unknown) => void }) => {
+      const mutateAsync = async (input: unknown) => {
          const result = await options.mutationFn(input);
          options.onSuccess?.(result);
          return result;
-      },
-      mutate: vi.fn(),
-      isPending: false,
-   }),
+      };
+      return {
+         mutateAsync,
+         mutate: (input: unknown) => {
+            void mutateAsync(input).catch(() => {});
+         },
+         isPending: false,
+      };
+   },
 }));
 vi.mock("@stores/clientStore", () => ({
    useClient: () => ({ auth: mocks }),

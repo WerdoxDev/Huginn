@@ -33,11 +33,6 @@ export class RuntimeAnalyticsBase extends Analytics {
       this.logRecordProcessors = [
          new BatchLogRecordProcessor({
             exporter: new OTLPLogExporter({
-               url: options.otlpLogUrl,
-            }),
-         }),
-         new BatchLogRecordProcessor({
-            exporter: new OTLPLogExporter({
                url: `${options.posthogHost}/i/v1/logs`,
                headers: {
                   Authorization: `Bearer ${posthogApiKey}`,
@@ -45,12 +40,10 @@ export class RuntimeAnalyticsBase extends Analytics {
             }),
          }),
       ];
+      if (options.otlpLogUrl) {
+         this.logRecordProcessors.unshift(new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }));
+      }
       this.spanProcessors = [
-         new BatchSpanProcessor(
-            new OTLPTraceExporter({
-               url: options.otlpTraceUrl,
-            }),
-         ),
          new BatchSpanProcessor(
             new OTLPTraceExporter({
                url: `${options.posthogHost}/i/v1/traces`,
@@ -60,6 +53,9 @@ export class RuntimeAnalyticsBase extends Analytics {
             }),
          ),
       ];
+      if (options.otlpTraceUrl) {
+         this.spanProcessors.unshift(new BatchSpanProcessor(new OTLPTraceExporter({ url: options.otlpTraceUrl })));
+      }
       this.instrumentation = setupInstrumentation({
          resource: resourceFromAttributes({ "service.name": options.serviceName, "client.id": options.clientId }),
          logRecordProcessors: this.logRecordProcessors,

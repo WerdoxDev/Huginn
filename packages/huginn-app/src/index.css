@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @source "../../huginn-frontend-shared/src";
 
+/* Fade viewer controls together without applying opacity to the media. */
+@property --media-viewer-controls-opacity {
+   syntax: "<number>";
+   inherits: true;
+   initial-value: 1;
+}
+
 @theme {
    --font-*: initial;
    /* --font-noto: Noto Sans, sans-serif; */

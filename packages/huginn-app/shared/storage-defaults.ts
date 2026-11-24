@@ -20,7 +20,6 @@ export const storageDefaults: StorageMap = {
          voice: "wss://midgard.huginn.dev/voice",
          voiceApi: "https://midgard.huginn.dev/voice",
          posthog: "https://e.huginn.dev",
-         otlp: "https://otlp.huginn.dev",
       },
       theme: "pine-green",
       isChannelSidebarOpen: true,

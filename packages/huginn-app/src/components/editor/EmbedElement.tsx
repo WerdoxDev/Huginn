@@ -2,7 +2,7 @@ import type { APIEmbed } from "@huginnjs/shared";
 
 import ExpressionPlayer from "@components/ExpressionPlayer";
 import ImagePreview from "@components/ImagePreview";
-import VideoPlayer from "@components/VideoPlayer";
+import VideoPreview from "@components/VideoPreview";
 import { MessageContext } from "@contexts/MessageProvider";
 import { useOpen } from "@hooks/useOpen";
 import { CDNRoutes, CONSTANTS, ExpressionType, constrainImageSize, resolveCdnUrl } from "@huginnjs/shared";
@@ -44,12 +44,11 @@ export default function EmbedElement(props: {
 
    const thumbnailUrl = thumbnail ? resolveMediaUrl(thumbnail.url) : undefined;
    const videoUrl = video ? resolveMediaUrl(video.url) : undefined;
-   const isImageGif = media ? media.contentType === "image/gif" : !!thumbnail && /\.gif(?:[?#]|$)/i.test(thumbnail.url);
+   const isImageGif = !video && (media ? media.contentType === "image/gif" : !!thumbnail && /\.gif(?:[?#]|$)/i.test(thumbnail.url));
    const expression =
-      media ??
-      (isExpression || isImageGif
-         ? { url: props.url ?? video?.url ?? thumbnail?.url ?? "", src: video?.url ?? thumbnail?.url ?? "", width, height }
-         : undefined);
+      isExpression || isImageGif
+         ? (media ?? { url: props.url ?? video?.url ?? thumbnail?.url ?? "", src: video?.url ?? thumbnail?.url ?? "", width, height })
+         : undefined;
 
    function handleMediaContextMenu(event: MouseEvent<HTMLImageElement | HTMLVideoElement>) {
       event.stopPropagation();
@@ -83,6 +82,7 @@ export default function EmbedElement(props: {
       showSaveButton: !message.isPreview,
       contentType: media?.contentType,
       filename: media?.title,
+      origin: "embed" as const,
    };
 
    return (
@@ -103,10 +103,10 @@ export default function EmbedElement(props: {
                <ExpressionPlayer {...expressionProps} media={expression} src={videoUrl} />
             ) : expression && thumbnailUrl ? (
                <ExpressionPlayer {...expressionProps} isImage media={expression} src={thumbnailUrl} />
-            ) : thumbnailUrl ? (
-               <ImagePreview {...playerProps} originalWidth={width} originalHeight={height} url={thumbnailUrl} disableQuery />
             ) : videoUrl ? (
-               <VideoPlayer {...playerProps} url={videoUrl} />
+               <VideoPreview {...playerProps} url={videoUrl} poster={thumbnailUrl} originalWidth={width} originalHeight={height} origin="embed" />
+            ) : thumbnailUrl ? (
+               <ImagePreview {...playerProps} originalWidth={width} originalHeight={height} url={thumbnailUrl} origin="embed" disableQuery />
             ) : null}
          </div>
       </div>

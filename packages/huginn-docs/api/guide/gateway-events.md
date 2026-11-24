@@ -83,6 +83,14 @@ Event payload types are defined in `@huginnjs/shared` as `GatewayWebsocketEvents
 
 `expression_updated` sends `{ kind, expression }` to the sending user’s sessions after a successful GIF or sticker send. The expression includes the updated `usageCount` and `lastUsedAt`; each distinct expression in the message emits one event.
 
+## Voice events
+
+`voice_state_update` carries a `GatewayVoiceState`: `userId`, `sessionId`, `channelId`, `guildId`, and the flags `isAudioDeafened`, `isAudioMuted`, `isCameraOn`, `isCameraInverted`, `isScreenSharing`, and `isAudioStreaming`. A null `channelId` represents leaving the call.
+
+`voice_server_update` carries `{ token: string }` to the gateway session requesting the voice state change. The instance issues a token when joining a different channel, transferring voice state to another gateway session, or updating voice state after that session's cached token has expired. Ordinary media-flag updates in the same channel and session do not necessarily issue another token. Voice tokens expire after ten minutes.
+
+The event contains no endpoint URL. Configure signaling with `voice.url` and the HTTP API with `voice.api`. `VoiceManager` handles token caching and updates for SDK clients; see [Voice & media](/api/guide/voice).
+
 ## Presence
 
 Presence updates are sent only while the gateway is authenticated:

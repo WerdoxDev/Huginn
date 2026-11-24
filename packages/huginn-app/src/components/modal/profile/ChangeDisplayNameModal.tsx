@@ -31,7 +31,10 @@ export default function ChangeDisplayNameModal() {
    }, [modal]);
 
    async function onSubmit(data: Inputs) {
-      await mutation.mutateAsync({ displayName: data.displayName });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await mutation.mutateAsync({ displayName: data.displayName });
+      } catch {}
    }
 
    return (

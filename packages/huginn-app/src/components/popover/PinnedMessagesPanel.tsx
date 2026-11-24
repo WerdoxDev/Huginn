@@ -79,9 +79,11 @@ function Renderer(props: { channelId: Snowflake; isOpen: boolean; onMessageClick
             action: {
                confirm: {
                   text: "Unpin",
-                  async callback() {
-                     await unpinMessageMutation.mutateAsync({ channelId: props.channelId, messageId });
-                     updateModals({ info: { isOpen: false } });
+                  callback() {
+                     unpinMessageMutation.mutate(
+                        { channelId: props.channelId, messageId },
+                        { onSuccess: () => updateModals({ info: { isOpen: false } }) },
+                     );
                   },
                },
                cancel: {

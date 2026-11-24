@@ -158,16 +158,16 @@ export default function ChangeBackgroundModal() {
       });
    }
 
-   async function save() {
-      if (isGlobal) await saveGlobalChannelBackground(background);
-      else if (channelId) await saveChannelBackground(background);
-      close();
+   function save() {
+      if (isGlobal) saveGlobalChannelBackground(background, close);
+      else if (channelId) saveChannelBackground(background, close);
+      else close();
    }
 
-   async function reset() {
-      if (isGlobal) await resetGlobalChannelBackground();
-      else if (channelId) await resetChannelBackground();
-      close();
+   function reset() {
+      if (isGlobal) resetGlobalChannelBackground(close);
+      else if (channelId) resetChannelBackground(close);
+      else close();
    }
 
    useEffect(() => {

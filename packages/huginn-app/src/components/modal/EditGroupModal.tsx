@@ -77,12 +77,15 @@ export default function EditGroupModal() {
    async function edit(data: Input) {
       if (!modal.channel) return;
 
-      await mutation.mutateAsync({
-         channelId: modal.channel.id,
-         name: data?.name === modal.channel.name ? undefined : data.name,
-         icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
-      });
-      updateModals({ editGroup: { isOpen: false, channel: undefined } });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await mutation.mutateAsync({
+            channelId: modal.channel.id,
+            name: data?.name === modal.channel.name ? undefined : data.name,
+            icon: originalIcon && !iconData ? null : originalIcon === iconData ? undefined : iconData,
+         });
+         updateModals({ editGroup: { isOpen: false, channel: undefined } });
+      } catch {}
    }
 
    function close() {

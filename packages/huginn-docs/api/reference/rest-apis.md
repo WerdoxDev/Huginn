@@ -81,9 +81,13 @@ See [Message search](/api/guide/message-search) for all filters, content categor
 | `unpinMessage(channelId, messageId)`                                 | `unknown`                | Remove a pin.                                                 |
 | `typing(channelId)`                                                  | `unknown`                | Send a typing indicator.                                      |
 | `ackMessage(channelId, messageId)`                                   | `unknown`                | Acknowledge reading a message.                                |
-| `ring(channelId, recipients)`                                        | `unknown`                | Ring selected recipients, or all when `recipients` is `null`. |
+| `ring(channelId, recipients)`                                        | `unknown`                | Request call ringing; see the current recipient-selection limitation below. |
 
 In browsers, file uploads use `XMLHttpRequest` to expose upload progress and abort support.
+
+::: warning Recipient selection
+`ring()` accepts a recipient ID array or `null`. The current server validates any supplied array but creates ringing state for every other channel recipient, including when the array is empty. To request ringing for everyone else, pass `null`; selecting a subset is currently unsupported. If a call already exists, the endpoint returns HTTP 204 without changing its ringing recipients.
+:::
 
 ## Reactions
 

@@ -25,6 +25,7 @@ export default function ConnectedAccountPasswordModal() {
          openedWindow?.close();
          return;
       }
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
       try {
          if (modal.action === "connect") {
             await connectMutation.mutateAsync({

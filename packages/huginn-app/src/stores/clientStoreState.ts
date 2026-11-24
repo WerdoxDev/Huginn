@@ -12,6 +12,7 @@ const initialStore = () => ({
    gatewayStatus: undefined as GatewayStatus | undefined,
    readyData: undefined as GatewayReadyData | undefined,
    isInitialized: false,
+   isLoggingOut: false,
    userSettings: undefined as UserSettings | undefined,
    client: undefined as HuginnClient<VoiceBridge> | undefined,
    readyCount: 0,

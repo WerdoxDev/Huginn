@@ -14,13 +14,13 @@ export function usePinnedChannels(channelIds?: Snowflake[]) {
    const mutation = useEditSettings();
 
    const togglePin = useCallback(
-      async (id: Snowflake) => {
+      (id: Snowflake) => {
          const next = pinnedChannelIds?.includes(id) ? pinnedChannelIds.filter((x) => x !== id) : [...(pinnedChannelIds ?? []), id];
 
          // Remove IDs that no longer correspond to an open channel
          const cleaned = channelIds ? next.filter((x) => channelIds.includes(x)) : next;
 
-         await mutation.mutateAsync({ pinnedChannels: cleaned });
+         mutation.mutate({ pinnedChannels: cleaned });
       },
       [client, channelIds, pinnedChannelIds],
    );

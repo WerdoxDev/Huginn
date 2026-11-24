@@ -13,8 +13,8 @@ import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 
 export function setupWebInstrumentation(
    options: {
-      otlpTraceUrl: string;
-      otlpLogUrl: string;
+      otlpTraceUrl?: string;
+      otlpLogUrl?: string;
       posthogHost: string;
       posthogApiKey: string;
       serviceName: string;
@@ -23,13 +23,16 @@ export function setupWebInstrumentation(
    },
    requestHook: (span: Span) => void,
 ): { forceFlush: () => Promise<void>; shutdown: () => Promise<void> } {
+   const logRecordProcessors = [
+      new BatchLogRecordProcessor({
+         exporter: new OTLPLogExporter({ url: `${options.posthogHost}/i/v1/logs`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
+      }),
+   ];
+   if (options.otlpLogUrl) {
+      logRecordProcessors.unshift(new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }));
+   }
    const logProvider = new LoggerProvider({
-      processors: [
-         new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }),
-         new BatchLogRecordProcessor({
-            exporter: new OTLPLogExporter({ url: `${options.posthogHost}/i/v1/logs`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
-         }),
-      ],
+      processors: logRecordProcessors,
       resource: resourceFromAttributes({
          "service.name": options.serviceName,
          "service.version": options.serviceVersion,
@@ -39,6 +42,14 @@ export function setupWebInstrumentation(
 
    logs.setGlobalLoggerProvider(logProvider);
 
+   const spanProcessors = [
+      new BatchSpanProcessor(
+         new OTLPTraceExporter({ url: `${options.posthogHost}/i/v1/traces`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
+      ),
+   ];
+   if (options.otlpTraceUrl) {
+      spanProcessors.unshift(new BatchSpanProcessor(new OTLPTraceExporter({ url: options.otlpTraceUrl })));
+   }
    const provider = new WebTracerProvider({
       resource: resourceFromAttributes({
          "service.name": options.serviceName,
@@ -46,16 +57,7 @@ export function setupWebInstrumentation(
          "client.id": options.clientId,
          electron: "__IS_ELECTRON__" in window && window.__IS_ELECTRON__ ? true : false,
       }),
-      spanProcessors: [
-         new BatchSpanProcessor(
-            new OTLPTraceExporter({
-               url: options.otlpTraceUrl,
-            }),
-         ),
-         new BatchSpanProcessor(
-            new OTLPTraceExporter({ url: `${options.posthogHost}/i/v1/traces`, headers: { Authorization: `Bearer ${options.posthogApiKey}` } }),
-         ),
-      ],
+      spanProcessors,
    });
 
    // Use the default stack context manager without patching browser async APIs.

@@ -47,6 +47,7 @@ export default function VolumeSlider(props: Omit<SliderProps, "orientation">) {
       <div className="relative flex items-center justify-center select-none" data-ignore-swipe>
          <button
             type="button"
+            title={isMuted ? "Unmute" : "Mute"}
             className="shrink-0 cursor-pointer text-white/80 transition-transform hover:text-white active:scale-90"
             onMouseLeave={startAudioHoverTimeout}
             onMouseEnter={cancelAudioHoverTimeout}

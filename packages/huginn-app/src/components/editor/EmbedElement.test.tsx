@@ -153,7 +153,17 @@ describe("EmbedElement", () => {
       expect(image.getAttribute("src")).toBe(src);
       fireEvent.click(image);
       expect(mocks.updateModals).toHaveBeenCalledWith({
-         magnifiedMedia: { isOpen: true, url: src, width: 640, height: 320, type: "image", filename: uploaded.title },
+         magnifiedMedia: expect.objectContaining({
+            isOpen: true,
+            url: src,
+            width: 640,
+            height: 320,
+            type: "image",
+            kind: "gif",
+            origin: "embed",
+            provider: ExpressionType.UPLOADED,
+            filename: uploaded.title,
+         }),
       });
       fireEvent.contextMenu(image);
       const menu = mocks.openMenu.mock.calls[0][0];
@@ -206,7 +216,7 @@ describe("EmbedElement", () => {
       fireEvent.click(video);
       expect(mocks.updateModals.mock.calls[0][0].magnifiedMedia.type).toBe("video");
    });
-   it("keeps rich embed text and ordinary video controls", () => {
+   it("keeps rich embed text and shows an ordinary video preview", () => {
       const { container } = render(
          embed({
             embedType: "rich",

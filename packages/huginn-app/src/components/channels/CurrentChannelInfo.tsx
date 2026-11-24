@@ -1,3 +1,4 @@
+import { captureMediaViewerSource } from "@lib/media-viewer-source";
 import ChannelIcon from "@components/ChannelIcon";
 import UserAvatar from "@components/UserAvatar";
 import { useCurrentChannel } from "@hooks/api-hooks/channelHooks";
@@ -10,7 +11,7 @@ import { useThisUser } from "@stores/userStore";
 import { clsx } from "clsx";
 import { useMemo, type MouseEvent } from "react";
 
-export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMembersClick?: (event: MouseEvent) => void }) {
+export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMembersClick?: (event: MouseEvent<HTMLButtonElement>) => void }) {
    const channel = useCurrentChannel();
    const client = useClient();
    const { user } = useThisUser();
@@ -20,7 +21,7 @@ export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMe
 
    const otherUsers = useMemo(() => recipients.filter((x) => x.id !== user?.id), [recipients]);
 
-   function handleClick(event: MouseEvent) {
+   function handleClick(event: MouseEvent<HTMLButtonElement>) {
       if (channel?.type === ChannelType.DM && otherUsers[0]) {
          updateModals({ userProfile: { isOpen: true, userId: otherUsers[0].id } });
       } else {
@@ -28,7 +29,7 @@ export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMe
       }
    }
 
-   function handleIconClick(event: MouseEvent) {
+   function handleIconClick(event: MouseEvent<HTMLButtonElement>) {
       if (!props.iconZoomable || !client || !channel) return;
 
       const url =
@@ -44,6 +45,7 @@ export default function CurrentChannelInfo(props: { iconZoomable?: boolean; onMe
 
       updateModals({
          magnifiedMedia: {
+            source: captureMediaViewerSource(event.currentTarget),
             isOpen: true,
             url: url,
             filename: `${channel.name} icon`,

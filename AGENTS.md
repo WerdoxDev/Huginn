@@ -15,3 +15,9 @@ Use the five default triage labels. Before triaging issues, read `docs/agents/tr
 ### Domain docs
 
 Use a single-context layout: root `GLOSSARY.md` and `docs/adr/`. Before exploring the codebase, read `docs/agents/domain.md`.
+
+### Tests
+
+Write or modify tests only when the user explicitly requests tests for the feature or fix being worked on.
+
+Before writing, modifying, or running tests, read `docs/agents/testing.md`.
