@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.96.3](https://github.com/WerdoxDev/Huginn/compare/app@v0.96.2...app@v0.96.3) (2026-11-24)
+
+
+### Bug Fixes
+
+* **app:** better smoke test + highlight.js fix ([27f3df5](https://github.com/WerdoxDev/Huginn/commit/27f3df5b8a6bb970d41e83ac9dae543d273ffcb9))
+* **app:** smoke command changes ([8f3314b](https://github.com/WerdoxDev/Huginn/commit/8f3314bb60b3abc2568c4f12d5482aad603c3970))
+
 ## [0.96.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.96.1...app@v0.96.2) (2026-11-24)
 
 
