@@ -94,8 +94,6 @@ export class HuginnApp {
             new ElectronAnalytics(process.env.VITE_PUBLIC_POSTHOG_KEY!, {
                serviceName: "app-electron",
                posthogHost: settings.currentUrls.posthog,
-               otlpTraceUrl: `${settings.currentUrls.posthog}/i/v1/traces`,
-               otlpLogUrl: `${settings.currentUrls.posthog}/i/v1/logs`,
                clientId: info.id,
             }),
       );

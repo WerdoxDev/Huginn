@@ -18,7 +18,6 @@ export function defaultInstanceUrls(address: string): InstanceUrls {
       voice: `${socketOrigin}/voice`,
       voiceApi: `${origin}/voice`,
       posthog: "https://e.huginn.dev",
-      otlp: "https://otlp.huginn.dev",
    };
 }
 
@@ -69,7 +68,7 @@ export function validateInstanceUrls(value: unknown): InstanceUrls {
    if (!value || typeof value !== "object") throw new Error("Invalid instance URLs");
    const urls = value as Record<string, unknown>;
    const normalized: Record<string, string> = {};
-   for (const key of ["api", "gateway", "cdn", "voice", "voiceApi", "posthog", "otlp"] as const) {
+   for (const key of ["api", "gateway", "cdn", "voice", "voiceApi", "posthog"] as const) {
       if (typeof urls[key] !== "string") throw new Error(`Missing ${key} URL`);
       const url = new URL(urls[key]);
       const socket = key === "gateway" || key === "voice";
