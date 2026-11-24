@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.96.2](https://github.com/WerdoxDev/Huginn/compare/app@v0.96.1...app@v0.96.2) (2026-11-24)
+
+
+### Bug Fixes
+
+* **app:** posthog cli fix for windows ([a2a3cab](https://github.com/WerdoxDev/Huginn/commit/a2a3cabcfd8a07c4f65ed67ecd8c6ce27b9e95cf))
+
 ## [0.96.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.96.0...app@v0.96.1) (2026-11-24)
 
 
