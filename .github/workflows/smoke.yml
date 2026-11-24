@@ -68,6 +68,8 @@ jobs:
                - name: Windows
                  os: windows-latest
       runs-on: ${{ matrix.os }}
+      env:
+         VITE_PUBLIC_POSTHOG_KEY: phc_smoke_test
       steps:
          - uses: actions/checkout@v4
 
