@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.96.1](https://github.com/WerdoxDev/Huginn/compare/app@v0.96.0...app@v0.96.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **app:** centralize expression gateway reconciliation ([#374](https://github.com/WerdoxDev/Huginn/issues/374)) ([f298df5](https://github.com/WerdoxDev/Huginn/commit/f298df5fa2e5f76f397e666621eae463a7127d0f))
+* **app:** configure analytics for desktop development builds ([dd5cdfc](https://github.com/WerdoxDev/Huginn/commit/dd5cdfcea0ac5cd07914e33cd9ff6e16f4941a05))
+* **app:** correct form state and channel sidebar types ([0075133](https://github.com/WerdoxDev/Huginn/commit/007513359726d3cef896135abf18b31c445c7a0e))
+* **app:** fix mobile potentionally showing desktop sidebar ([242540c](https://github.com/WerdoxDev/Huginn/commit/242540c22a7b1288d7390fb912ae16e31fe73501))
+* **app:** gif encoding made absolute black transparent ([58b576a](https://github.com/WerdoxDev/Huginn/commit/58b576ad5471f895a63cf7871b7e18a8afa155f5))
+* **app:** handle autostart failures and pending updates ([b420743](https://github.com/WerdoxDev/Huginn/commit/b4207433cc994729eb2d217fabc375502e38ecfd))
+* **app:** revert autostart error handling madness ([26f3be4](https://github.com/WerdoxDev/Huginn/commit/26f3be419c10573974f5018390360cb472aad611))
+* **app:** set webview font scale to 100% for android ([632ca79](https://github.com/WerdoxDev/Huginn/commit/632ca790f40e817aaec9a9bb230151f5c645d8db))
+* **app:** smaller electron bundle + remove pwa + better channel typing indicator ([3e20b94](https://github.com/WerdoxDev/Huginn/commit/3e20b946aa16ecace6b05642215b32ab8cc3bc90))
+* **app:** unify saving across expression controls ([#373](https://github.com/WerdoxDev/Huginn/issues/373)) ([1e0d610](https://github.com/WerdoxDev/Huginn/commit/1e0d61043e73e0c43de6b4e40baeb65fa1dc2de7))
+
 ## [0.96.0](https://github.com/WerdoxDev/Huginn/compare/app@v0.95.0...app@v0.96.0) (2026-11-19)
 
 
