@@ -24,7 +24,7 @@ const noExternal = [
    "moment",
    "posthog-node",
    "unicode-emoji-json",
-   "highlight.js",
+   /^highlight\.js(?:\/|$)/,
    "electron-log",
 ];
 
@@ -40,7 +40,7 @@ await build({
          projectId: process.env.POSTHOG_PROJECT_ID,
          host: "https://eu.posthog.com",
          sourcemaps: {
-            enabled: isProd,
+            enabled: isProd && Boolean(process.env.POSTHOG_CLI_API_KEY && process.env.POSTHOG_PROJECT_ID),
             releaseName: `huginn-app-desktop`,
             releaseVersion: version.toString(),
          },
