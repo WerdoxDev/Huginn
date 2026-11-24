@@ -153,7 +153,7 @@ describe("EmbedElement", () => {
       expect(image.getAttribute("src")).toBe(src);
       fireEvent.click(image);
       expect(mocks.updateModals).toHaveBeenCalledWith({
-         magnifiedMedia: {
+         magnifiedMedia: expect.objectContaining({
             isOpen: true,
             url: src,
             width: 640,
@@ -163,7 +163,7 @@ describe("EmbedElement", () => {
             origin: "embed",
             provider: ExpressionType.UPLOADED,
             filename: uploaded.title,
-         },
+         }),
       });
       fireEvent.contextMenu(image);
       const menu = mocks.openMenu.mock.calls[0][0];

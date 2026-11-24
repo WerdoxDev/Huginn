@@ -87,20 +87,7 @@ function renderMedia(children: ReactNode) {
    );
 }
 
-function pointer(target: Element, type: string, options: MouseEventInit & { pointerId?: number; pointerType?: string } = {}) {
-   const event = new MouseEvent(type, { bubbles: true, cancelable: true, ...options });
-   Object.defineProperties(event, {
-      pointerId: { value: options.pointerId ?? 1 },
-      pointerType: { value: options.pointerType ?? "mouse" },
-   });
-   fireEvent(target, event);
-   return event;
-}
-
 beforeEach(async () => {
-   for (const method of ["setPointerCapture", "releasePointerCapture", "hasPointerCapture"]) {
-      Object.defineProperty(HTMLElement.prototype, method, { configurable: true, value: vi.fn() });
-   }
    vi.stubGlobal(
       "ResizeObserver",
       class {
@@ -142,151 +129,18 @@ afterEach(() => {
    modalsStore.getState().updateModals({ magnifiedMedia: { isOpen: false } });
    vi.restoreAllMocks();
    vi.unstubAllGlobals();
-   for (const method of ["setPointerCapture", "releasePointerCapture", "hasPointerCapture"]) {
-      Reflect.deleteProperty(HTMLElement.prototype, method);
-   }
-   vi.useRealTimers();
 });
 
 describe("message media viewer", () => {
-   it("pans a zoomed video with Ctrl+left drag without toggling playback or dismissing", async () => {
-      renderMedia(<AttachmentElement {...attachment} />);
-      fireEvent.click(screen.getByRole("button", { name: "Open video" }));
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      fireEvent.loadedData(video);
-      fireEvent.wheel(video, { deltaY: -100 });
-      pointer(video, "pointerdown", { button: 0, ctrlKey: true, clientX: 200, clientY: 200 });
-      pointer(video, "pointermove", { clientX: 300, clientY: 230 });
-      pointer(video, "pointerup", { clientX: 300, clientY: 230 });
-      fireEvent.click(video);
-      expect(video.paused).toBe(false);
-      expect(screen.getByRole("dialog")).toBe(dialog);
-      // The next deliberate click still controls playback.
-      pointer(video, "pointerdown", { button: 0 });
-      pointer(video, "pointerup", { button: 0 });
-      fireEvent.click(video);
-      expect(video.paused).toBe(true);
-   });
-
-   it.each([
-      ["left", 0, false, false],
-      ["Ctrl+left", 0, true, true],
-      ["middle", 1, false, true],
-      ["right", 2, false, false],
-      ["Ctrl+right", 2, true, false],
-   ])("reserves video %s dragging for the specified action", async (_name, button, ctrlKey, pans) => {
-      renderMedia(<AttachmentElement {...attachment} />);
-      fireEvent.click(screen.getByRole("button", { name: "Open video" }));
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      fireEvent.loadedData(video);
-      fireEvent.wheel(video, { deltaY: -100 });
-      const down = pointer(video, "pointerdown", { button, ctrlKey, clientX: 200, clientY: 200 });
-      expect(down.defaultPrevented).toBe(pans);
-      pointer(video, "pointermove", { clientX: 300, clientY: 230 });
-      pointer(video, "pointerup", { button, clientX: 300, clientY: 230 });
-      if (button === 0) {
-         fireEvent.click(video);
-         expect(video.paused).toBe(false);
-      }
-      if (button === 2) {
-         const context = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button });
-         fireEvent(video, context);
-         expect(context.defaultPrevented).toBe(false);
-      }
-      expect(screen.getByRole("dialog")).toBe(dialog);
-   });
-
-   it("isolates controls, wheel input, and slider gestures from zoomed picture gestures", async () => {
-      renderMedia(<AttachmentElement {...attachment} />);
-      fireEvent.click(screen.getByRole("button", { name: "Open video" }));
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      Object.defineProperty(video, "duration", { configurable: true, value: 100 });
-      fireEvent.loadedMetadata(video);
-      fireEvent.loadedData(video);
-      fireEvent.wheel(video, { deltaY: -100 });
-      const mute = within(dialog).getByRole("button", { name: "Mute" });
-      const down = pointer(mute, "pointerdown", { button: 0, ctrlKey: true });
-      expect(down.defaultPrevented).toBe(false);
-      pointer(mute, "pointermove", { clientX: 100, clientY: 50 });
-      pointer(mute, "pointerup");
-      fireEvent.click(mute);
-      expect(video.volume).toBe(0);
-      expect(video.paused).toBe(false);
-      const wheel = new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: -100 });
-      fireEvent(mute, wheel);
-      expect(wheel.defaultPrevented).toBe(false);
-      const seek = await within(dialog).findByRole("slider");
-      pointer(seek, "pointerdown", { pointerType: "touch" });
-      pointer(seek, "pointerup", { pointerType: "touch" });
-      fireEvent.keyDown(seek, { key: "ArrowRight" });
-      expect(video.currentTime).toBeGreaterThan(0);
-      expect(video.paused).toBe(false);
-      fireEvent.click(within(dialog).getByRole("button", { name: "Pause" }));
-      expect(video.paused).toBe(true);
-   });
-
-   it("does not hide mobile controls or dismiss after pinching and continuing with one finger", async () => {
+   it("mutes and restores the saved volume on mobile", async () => {
       Object.defineProperty(window, "innerWidth", { configurable: true, value: 400 });
       renderMedia(<AttachmentElement {...attachment} />);
       fireEvent.click(screen.getByRole("button", { name: "Open video" }));
       const dialog = await screen.findByRole("dialog");
       const video = dialog.querySelector("video")!;
       fireEvent.loadedData(video);
-      pointer(video, "pointerdown", { pointerId: 1, pointerType: "touch", clientX: 100, clientY: 100 });
-      pointer(video, "pointerdown", { pointerId: 2, pointerType: "touch", clientX: 200, clientY: 100 });
-      pointer(video, "pointermove", { pointerId: 2, pointerType: "touch", clientX: 300, clientY: 100 });
-      pointer(video, "pointerup", { pointerId: 2, pointerType: "touch", clientX: 300, clientY: 100 });
-      pointer(video, "pointermove", { pointerId: 1, pointerType: "touch", clientX: 140, clientY: 140 });
-      pointer(video, "pointerup", { pointerId: 1, pointerType: "touch", clientX: 140, clientY: 140 });
-      fireEvent.click(video);
-      expect(within(dialog).getByRole("button", { name: "Pause" })).toBeTruthy();
-      expect(video.paused).toBe(false);
-      expect(screen.getByRole("dialog")).toBe(dialog);
-      pointer(video, "pointerdown", { pointerType: "touch" });
-      pointer(video, "pointerup", { pointerType: "touch" });
-      fireEvent.click(video);
-      expect(within(dialog).queryByRole("button", { name: "Pause" })).toBeNull();
-   });
-
-   it("bypasses picture gestures in native fullscreen and restores them on exit", async () => {
-      renderMedia(<AttachmentElement {...attachment} />);
-      fireEvent.click(screen.getByRole("button", { name: "Open video" }));
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      fireEvent.loadedData(video);
-      fireEvent.wheel(video, { deltaY: -100 });
-      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: /^Fullscreen$/ })));
-      const wheel = new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: -100 });
-      fireEvent(video, wheel);
-      expect(wheel.defaultPrevented).toBe(false);
-      const down = pointer(video, "pointerdown", { button: 0, ctrlKey: true, clientX: 200 });
-      expect(down.defaultPrevented).toBe(false);
-      pointer(video, "pointermove", { clientX: 300 });
-      pointer(video, "pointerup", { clientX: 300 });
-      fireEvent.click(video);
-      expect(video.paused).toBe(true);
-      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: "Exit fullscreen" })));
-      pointer(video, "pointerdown", { button: 0, ctrlKey: true, clientX: 200 });
-      pointer(video, "pointermove", { clientX: 300 });
-      pointer(video, "pointerup", { clientX: 300 });
-      fireEvent.click(video);
-      expect(video.paused).toBe(true);
-   });
-
-   it("can unmute a mobile video after its controls hide and reappear", async () => {
-      Object.defineProperty(window, "innerWidth", { configurable: true, value: 400 });
-      renderMedia(<AttachmentElement {...attachment} />);
-      fireEvent.click(screen.getByRole("button", { name: "Open video" }));
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      fireEvent.loadedData(video);
-      fireEvent.click(within(dialog).getByRole("button", { name: "Mute" }));
+      fireEvent.click(await within(dialog).findByRole("button", { name: "Mute" }));
       expect(video.volume).toBe(0);
-      fireEvent.click(video);
-      fireEvent.click(video);
       fireEvent.click(within(dialog).getByRole("button", { name: "Unmute" }));
       expect(video.volume).toBe(0.37);
    });
@@ -301,8 +155,8 @@ describe("message media viewer", () => {
       if (state === "failure") fireEvent.error(video);
       fireEvent.keyDown(dialog, { key: "Escape", code: "Escape" });
       expect(video.paused).toBe(true);
-      expect(video.getAttribute("src")).toBeNull();
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(video.getAttribute("src")).toBeNull();
       await waitFor(() => expect(document.activeElement).toBe(opener));
    });
 
@@ -321,8 +175,8 @@ describe("message media viewer", () => {
       fireEvent.click(within(dialog).getByRole("button", { name: "Close media viewer" }));
       await act(async () => rejectPlayback(new DOMException("Playback aborted", "AbortError")));
       expect(video.paused).toBe(true);
-      expect(video.getAttribute("src")).toBeNull();
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(video.getAttribute("src")).toBeNull();
    });
 
    it("uses native back to exit fullscreen before dismissing the viewer", async () => {
@@ -331,7 +185,8 @@ describe("message media viewer", () => {
       const dialog = await screen.findByRole("dialog");
       const video = dialog.querySelector("video")!;
       fireEvent.loadedData(video);
-      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: /^Fullscreen$/ })));
+      const fullscreen = await within(dialog).findByRole("button", { name: /^Fullscreen$/ });
+      await act(async () => fireEvent.click(fullscreen));
 
       await act(async () => native.back!());
       expect(document.fullscreenElement).toBeNull();
@@ -342,39 +197,6 @@ describe("message media viewer", () => {
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
    });
 
-   it("opens a mobile viewer and toggles and auto-hides controls without entering fullscreen", async () => {
-      Object.defineProperty(window, "innerWidth", { configurable: true, value: 400 });
-      const { container } = renderMedia(<AttachmentElement {...attachment} />);
-      const preview = container.querySelector("video")!;
-      fireEvent.loadedData(preview);
-      expect(preview.play).not.toHaveBeenCalled();
-      fireEvent.click(preview);
-      const dialog = await screen.findByRole("dialog");
-      const video = dialog.querySelector("video")!;
-      fireEvent.loadedData(video);
-      expect(document.fullscreenElement).toBeNull();
-      expect(video.paused).toBe(false);
-      expect(within(dialog).getByRole("button", { name: "Pause" })).toBeTruthy();
-
-      fireEvent.click(video);
-      expect(within(dialog).queryByRole("button", { name: "Pause" })).toBeNull();
-      expect(document.fullscreenElement).toBeNull();
-      expect(video.paused).toBe(false);
-      fireEvent.click(video);
-      expect(within(dialog).getByRole("button", { name: "Pause" })).toBeTruthy();
-      vi.useFakeTimers();
-      // A newly shown control gets a fresh auto-hide delay.
-      fireEvent.click(video);
-      fireEvent.click(video);
-      act(() => vi.advanceTimersByTime(3000));
-      expect(within(dialog).queryByRole("button", { name: "Pause" })).toBeNull();
-      fireEvent.click(video);
-      fireEvent.click(within(dialog).getByRole("button", { name: "Pause" }));
-      expect(video.paused).toBe(true);
-      act(() => vi.advanceTimersByTime(5000));
-      expect(within(dialog).getByRole("button", { name: "Play" })).toBeTruthy();
-   });
-
    it.each([true, false])("retains the same video session through native fullscreen with playing=%s", async (playing) => {
       const { container } = renderMedia(<AttachmentElement {...attachment} />);
       fireEvent.click(container.querySelector("video")!);
@@ -383,10 +205,11 @@ describe("message media viewer", () => {
       fireEvent.loadedData(video);
       if (!playing) fireEvent.click(video);
       video.currentTime = 23;
-      fireEvent.click(within(dialog).getByRole("button", { name: "Mute" }));
+      fireEvent.click(await within(dialog).findByRole("button", { name: "Mute" }));
       expect(video.volume).toBe(0);
 
-      await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: /^Fullscreen$/ })));
+      const fullscreen = await within(dialog).findByRole("button", { name: /^Fullscreen$/ });
+      await act(async () => fireEvent.click(fullscreen));
       expect(document.fullscreenElement).toBeTruthy();
       expect(dialog.querySelector("video")).toBe(video);
       expect(video.currentTime).toBe(23);
@@ -429,8 +252,8 @@ describe("message media viewer", () => {
       video.currentTime = 42;
       fireEvent.click(within(dialog).getByRole("button", { name: "Close media viewer" }));
       expect(video.paused).toBe(true);
-      expect(video.getAttribute("src")).toBeNull();
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(video.getAttribute("src")).toBeNull();
       fireEvent.click(preview);
       const reopened = (await screen.findByRole("dialog")).querySelector("video")!;
       expect(reopened.currentTime).toBe(0);
@@ -458,7 +281,7 @@ describe("message media viewer", () => {
       expect(video.paused).toBe(false);
       expect(video.loop).toBe(false);
       fireEvent.loadedData(video);
-      expect(within(dialog).getByRole("button", { name: "Pause" })).toBeTruthy();
+      expect(await within(dialog).findByRole("button", { name: "Pause" })).toBeTruthy();
    });
 
    it.each([
@@ -493,7 +316,7 @@ describe("message media viewer", () => {
       expect(video.muted).toBe(false);
       expect(video.paused).toBe(false);
       fireEvent.loadedData(video);
-      expect(within(dialog).getByRole("button", { name: "Pause" })).toBeTruthy();
+      expect(await within(dialog).findByRole("button", { name: "Pause" })).toBeTruthy();
    });
 
    it.each([

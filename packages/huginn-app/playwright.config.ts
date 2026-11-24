@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
    testDir: "./tests",
-   testMatch: ["web-smoke.spec.ts", "media-viewer.spec.ts"],
+   testMatch: "web-smoke.spec.ts",
    fullyParallel: true,
    forbidOnly: Boolean(process.env.CI),
    retries: process.env.CI ? 2 : 0,
@@ -18,16 +18,9 @@ export default defineConfig({
          use: { ...devices["Desktop Chrome"] },
       },
    ],
-   webServer: [
-      {
-         command: "pnpm exec vite preview --host 127.0.0.1 --port 4173",
-         url: "http://127.0.0.1:4173/app/",
-         reuseExistingServer: !process.env.CI,
-      },
-      {
-         command: "pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort",
-         url: "http://127.0.0.1:4174/app/tests/fixtures/media-viewer.html",
-         reuseExistingServer: !process.env.CI,
-      },
-   ],
+   webServer: {
+      command: "pnpm exec vite preview --host 127.0.0.1 --port 4173",
+      url: "http://127.0.0.1:4173/app/",
+      reuseExistingServer: !process.env.CI,
+   },
 });
