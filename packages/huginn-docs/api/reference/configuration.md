@@ -30,7 +30,8 @@ Nested options are consumed by their individual clients and merged with defaults
 | REST          | `https://midgard.huginn.dev/api`         |
 | CDN           | `https://midgard.huginn.dev`             |
 | Gateway       | `wss://midgard.huginn.dev/gateway`       |
-| Voice gateway | `wss://midgard.huginn.dev/voice-gateway` |
+| Voice gateway | `wss://midgard.huginn.dev/voice`         |
+| Voice HTTP API | `https://midgard.huginn.dev/voice`       |
 
 ## RESTOptions
 
@@ -95,8 +96,49 @@ The source reserves `intents`, but intent filtering is not implemented yet.
 type VoiceOptions<V extends Voice = Voice> = {
    class: VoiceConstructor<V>;
    url: string;
+   api: string;
    createSocket(url: string): WebSocket;
+   transportOptions?: TransportOptions;
 };
+
+type TransportOptions = {
+   deviceOptions?: DeviceOptions;
+   iceTransportPolicy?: RTCIceTransportPolicy;
+   voiceApi: string;
+};
+```
+
+`url` selects the signaling WebSocket. `api` selects the voice HTTP API; use a base URL without a trailing slash because the SDK appends `/ice-servers`. Set both when targeting another instance.
+
+`deviceOptions` is passed to the mediasoup client `Device` constructor. `iceTransportPolicy` defaults to `"all"`; use `"relay"` to require TURN. The current `TransportOptions` type requires `voiceApi`, but credential requests use the top-level `voice.api`. When supplying transport options, set both API fields to the same base URL.
+
+### ICE servers and TURN
+
+Before creating each send or receive transport, the SDK requests `GET /voice/ice-servers` relative to the configured voice HTTP API base. It uses global `fetch` with `Authorization: Bearer <access token>` and a ten-second timeout. The request uses the main access token, not a voice token, and bypasses `rest.makeRequest`.
+
+The endpoint returns `{ iceServers: RTCIceServer[] }`. The voice service returns an empty array when `CLOUDFLARE_TURN_ID` or `CLOUDFLARE_TURN_TOKEN` is unset. With both configured, it requests Cloudflare credentials with a one-day TTL; provider HTTP failures or invalid responses return HTTP 500.
+
+With policy `"all"`, a credential request failure allows transport creation to continue without the fetched ICE servers. With policy `"relay"`, the following errors reject transport setup and `connectVoice()`:
+
+| `VoiceTransportErrorCode` | Value | Cause |
+| --- | --- | --- |
+| `RELAY_NOT_CONFIGURED` | `5005` | The response contains no `turn:` or `turns:` server URL. |
+| `RELAY_CREDENTIALS_UNAVAILABLE` | `5006` | The credential request fails or times out. |
+
+For example, to require TURN:
+
+```ts
+const voiceApi = "https://huginn.example/voice";
+const client = new HuginnClient({
+   voice: {
+      url: "wss://huginn.example/voice",
+      api: voiceApi,
+      transportOptions: {
+         voiceApi,
+         iceTransportPolicy: "relay",
+      },
+   },
+});
 ```
 
 Use `class` to extend voice behavior while preserving the client type:
@@ -135,7 +177,8 @@ const client = new HuginnClient({
       createSocket: (url) => new WebSocket(url),
    },
    voice: {
-      url: "wss://huginn.example/voice-gateway",
+      url: "wss://huginn.example/voice",
+      api: "https://huginn.example/voice",
       createSocket: (url) => new WebSocket(url),
    },
 });
@@ -175,7 +218,8 @@ type VoiceSignallingResetType = "hard" | "soft" | "session";
 
 ```ts
 class TransportError extends Error {
-   code?: number;
+   code: number;
+   constructor(message: string, code: number);
 }
 ```
 
