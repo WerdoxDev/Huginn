@@ -105,13 +105,16 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@posthog/cli': 0.20.1
+
 importers:
 
   .:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
       oxfmt:
         specifier: ^0.65.0
         version: 0.65.0
@@ -207,8 +210,8 @@ importers:
         specifier: workspace:*
         version: link:../huginn-shared
       '@posthog/rollup-plugin':
-        specifier: ^1.5.1
-        version: 1.5.1(rollup@4.60.4)
+        specifier: ^1.6.4
+        version: 1.6.4(rollup@4.60.4)
       '@rolldown/plugin-babel':
         specifier: ^0.2.3
         version: 0.2.3(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.6)(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -285,11 +288,11 @@ importers:
         specifier: workspace:*
         version: link:../native-addon
       posthog-js:
-        specifier: ^1.419.4
-        version: 1.419.4(@types/react@19.2.18)(react@19.2.8)
+        specifier: ^1.454.2
+        version: 1.454.2(@types/react@19.2.18)(react@19.2.8)
       posthog-node:
-        specifier: ^5.51.2
-        version: 5.51.2
+        specifier: ^6.0.6
+        version: 6.0.6(@opentelemetry/api@1.9.1)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -347,7 +350,7 @@ importers:
         version: 1.62.1
       '@svgr/plugin-jsx':
         specifier: ^8.1.0
-        version: 8.1.0(@svgr/core@8.1.0(supports-color@11.0.0)(typescript@7.0.2))
+        version: 8.1.0(@svgr/core@8.1.0(supports-color@11.0.0)(typescript@7.0.2))(supports-color@11.0.0)
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -371,7 +374,7 @@ importers:
         version: 14.6.6(@testing-library/dom@10.4.1)
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
       '@types/react':
         specifier: ^19.2.18
         version: 19.2.18
@@ -456,7 +459,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
       '@types/culori':
         specifier: ^4.0.1
         version: 4.0.1
@@ -775,14 +778,14 @@ importers:
         version: 2.0.12
       posthog-js:
         specifier: ^1.419.4
-        version: 1.419.4(@types/react@19.2.18)(react@19.2.8)
+        version: 1.454.2(@types/react@19.2.18)(react@19.2.8)
       posthog-node:
         specifier: ^5.51.2
-        version: 5.51.2
+        version: 5.74.0(@opentelemetry/api@1.9.1)
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
       mediasoup:
         specifier: ^3.26.0
         version: 3.26.0
@@ -813,7 +816,7 @@ importers:
     devDependencies:
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
 
   packages/huginn-voice:
     dependencies:
@@ -970,7 +973,7 @@ importers:
         version: 6.3.3(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@types/bun':
         specifier: latest
-        version: 1.4.4
+        version: 1.4.5
 
 packages:
 
@@ -3830,27 +3833,27 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@posthog/browser-common@0.6.0':
-    resolution: {integrity: sha512-d6yBE7VeoU3JTpaab3CaCoDCseh0Ytx7sTe0v2ZxhtHNxoKk7rdqr92+bUz9F1T2CuJO5/OTkes4HWT2VHNrTA==}
+  '@posthog/browser-common@0.13.1':
+    resolution: {integrity: sha512-2e7AVKc8F1mDGnqvEE6Mu/5wcojDXeK4ddeq0B2o1X5iwDVJ7XSH+7Rf3qNHkqwUZLCT9aoUe2mkgfM9vIo5kA==}
 
-  '@posthog/cli@0.14.1':
-    resolution: {integrity: sha512-gTzcKpl9TZLf0LrlLHEjChlPc9LIK1gdQG0alMnX6+b+W1mTD+6nTN0W/MeEzjT4DiKDeK8FPhc1n7dT1tWKFw==}
+  '@posthog/cli@0.20.1':
+    resolution: {integrity: sha512-g6XrVqm9HFZq6v1mMSCjHnJRkLKYS9YXogGPO7fRjSRFLmpr+ECkfWHhTecS+PJIiNffhQ1fm1B9oP1U2QASkw==}
     engines: {node: '>=14.14', npm: '>=6'}
     hasBin: true
 
-  '@posthog/core@1.48.11':
-    resolution: {integrity: sha512-fvKbxGaUM8RuCDB1jdhSqAHYjk42INfJDWT1KVezn74sCrfnr1YaUafxzmcS+87D5FzbA2tu7IT0GQRV2WkkRg==}
+  '@posthog/core@1.69.2':
+    resolution: {integrity: sha512-toMfPKklwLW+a4ZY3/EzM3GNMVXmk2ylGb8NPJXRH4igXMoI8wgNL2jqXOiglWAXqFBLZGYFN1oQx6LVmUTxTg==}
 
-  '@posthog/plugin-utils@1.2.0':
-    resolution: {integrity: sha512-SXG2oVxPnliYKmixyIYqPv1CA4UYPZy9fQL5H+mvN/OQpKioRTawp8I2ofQmf6SfiYpnf+KAzLiRUlK7S3rOCw==}
+  '@posthog/plugin-utils@2.0.1':
+    resolution: {integrity: sha512-ZiQfUcgY65EjF2vkqL4Aau6sx0aqvSWoXaGSGu9Solnmv6e6VRjQbAU0SCKbxpJxcEsCJof9vmvnrFTQIEOUAQ==}
 
-  '@posthog/rollup-plugin@1.5.1':
-    resolution: {integrity: sha512-4ZNhhgnMEdRXP5YlLngHEwaaobrpNhHMT7JY4kZ1uLjGeURRbq7OjWNNg2MGN6iJgR8iIbvbt4Kho1WxflCz6A==}
+  '@posthog/rollup-plugin@1.6.4':
+    resolution: {integrity: sha512-T2BnNw9wqodg+Xx75Aq7Nm0wtHanvD4amlc1KJnJ/oTE76bN3okl+Cwm30WvoGSVFnrzumDYF2lrsJejplCmgw==}
     peerDependencies:
       rollup: '>= 4.0.0'
 
-  '@posthog/types@1.406.1':
-    resolution: {integrity: sha512-RhA00AvWrcEW3wbYgvIPr4EeUTu1BDHJx8eajwJ1moOYIchQtgkQcqgnUjwXz6jL1a8XJAIaZ9w7SZfYo1b/Rw==}
+  '@posthog/types@1.427.1':
+    resolution: {integrity: sha512-Kx9hWf6Au64CrBLafscANAeswkRFUMs4zlU9/gwB2Hf/9ggU9YNjbw/MQA5tt7cbzTCkh+4fNIPjQeJz7/j63w==}
 
   '@prettier/plugin-xml@2.2.0':
     resolution: {integrity: sha512-UWRmygBsyj4bVXvDiqSccwT1kmsorcwQwaIy30yVh8T+Gspx4OlC0shX1y+ZuwXZvgnafmpRYKks0bAu9urJew==}
@@ -5002,8 +5005,8 @@ packages:
   '@types/bun@1.4.0':
     resolution: {integrity: sha512-K+lZULY23vRgK/CfTjFIV+tyifaNdSMlPh9j+6mQ/cLfpOznLyAuzgV/JQysyECpkBQLVMSyvjlr2fBUSA9wFQ==}
 
-  '@types/bun@1.4.4':
-    resolution: {integrity: sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ==}
+  '@types/bun@1.4.5':
+    resolution: {integrity: sha512-DpgwNI9z0L1S0gtb45QLCWgwCUcMLnsHYMJHQvpNj7erGiCGBvpggltAIeARrtobNMKMuy0UP7i56tKKgwFs/Q==}
 
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
@@ -6078,8 +6081,8 @@ packages:
   bun-types@1.4.0:
     resolution: {integrity: sha512-iIKw23BspnQQYd3prITOBxeUsxBHnwzX6YJfGMuNOZzeNcMmVqzIIVGRm1l69ogaPQmb4wB6BN8mA5bE9YuC5Q==}
 
-  bun-types@1.4.4:
-    resolution: {integrity: sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ==}
+  bun-types@1.4.5:
+    resolution: {integrity: sha512-ECHn+9dhL3wv0G6u0+7dQvrnaimXiRDxxerYBmhTaLyJEEuvTPWk2Fye3XIf5Y++JIIiHKfQw4Z7V5D8KuiXbg==}
 
   bun-webgpu-darwin-arm64@0.1.7:
     resolution: {integrity: sha512-mRrFFyHzPWjsTRidAZBRcu808CPQBOUL0P6b4nxLhp+XHcV/mbUHERZMgW9s58tsojQfSdzschiQa8q+JCgRWA==}
@@ -6699,8 +6702,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.14:
-    resolution: {integrity: sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==}
+  dompurify@3.5.0:
+    resolution: {integrity: sha512-LYC0ZkE8P1V42JsRYTwMdme/2ET8SpOc5AA2eOFjP/IadvRd2fwiT4TVz5vkfy0XUx12aS2UaRkTnfVPNOv9vw==}
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -9043,8 +9046,8 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.419.4:
-    resolution: {integrity: sha512-SpEgcWtHZ54HxtWl5jCxjHiG9C6t90iQVIra1T+U3veN9Q8vNx3yYsUuEV+dNF6g4M7HeV8Y1ZpNlTalWI8EYw==}
+  posthog-js@1.454.2:
+    resolution: {integrity: sha512-zInBAdAqt0R9h2gydLHxrgBeyfvHbAz6tEOK4WCggJZeGk9YVccA9PMXAiO8c9j4RXNFr5914xNLN1xhBwCEqQ==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -9054,12 +9057,33 @@ packages:
       react:
         optional: true
 
-  posthog-node@5.51.2:
-    resolution: {integrity: sha512-K+aQnqyHEtx2O5YmjxByh3WnXXMsrAisW0hNSXwejM4v7cngrbqoA6rZevMSyaXNqx9xhBedTxz0orb1Xwxyew==}
+  posthog-node@5.74.0:
+    resolution: {integrity: sha512-lAnGzPVobruQ7rZe45kzcXKZAcCK3J+1dMNS3WOOdx9mnM4ECRc2WRxBdS1ncBO/h/vDtHIEmcuIr/LUxxze5w==}
     engines: {node: ^20.20.0 || >=22.22.0}
     peerDependencies:
+      '@opentelemetry/api': ^1.2.0
+      '@react-email/render': ^2.1.0
       rxjs: ^7.0.0
     peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@react-email/render':
+        optional: true
+      rxjs:
+        optional: true
+
+  posthog-node@6.0.6:
+    resolution: {integrity: sha512-7FMMQ4fk4Uqg/w2zpKVS8/Yv0doIz0HRcWML4WhxDTqqkS7eyXCvfGUuh+wLJbWYvdSm/7QNu9eeL31++G/dOw==}
+    engines: {node: ^20.20.0 || >=22.22.0}
+    peerDependencies:
+      '@opentelemetry/api': ^1.2.0
+      '@react-email/render': ^2.1.0
+      rxjs: ^7.0.0
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@react-email/render':
+        optional: true
       rxjs:
         optional: true
 
@@ -10570,11 +10594,11 @@ packages:
       '@types/emscripten':
         optional: true
 
-  web-vitals@5.3.0:
-    resolution: {integrity: sha512-q6LWsLatGYZp5VGBIOvbTj6JBV2nOmC8KvWztXBmwJcfFAzhwKwbOxhUH306XY3CcaZDUlSmSuNPBsCn0bFu+g==}
+  web-vitals@6.2.1:
+    resolution: {integrity: sha512-rLcLXA2sx6+9dE88NHFubwTtGxpK4yYBLj6qHPdFoCaLr0cXGb4efOqtKLlm4loGA4OEKHIQKMKzZkKyOh5ctw==}
 
-  web-vitals@6.0.0:
-    resolution: {integrity: sha512-Guaibvy/+uNtL6Bsu4jmMJGzuSl91oeRH5iO9pPRbYftnFUr3yqT1TUNX/OE4o9HexuEMU3Kb/Wg7iKhlffZUA==}
+  web-vitals@6.2.3:
+    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
 
   webcrypto-core@1.9.2:
     resolution: {integrity: sha512-gsXecm82UQNlTBURJGuqOWy1Ww08S3kZUcr3aOJS02Pk0xLtkfeUAVC0u0xhgdonFme80edSJUIJyuvL/7250Q==}
@@ -13810,31 +13834,35 @@ snapshots:
   '@polka/url@1.0.0-next.29':
     optional: true
 
-  '@posthog/browser-common@0.6.0':
+  '@posthog/browser-common@0.13.1':
     dependencies:
-      '@posthog/core': 1.48.11
-      '@posthog/types': 1.406.1
+      '@posthog/core': 1.69.2
+      '@posthog/types': 1.427.1
+      dompurify: 3.5.0
+      preact: 10.29.8
+    transitivePeerDependencies:
+      - preact-render-to-string
 
-  '@posthog/cli@0.14.1':
+  '@posthog/cli@0.20.1':
     dependencies:
       detect-libc: 2.1.2
 
-  '@posthog/core@1.48.11':
+  '@posthog/core@1.69.2':
     dependencies:
-      '@posthog/types': 1.406.1
+      '@posthog/types': 1.427.1
 
-  '@posthog/plugin-utils@1.2.0':
+  '@posthog/plugin-utils@2.0.1':
     dependencies:
       cross-spawn: 7.0.6
 
-  '@posthog/rollup-plugin@1.5.1(rollup@4.60.4)':
+  '@posthog/rollup-plugin@1.6.4(rollup@4.60.4)':
     dependencies:
-      '@posthog/cli': 0.14.1
-      '@posthog/plugin-utils': 1.2.0
+      '@posthog/cli': 0.20.1
+      '@posthog/plugin-utils': 2.0.1
       magic-string: 0.30.21
       rollup: 4.60.4
 
-  '@posthog/types@1.406.1': {}
+  '@posthog/types@1.427.1': {}
 
   '@prettier/plugin-xml@2.2.0':
     dependencies:
@@ -14357,65 +14385,33 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
 
-  '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
-
   '@svgr/babel-plugin-remove-jsx-attribute@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
-
-  '@svgr/babel-plugin-remove-jsx-attribute@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
 
   '@svgr/babel-plugin-remove-jsx-empty-expression@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
 
-  '@svgr/babel-plugin-remove-jsx-empty-expression@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
-
   '@svgr/babel-plugin-replace-jsx-attribute-value@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
-
-  '@svgr/babel-plugin-replace-jsx-attribute-value@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
 
   '@svgr/babel-plugin-svg-dynamic-title@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
 
-  '@svgr/babel-plugin-svg-dynamic-title@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
-
   '@svgr/babel-plugin-svg-em-dimensions@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
-
-  '@svgr/babel-plugin-svg-em-dimensions@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
 
   '@svgr/babel-plugin-transform-react-native-svg@8.1.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
 
-  '@svgr/babel-plugin-transform-react-native-svg@8.1.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
-
   '@svgr/babel-plugin-transform-svg-component@8.0.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@11.0.0)
-
-  '@svgr/babel-plugin-transform-svg-component@8.0.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
 
   '@svgr/babel-preset@8.1.0(@babel/core@7.29.7(supports-color@11.0.0))':
     dependencies:
@@ -14428,18 +14424,6 @@ snapshots:
       '@svgr/babel-plugin-svg-em-dimensions': 8.0.0(@babel/core@7.29.7(supports-color@11.0.0))
       '@svgr/babel-plugin-transform-react-native-svg': 8.1.0(@babel/core@7.29.7(supports-color@11.0.0))
       '@svgr/babel-plugin-transform-svg-component': 8.0.0(@babel/core@7.29.7(supports-color@11.0.0))
-
-  '@svgr/babel-preset@8.1.0(@babel/core@7.29.7)':
-    dependencies:
-      '@babel/core': 7.29.7
-      '@svgr/babel-plugin-add-jsx-attribute': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-remove-jsx-attribute': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-remove-jsx-empty-expression': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-replace-jsx-attribute-value': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-svg-dynamic-title': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-svg-em-dimensions': 8.0.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-transform-react-native-svg': 8.1.0(@babel/core@7.29.7)
-      '@svgr/babel-plugin-transform-svg-component': 8.0.0(@babel/core@7.29.7)
 
   '@svgr/core@8.1.0(supports-color@11.0.0)(typescript@7.0.2)':
     dependencies:
@@ -14457,10 +14441,10 @@ snapshots:
       '@babel/types': 7.29.7
       entities: 4.5.0
 
-  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(supports-color@11.0.0)(typescript@7.0.2))':
+  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(supports-color@11.0.0)(typescript@7.0.2))(supports-color@11.0.0)':
     dependencies:
-      '@babel/core': 7.29.7
-      '@svgr/babel-preset': 8.1.0(@babel/core@7.29.7)
+      '@babel/core': 7.29.7(supports-color@11.0.0)
+      '@svgr/babel-preset': 8.1.0(@babel/core@7.29.7(supports-color@11.0.0))
       '@svgr/core': 8.1.0(supports-color@11.0.0)(typescript@7.0.2)
       '@svgr/hast-util-to-babel-ast': 8.0.0
       svg-parser: 2.0.4
@@ -14902,9 +14886,9 @@ snapshots:
     dependencies:
       bun-types: 1.4.0
 
-  '@types/bun@1.4.4':
+  '@types/bun@1.4.5':
     dependencies:
-      bun-types: 1.4.4
+      bun-types: 1.4.5
 
   '@types/cacheable-request@6.0.3':
     dependencies:
@@ -15891,7 +15875,7 @@ snapshots:
     dependencies:
       '@types/node': 26.3.0
 
-  bun-types@1.4.4:
+  bun-types@1.4.5:
     dependencies:
       '@types/node': 26.3.0
       undici-types: 8.10.0
@@ -16517,7 +16501,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.14:
+  dompurify@3.5.0:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -19074,27 +19058,35 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.419.4(@types/react@19.2.18)(react@19.2.8):
+  posthog-js@1.454.2(@types/react@19.2.18)(react@19.2.8):
     dependencies:
-      '@posthog/browser-common': 0.6.0
-      '@posthog/core': 1.48.11
-      '@posthog/types': 1.406.1
+      '@posthog/browser-common': 0.13.1
+      '@posthog/core': 1.69.2
+      '@posthog/types': 1.427.1
       core-js: 3.50.0
-      dompurify: 3.4.14
+      dompurify: 3.5.0
       fflate: 0.4.9
       preact: 10.29.8
       query-selector-shadow-dom: 1.0.1
-      web-vitals: 5.3.0
-      web-vitals-soft-navs: web-vitals@6.0.0
+      web-vitals: 6.2.3
+      web-vitals-soft-navs: web-vitals@6.2.1
     optionalDependencies:
       '@types/react': 19.2.18
       react: 19.2.8
     transitivePeerDependencies:
       - preact-render-to-string
 
-  posthog-node@5.51.2:
+  posthog-node@5.74.0(@opentelemetry/api@1.9.1):
     dependencies:
-      '@posthog/core': 1.48.11
+      '@posthog/core': 1.69.2
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+
+  posthog-node@6.0.6(@opentelemetry/api@1.9.1):
+    dependencies:
+      '@posthog/core': 1.69.2
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
 
   postject@1.0.0-alpha.6:
     dependencies:
@@ -20834,9 +20826,9 @@ snapshots:
 
   web-tree-sitter@0.25.10: {}
 
-  web-vitals@5.3.0: {}
+  web-vitals@6.2.1: {}
 
-  web-vitals@6.0.0: {}
+  web-vitals@6.2.3: {}
 
   webcrypto-core@1.9.2:
     dependencies:
