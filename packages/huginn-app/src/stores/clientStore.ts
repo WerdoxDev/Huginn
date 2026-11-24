@@ -20,6 +20,9 @@ import { windowStore } from "./windowStore";
 const store = clientStore;
 
 async function handleRevokedSession(): Promise<void> {
+   // An explicit logout owns navigation so it can capture the outgoing view.
+   if (store.getState().isLoggingOut) return;
+
    localStorage.removeItem("refresh-token");
    localStorage.removeItem("access-token");
    store.getState().client?.clearSessionLocally();

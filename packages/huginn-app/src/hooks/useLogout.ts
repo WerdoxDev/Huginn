@@ -1,6 +1,6 @@
 import { analytics } from "@huginnjs/shared";
 import { useChannelStore } from "@stores/channelStore";
-import { useClient } from "@stores/clientStore";
+import { clientStore, useClient } from "@stores/clientStore";
 import { useModals } from "@stores/modalsStore";
 import { clearUserStore } from "@stores/userStore";
 import { useNavigate } from "@tanstack/react-router";
@@ -29,26 +29,33 @@ export function useLogout() {
    });
 
    async function logout() {
+      if (clientStore.getState().isLoggingOut) return;
+      clientStore.setState({ isLoggingOut: true });
+
       localStorage.removeItem("refresh-token");
       localStorage.removeItem("access-token");
 
-      if (client?.voice.status !== "idle") {
-         try {
-            await client?.voiceManager.disconnectVoice();
-         } catch {
-            // Continue clearing the session if voice teardown fails after revocation.
-         }
-      }
-
       try {
+         if (client?.voice.status !== "idle") {
+            try {
+               await client?.voiceManager.disconnectVoice();
+            } catch {
+               // Continue clearing the session if voice teardown fails after revocation.
+            }
+         }
+
          await logoutMutation.mutateAsync();
       } finally {
-         clearUserStore();
-         analytics.reset();
-         updateModals({ settings: { isOpen: false }, info: { isOpen: false } });
-         await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
-
-         resetScrolls();
+         try {
+            // Keep the outgoing UI intact until the router captures its transition snapshot.
+            await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });
+         } finally {
+            clearUserStore();
+            analytics.reset();
+            updateModals({ settings: { isOpen: false }, info: { isOpen: false } });
+            resetScrolls();
+            clientStore.setState({ isLoggingOut: false });
+         }
       }
    }
 
