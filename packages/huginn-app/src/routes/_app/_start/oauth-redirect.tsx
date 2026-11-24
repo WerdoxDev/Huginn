@@ -123,11 +123,14 @@ function OAuthRedirectComponent() {
    async function onSubmit(data: Inputs) {
       posthog.capture("oauth:confirm_button_click");
 
-      await mutation.mutateAsync({
-         avatar: avatarData,
-         displayName: data.displayName ?? null,
-         username: data.username,
-      });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await mutation.mutateAsync({
+            avatar: avatarData,
+            displayName: data.displayName ?? null,
+            username: data.username,
+         });
+      } catch {}
    }
 
    return (

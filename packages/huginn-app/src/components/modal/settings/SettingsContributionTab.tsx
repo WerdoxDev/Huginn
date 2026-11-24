@@ -118,7 +118,7 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
       setSelectedApplication(value);
    }
 
-   async function submit() {
+   function submit() {
       const application = data?.find((x) => x.processId === Number(selectedApplication?.value));
       if (!application?.exePath) return;
 
@@ -128,8 +128,8 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
          return;
       }
 
-      try {
-         await submitMutation.mutateAsync({
+      submitMutation.mutate(
+         {
             exePath: application.exePath
                .split(/[/\\]+/)
                .filter((component) => component && !/^[a-z]:$/i.test(component))
@@ -139,42 +139,46 @@ export default function SettingsContributionTab(_props: SettingsTabProps) {
             commandLine: application.cmdLine,
             platform: huginnWindow.platform,
             icon: application.icon ?? undefined,
-         });
-         updateModals({
-            info: {
-               status: "success",
-               title: "Submitted!",
-               text: "Your game contribution is now waiting for staff review.",
-               isOpen: true,
+         },
+         {
+            onSuccess() {
+               updateModals({
+                  info: {
+                     status: "success",
+                     title: "Submitted!",
+                     text: "Your game contribution is now waiting for staff review.",
+                     isOpen: true,
+                  },
+               });
             },
-         });
-      } catch (e) {
-         console.log(e);
-         if (isWorthyHuginnError(e) && e.code === JsonCode.DUPLICATE_CONTRIBUTION) {
-            updateModals({
-               info: {
-                  status: "info",
-                  title: "Already Submitted",
-                  text: "This application has already been submitted.",
-                  isOpen: true,
-               },
-            });
-            return;
-         }
-         updateModals({
-            info: {
-               status: "error",
-               title: "Submission failed",
-               text: (
-                  <div>
-                     Huginn could not submit <span className="font-semibold">{application.displayName ?? application.windowTitle}</span>. Please try
-                     again.
-                  </div>
-               ),
-               isOpen: true,
+            onError(error) {
+               if (isWorthyHuginnError(error) && error.code === JsonCode.DUPLICATE_CONTRIBUTION) {
+                  updateModals({
+                     info: {
+                        status: "info",
+                        title: "Already Submitted",
+                        text: "This application has already been submitted.",
+                        isOpen: true,
+                     },
+                  });
+                  return;
+               }
+               updateModals({
+                  info: {
+                     status: "error",
+                     title: "Submission failed",
+                     text: (
+                        <div>
+                           Huginn could not submit <span className="font-semibold">{application.displayName ?? application.windowTitle}</span>. Please
+                           try again.
+                        </div>
+                     ),
+                     isOpen: true,
+                  },
+               });
             },
-         });
-      }
+         },
+      );
    }
 
    return (

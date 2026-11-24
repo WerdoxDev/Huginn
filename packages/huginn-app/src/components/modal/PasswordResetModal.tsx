@@ -81,12 +81,11 @@ export default function PasswordResetModal() {
       if (!passwordReset.isOpen || !authenticated || automaticRequestStarted.current || !user?.email) return;
       automaticRequestStarted.current = true;
       setValue("email", user.email);
-      void requestMutation.mutateAsync(user.email).catch(() => {
-         // The mutation displays the request error in the form.
-      });
+      requestMutation.mutate(user.email);
    }, [passwordReset.isOpen, authenticated, user?.email]);
 
    async function onSubmit(data: Inputs) {
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
       try {
          if (step === "email" && !authenticated) await requestMutation.mutateAsync(data.email);
          else await confirmMutation.mutateAsync(data);

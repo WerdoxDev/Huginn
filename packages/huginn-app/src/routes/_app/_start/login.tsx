@@ -67,11 +67,14 @@ function LoginComponent() {
    async function login(data: Inputs) {
       posthog.capture("login:login_button_click");
 
-      await mutation.mutateAsync({
-         username: data.login,
-         email: data.login,
-         password: data.password,
-      });
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
+      try {
+         await mutation.mutateAsync({
+            username: data.login,
+            email: data.login,
+            password: data.password,
+         });
+      } catch {}
    }
 
    async function handleOAuth(type: OAuthProvider) {

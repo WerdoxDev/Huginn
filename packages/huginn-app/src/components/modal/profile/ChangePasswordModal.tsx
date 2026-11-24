@@ -45,6 +45,7 @@ export default function ChangePasswordModal() {
    async function onSubmit(data: Inputs) {
       const body = { newPassword: modal.removePassword ? null : data.newPassword, password: data.password };
       let result;
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
       try {
          result = await recentAuthentication.run(() => mutation.mutateAsync(body), {
             reason: modal.removePassword ? "remove your password" : "set or change your password",

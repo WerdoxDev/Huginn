@@ -61,8 +61,9 @@ export function useSafeDeleteDMChannel(channelId?: Snowflake, channelType?: Dire
                            await navigate({ to: "/channels/@me", replace: true });
                         }
 
-                        await mutation.mutateAsync(channelId);
-                        updateModals({ info: { isOpen: false } });
+                        mutation.mutate(channelId, {
+                           onSuccess: () => updateModals({ info: { isOpen: false } }),
+                        });
                      },
                   },
                   cancel: {

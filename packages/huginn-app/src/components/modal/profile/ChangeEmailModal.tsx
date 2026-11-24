@@ -33,6 +33,7 @@ export default function ChangeEmailModal() {
 
    async function onSubmit(data: Inputs) {
       const body = { email: data.email, password: data.password };
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
       try {
          await recentAuthentication.run(() => patchMutation.mutateAsync(body), { reason: "change your email" });
       } catch {

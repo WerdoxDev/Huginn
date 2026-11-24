@@ -52,16 +52,18 @@ export default function CreateDMModal() {
       updateModals({ createDM: { isOpen: false } });
    }
 
-   async function findOrCreate() {
+   function findOrCreate() {
       posthog.capture("dm:channel_find_or_create", {
          recipient_count: selectedUsers.length,
          is_group: selectedUsers.length > 1,
       });
-      await mutation.mutateAsync({
-         recipients: selectedUsers?.map((x) => x.id),
-         name: values.name,
-      });
-      close();
+      mutation.mutate(
+         {
+            recipients: selectedUsers?.map((x) => x.id),
+            name: values.name,
+         },
+         { onSuccess: close },
+      );
    }
    return (
       <HuginnDialogPanel className="lg:max-w-md">

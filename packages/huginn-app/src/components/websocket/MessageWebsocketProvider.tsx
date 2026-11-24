@@ -44,15 +44,17 @@ export default function MessageWebsocketProvider(props: { children?: ReactNode }
       const newMessage: AppMessage = convertToAppMessage(d, "websocket");
 
       if (!targetChannel) {
-         await mutation.mutateAsync({ recipients: [d.author.id], skipNavigation: true });
-         addChannelToReadStates(d.channelId);
-         dispatchEvent("message_added", {
-            message: newMessage,
-            visible: false,
-            inLoadedQueryPage: false,
-            inVisibleQueryPage: false,
-            self: d.author.id === user?.id,
-         });
+         try {
+            await mutation.mutateAsync({ recipients: [d.author.id], skipNavigation: true });
+            addChannelToReadStates(d.channelId);
+            dispatchEvent("message_added", {
+               message: newMessage,
+               visible: false,
+               inLoadedQueryPage: false,
+               inVisibleQueryPage: false,
+               self: d.author.id === user?.id,
+            });
+         } catch {}
          return;
       }
 

@@ -42,6 +42,7 @@ export default function ChangeUsernameModal() {
 
    async function onSubmit(data: Inputs) {
       const body = { username: data.username, password: data.password };
+      // Keep this async so React Hook Form tracks submission until the mutation finishes.
       try {
          await recentAuthentication.run(() => mutation.mutateAsync(body), { reason: "change your username" });
       } catch {

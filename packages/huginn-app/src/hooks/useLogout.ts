@@ -45,7 +45,7 @@ export function useLogout() {
          }
 
          await logoutMutation.mutateAsync();
-      } finally {
+      } catch {} finally {
          try {
             // Keep the outgoing UI intact until the router captures its transition snapshot.
             await navigate({ to: "/login", replace: true, viewTransition: { types: ["backwards"] } });

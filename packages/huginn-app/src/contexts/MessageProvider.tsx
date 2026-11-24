@@ -53,14 +53,14 @@ export function MessageProvider(props: MessageProviderProps) {
    const mutation = useSendMessage();
 
    const handleRetrySendMessage = useCallback(
-      async (previewMessage: PreviewAppMessage) => {
+      (previewMessage: PreviewAppMessage) => {
          if (!channelId || !client || !user) return;
 
          deleteAppMessage(queryClient, channelId, previewMessage.id);
          const nonce = client.generateNonce();
          const newPreviewMessage: PreviewAppMessage = { ...previewMessage, id: snowflake.generateString(WorkerID.APP), nonce, error: undefined };
 
-         await mutation.mutateAsync({
+         mutation.mutate({
             previewMessage: newPreviewMessage,
          });
       },

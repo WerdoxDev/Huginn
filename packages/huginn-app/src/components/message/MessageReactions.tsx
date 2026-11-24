@@ -17,17 +17,17 @@ export default function MessageReactions(props: {
    const addMutation = useAddReaction();
    const removeMutation = useRemoveReaction();
 
-   async function handleReactionClick(reaction: APIReaction) {
+   function handleReactionClick(reaction: APIReaction) {
       if (props.disabled) return;
       if (reaction.me)
-         await removeMutation.mutateAsync({
+         removeMutation.mutate({
             channelId: props.message.channelId,
             messageId: props.message.id,
             emojiId: reaction.emoji.id,
             emojiName: reaction.emoji.name,
          });
       else
-         await addMutation.mutateAsync({
+         addMutation.mutate({
             channelId: props.message.channelId,
             messageId: props.message.id,
             emojiId: reaction.emoji.id,

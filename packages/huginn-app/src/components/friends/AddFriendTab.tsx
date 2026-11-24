@@ -10,7 +10,7 @@ type Input = {
 };
 
 export default function AddFriendTab() {
-   const { register, values, handleErrors, setCustomMessage, handleSubmit, formState } = useHuginnForm<Input>();
+   const { register, values, handleErrors, setCustomMessage, handleSubmit } = useHuginnForm<Input>();
    const posthog = usePostHog();
 
    const [disabled, setDisabled] = useState(false);
@@ -26,9 +26,9 @@ export default function AddFriendTab() {
       setDisabled(!values.username);
    }, [values]);
 
-   async function onSubmit() {
+   function onSubmit() {
       posthog.capture("friend:request_sent");
-      await mutation.mutateAsync({ username: values.username });
+      mutation.mutate({ username: values.username });
    }
 
    return (
@@ -38,7 +38,7 @@ export default function AddFriendTab() {
          <form onSubmit={handleSubmit(onSubmit)}>
             <AddFriendInput
                inputProps={{ ...register("username") }}
-               loading={formState.isSubmitting}
+               loading={mutation.isPending}
                className="mt-5"
                buttonProps={{ type: "submit" }}
                disabled={disabled}

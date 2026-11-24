@@ -25,10 +25,10 @@ export function MessageActions(props: { message: ProcessedAppMessage }) {
       setEditingMessageId(props.message.id);
    }
 
-   async function handleEmojiSelect(slug: string, unicode?: string) {
+   function handleEmojiSelect(slug: string, unicode?: string) {
       if (!unicode) return;
 
-      await addMutation.mutateAsync({
+      addMutation.mutate({
          channelId: props.message.channelId,
          messageId: props.message.id,
          emojiId: null,

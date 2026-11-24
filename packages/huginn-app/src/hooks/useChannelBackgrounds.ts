@@ -23,12 +23,12 @@ export function useGlobalChannelBackground() {
    const background = useStore(clientStore, (state) => state.userSettings?.globalChannelBackground);
    const mutation = useEditSettings();
 
-   async function saveGlobalChannelBackground(style: BackgroundStyle) {
-      await mutation.mutateAsync({ globalChannelBackground: style });
+   function saveGlobalChannelBackground(style: BackgroundStyle, onSuccess?: () => void) {
+      mutation.mutate({ globalChannelBackground: style }, { onSuccess });
    }
 
-   async function resetGlobalChannelBackground() {
-      await mutation.mutateAsync({ globalChannelBackground: null });
+   function resetGlobalChannelBackground(onSuccess?: () => void) {
+      mutation.mutate({ globalChannelBackground: null }, { onSuccess });
    }
 
    return {
@@ -48,14 +48,20 @@ export function useChannelBackgrounds(channelId: Snowflake) {
    const background = channelBackground ?? globalChannelBackground;
    const backgroundScope: BackgroundScope = channelBackground ? channelId : "global";
 
-   async function saveChannelBackground(style: BackgroundStyle) {
-      await mutation.mutateAsync({
-         channelBackgrounds: [...(channelBackgrounds ?? []).filter((background) => background.channelId !== channelId), { ...style, channelId }],
-      });
+   function saveChannelBackground(style: BackgroundStyle, onSuccess?: () => void) {
+      mutation.mutate(
+         {
+            channelBackgrounds: [...(channelBackgrounds ?? []).filter((background) => background.channelId !== channelId), { ...style, channelId }],
+         },
+         { onSuccess },
+      );
    }
 
-   async function resetChannelBackground() {
-      await mutation.mutateAsync({ channelBackgrounds: (channelBackgrounds ?? []).filter((background) => background.channelId !== channelId) });
+   function resetChannelBackground(onSuccess?: () => void) {
+      mutation.mutate(
+         { channelBackgrounds: (channelBackgrounds ?? []).filter((background) => background.channelId !== channelId) },
+         { onSuccess },
+      );
    }
 
    return {
