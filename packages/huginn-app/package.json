@@ -24,7 +24,7 @@
       "electron:run": "bun ./scripts/build.ts && electron .",
       "build:fast": "bun run vite:build && bun ./scripts/build.ts && electron-builder --config ./electron-builder-config.ts -c.compression=store",
       "smoke:web": "pnpm run vite:build && playwright test --config playwright.config.ts",
-      "smoke:electron": "pnpm run vite:build --mode electron && bun ./scripts/build.ts && playwright test --config playwright.electron.config.ts",
+      "smoke:electron": "pnpm run vite:build --mode electron && bun ./scripts/build.ts --prod && electron-builder --config ./electron-builder-config.ts --dir --publish never && playwright test --config playwright.electron.config.ts",
       "smoke:android": "pnpm run vite:build-cap && cd android && ./gradlew :app:connectedDebugAndroidTest",
       "test": "vitest",
       "test:run": "vitest run --reporter=dot --silent=passed-only",
