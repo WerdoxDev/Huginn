@@ -148,7 +148,11 @@ jobs:
            run: cd packages/native-addon && pnpm install && pnpm run build
 
          - name: Build App
-           run: cd packages/huginn-app && pnpm run build
+           shell: bash
+           run: |
+              unset PSModulePath
+              cd packages/huginn-app
+              pnpm run build
 
          - name: Upload App
            env:
