@@ -15,7 +15,7 @@ import LoadingBackground from "./LoadingBackground";
 import MediaViewerPreview from "./MediaViewerPreview";
 import VolumeSlider from "./VolumeSlider";
 
-const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 500;
+const VIDEO_TIMESTAMP_REQUIRED_WIDTH = 250;
 const MOBILE_CONTROLS_HIDE_DELAY = 3000;
 
 export default function VideoPlayer(props: {
@@ -271,7 +271,7 @@ export default function VideoPlayer(props: {
                      "bg-surface-alt/90 pointer-events-auto z-10 w-full items-center gap-x-2 px-2 py-2 transition-[translate]",
                      isMobile && !areControlsVisible ? "hidden" : "flex",
                      isMobile && isFullscreen && "pb-7",
-                     isFullscreen ? "" : "max-w-2xl rounded-md portrait:mb-10 landscape:mb-1 lg:landscape:mb-10",
+                     !isFullscreen && "max-w-2xl rounded-md portrait:mb-10 landscape:mb-4 lg:landscape:mb-10",
                      isFullscreen && isPlaying && !isMobile && "translate-y-full group-hover/video:translate-y-0",
                   )}
                >

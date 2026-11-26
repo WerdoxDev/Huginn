@@ -154,12 +154,7 @@ export default function DefaultMessage() {
                      <ReplyRenderer referencedMessage={referencedMessage} onClick={context.onReferencedMessageClick} />
                   )}
                   {(isSeparate || isLastAction) && (
-                     <div
-                        className={clsx(
-                           "flex w-full items-center gap-x-2",
-                           !context.message.isPreview && !context.options?.hideActions && "min-h-8.5",
-                        )}
-                     >
+                     <div className={clsx("flex w-full items-center gap-x-2", !context.options?.hideActions && "min-h-8.5")}>
                         <button
                            type="button"
                            className="shrink-0 cursor-pointer rounded-full"
@@ -335,7 +330,7 @@ function DefaultRenderer(props: {
             <div style={{ width: `${props.widths.width + 20}px` }} className="shrink-0">
                <div
                   className={clsx(
-                     "pointer-events-none z-0 h-full w-full transition-[shadow] group-hover:shadow-sm",
+                     "pointer-events-none z-0 h-full w-full [transition:box-shadow_150ms,border-radius_200ms] group-hover:shadow-sm",
                      props.isSticker
                         ? "bg-transparent"
                         : props.error === undefined && props.isPreview
@@ -360,7 +355,7 @@ function DefaultRenderer(props: {
                      <div className="absolute top-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                         <div
                            className={clsx(
-                              "h-full w-full overflow-hidden transition-all duration-1000",
+                              "h-full w-full overflow-hidden transition-all duration-200",
                               props.error !== undefined
                                  ? "[box-shadow:0_-20px_0_0_var(--tcolor-negative-700)]"
                                  : props.isSelf
@@ -381,7 +376,7 @@ function DefaultRenderer(props: {
                   <div className="absolute bottom-0 h-10 w-10 overflow-hidden" style={{ left: props.widths.width + 20 }}>
                      <div
                         className={clsx(
-                           "h-full w-full overflow-hidden transition-all duration-1000",
+                           "h-full w-full overflow-hidden transition-all duration-200",
                            props.error !== undefined
                               ? "[box-shadow:0_20px_0_0_var(--tcolor-negative-700)]"
                               : props.isSelf

@@ -13,6 +13,7 @@ type Snapshot = {
    keys: string[];
    top: number;
    scrollHeight: number;
+   messageTops: Map<Element, number>;
 };
 
 /** Owns live insertion scrolling and animates the whole list from its previous screen position. */
@@ -48,6 +49,34 @@ export function useMessageInsertion(options: {
       return list.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - getOffset(list);
    }
 
+   function messageOffset(element: Element) {
+      return messageAnimations.current.has(element) ? new DOMMatrixReadOnly(getComputedStyle(element).transform).m42 : 0;
+   }
+
+   function measureMessages(scroller: HTMLDivElement, list: HTMLOListElement) {
+      const origin = scroller.getBoundingClientRect().top - scroller.scrollTop + getOffset(list);
+      return new Map(
+         Array.from(list.children)
+            .filter((element) => element.id)
+            .map((element) => [element, element.getBoundingClientRect().top - origin - messageOffset(element)]),
+      );
+   }
+
+   function animateMessage(element: Element, offset: number, opacity: number) {
+      messageAnimations.current.get(element)?.cancel();
+      const entrance = element.animate(
+         [
+            { transform: `translateY(${offset}px)`, opacity },
+            { transform: "translateY(0)", opacity: 1 },
+         ],
+         { duration: DURATION, easing: EASING },
+      );
+      messageAnimations.current.set(element, entrance);
+      entrance.onfinish = () => {
+         if (messageAnimations.current.get(element) === entrance) messageAnimations.current.delete(element);
+      };
+   }
+
    useLayoutEffect(() => {
       const scroller = options.scrollRef.current;
       const list = options.listRef.current;
@@ -55,6 +84,16 @@ export function useMessageInsertion(options: {
 
       const keys = options.messages.map((message) => message.nonce ?? message.id);
       const before = previous.current;
+      const oldListOffset = getOffset(list);
+      // Removing the unread divider may clamp scrollTop before its scroll event is delivered.
+      const clampedByRemoval =
+         animation.current &&
+         before &&
+         scroller.scrollHeight < before.scrollHeight &&
+         scroller.scrollTop < animationScrollTop.current &&
+         scroller.scrollTop === Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      const oldScrollTop = clampedByRemoval ? animationScrollTop.current : scroller.scrollTop;
+      if (clampedByRemoval) animationScrollTop.current = scroller.scrollTop;
       const sameChannel = before?.channelId === options.channelId;
       const previousKeys = new Set(sameChannel ? before.keys : []);
       const arrivals = sameChannel
@@ -70,7 +109,7 @@ export function useMessageInsertion(options: {
       if (before && arrivals.length > 0) {
          const wasAtBottom = before.scrollHeight - scroller.clientHeight - scroller.scrollTop <= 50;
          const shouldFollow = wasAtBottom || arrivals.some((message) => message.authorId === options.userId);
-         const oldTop = before.top - scroller.scrollTop + getOffset(list);
+         const oldTop = before.top - oldScrollTop + oldListOffset;
          // Retarget the list during a burst while earlier messages finish their own entrances.
          cancelListAnimation();
 
@@ -89,18 +128,33 @@ export function useMessageInsertion(options: {
                const arrivalIds = new Set(arrivals.map((message) => message.id));
                for (const element of list.children) {
                   if (!arrivalIds.has(element.id)) continue;
-                  const entrance = element.animate(
-                     [
-                        { transform: `translateY(${MESSAGE_ENTER_OFFSET}px)`, opacity: 0 },
-                        { transform: "translateY(0)", opacity: 1 },
-                     ],
-                     { duration: DURATION, easing: EASING },
-                  );
-                  messageAnimations.current.set(element, entrance);
-                  entrance.onfinish = () => messageAnimations.current.delete(element);
+                  animateMessage(element, MESSAGE_ENTER_OFFSET, 0);
                }
             }
          }
+      }
+
+      const messageTops = measureMessages(scroller, list);
+      if (onlyLiveAppends && before && animation.current && ["running", "paused"].includes(animation.current.playState)) {
+         const listOffset = getOffset(list);
+         const corrections: { element: Element; offset: number; opacity: number }[] = [];
+         // A list transform cannot cover spacing changes inside the list, such as the unread divider disappearing.
+         for (const [element, top] of messageTops) {
+            const previousTop = before.messageTops.get(element);
+            if (previousTop === undefined) continue;
+            const offset = messageOffset(element);
+            const previousViewportTop = previousTop - oldScrollTop + oldListOffset + offset;
+            const viewportTop = top - scroller.scrollTop + listOffset + offset;
+            const correction = previousViewportTop - viewportTop;
+            if (Math.abs(correction) < 0.1) continue;
+            const height = element.getBoundingClientRect().height;
+            if (Math.max(previousViewportTop, viewportTop) + height < 0 || Math.min(previousViewportTop, viewportTop) > scroller.clientHeight)
+               continue;
+            const style = getComputedStyle(element);
+            corrections.push({ element, offset: offset + correction, opacity: Number(style.opacity) });
+         }
+         // Finish the geometry reads before starting animations, and leave offscreen messages alone.
+         for (const correction of corrections) animateMessage(correction.element, correction.offset, correction.opacity);
       }
 
       previous.current = {
@@ -108,6 +162,7 @@ export function useMessageInsertion(options: {
          keys,
          top: measureTop(scroller, list),
          scrollHeight: scroller.scrollHeight,
+         messageTops,
       };
    });
 
@@ -121,6 +176,7 @@ export function useMessageInsertion(options: {
          if (!previous.current) return;
          previous.current.top = measureTop(scroller, list);
          previous.current.scrollHeight = scroller.scrollHeight;
+         previous.current.messageTops = measureMessages(scroller, list);
       });
       observer.observe(scroller);
       observer.observe(list);
