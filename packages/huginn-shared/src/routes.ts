@@ -82,6 +82,10 @@ export const Routes = {
       return `/users/${id}` as const;
    },
 
+   roamingHuginnClick() {
+      return "/users/@me/fun/roaming-huginn-click" as const;
+   },
+
    authMethods() {
       return "/users/@me/auth-methods" as const;
    },
