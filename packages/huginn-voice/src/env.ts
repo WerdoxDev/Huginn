@@ -8,8 +8,6 @@ export const env = cleanEnv(process.env, {
    CLOUDFLARE_TURN_ID: str({ default: undefined }),
    CLOUDFLARE_TURN_TOKEN: str({ default: undefined }),
    OTEL_SERVICE_NAME: str(),
-   OTLP_TRACE_URL: str(),
-   OTLP_LOG_URL: str(),
    POSTHOG_HOST: str(),
    POSTHOG_KEY: str(),
 });
