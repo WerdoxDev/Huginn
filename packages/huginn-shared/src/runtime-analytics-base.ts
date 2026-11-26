@@ -1,21 +1,24 @@
-import { context, propagation, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
+import { context, metrics, propagation, ROOT_CONTEXT, trace, type Span } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
+import { AggregationTemporalityPreference, OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes, type Resource } from "@opentelemetry/resources";
 import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { PostHog } from "posthog-node";
 
 import { Analytics, logLevelToSeverityNumber, type LogLevel } from "#analytics";
 
-export type RuntimeAnalyticsOptions = { posthogHost?: string; otlpTraceUrl?: string; otlpLogUrl?: string; serviceName: string; clientId?: string };
+export type RuntimeAnalyticsOptions = { posthogHost?: string; serviceName: string; clientId?: string };
 
 type Instrumentation = { shutdown: () => Promise<void> };
 type SetupRuntimeInstrumentation = (options: {
    resource: Resource;
    logRecordProcessors: BatchLogRecordProcessor[];
    spanProcessors: BatchSpanProcessor[];
+   metricReaders: PeriodicExportingMetricReader[];
 }) => Instrumentation;
 
 export class RuntimeAnalyticsBase extends Analytics {
@@ -24,42 +27,49 @@ export class RuntimeAnalyticsBase extends Analytics {
    private readonly instrumentation: Instrumentation;
    private readonly logRecordProcessors: BatchLogRecordProcessor[];
    private readonly spanProcessors: BatchSpanProcessor[];
+   private readonly metricReaders: PeriodicExportingMetricReader[];
 
    protected constructor(posthogApiKey: string, options: RuntimeAnalyticsOptions, setupInstrumentation: SetupRuntimeInstrumentation) {
       super();
       this.options = options;
-      this.client = new PostHog(posthogApiKey, { host: options.posthogHost ?? "https://eu.i.posthog.com" });
+      const posthogHost = (options.posthogHost ?? "https://eu.i.posthog.com").replace(/\/+$/, "");
+      this.client = new PostHog(posthogApiKey, { host: posthogHost });
 
       this.logRecordProcessors = [
          new BatchLogRecordProcessor({
             exporter: new OTLPLogExporter({
-               url: `${options.posthogHost}/i/v1/logs`,
+               url: `${posthogHost}/i/v1/logs`,
                headers: {
                   Authorization: `Bearer ${posthogApiKey}`,
                },
             }),
          }),
       ];
-      if (options.otlpLogUrl) {
-         this.logRecordProcessors.unshift(new BatchLogRecordProcessor({ exporter: new OTLPLogExporter({ url: options.otlpLogUrl }) }));
-      }
       this.spanProcessors = [
          new BatchSpanProcessor(
             new OTLPTraceExporter({
-               url: `${options.posthogHost}/i/v1/traces`,
+               url: `${posthogHost}/i/v1/traces`,
                headers: {
                   Authorization: `Bearer ${posthogApiKey}`,
                },
             }),
          ),
       ];
-      if (options.otlpTraceUrl) {
-         this.spanProcessors.unshift(new BatchSpanProcessor(new OTLPTraceExporter({ url: options.otlpTraceUrl })));
-      }
+      this.metricReaders = [
+         new PeriodicExportingMetricReader({
+            exporter: new OTLPMetricExporter({
+               url: `${posthogHost}/i/v1/metrics`,
+               headers: { Authorization: `Bearer ${posthogApiKey}` },
+               temporalityPreference: AggregationTemporalityPreference.DELTA,
+            }),
+            exportIntervalMillis: 15000,
+         }),
+      ];
       this.instrumentation = setupInstrumentation({
          resource: resourceFromAttributes({ "service.name": options.serviceName, "client.id": options.clientId }),
          logRecordProcessors: this.logRecordProcessors,
          spanProcessors: this.spanProcessors,
+         metricReaders: this.metricReaders,
       });
    }
 
@@ -144,6 +154,7 @@ export class RuntimeAnalyticsBase extends Analytics {
          this.client.flush(),
          ...this.logRecordProcessors.map((processor) => processor.forceFlush()),
          ...this.spanProcessors.map((processor) => processor.forceFlush()),
+         ...this.metricReaders.map((reader) => reader.forceFlush()),
       ]);
    }
 
@@ -152,6 +163,7 @@ export class RuntimeAnalyticsBase extends Analytics {
          await Promise.all([this.client.shutdown(), this.instrumentation.shutdown()]);
       } finally {
          logs.disable();
+         metrics.disable();
          trace.disable();
          context.disable();
          propagation.disable();

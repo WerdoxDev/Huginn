@@ -25,8 +25,6 @@ export const posthogClient: PostHog = new Proxy(posthogProxyTarget, {
 
 type Options = {
    posthogHost: string;
-   otlpTraceUrl?: string;
-   otlpLogUrl?: string;
    serviceName: string;
    serviceVersion?: string;
    environment?: string;
@@ -92,8 +90,6 @@ export class WebAnalytics extends Analytics {
       this.instrumentation = setupWebInstrumentation(
          {
             serviceName: options.serviceName,
-            otlpTraceUrl: options.otlpTraceUrl,
-            otlpLogUrl: options.otlpLogUrl,
             posthogHost: options.posthogHost,
             posthogApiKey: posthogApiKey,
             serviceVersion: options.serviceVersion,
