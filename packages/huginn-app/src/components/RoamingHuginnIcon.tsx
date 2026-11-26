@@ -1,12 +1,14 @@
 import HuginnIcon from "@components/HuginnIcon";
+import { useClient } from "@stores/clientStore";
 import { animate, createScope, Scope } from "animejs";
 import { useEffect, useRef } from "react";
 
 export default function RoamingHuginnIcon() {
+   const client = useClient();
    const iconRef = useRef<HTMLImageElement>(null);
    // const roamFnRef = useRef<(() => void) | null>(null);
    const currentPosRef = useRef({ x: 0, y: 0 });
-   const isHiddenRef = useRef(false);
+   const isHiddenRef = useRef(true);
    const scope = useRef<Scope>(null);
 
    useEffect(() => {
@@ -90,6 +92,7 @@ export default function RoamingHuginnIcon() {
       isHiddenRef.current = true;
 
       scope.current?.methods?.disappear?.();
+      void client?.users.recordRoamingHuginnClick().catch((error) => console.warn("Failed to record roaming Huginn click", error));
    }
 
    return <HuginnIcon ref={iconRef} outlined className="absolute top-0 left-0 size-5 cursor-pointer opacity-0 select-none" onClick={handleClick} />;
