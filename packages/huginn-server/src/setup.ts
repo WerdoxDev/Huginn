@@ -25,8 +25,6 @@ export const env = cleanEnv(process.env, {
    CDN_HMAC_SECRET: str(),
    IGDB_CLIENT_ID: str(),
    IGDB_CLIENT_SECRET: str(),
-   OTLP_TRACE_URL: str(),
-   OTLP_LOG_URL: str(),
    POSTHOG_HOST: str(),
    POSTHOG_KEY: str(),
    RESEND_API_KEY: str(),
@@ -41,8 +39,6 @@ export const env = cleanEnv(process.env, {
 initAnalytics(
    new RuntimeAnalytics(env.POSTHOG_KEY, {
       serviceName: env.OTEL_SERVICE_NAME,
-      otlpTraceUrl: env.OTLP_TRACE_URL,
-      otlpLogUrl: env.OTLP_LOG_URL,
       posthogHost: env.POSTHOG_HOST,
    }),
 );

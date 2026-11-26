@@ -2,7 +2,7 @@ import Elysia from "elysia";
 
 import { env } from "#setup";
 
-type UrlOverrides = Partial<Record<"origin" | "api" | "gateway" | "cdn" | "voice" | "posthog" | "otlp", string>>;
+type UrlOverrides = Partial<Record<"origin" | "api" | "gateway" | "cdn" | "voice" | "posthog", string>>;
 
 export const getInstance = new Elysia().get("/api/instance", ({ request, status }) => {
    const host = request.headers.get("host") ?? "";
@@ -29,7 +29,6 @@ export const getInstance = new Elysia().get("/api/instance", ({ request, status 
          voice: `${socketOrigin}/voice`,
          voiceApi: `${origin}/voice`,
          posthog: env.POSTHOG_HOST,
-         otlp: env.OTLP_TRACE_URL.replace(/\/v1\/traces\/?$/, "").replace(/\/$/, ""),
          ...overrides,
       },
    };

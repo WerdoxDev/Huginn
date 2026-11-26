@@ -4,8 +4,6 @@ import { staticPlugin } from "@elysia/static";
 import { globalPlugin, invalidBody, notFound, serverError, serverOnError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
 import { Client, LogLevel } from "@notionhq/client";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
 import * as firebase from "firebase-admin/app";
 import { NotionConverter } from "notion-to-md";
@@ -139,13 +137,6 @@ export const app = new Elysia({
    .use(
       opentelemetry({
          serviceName: env.OTEL_SERVICE_NAME,
-         spanProcessors: [
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: env.OTLP_TRACE_URL,
-               }),
-            ),
-         ],
       }),
    )
    .onError(function onError({ error, code, status, path, request }) {

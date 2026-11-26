@@ -649,12 +649,6 @@ importers:
       '@notionhq/client':
         specifier: ^5.26.0
         version: 5.26.0
-      '@opentelemetry/exporter-trace-otlp-http':
-        specifier: ^0.221.0
-        version: 0.221.0(@opentelemetry/api@1.9.1)
-      '@opentelemetry/sdk-trace-base':
-        specifier: ^2.10.0
-        version: 2.10.0(@opentelemetry/api@1.9.1)
       '@scure/base':
         specifier: ^2.3.0
         version: 2.3.0
