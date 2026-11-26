@@ -12,8 +12,6 @@ export const env = cleanEnv(process.env, {
    AWS_BUCKET: str(),
    CDN_HMAC_SECRET: str(),
    OTEL_SERVICE_NAME: str(),
-   OTLP_TRACE_URL: str(),
-   OTLP_LOG_URL: str(),
    POSTHOG_HOST: str(),
    POSTHOG_KEY: str(),
    UPLOADS_DIR: str({ default: pathe.resolve(import.meta.dir, "../uploads") }),
@@ -23,8 +21,6 @@ export const env = cleanEnv(process.env, {
 initAnalytics(
    new RuntimeAnalytics(env.POSTHOG_KEY, {
       serviceName: env.OTEL_SERVICE_NAME,
-      otlpTraceUrl: env.OTLP_TRACE_URL,
-      otlpLogUrl: env.OTLP_LOG_URL,
       posthogHost: env.POSTHOG_HOST,
    }),
 );

@@ -2,8 +2,6 @@ import cors from "@elysia/cors";
 import { opentelemetry } from "@elysia/opentelemetry";
 import { cdnOnError, globalPlugin, invalidBody, notFound, serverError } from "@huginn/backend-shared";
 import { logger } from "@huginn/backend-shared/logger";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import Elysia from "elysia";
 
 import { postApplicationIcon } from "#routes/application-icons/[id].post";
@@ -41,13 +39,6 @@ export const app = new Elysia({ normalize: "typebox" })
    .use(
       opentelemetry({
          serviceName: env.OTEL_SERVICE_NAME,
-         spanProcessors: [
-            new BatchSpanProcessor(
-               new OTLPTraceExporter({
-                  url: env.OTLP_TRACE_URL,
-               }),
-            ),
-         ],
       }),
    )
    .onError(({ error, code, status, path, request }) => {
