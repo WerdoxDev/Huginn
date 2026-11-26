@@ -7,7 +7,7 @@ description: Serve endpoint discovery from multiple public addresses.
 
 An instance can have multiple access addresses. Each address must route `GET /api/instance`, the API, and the gateway to the same Huginn deployment. The client tries the selected address first and, during startup, tries the remaining addresses if discovery, the API, or the gateway repeatedly fails. It does not switch while the app is in use.
 
-The discovery response contains one stable `instanceId` and full URLs for `api`, `gateway`, `cdn`, `voice`, `posthog`, and `otlp`. Set `INSTANCE_ID` to the same value for every mirror of one deployment. Use a different value for a different deployment. Once the client has learned an instance ID, it will reject an address that returns another ID.
+The discovery response contains one stable `instanceId` and full URLs for `api`, `gateway`, `cdn`, `voice`, and `posthog`. Set `INSTANCE_ID` to the same value for every mirror of one deployment. Use a different value for a different deployment. Once the client has learned an instance ID, it will reject an address that returns another ID.
 
 In **Settings → Instances**, URL overrides belong to one access address. If discovery is unavailable, setting both the API and gateway override allows that address to connect using the manually supplied URLs. This manual fallback has no server identity response to compare.
 
@@ -41,6 +41,6 @@ Set `INSTANCE_URLS_BY_HOST` to a JSON object keyed by the public `Host` header. 
 }
 ```
 
-When this variable is set, the endpoint rejects requests from hosts absent from the map. An `origin` is useful if HTTPS ends before traffic reaches Caddy and the forwarded protocol would otherwise be HTTP. The map can also override `api`, `gateway`, `posthog`, and `otlp`; unspecified URLs use the selected origin and standard paths. Caddy must still route each configured URL to the appropriate service and support WebSocket upgrades for the gateway and voice paths.
+When this variable is set, the endpoint rejects requests from hosts absent from the map. An `origin` is useful if HTTPS ends before traffic reaches Caddy and the forwarded protocol would otherwise be HTTP. The map can also override `api`, `gateway`, and `posthog`; unspecified URLs use the selected origin and standard paths. Caddy must still route each configured URL to the appropriate service and support WebSocket upgrades for the gateway and voice paths.
 
 Voice media transport addresses are configured separately through `MEDIA_LISTEN_INFOS`. They must remain reachable from users of either access address if voice calls should work after switching.
