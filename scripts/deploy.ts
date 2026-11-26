@@ -9,19 +9,22 @@ type Package = {
 };
 
 const stackName = "huginn-backend";
-const backendTag = process.env.HUGINN_BACKEND_TAG || "postgres";
+const backupStackName = "huginn-backups";
 const packages: Package[] = [
    { key: "caddy", image: "ghcr.io/werdoxdev/caddy:latest", dockerfile: "Dockerfile.caddy" },
-   { key: "huginn-server", image: `ghcr.io/werdoxdev/huginn-server:${backendTag}`, dockerfile: "Dockerfile.huginn-server" },
-   { key: "huginn-cdn", image: `ghcr.io/werdoxdev/huginn-cdn:${backendTag}`, dockerfile: "Dockerfile.huginn-cdn" },
-   { key: "huginn-voice", image: `ghcr.io/werdoxdev/huginn-voice:${backendTag}`, dockerfile: "Dockerfile.huginn-voice" },
+   { key: "huginn-server", image: "ghcr.io/werdoxdev/huginn-server", dockerfile: "Dockerfile.huginn-server" },
+   { key: "huginn-cdn", image: "ghcr.io/werdoxdev/huginn-cdn", dockerfile: "Dockerfile.huginn-cdn" },
+   { key: "huginn-voice", image: "ghcr.io/werdoxdev/huginn-voice", dockerfile: "Dockerfile.huginn-voice" },
+   { key: "huginn-backup", image: "ghcr.io/werdoxdev/huginn-backup:b2", dockerfile: "Dockerfile.huginn-backup" },
 ];
 
 function printUsage(): void {
    console.log("Usage: bun scripts/deploy.ts [nopush|local] [skip:pkg1,pkg2,...] [help]");
    console.log();
-   console.log("  nopush / local   Build only, do not push or use registry auth on deploy");
+   console.log("  nopush / local   Build and deploy local images without pushing or registry auth");
    console.log("  skip:pkg,...     Skip building (and pushing) the listed packages");
+   console.log();
+   console.log("Deploys the application and backup stacks. Requires RESTIC_REPOSITORY and existing Docker secrets.");
    console.log();
    console.log("Available package keys:");
    for (const packageDefinition of packages) console.log(`  - ${packageDefinition.key}`);
@@ -62,6 +65,10 @@ async function deploy(): Promise<number> {
       }
    }
 
+   if (!process.env.RESTIC_REPOSITORY?.trim()) {
+      console.error("Set RESTIC_REPOSITORY to your B2 S3 repository URL before deploying.");
+      return 1;
+   }
    console.log("========================================");
    console.log("Building Docker Images");
    console.log("========================================");
@@ -117,10 +124,10 @@ async function deploy(): Promise<number> {
       cwd: repositoryRoot,
       ignoreStderr: true,
    });
-   if (removeStackExitCode === 0) {
-      console.log("Waiting for stack removal...");
-      await Bun.sleep(10_000);
-   }
+   // if (removeStackExitCode === 0) {
+   console.log("Waiting for stack removal...");
+   await Bun.sleep(10_000);
+   // }
 
    console.log("Updating Caddy config...");
    await runCommand(["docker", "config", "rm", "caddy_config"], { cwd: repositoryRoot, ignoreStderr: true });
@@ -143,6 +150,18 @@ async function deploy(): Promise<number> {
       return 1;
    }
 
+   // Update backups in place; removing the application stack must not remove them.
+   console.log("Deploying backup stack...");
+   const backupDeployCommand = ["docker", "stack", "deploy", "-c", "docker-stack.backup.yaml", backupStackName];
+   if (pushToRegistry) backupDeployCommand.push("--with-registry-auth");
+   else backupDeployCommand.push("--resolve-image", "never");
+
+   const backupDeployExitCode = await runCommand(backupDeployCommand, { cwd: repositoryRoot });
+   if (backupDeployExitCode !== 0) {
+      printFailure();
+      return 1;
+   }
+
    console.log();
    console.log("========================================");
    console.log("Deployment Complete!");
@@ -150,6 +169,7 @@ async function deploy(): Promise<number> {
    console.log();
    console.log(`View services: docker stack services ${stackName}`);
    console.log(`View logs: docker service logs ${stackName}_[service_name] -f`);
+   console.log(`View backup logs: docker service logs ${backupStackName}_postgres-backup -f`);
    console.log();
 
    return 0;

@@ -52,7 +52,7 @@ docker secret create postgres_password <private-password-file>
 docker secret create postgres_connection <private-connection-url-file>
 ```
 
-The backend image tag defaults to `postgres`; set `HUGINN_BACKEND_TAG` to override it for both the stack and build script. On a single node, `bun run deploy local` builds and runs local images without publishing them. `bun run redeploy` reuses the images already on the Docker host.
+The backend image references omit an explicit tag, so Docker uses `latest` for both builds and deployments. `bun run deploy` builds and pushes the application and backup images, then deploys both stacks. It requires `RESTIC_REPOSITORY` and the backup secrets described below. On a single node, `bun run deploy local` builds and runs local images without publishing them. `bun run redeploy` reuses the images already on the Docker host, redeploys the application stack, and updates the separate backup stack in place. It also requires `RESTIC_REPOSITORY` and the backup secrets described below.
 
 Use the same password in both files. The connection secret contains a raw URL of the form `postgresql://huginn:<URL-encoded-password>@postgres:5432/huginn?sslmode=disable`. The application entrypoint exports this URL before migrations and startup, overriding the old `POSTGRESQL_URL` in `backend_secrets`. Rebuild all three backend images before deploying this stack. A failed migration stops startup and lets Swarm retry.
 
@@ -74,72 +74,73 @@ docker exec "$container" pg_dump -U huginn -d huginn --format=custom --no-owner 
 
 Keep a copy away from the database host. Stack deployment scripts currently recreate the stack, which briefly stops PostgreSQL along with the application; the external volume remains intact.
 
-### Automated snapshots
+### Automated backups to Backblaze B2
 
-The separate `huginn-backups` stack runs `docker-stack.backup.yaml` and stays running during application deployments. It makes an initial backup, then a daily backup at **02:00 UTC**, keeping **14 daily, 8 weekly, and 12 monthly** snapshots in an encrypted restic repository. It checks repository integrity and reads a random 10% of stored data weekly. It verifies a full restore into a uniquely named temporary PostgreSQL database initially and monthly, then removes that temporary database. Application writes continue during backups.
+The separate `huginn-backups` stack has one service, built from [`Dockerfile.huginn-backup`](Dockerfile.huginn-backup). PostgreSQL 18 Alpine supplies `pg_dump`; [`backup.sh`](ops/postgres-backup/backup.sh) streams its uncompressed custom-format output straight into restic, which encrypts, deduplicates, compresses, and uploads it to B2. There is no local backup repository or dump staging volume. Restic checks the dump process's exit status before saving a snapshot.
 
-Dumps, role definitions without role passwords, and a checksum manifest are staged in a private 256 MiB memory filesystem and removed after each backup. The memory limit means a dump larger than that will fail visibly; increase `/work` and the worker memory limit before the database outgrows it. Persistent encrypted snapshots live in the external `huginn_postgres_backup_repository` volume; status and cache have separate external volumes. The worker uses PostgreSQL's network connection and has no Docker socket mount.
+The service backs up immediately on startup, then waits **one hour after each completed run**. Set `BACKUP_INTERVAL_SECONDS` to change the interval. After each successful upload, it keeps **24 hourly, 14 daily, 8 weekly, and 12 monthly** snapshots and prunes unused data. Any backup or retention failure exits the process; Swarm restarts it after 60 seconds. The container runs as `postgres`, has no Docker socket mount, and uses Docker secrets for credentials.
 
-Bootstrap encrypted local snapshots using the current Docker context:
+#### Configure B2 and deploy
 
-```sh
-bun scripts/configure-postgres-backups.ts --local
-```
+Create a private B2 bucket dedicated to these backups and an application key restricted to that bucket, with read, write, list, and delete access. Use the bucket's **S3 endpoint** with restic, as recommended by [restic's B2 documentation](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html#backblaze-b2). Configure B2's lifecycle to **Keep only the last version of the file**, so hidden versions of objects removed by restic are eventually deleted. Do not configure age-based deletion of current repository objects; restic manages retention.
 
-This creates a random encryption password, stores it in Docker secret `postgres_backup_password`, and keeps a private recovery copy at `.data/postgres-backup/restic-password`. **Save that password in your password manager.** It is required to restore snapshots after losing the host. Local snapshots alone do not protect against loss of the database host. S3 replication remains explicitly unconfigured until the following AWS setup is completed.
-
-### AWS setup for offsite backups
-
-Use an AWS administrator in **eu-central-1** to create a CloudFormation stack from [`infra/postgres-backup.aws.yaml`](infra/postgres-backup.aws.yaml), named `huginn-postgres-backups`. Set `Instance` to `midgard` and `NotificationEmail` to your alert email. Acknowledge creation of IAM resources. The template creates:
-
-- A dedicated private S3 bucket with Block Public Access, TLS enforcement, server-side encryption, and versioning. Previous object versions expire after 90 days; current repository objects do not have an S3 expiry rule. Restic manages snapshot retention.
-- An IAM user restricted to this backup bucket's `restic/` objects and the `Huginn/PostgresBackups` CloudWatch metric namespace. It cannot delete previous S3 object versions.
-- An SNS topic and CloudWatch alarms for job failures and roughly 26 hours without a fresh offsite snapshot. Confirm the SNS email subscription to receive alerts. Without an email subscription, alarms are visible in CloudWatch only.
-
-In IAM, create an access key for the user named by the stack's `BackupUserName` output (application running outside AWS). Do not use or broaden the application's existing IAM credentials. Keep the backup credentials in a private, Git-ignored file:
+On the target Swarm, create these secrets from private files containing only their respective values:
 
 ```sh
-cp ops/postgres-backup/config.example .env.postgres-backup
-chmod 600 .env.postgres-backup
+docker secret create postgres_backup_b2_key_id <private-b2-key-id-file>
+docker secret create postgres_backup_b2_application_key <private-b2-application-key-file>
+docker secret create postgres_backup_password <private-restic-password-file>
 ```
 
-Fill in `RESTIC_REPOSITORY` and `AWS_DEFAULT_REGION` from the stack's `ResticRepository` and `Region` outputs, then add the restricted user's access key and secret key. Wait for initial S3 versioning setup to propagate (AWS recommends 15 minutes before first writes). Enable replication using:
+`postgres_password` already exists for the database. If `postgres_backup_password` already exists, reuse it and keep its recovery copy. Save the B2 key and restic password in your password manager; neither is stored in the image or stack file.
+
+Deploy through a Swarm manager using the current Docker context:
 
 ```sh
-bun scripts/configure-postgres-backups.ts .env.postgres-backup
+export RESTIC_REPOSITORY='s3:https://s3.eu-central-003.backblazeb2.com/YOUR-BUCKET/restic'
+bun run deploy
+docker service logs --follow huginn-backups_postgres-backup
 ```
 
-The script builds the worker on the Docker host, rotates its configuration and AWS credential secrets without printing their values, and deploys the backup stack without publishing any images. If the Docker SSH context fails while reading system SSH configuration, append `--ssh-config ~/.ssh/config` to use your user SSH configuration directly. It preserves the encryption password and all existing local snapshots. The worker copies retained encrypted snapshots to S3, applies the same retention there, reports successful uploads to CloudWatch, and verifies restores from S3 once it is configured. Failed jobs retry hourly; scheduling and success timestamps survive restarts.
+The deploy script builds and pushes `ghcr.io/werdoxdev/huginn-backup:b2` alongside the application images, then updates `huginn-backups` in place after deploying the application stack. Use `bun run deploy local` to build and deploy without pushing on a single-node Swarm; the build must target the node labeled `huginn.postgres=true`. `skip:huginn-backup` skips rebuilding and pushing the backup image but still deploys its stack using the existing image.
 
-### Inspecting and recovering backups
+Replace the example endpoint with the bucket's actual S3 endpoint. Restic initializes an absent repository automatically, but refuses to initialize after authentication or network errors. Restic uses `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` internally for B2's S3 API; no AWS account or services are involved.
 
-Run these commands on the backup node, or through its Docker context:
+The backup stack remains separate from application deployments. Scheduled dumps recover to the start of a successful dump, so potential data loss includes the interval, backup duration, and any failed runs. Arrange external monitoring for missing successful backups. This service does not send alerts or automatically verify database restores.
+
+This replaces the former AWS backup worker. Existing AWS resources and old local backup volumes are not removed by deploying the new stack. Keep their snapshots and recovery credentials until a B2 backup has been restored successfully, then retire the old resources separately.
+
+#### Inspect and restore
+
+On the node running the backup service:
 
 ```sh
 container=$(docker ps -q --filter label=com.docker.swarm.service.name=huginn-backups_postgres-backup)
-docker exec "$container" python3 /opt/backup/worker.py status
-docker exec "$container" python3 /opt/backup/worker.py snapshots
-docker exec "$container" python3 /opt/backup/worker.py backup
-docker exec "$container" python3 /opt/backup/worker.py verify
-docker service logs --tail 50 huginn-backups_postgres-backup
+docker exec "$container" backup.sh restic snapshots --host huginn-postgres --tag huginn-postgres
+docker exec "$container" backup.sh restic check --read-data-subset=10%
 ```
 
-`backup` also replicates to S3 when configured. `verify` restores from S3 when configured, otherwise from the local encrypted repository. Operations are locked to prevent overlap. Status includes `offsite_configured`, each job's last success and error, and the last verified snapshot. Docker health reports failed or overdue jobs; AWS alarms detect failures and a missing host once S3 and notifications are configured. No application downtime is required for a test restore.
+For disaster recovery, use the same image on another machine. Create a private `recovery.env` containing the repository URL and the recovered B2 credentials:
 
-For disaster recovery on another machine, retrieve the backup user's AWS credentials and the restic password from your password manager. Put the credentials and repository URL in `.env.postgres-backup`, the restic password in a private file named `restic-password`, and run on that recovery machine:
+```dotenv
+RESTIC_REPOSITORY=s3:https://s3.eu-central-003.backblazeb2.com/YOUR-BUCKET/restic
+AWS_ACCESS_KEY_ID=YOUR_B2_KEY_ID
+AWS_SECRET_ACCESS_KEY=YOUR_B2_APPLICATION_KEY
+```
+
+Put the restic password in a private file named `restic-password`. Download a snapshot with:
 
 ```sh
 mkdir -m 700 recovery
-docker run --rm --env-file .env.postgres-backup \
+docker run --rm --user "$(id -u):$(id -g)" --env-file recovery.env \
   -e RESTIC_PASSWORD_FILE=/run/secrets/restic-password \
   -v "$PWD/restic-password:/run/secrets/restic-password:ro" \
   -v "$PWD/recovery:/restore" \
-  restic/restic:0.19.1 restore latest --host huginn-postgres --tag huginn-postgres --target /restore
+  ghcr.io/werdoxdev/huginn-backup:b2 restic restore latest \
+  --host huginn-postgres --tag huginn-postgres --target /restore
 ```
 
-The database archive is `recovery/work/snapshot/huginn.dump`; compare its SHA-256 with `manifest.json`. Create an empty PostgreSQL 18 database and restore with `pg_restore --exit-on-error --no-owner --no-acl --dbname <empty-database> huginn.dump`. Review `roles.sql` if additional database roles are needed; it excludes role passwords. Keep the original database intact until the replacement is verified. S3 version history provides another recovery option for accidental deletion or damaged repository objects; it requires administrator access rather than the backup user's credentials.
-
-Validate worker changes with `python -m unittest discover -s ops/postgres-backup -p '*_test.py'` and a real backup/restore check against a temporary database.
+The archive is `recovery/huginn.dump`. Restore it into an empty PostgreSQL 18 database with `pg_restore --exit-on-error --no-owner --no-acl --dbname <empty-database-url> recovery/huginn.dump`. The database and `huginn` role are recreated through the normal deployment setup; the dump excludes ownership and grants and does not preserve cluster roles or role passwords. Periodically restore into a disposable database and verify application data before relying on this recovery path. Keep the original database intact until the replacement is verified.
 
 ## Voice relay
 
