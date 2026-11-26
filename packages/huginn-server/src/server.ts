@@ -83,6 +83,7 @@ import { getUserChannels } from "#routes/users/@me/channels.get";
 import { postUserChannel } from "#routes/users/@me/channels.post";
 import { getUserDevices } from "#routes/users/@me/devices.get";
 import { deleteUserDevice } from "#routes/users/@me/devices/[sessionId]].delete";
+import { postRoamingHuginnClick } from "#routes/users/@me/fun/roaming-huginn-click.post";
 import { getUserRelationships } from "#routes/users/@me/relationships.get";
 import { postUserRelationship } from "#routes/users/@me/relationships.post";
 import { deleteUserRelationship } from "#routes/users/@me/relationships/[userId].delete";
@@ -195,6 +196,7 @@ export const app = new Elysia({
    .use(getUserProfile)
    .use(getUserDevices)
    .use(deleteUserDevice)
+   .use(postRoamingHuginnClick)
 
    // channel
    .use(postChannelSearch)
