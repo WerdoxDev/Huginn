@@ -245,7 +245,8 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
             ref={scrollRef}
             onScroll={onScroll}
          >
-            <div className="flex min-h-full flex-col justify-end">
+            {/* Contain insertion transforms so they cannot inflate the scroller's scrollHeight. */}
+            <div className="flex min-h-full flex-col justify-end overflow-clip">
                {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
                <ol className="min-h-0 pr-0 pb-9" ref={listRef}>
                   {props.messages.length === 0 && (

@@ -1,11 +1,11 @@
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
-import { usePrevious } from "@hooks/usePrevious";
-import { clamp, type Snowflake } from "@huginnjs/shared";
+import { useMessageInsertion } from "@hooks/useMessageInsertion";
+import { type Snowflake } from "@huginnjs/shared";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
 import { useThisUser } from "@stores/userStore";
-import { type RefObject, type UIEvent, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import type { AppMessage, ProcessedMessage } from "@/types";
 
@@ -49,6 +49,13 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    const isResizing = useRef(false);
    const suppressInfiniteFetchRef = useRef(false);
    const smoothScrollCleanupRef = useRef<(() => void) | undefined>(undefined);
+   const cancelInsertion = useMessageInsertion({
+      channelId: options.channelId,
+      messages: options.messages,
+      userId: user?.id,
+      scrollRef,
+      listRef,
+   });
 
    function scrollDown() {
       if (!scrollRef.current) return;
@@ -98,6 +105,8 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          const messageElement = document.getElementById(messageId);
          if (!messageElement) return false;
 
+         cancelInsertion();
+
          if (behavior === "smooth") {
             startSmoothScrollFetchSuppression();
          }
@@ -105,12 +114,14 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          messageElement.scrollIntoView({ behavior, block: "center" });
          return true;
       },
-      [startSmoothScrollFetchSuppression],
+      [startSmoothScrollFetchSuppression, cancelInsertion],
    );
 
    const scrollToBottom = useCallback(
       (behavior: ScrollBehavior = "smooth") => {
          if (!scrollRef.current) return false;
+
+         cancelInsertion();
 
          if (behavior === "smooth") {
             startSmoothScrollFetchSuppression();
@@ -119,7 +130,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
          return true;
       },
-      [startSmoothScrollFetchSuppression],
+      [startSmoothScrollFetchSuppression, cancelInsertion],
    );
 
    function saveLastSeenMessage() {
@@ -227,16 +238,6 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       }
    }
 
-   function onMessageAdd(messages: ProcessedMessage[]) {
-      if (!scrollRef.current) return;
-      const scrollOffset = scrollRef.current.scrollHeight - scrollRef.current.clientHeight - scrollRef.current.scrollTop;
-      const messageHeight = messages.map((msg) => getRef(msg.id)?.current?.clientHeight ?? 0).reduce((a, b) => a + b, 0);
-
-      if (messages.some((x) => x.authorId === user?.id) || scrollOffset - messageHeight <= 50) {
-         scrollDown();
-      }
-   }
-
    function onMessageUpdate(updates: { previousMessage: ProcessedMessage; message: ProcessedMessage; changeType: ChangeType; isVisible: boolean }[]) {
       if (!scrollRef.current) return;
 
@@ -261,7 +262,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       }
    }
 
-   useMessageDiff(options.processedMessages, { onMessageAdd, onMessageUpdate });
+   useMessageDiff(options.processedMessages, { onMessageUpdate });
 
    // Adjust scroll when message box height changes
    // useEffect(() => {
