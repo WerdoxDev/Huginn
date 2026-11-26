@@ -46,6 +46,13 @@ model User {
   notificationTokens   NotificationToken[]
   reactions            Reaction[]
   expressions          UserExpression[]
+  stats                UserStats?
+}
+
+model UserStats {
+  userId              BigInt @id
+  roamingHuginnClicks Int    @default(0)
+  user                User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Expression {
