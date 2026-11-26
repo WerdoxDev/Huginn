@@ -34,6 +34,10 @@ export class UserAPI {
       return this.rest.get(Routes.userProfile(userId), { auth: true }) as Promise<APIGetProfileResult>;
    }
 
+   public async recordRoamingHuginnClick(): Promise<void> {
+      await this.rest.post(Routes.roamingHuginnClick(), { auth: true });
+   }
+
    public async getCurrent(): Promise<APIGetCurrentUserResult> {
       return this.rest.get(Routes.user("@me"), { auth: true }) as Promise<APIGetCurrentUserResult>;
    }
