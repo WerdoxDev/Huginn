@@ -1,13 +1,12 @@
 version: "3.8"
 
 networks:
-   caddy:
+   proxy:
       external: true
-   dozzle:
-      driver: overlay
    database:
+      external: true
+   internal:
       driver: overlay
-      internal: true
 
 volumes:
    postgres_data:
@@ -15,6 +14,21 @@ volumes:
       name: huginn_postgres_data
 
 services:
+   caddy:
+      image: ghcr.io/werdoxdev/caddy:latest
+      configs:
+         - source: caddy_config
+           target: /etc/caddy/Caddyfile
+      networks:
+         - proxy
+         - internal
+      deploy:
+         restart_policy:
+            condition: on-failure
+         placement:
+            constraints:
+               - node.labels.huginn.caddy == true
+
    postgres:
       image: postgres:18
       environment:
@@ -27,6 +41,7 @@ services:
       volumes:
          - postgres_data:/var/lib/postgresql
       networks:
+         - internal
          - database
       healthcheck:
          test: ["CMD-SHELL", "pg_isready -U huginn -d huginn"]
@@ -50,32 +65,8 @@ services:
             condition: on-failure
             delay: 5s
 
-   dozzle:
-      image: amir20/dozzle:latest
-      environment:
-         - DOZZLE_MODE=swarm
-      volumes:
-         - /var/run/docker.sock:/var/run/docker.sock
-         - /opt/dozzle/data:/data # persist settings per node
-      networks:
-         - dozzle
-         - caddy
-      deploy:
-         mode: global # runs one instance on every node
-
-   caddy:
-      image: ghcr.io/werdoxdev/caddy:latest
-      configs:
-         - source: caddy_config
-           target: /etc/caddy/Caddyfile
-      networks:
-         - caddy
-      deploy:
-         restart_policy:
-            condition: on-failure
-
    server:
-      image: ghcr.io/werdoxdev/huginn-server:${HUGINN_BACKEND_TAG:-postgres}
+      image: ghcr.io/werdoxdev/huginn-server
       environment:
          - SERVER_HOST=0.0.0.0
          - SERVER_PORT=3004
@@ -89,8 +80,7 @@ services:
          - backend_secrets
          - postgres_connection
       networks:
-         - caddy
-         - database
+         - internal
       deploy:
          resources:
             limits:
@@ -99,9 +89,12 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
+         placement:
+            constraints:
+               - node.labels.huginn.server == true
 
    cdn:
-      image: ghcr.io/werdoxdev/huginn-cdn:${HUGINN_BACKEND_TAG:-postgres}
+      image: ghcr.io/werdoxdev/huginn-cdn
       environment:
          - CDN_HOST=0.0.0.0
          - CDN_PORT=3002
@@ -110,8 +103,7 @@ services:
          - backend_secrets
          - postgres_connection
       networks:
-         - caddy
-         - database
+         - internal
       deploy:
          resources:
             limits:
@@ -120,13 +112,15 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
+         placement:
+            constraints:
+               - node.labels.huginn.cdn == true
 
    voice:
-      image: ghcr.io/werdoxdev/huginn-voice:${HUGINN_BACKEND_TAG:-postgres}
+      image: ghcr.io/werdoxdev/huginn-voice
       environment:
          - VOICE_HOST=0.0.0.0
          - VOICE_PORT=3003
-         - MEDIA_LISTEN_INFOS=udp:44443:0.0.0.0:midgard.huginn.dev;tcp:44443:0.0.0.0:midgard.huginn.dev;udp:44444:0.0.0.0:91.67.253.221;tcp:44444:0.0.0.0:91.67.253.221
          - OTEL_SERVICE_NAME=voice
       ports:
          - target: 44444
@@ -149,8 +143,7 @@ services:
          - backend_secrets
          - postgres_connection
       networks:
-         - caddy
-         - database
+         - internal
       deploy:
          resources:
             limits:
@@ -159,6 +152,9 @@ services:
          restart_policy:
             condition: on-failure
             delay: 5s
+         placement:
+            constraints:
+               - node.labels.huginn.voice == true
 
 configs:
    caddy_config:
