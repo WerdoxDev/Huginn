@@ -1,29 +1,19 @@
-import { AnimatePresence, motion } from "motion/react";
+import MessageBoxPreviewBar, { type MessageBoxPreviewBarProps } from "./MessageBoxPreviewBar";
 
-export default function EditingPreview(props: { onCancel: () => void; show: boolean }) {
+export default function EditingPreview(props: MessageBoxPreviewBarProps & { onCancel: () => void }) {
    return (
-      <AnimatePresence>
-         {props.show && (
-            <motion.div
-               initial={{ opacity: 0, borderBottomWidth: 0, height: 0 }}
-               animate={{ opacity: 1, borderBottomWidth: 1, height: "2.5rem" }}
-               exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-               className="border-surface flex items-center gap-x-2 pr-2 pl-4 text-sm"
-            >
-               <IconMingcuteEdit2Fill className="text-positive-300 size-4 shrink-0" />
-               <span className="text-white/80">Editing message</span>
-               <span className="text-xs text-white/30 italic">escape to cancel</span>
-               <button
-                  className="hover:bg-surface ml-auto cursor-pointer rounded-md p-1 text-white/70 transition-colors hover:text-white"
-                  onClick={props.onCancel}
-                  type="button"
-                  data-keyboard-no-close
-               >
-                  <IconMingcuteCloseFill className="size-3.5" />
-               </button>
-            </motion.div>
-         )}
-      </AnimatePresence>
+      <MessageBoxPreviewBar {...props}>
+         <IconMingcuteEdit2Fill className="text-positive-300 size-4 shrink-0" />
+         <span className="text-white/80">Editing message</span>
+         <span className="text-xs text-white/30 italic">escape to cancel</span>
+         <button
+            className="hover:bg-surface ml-auto cursor-pointer rounded-md p-1 text-white/70 transition-colors hover:text-white"
+            onClick={props.onCancel}
+            type="button"
+            data-keyboard-no-close
+         >
+            <IconMingcuteCloseFill className="size-3.5" />
+         </button>
+      </MessageBoxPreviewBar>
    );
 }

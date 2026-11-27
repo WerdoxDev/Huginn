@@ -1,37 +1,44 @@
+import type { RefObject } from "react";
+
 import { useIsMobile } from "@hooks/useIsMobile";
-import { CONSTANTS, isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
+import { isAudioMediaType, isImageMediaType, isVideoMediaType } from "@huginnjs/shared";
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "motion/react";
-import { useMemo } from "react";
 
 import type { AppAttachment } from "@/types";
 
 import Tooltip from "./tooltip/Tooltip";
 
-export default function AttachmentsPreview(props: { attachments: AppAttachment[]; onRemove: (key: string) => void }) {
+export default function AttachmentsPreview(props: {
+   attachments: AppAttachment[];
+   onRemove: (key: string) => void;
+   previewRef: RefObject<HTMLDivElement | null>;
+   itemsRef: RefObject<HTMLDivElement | null>;
+   open: boolean;
+}) {
    const isMobile = useIsMobile();
 
    return (
-      // <Transition show={props.attachments.length !== 0}>
-      <AnimatePresence>
-         {props.attachments.length !== 0 && (
-            <motion.div
-               className="border-surface overflow-hidden px-2 pb-0"
-               data-ignore-swipe
-               initial={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               animate={{ opacity: 1, height: isMobile ? "calc(6rem + 1px)" : "calc(13rem + 1px)", borderBottomWidth: 1 }}
-               exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-               style={{ willChange: "height" }}
+      <div ref={props.previewRef} className="relative h-0">
+         <div
+            className="absolute inset-x-0 bottom-0 overflow-hidden"
+            style={{ height: isMobile ? "calc(6rem + 1px)" : "calc(13rem + 1px)" }}
+            inert={!props.open}
+            aria-hidden={!props.open}
+            data-ignore-swipe
+         >
+            <div
+               ref={props.itemsRef}
+               className="border-surface h-full overflow-hidden border-b px-2"
+               style={{ transform: "translateY(100%)", opacity: 0 }}
             >
-               <div className="relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-1 py-3 pb-0">
+               <div className="relative flex h-full gap-x-5 overflow-x-scroll overflow-y-hidden px-1 pt-3">
                   {props.attachments.map((x) => (
                      <AttachmentItem key={x.key} attachment={x} onRemove={props.onRemove} />
                   ))}
                </div>
-            </motion.div>
-         )}
-      </AnimatePresence>
+            </div>
+         </div>
+      </div>
    );
 }
 

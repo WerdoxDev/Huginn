@@ -1,3 +1,4 @@
+import type { MessageViewportHandle } from "@hooks/useMessageViewportResize";
 import type { Descendant } from "slate";
 
 import { useInset } from "@contexts/InsetContext";
@@ -7,6 +8,7 @@ import { useIsMobile } from "@hooks/useIsMobile";
 import { useMessageBoxActions } from "@hooks/useMessageBoxActions";
 import { useMessageBoxAttachments } from "@hooks/useMessageBoxAttachments";
 import { useMessageBoxAutocomplete } from "@hooks/useMessageBoxAutocomplete";
+import { useMessageBoxPreviewAnimation } from "@hooks/useMessageBoxPreviewAnimation";
 import { usePreviewMessageRenderer } from "@hooks/usePreviewMessageRenderer";
 import { HuginnButton } from "@huginn/frontend-shared";
 import { formatSeconds, type APIExpression } from "@huginnjs/shared";
@@ -14,7 +16,7 @@ import { useChannelStore } from "@stores/channelStore";
 import { usePopover } from "@stores/popoverStore";
 import { useHuginnWindow } from "@stores/windowStore";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type RefObject } from "react";
 import { Editable, Slate, ReactEditor, type RenderPlaceholderProps } from "slate-react";
 
 import type { AppMessage, AutocompleteItem } from "@/types";
@@ -40,7 +42,7 @@ function Placeholder({ attributes, children }: RenderPlaceholderProps) {
    );
 }
 
-export default function MessageBox(props: { messages: AppMessage[] }) {
+export default function MessageBox(props: { messages: AppMessage[]; messageViewportRef: RefObject<MessageViewportHandle | null> }) {
    const initialValue: Descendant[] = useMemo(
       () => [
          {
@@ -83,7 +85,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
    const editorRef = useRef<HTMLDivElement | null>(null);
 
    const { attachments, dragging, openFileSelector, addAttachments, removeAttachment, clearAttachments, onPaste } = useMessageBoxAttachments();
-
    const {
       content,
       submitMessage,
@@ -99,6 +100,15 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
       sendGif,
       sendSticker,
    } = useMessageBoxActions({ editor, decorate, messages: props.messages, attachments, clearAttachments, autocompleteKeyIntercept });
+
+   const preview = useMessageBoxPreviewAnimation({
+      attachments,
+      replyingMessageId: currentReplyingMessageId,
+      editing: !!currentEditingMessageId,
+      channelId: currentChannel?.id,
+      isMobile,
+      messageViewportRef: props.messageViewportRef,
+   });
 
    const { toggle: toggleExpression, popover: expressionPopover } = usePopover("expression");
 
@@ -215,7 +225,6 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
 
    return (
       <div className="relative shrink-0 pt-2">
-         <ChannelTypingIndicator channelId={channelId!} />
          <div className={clsx("bottom-0 z-10 flex flex-col select-text")}>
             <DraggingIndicator isDragging={dragging} />
             <MessageAutocomplete
@@ -229,20 +238,34 @@ export default function MessageBox(props: { messages: AppMessage[] }) {
             />
             <div
                className={clsx(
-                  "bg-surface-alt border-surface mx-2 mb-2 shrink-0 rounded-xl border-2 transition-[border-radius]",
+                  "relative isolate mx-2 mb-2 shrink-0 rounded-xl border-2 border-transparent transition-[border-radius]",
                   hasAddon && "rounded-t-xl",
                )}
                ref={containerRef}
             >
-               <EditingPreview onCancel={cancelEditMessage} show={!!currentEditingMessageId} />
-               <ReplyingPreview
-                  channelId={channelId!}
-                  messageId={currentReplyingMessageId}
-                  onCancel={cancelReplyMessage}
-                  show={!!currentReplyingMessageId}
+               <div aria-hidden className="pointer-events-none absolute -inset-0.5 -z-10">
+                  <div ref={preview.backgroundRef} className="bg-surface-alt border-surface absolute inset-x-0 inset-y-3 origin-bottom border-x-2" />
+                  <div className="bg-surface-alt border-surface absolute inset-x-0 bottom-0 h-4 rounded-b-xl border-2 border-t-0" />
+               </div>
+               <div ref={preview.topRef} className="relative">
+                  <div
+                     aria-hidden
+                     className="bg-surface-alt border-surface pointer-events-none absolute -inset-x-0.5 -top-0.5 -z-10 h-4 rounded-t-xl border-2 border-b-0"
+                  />
+                  <div className="pointer-events-none absolute -inset-x-2.5 -top-2.5 z-20">
+                     <ChannelTypingIndicator channelId={channelId!} />
+                  </div>
+               </div>
+               <EditingPreview onCancel={cancelEditMessage} {...preview.editing} />
+               <ReplyingPreview channelId={channelId!} onCancel={cancelReplyMessage} {...preview.replying} />
+               <AttachmentsPreview
+                  attachments={preview.attachments}
+                  onRemove={removeAttachment}
+                  previewRef={preview.previewRef}
+                  itemsRef={preview.itemsRef}
+                  open={preview.open}
                />
-               <AttachmentsPreview attachments={attachments} onRemove={removeAttachment} />
-               <div className="relative flex h-full items-end lg:items-start">
+               <div className="bg-surface-alt relative flex h-full items-end rounded-[10px] lg:items-start">
                   {!isRecordingVoice && (
                      <div className="flex gap-x-2 py-2 pl-2">
                         {!currentEditingMessageId &&

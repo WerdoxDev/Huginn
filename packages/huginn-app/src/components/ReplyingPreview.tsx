@@ -3,30 +3,14 @@ import type { Snowflake } from "@huginnjs/shared";
 import { useMessage } from "@hooks/api-hooks/messageHooks";
 import { useUser } from "@hooks/api-hooks/userHooks";
 import { useIsMobile } from "@hooks/useIsMobile";
-import { AnimatePresence, motion } from "motion/react";
-import { useRef } from "react";
 
-export default function ReplyingPreview(props: { onCancel?: () => void; channelId: Snowflake; messageId?: Snowflake; show: boolean }) {
-   const lastMessageId = useRef(props.messageId);
+import MessageBoxPreviewBar, { type MessageBoxPreviewBarProps } from "./MessageBoxPreviewBar";
 
-   if (props.messageId) {
-      lastMessageId.current = props.messageId;
-   }
-
+export default function ReplyingPreview(props: MessageBoxPreviewBarProps & { onCancel?: () => void; channelId: Snowflake; messageId?: Snowflake }) {
    return (
-      <AnimatePresence>
-         {props.show && (
-            <motion.div
-               initial={{ opacity: 0, borderBottomWidth: 0, height: 0 }}
-               animate={{ opacity: 1, borderBottomWidth: 1, height: "2.5rem" }}
-               exit={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-               transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-               className="border-surface flex items-center gap-x-2 pr-2 pl-4 text-sm"
-            >
-               {lastMessageId.current && <ReplyingContent channelId={props.channelId} messageId={lastMessageId.current} onCancel={props.onCancel} />}
-            </motion.div>
-         )}
-      </AnimatePresence>
+      <MessageBoxPreviewBar {...props}>
+         {props.messageId && <ReplyingContent channelId={props.channelId} messageId={props.messageId} onCancel={props.onCancel} />}
+      </MessageBoxPreviewBar>
    );
 }
 

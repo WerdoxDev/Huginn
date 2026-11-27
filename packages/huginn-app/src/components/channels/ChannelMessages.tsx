@@ -1,3 +1,5 @@
+import type { MessageViewportHandle } from "@hooks/useMessageViewportResize";
+
 import { MessageProvider } from "@contexts/MessageProvider";
 import { useMessageAcker } from "@hooks/mutations/useMessageAcker";
 import { useFirstUnreadMessage } from "@hooks/useFirstUnreadMessage";
@@ -13,7 +15,7 @@ import { useClient } from "@stores/clientStore";
 import { useThisUser } from "@stores/userStore";
 import { useQueryClient, useSuspenseInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import moment from "moment";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import type { AppDirectChannel, AppMessage, ProcessedMessage } from "@/types";
 
@@ -35,7 +37,7 @@ function shallowEqual(a: object, b: object) {
    return aKeys.every((k) => a[k as keyof typeof a] === b[k as keyof typeof b]);
 }
 
-export default function ChannelMessages(props: { messages: AppMessage[]; channel: AppDirectChannel }) {
+export default function ChannelMessages(props: { messages: AppMessage[]; channel: AppDirectChannel; ref?: Ref<MessageViewportHandle> }) {
    const client = useClient();
    const queryClient = useQueryClient();
    const isMobile = useIsMobile();
@@ -125,7 +127,7 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    const highlightTimeoutId = useRef<number | undefined>(undefined);
    const pendingScrollToBottom = useRef(false);
 
-   const { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom } = useMessageScroll({
+   const { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom, viewportRef, resizeRef, resize } = useMessageScroll({
       channelId: props.channel.id,
       messages: props.messages,
       processedMessages,
@@ -139,6 +141,8 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
       ghostTopRef,
       ghostBottomRef,
    });
+
+   useImperativeHandle(props.ref, () => ({ resize }), [resize]);
 
    const highlightMessage = useCallback((messageId: Snowflake) => {
       if (highlightTimeoutId.current !== undefined) {
@@ -239,14 +243,14 @@ export default function ChannelMessages(props: { messages: AppMessage[]; channel
    }, [props.channel.id]);
 
    return (
-      <div className="relative h-full overflow-x-hidden overflow-y-hidden">
+      <div className="relative h-full min-h-0 overflow-x-hidden overflow-y-hidden" ref={viewportRef}>
          <div
             className="relative h-full w-full overflow-x-hidden overflow-y-scroll scroll-auto [overflow-anchor:none]"
             ref={scrollRef}
             onScroll={onScroll}
          >
             {/* Contain insertion transforms so they cannot inflate the scroller's scrollHeight. */}
-            <div className="flex min-h-full flex-col justify-end overflow-clip">
+            <div className="flex min-h-full flex-col justify-end overflow-clip" ref={resizeRef}>
                {hasPreviousPage && <GhostMessages ref={ghostTopRef} />}
                <ol className="min-h-0 pr-0 pb-9" ref={listRef}>
                   {props.messages.length === 0 && (

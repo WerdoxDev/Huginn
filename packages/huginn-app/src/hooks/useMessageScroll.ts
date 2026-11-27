@@ -1,6 +1,7 @@
 import { useDynamicRefs } from "@hooks/useDynamicRefs";
 import { useMessageDiff, type ChangeType } from "@hooks/useMessageDiff";
 import { useMessageInsertion } from "@hooks/useMessageInsertion";
+import { useMessageViewportResize } from "@hooks/useMessageViewportResize";
 import { type Snowflake } from "@huginnjs/shared";
 import { getFirstChildClosestToBottom, getFirstChildClosestToTop } from "@lib/utils";
 import { useChannelStore, type SavedScrollState } from "@stores/channelStore";
@@ -49,6 +50,14 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    const isResizing = useRef(false);
    const suppressInfiniteFetchRef = useRef(false);
    const smoothScrollCleanupRef = useRef<(() => void) | undefined>(undefined);
+   const viewportResize = useMessageViewportResize({
+      channelId: options.channelId,
+      messages: options.messages,
+      scrollRef,
+      listRef,
+      shouldAnchorToBottom,
+      isResizing,
+   });
    const cancelInsertion = useMessageInsertion({
       channelId: options.channelId,
       messages: options.messages,
@@ -59,6 +68,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
 
    function scrollDown() {
       if (!scrollRef.current) return;
+      viewportResize.finish();
       scrollRef.current.scrollTo(0, scrollRef.current.scrollHeight);
    }
 
@@ -105,6 +115,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          const messageElement = document.getElementById(messageId);
          if (!messageElement) return false;
 
+         viewportResize.finish();
          cancelInsertion();
 
          if (behavior === "smooth") {
@@ -114,13 +125,14 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          messageElement.scrollIntoView({ behavior, block: "center" });
          return true;
       },
-      [startSmoothScrollFetchSuppression, cancelInsertion],
+      [startSmoothScrollFetchSuppression, cancelInsertion, viewportResize.finish],
    );
 
    const scrollToBottom = useCallback(
       (behavior: ScrollBehavior = "smooth") => {
          if (!scrollRef.current) return false;
 
+         viewportResize.finish();
          cancelInsertion();
 
          if (behavior === "smooth") {
@@ -130,7 +142,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
          scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
          return true;
       },
-      [startSmoothScrollFetchSuppression, cancelInsertion],
+      [startSmoothScrollFetchSuppression, cancelInsertion, viewportResize.finish],
    );
 
    function saveLastSeenMessage() {
@@ -195,7 +207,7 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
    }
 
    function onScroll() {
-      if (!scrollRef.current || options.messages.length === 0 || pendingScroll.current) return;
+      if (!scrollRef.current || options.messages.length === 0 || pendingScroll.current || viewportResize.isAnimating.current) return;
 
       const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
       const isAtBottom = scrollHeight - clientHeight - scrollTop <= 20;
@@ -320,7 +332,8 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       if (!scrollRef.current) return;
 
       const resizeObserver = new ResizeObserver((entries) => {
-         if (!scrollRef.current) return;
+         // The attachment FLIP owns anchoring until its final scroll position is restored.
+         if (!scrollRef.current || viewportResize.isAnimating.current) return;
          const scrollHeight = entries[0].target.scrollHeight;
 
          const alreadyAtBottom = scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight;
@@ -359,5 +372,15 @@ export function useMessageScroll(options: UseMessageScrollOptions) {
       };
    }, []);
 
-   return { scrollRef, listRef, setRef, onScroll, scrollToMessage, scrollToBottom };
+   return {
+      scrollRef,
+      listRef,
+      setRef,
+      onScroll,
+      scrollToMessage,
+      scrollToBottom,
+      viewportRef: viewportResize.viewportRef,
+      resizeRef: viewportResize.resizeRef,
+      resize: viewportResize.resize,
+   };
 }

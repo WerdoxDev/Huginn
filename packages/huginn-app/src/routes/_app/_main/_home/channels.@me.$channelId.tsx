@@ -1,3 +1,5 @@
+import type { MessageViewportHandle } from "@hooks/useMessageViewportResize";
+
 import ChannelBackground from "@components/channels/ChannelBackground";
 import ChannelMessages from "@components/channels/ChannelMessages";
 import ChannelSidebar from "@components/channels/ChannelSidebar";
@@ -20,7 +22,7 @@ import { useQueryClient, useSuspenseInfiniteQuery } from "@tanstack/react-query"
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import clsx from "clsx";
 import { usePostHog } from "posthog-js/react";
-import { useEffect, useMemo, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, type MouseEvent } from "react";
 
 import type { ChannelSidebarPanel } from "@/types";
 
@@ -43,6 +45,7 @@ function ChannelWithIdComponent() {
    const channel = useCurrentChannel();
    const posthog = usePostHog();
    const isMobile = useIsMobile();
+   const messageViewportRef = useRef<MessageViewportHandle>(null);
    const settings = useStorage("settings");
    const { setValue } = useStorageStore();
    const { updateModals } = useModals();
@@ -144,8 +147,8 @@ function ChannelWithIdComponent() {
                      />
                      <ChannelBackground channelId={channelId} />
                      <DirectChannelCall channelId={channelId} />
-                     <ChannelMessages messages={sortedMessages} channel={channel} />
-                     <MessageBox messages={sortedMessages} />
+                     <ChannelMessages messages={sortedMessages} channel={channel} ref={messageViewportRef} />
+                     <MessageBox messages={sortedMessages} messageViewportRef={messageViewportRef} />
                   </div>
 
                   <ChannelSidebar channel={channel} onClose={onSidebarClose} />
