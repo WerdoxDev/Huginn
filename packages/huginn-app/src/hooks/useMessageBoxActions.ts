@@ -410,6 +410,38 @@ export function useMessageBoxActions(options: {
       }
    }
 
+   function handleMessageShortcut(event: KeyboardEvent | globalThis.KeyboardEvent) {
+      console.log(event);
+      if (event.key !== "ArrowUp" || event.altKey || event.metaKey) return false;
+
+      // reply on shift up arrow
+      if (event.shiftKey && event.ctrlKey) {
+         if (currentEditingMessageId) return false;
+
+         const lastReplyableMessage = options.messages.findLast(
+            (x) =>
+               !x.isPreview &&
+               (x.type === MessageType.DEFAULT || x.type === MessageType.REPLY) &&
+               (!currentReplyingMessageId || x.id < currentReplyingMessageId),
+         );
+         if (!lastReplyableMessage) return false;
+
+         setReplyingMessageId(lastReplyableMessage.id);
+      }
+      // edit on up arrow
+      else {
+         if (!isEditorEmpty()) return false;
+
+         const lastEditableMessage = options.messages.findLast(
+            (x) => x.authorId === user?.id && !x.isPreview && (x.type === MessageType.DEFAULT || x.type === MessageType.REPLY),
+         );
+         setEditingMessageId(lastEditableMessage?.id);
+      }
+
+      event.preventDefault();
+      return true;
+   }
+
    function onEditorKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey) {
          interceptArrowNavigation(event, "word");
@@ -421,14 +453,7 @@ export function useMessageBoxActions(options: {
          return;
       }
 
-      // Edit last message on ArrowUp with empty editor
-      if (event.key === "ArrowUp" && isEditorEmpty()) {
-         const lastEditableMessage = options.messages.findLast(
-            (x) => x.authorId === user?.id && !x.isPreview && (x.type === MessageType.DEFAULT || x.type === MessageType.REPLY),
-         );
-         setEditingMessageId(lastEditableMessage?.id);
-         event.preventDefault();
-      }
+      if (handleMessageShortcut(event)) return;
       if (!event.shiftKey && event.code === "Enter" && !isMobile) {
          submitMessage(MessageFlags.NONE);
          event.preventDefault();
@@ -462,13 +487,15 @@ export function useMessageBoxActions(options: {
             if (!isInputFocused && !isPortalOpen && !ReactEditor.isFocused(options.editor) && isWorthyKeyEvent(e)) {
                options.editor.select(options.editor.end([]));
                ReactEditor.focus(options.editor);
+
+               handleMessageShortcut(e);
             }
          },
          { signal: controller.signal },
       );
 
       return () => controller.abort();
-   }, [currentEditingMessageId, currentReplyingMessageId]);
+   }, [currentEditingMessageId, currentReplyingMessageId, options.messages, user?.id]);
 
    // Load message content when editing starts
    useEffect(() => {
