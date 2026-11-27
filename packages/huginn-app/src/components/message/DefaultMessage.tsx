@@ -140,7 +140,7 @@ export default function DefaultMessage() {
          </div>
          <div
             className={clsx(
-               "absolute inset-y-0 left-0 h-full transition-[width]",
+               "absolute inset-y-0 left-0 h-full transition-all",
                isEditing || isReplying || isJumpHighlighted || isMentioned ? "w-1" : "w-0",
                isEditing && "bg-positive-500",
                (isReplying || isJumpHighlighted) && "bg-caution-500",
